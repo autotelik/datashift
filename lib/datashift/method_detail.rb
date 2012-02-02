@@ -46,7 +46,11 @@ module DataShift
     
       # Note : Not all assignments will currently have a column type, for example
       # those that are derived from a delegate_belongs_to
-      @col_type = col_types[operator]
+      if(col_types.empty?)
+        @col_type = klass.columns.find{ |col| col.name == operator }
+      else
+        @col_type = col_types[operator]
+      end
     end
 
 
