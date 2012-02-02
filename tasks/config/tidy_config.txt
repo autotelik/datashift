@@ -1,0 +1,13 @@
+# Copyright:: (c) Autotelik Media Ltd 2011
+# Author ::   Tom Statter
+# Date ::     Aug 2010
+#
+# License::   Free, OpenSource... MIT ?
+
+# This is the best effort I've found so far to reduce the amount of MS cruft
+# to absolute minimum
+# ... but unfortunately these tags will NOT BE REMOVED completely - manual cleanup still required
+
+# TODO - add another ruby parse layer to strip these out completely
+
+new-empty-tags: o:smarttagtype, st1:placename, st1:place, st1:placetype

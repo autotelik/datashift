@@ -1,0 +1,4 @@
+"SKU","Description","Available On","CostPrice","product_properties","count_on_hand","Taxons","Option Types"
+"DEMO_001","blah blah","2011-02-14",320.00,"name:test_pp_001",12,"Paintings","mime_type:jpeg, PDF,PNG"
+"DEMO_002","less blah","2011-05-14",30.00,"name:test_pp_001",5,"Paintings","mime_type:jpeg, PDF,PNG"
+"DEMO_003","more blah blah","2012-07-01",23.34,"name:test_pp_002,test_pp_003",23,"Drawings","mime_type:jpeg,PDF,PNG|print_type:black_white,colour"

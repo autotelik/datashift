@@ -1,0 +1,25 @@
+<% adapter = 'sqlite3' %>
+<% adapter = 'jdbcsqlite3' if(Guards::jruby? ) %>
+
+test_mysql:
+  adapter: jdbcmysql
+  database: interact_test_db
+  username: test
+  password: test
+  host: localhost
+
+test_memory:
+  adapter: <%= adapter %>
+  database: :memory
+
+test_file:
+  adapter: <%= adapter %>
+  database: <%= File.join($DataShiftFixturePath, 'interact_models_db.sqlite') %>
+  encoding: utf8
+  host: localhost
+
+test_spree_standalone:
+  adapter: <%= adapter %>
+  database: <%= File.join($DataShiftFixturePath, 'interact_spree_db.sqlite') %>
+  encoding: utf8
+  host: localhost

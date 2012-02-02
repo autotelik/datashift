@@ -1,0 +1,4 @@
+"Name","Description","Available On","     Price","CostPrice","product_properties","count_on_hand","Taxons","Option Types"
+"Demo Product for AR Loader","blah blah","2011-02-14",400.00,320.00,"name:test_pp_001",12,"Paintings","mime_type:jpeg, PDF,PNG"
+"Demo Excel Load via Jruby","less blah","2011-05-14",100.00,30.00,"name:test_pp_001",5,"Paintings","mime_type:jpeg, PDF,PNG"
+"Demo third row in future","more blah blah","2012-07-01",50.34,23.34,"name:test_pp_002,test_pp_003",23,"Drawings","mime_type:jpeg,PDF,PNG|print_type:black_white,colour"
