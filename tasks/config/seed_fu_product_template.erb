@@ -1,0 +1,15 @@
+p = Product.seed( :name ) do |s|
+  s.name =  <%= @name %>
+  s.available_on =  '2009-09-01 09:00:00.0'
+  s.meta_keywords =  ['training', 'training']
+  s.meta_description =  ""
+  s.description =  '<%= @description %>'
+  s.price = 0.00
+  s.sku = '<%= @sku %>'
+
+  s.is_physical    = false
+  s.is_private     = false
+
+  s.append_association :taxons, Taxon.find_by_name( 'Training' )
+
+end
