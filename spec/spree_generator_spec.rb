@@ -12,6 +12,7 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
 require 'spree_helper'
+require 'excel_generator'
 
 include DataShift
   

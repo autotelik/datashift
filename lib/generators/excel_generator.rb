@@ -87,7 +87,7 @@ module DataShift
         headers = []
         
         MethodMapper.method_details[klass].each do |method_detail|   
-          if(method_detail.operator_type(:assignment))
+          if(method_detail.operator_type == :assignment)
             headers << "#{klass}:#{method_detail.operator}"
           end
         end
@@ -99,13 +99,13 @@ module DataShift
         items.each do |record|
           
           MethodMapper.method_details[klass].each do |method_detail|   
-            if(method_detail.operator_type(:assignment))
+            if(method_detail.operator_type == :assignment)
               data << record.send( method_detail.operator )
             end
           end
         end
         
-        excel.set_row(items)
+        excel.set_row(2,1,items)
 
         excel.save( filename() )
       end

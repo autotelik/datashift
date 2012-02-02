@@ -131,8 +131,12 @@ module DataShift
     end
 
     def self.build_method_details( klass )
+      @method_details ||= {}
+      
+      @method_details[klass] = []
+      
       assignments_for(klass).each do |n|
-        @method_details[klass] << MethodDetail.new(n, klass, n, :assignment, klass.columns)
+        @method_details[klass] << MethodDetail.new(n, klass, n, :assignment)
       end
         
       has_one_for(klass).each do |n|
