@@ -1,0 +1,26 @@
+## YAML Template.
+
+# Format is :
+#  --- !ruby/object:ActiveRecordModel
+#   :datashift_defaults
+#       :key value
+#
+
+Project: 
+  datashift_defaults: 
+    value_as_string: "Default Project Value"
+  category: reference:category_002
+  
+--- !ruby/object:Project 
+attributes: 
+  id:
+  title: 
+  value_as_string: "" 
+  value_as_text:  "object has value text"
+  value_as_boolean:
+  value_as_datetime: 
+  value_as_integer: 23
+  value_as_double: 45.82
+  created_at: 
+  updated_at: 
+

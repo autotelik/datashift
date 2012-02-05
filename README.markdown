@@ -31,7 +31,7 @@ To use :
 
 To pull the tasks in, add this call to your Rakefile :
 
-     DataShift ::load_tasks
+     DataShift::load_tasks
 
 N.B - To use the Excel loader, OLE and Excel are NOT required, however
 JRuby is required, since it uses Java's Apache POI under the hood to process .xls files.
@@ -256,6 +256,11 @@ Example - Display  values :
   - Smart sorting of column processing order ....
 
   - Does not currently ensure mandatory columns (for valid?) processed first.
+
+  - Look at implementing import/export API using something like https://github.com/ianwhite/orm_adapter 
+    rather than active record, so we can support additional ORMs
+
+  - Create separate Spree extension to support import/export via the admin gui
     
 ## License
 
