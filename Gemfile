@@ -5,10 +5,13 @@ source "http://rubygems.org"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
+
+
+# We leave it up to the main Rails app to define the actual versions required
 group :development do
-  gem "rails", '3.1.3'
-  gem "activerecord", '3.1.3'
-  gem "activesupport", '3.1.3'
+  gem "rails"
+  gem "activerecord"
+  gem "activesupport"
   
   platform :jruby do
     gem 'jruby-openssl'

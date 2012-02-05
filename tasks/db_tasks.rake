@@ -12,7 +12,8 @@ namespace :autotelik do
     SYSTEM_TABLE_EXCLUSION_LIST = ['schema_migrations']
 
     desc "Purge the current database"
-    task :purge, :exclude_system_tables, :needs => [:environment] do |t, args|
+    
+    task :purge, [:exclude_system_tables] => [:environment] do |t, args|
       require 'highline/import'
 
       if(RAILS_ENV == 'production')

@@ -153,7 +153,7 @@ if(Guards::jruby?)
       
     end
     
-    it "should provide facility to set pre and post fix values", :focus => true do
+    it "should provide facility to set pre and post fix values" do
       loader = ExcelLoader.new(Project)
       
       loader.set_prefix('value_as_string', 'myprefix' )
@@ -169,6 +169,22 @@ if(Guards::jruby?)
       
       p.value_as_string.should == 'myprefixDemo stringmy post fix'      
     end
+    
+   it "should provide facility to set default values via YAML configuration", :excel => true do
+      loader = ExcelLoader.new(Project)
+      
+      loader.configure_from( File.join($DataShiftFixturePath, 'ProjectsDefaults.yml') )
+      
+      
+      loader.perform_load( File.join($DataShiftFixturePath, 'ProjectsSingleCategories.xls') )
+      
+      p = Project.find_by_title( '099' )
+      
+      p.should_not be_nil
+      
+      p.value_as_string.should == "Default Project Value"    
+    end
+    
     
   end
 

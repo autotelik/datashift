@@ -78,6 +78,7 @@ module DataShift
       @multi_assoc_delim
     end
 
+    
     def self.set_multi_assoc_delim(x) @multi_assoc_delim = x; end
 
     # Options
@@ -93,6 +94,8 @@ module DataShift
       @options = options.clone
       @headers = []
 
+      @default_data_objects ||= {}
+      
       @default_values = {}
       @prefixes       = {}
       @postfixes      = {}
@@ -143,9 +146,45 @@ module DataShift
         @load_object.errors.add_base( "No matching method found for column #{column_name}")
       end
     end
-
     
-    # Set member variables to hold detsails and value.
+    
+    def configure_from( yaml_file )
+
+      data = YAML::load( File.open(yaml_file) )
+      
+      unless(@default_data_objects[load_object_class])
+    
+        @default_data_objects[load_object_class] = load_object_class.new
+      
+        default_data_object = @default_data_objects[load_object_class]
+      
+      
+        default_data_object.instance_eval do
+          def datashift_defaults=(hash)
+            @datashift_defaults = hash
+          end
+          def datashift_defaults
+            @datashift_defaults
+          end
+        end unless load_object_class.respond_to?(:datashift_defaults)
+      end
+      
+      #puts load_object_class.new.to_yaml
+      
+      puts data.inspect
+      
+      if(data[load_object_class.name])
+        @default_values.merge!( data[load_object_class.name]['datashift_defaults'] )
+      end
+      
+      #puts @default_data_object.methods.sort
+      #if(data[load_object_class.name.to_
+      
+      #loader.set_default_value('value_as_string', 'some default text' )
+      
+    end
+    
+    # Set member variables to hold details and value.
     # 
     # Check supplied value, validate it, and if required :
     #   set to any provided default value
@@ -248,6 +287,11 @@ module DataShift
       end
     end
 
+    def self.default_object_for( klass )
+      @default_data_objects ||= {}
+      @default_data_objects[klass]
+    end
+    
     def set_default_value( name, value )
       @default_values[name] = value
     end

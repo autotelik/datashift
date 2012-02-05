@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thomas Statter"]
-  s.date = "2012-02-02"
+  s.date = "2012-02-05"
   s.description = "A suite of tools to move data between ActiveRecord models,databases,applications like Excel/Open Office, files and projects including Spree"
   s.email = "rubygems@autotelik.co.uk"
   s.executables = ["autospec", "convert_to_should_syntax", "erubis", "htmldiff", "jeweler", "ldiff", "nokogiri", "rackup", "rails", "rake", "rake2thor", "ri", "rspec", "spree", "thor", "tilt", "tt"]
@@ -44,6 +44,7 @@ Gem::Specification.new do |s|
     "bin/thor",
     "bin/tilt",
     "bin/tt",
+    "datashift-0.0.1.gem",
     "datashift.gemspec",
     "lib/applications/jruby/jexcel_file.rb",
     "lib/applications/jruby/word.rb",
