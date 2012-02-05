@@ -4,18 +4,22 @@ Provides tools to shift data between Ruby, external applications, files and Acti
 
 ### Features
 
-Map Active Record models and associations to files.
+Map Active Record models and associations to files, generate sample templates.
 
-Import and Export ActiveRecord based data through .xls or CSV  files.
+Import and Export ActiveRecord models through .xls or CSV  files, including
+all associations and with configurable defaults.
 
 Create, parse and use Excel/OpenOffice (.xls) documents dynamically from Ruby.
 
-High level rake tasks provided.
+High level rake tasks provided for key features.
 
-Spree E-Commerce specific loaders and rake tasks provided enabling import/export of all data including Products with
-complex associations such as Options/Variants and Images.
+Easily extendable Loader functionality to deal with non trivial import cases, such
+as complex association lookups.
 
-Example spreadsheets, fully documented with comments for each column.
+Specific loaders and rake tasks provided out the box for Spree E-Commerce,  
+enabling import/export of all data including Products with complex associations such as Options/Variants and Images.
+
+Many example Spreadsheets provided, fully documented with comments for each column.
 
 
 ## Installation
@@ -46,10 +50,18 @@ Guards are provided, and used internally, for mixed Ruby setups. Can be used lik
 
 ## Active Record - Import/Export
 
-Provides wrappers and rake tasks for importing/exporting data to DBs, from various sources,
-including csv and .xls files (Excel/Open Office)
+Provides high level rake tasks for importing data via ActiveRecord models into a DB,
+ from various sources, currently csv or .xls files (Excel/Open Office)
 
-Simplifies the exchange of data, between such files and any active record supported database.
+
+    bundle exec rake datashift:import:excel model=BlogPost input=BlogPostImport.xls verbose=true 
+
+
+The library can be easily extended with Loaders to deal with non trivial cases required to exchange data between
+ such files and any active record supported database.
+
+Spree loaders are an example, these illustrate over riding processing for specific columns with
+complicated lookup requirements.
 
 A core feature of DataShift is the MethodMapper, which provides features for collecting
 reflection information from ActiveRecord models (all different associations, including join tables with many-to-many relationships).
