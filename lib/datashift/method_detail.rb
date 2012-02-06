@@ -105,7 +105,7 @@ module DataShift
       
       @current_value = value
 
-      puts "WARNING nil value supplied for Column [#{@name}]" if(@current_value.nil?)
+      logger.info("WARNING nil value supplied for Column [#{@name}]") if(@current_value.nil?)
     
       if( operator_for(:belongs_to) )
       

@@ -282,7 +282,7 @@ module DataShift
       rescue => e
         @failed_objects << @load_object unless( !load_object.new_record? || @failed_objects.include?(@load_object))
         puts "Error saving #{@load_object.class} : #{e.inspect}"
-        puts e.backtrace
+        logger.debug e.backtrace
         raise "Error in save whilst processing column #{@current_method_detail.name}" if(@options[:strict])
       end
     end

@@ -40,8 +40,12 @@ module DataShift
 
   def self.gem_version
     unless(@gem_version)
-      File.read( File.join( 'VERSION') ).match(/.*(\d+.\d+.\d+)/)
-      @gem_version = $1
+      if(File.exists?('VERSION'))
+        File.read( File.join('VERSION') ).match(/.*(\d+.\d+.\d+)/)
+        @gem_version = $1
+      else
+        @gem_version = '1.0.0'
+      end
     end
     @gem_version
   end

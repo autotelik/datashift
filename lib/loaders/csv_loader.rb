@@ -91,7 +91,7 @@ module DataShift
     def perform_load( file_name, options = {} )
       perform_csv_load( file_name, options )
 
-      puts "Excel loading stage complete - #{loaded_objects.size} rows added."
+      puts "CSV loading stage complete - #{loaded_objects.size} rows added."
     end
 
   end

@@ -94,7 +94,7 @@ module DataShift
 
               contains_data = true unless(value.nil? || value.to_s.empty?)
 
-              #puts "DEBUG: Excel process METHOD :#{method_detail.inspect}", value.inspect
+              logger.debug "Excel process METHOD :#{method_detail.inspect} #{value.inspect}"
               prepare_data(method_detail, value)
               
               process()

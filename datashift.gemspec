@@ -4,15 +4,14 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = "datashift"
-  s.version = "0.0.1"
+  s.name = %q{datashift}
+  s.version = "0.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thomas Statter"]
-  s.date = "2012-02-05"
-  s.description = "A suite of tools to move data between ActiveRecord models,databases,applications like Excel/Open Office, files and projects including Spree"
-  s.email = "rubygems@autotelik.co.uk"
-  s.executables = ["autospec", "convert_to_should_syntax", "erubis", "htmldiff", "jeweler", "ldiff", "nokogiri", "rackup", "rails", "rake", "rake2thor", "ri", "rspec", "spree", "thor", "tilt", "tt"]
+  s.date = %q{2012-02-06}
+  s.description = %q{A suite of tools to move data between ActiveRecord models,databases,applications like Excel/Open Office, files and projects including Spree}
+  s.email = %q{rubygems@autotelik.co.uk}
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.markdown",
@@ -21,30 +20,10 @@ Gem::Specification.new do |s|
   s.files = [
     ".document",
     "Gemfile",
-    "Gemfile.lock",
     "LICENSE.txt",
     "README.markdown",
     "README.rdoc",
     "Rakefile",
-    "VERSION",
-    "bin/autospec",
-    "bin/convert_to_should_syntax",
-    "bin/erubis",
-    "bin/htmldiff",
-    "bin/jeweler",
-    "bin/ldiff",
-    "bin/nokogiri",
-    "bin/rackup",
-    "bin/rails",
-    "bin/rake",
-    "bin/rake2thor",
-    "bin/ri",
-    "bin/rspec",
-    "bin/spree",
-    "bin/thor",
-    "bin/tilt",
-    "bin/tt",
-    "datashift-0.0.1.gem",
     "datashift.gemspec",
     "lib/applications/jruby/jexcel_file.rb",
     "lib/applications/jruby/word.rb",
@@ -86,8 +65,10 @@ Gem::Specification.new do |s|
     "spec/excel_generator_spec.rb",
     "spec/excel_loader_spec.rb",
     "spec/file_definitions.rb",
+    "spec/fixtures/.~lock.ProjectsSingleCategories.xls#",
     "spec/fixtures/BadAssociationName.xls",
     "spec/fixtures/DemoNegativeTesting.xls",
+    "spec/fixtures/ProjectsDefaults.yml",
     "spec/fixtures/ProjectsMultiCategories.xls",
     "spec/fixtures/ProjectsSingleCategories.xls",
     "spec/fixtures/SimpleProjects.xls",
@@ -128,19 +109,19 @@ Gem::Specification.new do |s|
     "test/helper.rb",
     "test/test_interact.rb"
   ]
-  s.homepage = "http://github.com/autotelik/datashift"
+  s.homepage = %q{http://github.com/autotelik/datashift}
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.15"
-  s.summary = "Shift data betwen applications and Active Record"
+  s.rubygems_version = %q{1.6.2}
+  s.summary = %q{Shift data betwen applications and Active Record}
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_development_dependency(%q<rails>, ["= 3.1.3"])
-      s.add_development_dependency(%q<activerecord>, ["= 3.1.3"])
-      s.add_development_dependency(%q<activesupport>, ["= 3.1.3"])
+      s.add_development_dependency(%q<rails>, [">= 0"])
+      s.add_development_dependency(%q<activerecord>, [">= 0"])
+      s.add_development_dependency(%q<activesupport>, [">= 0"])
       s.add_development_dependency(%q<jruby-openssl>, [">= 0"])
       s.add_development_dependency(%q<activerecord-jdbcsqlite3-adapter>, [">= 0"])
       s.add_development_dependency(%q<spree>, ["= 0.70.3"])
@@ -150,9 +131,9 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.8.3"])
     else
-      s.add_dependency(%q<rails>, ["= 3.1.3"])
-      s.add_dependency(%q<activerecord>, ["= 3.1.3"])
-      s.add_dependency(%q<activesupport>, ["= 3.1.3"])
+      s.add_dependency(%q<rails>, [">= 0"])
+      s.add_dependency(%q<activerecord>, [">= 0"])
+      s.add_dependency(%q<activesupport>, [">= 0"])
       s.add_dependency(%q<jruby-openssl>, [">= 0"])
       s.add_dependency(%q<activerecord-jdbcsqlite3-adapter>, [">= 0"])
       s.add_dependency(%q<spree>, ["= 0.70.3"])
@@ -163,9 +144,9 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<jeweler>, ["~> 1.8.3"])
     end
   else
-    s.add_dependency(%q<rails>, ["= 3.1.3"])
-    s.add_dependency(%q<activerecord>, ["= 3.1.3"])
-    s.add_dependency(%q<activesupport>, ["= 3.1.3"])
+    s.add_dependency(%q<rails>, [">= 0"])
+    s.add_dependency(%q<activerecord>, [">= 0"])
+    s.add_dependency(%q<activesupport>, [">= 0"])
     s.add_dependency(%q<jruby-openssl>, [">= 0"])
     s.add_dependency(%q<activerecord-jdbcsqlite3-adapter>, [">= 0"])
     s.add_dependency(%q<spree>, ["= 0.70.3"])
