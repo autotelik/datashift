@@ -1,3 +1,6 @@
+# developing a gem so don't commit lock file
+Gemfile.lock
+
 # rcov generated
 coverage
 coverage.data
