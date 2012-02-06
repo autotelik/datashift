@@ -21,8 +21,6 @@
 #
 ## encoding: utf-8
 
-File.read( File.join( 'VERSION') ).match(/.*(\d+.\d+.\d+)/)
-
 require 'rubygems'
 require 'bundler'
 begin

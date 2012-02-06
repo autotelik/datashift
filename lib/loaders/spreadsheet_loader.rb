@@ -108,7 +108,7 @@ module DataShift
 
         end
       end
-      puts "Excel loading stage complete - #{loaded_objects.size} rows added."
+      puts "Spreadsheet loading stage complete - #{loaded_objects.size} rows added."
     end
 
     def value_at(row, column)
