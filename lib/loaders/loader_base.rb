@@ -16,6 +16,9 @@ module DataShift
 
   class LoaderBase
 
+    
+    include DataShift::Logging
+      
     attr_reader :headers
 
     attr_accessor :method_mapper
@@ -96,7 +99,9 @@ module DataShift
 
       @default_data_objects ||= {}
       
-      @default_values = {}
+      @default_values  = {}
+      @override_values = {}
+      
       @prefixes       = {}
       @postfixes      = {}
       
@@ -148,26 +153,36 @@ module DataShift
     end
     
     
+    # Default values can be provided in YAML config file
+    #  Format :
+    #    Load Class
+    #         atttribute: value
+    
     def configure_from( yaml_file )
 
       data = YAML::load( File.open(yaml_file) )
       
-      unless(@default_data_objects[load_object_class])
-    
-        @default_data_objects[load_object_class] = load_object_class.new
       
-        default_data_object = @default_data_objects[load_object_class]
+      # TODO - MOVE DEFAULTS TO OWN MODULE 
+      # decorate the loading class with the defaults/ove rides to manage itself
+      #   IDEAS .....
+      #
+      #unless(@default_data_objects[load_object_class])
+    #
+     #   @default_data_objects[load_object_class] = load_object_class.new
+      
+      #  default_data_object = @default_data_objects[load_object_class]
       
       
-        default_data_object.instance_eval do
-          def datashift_defaults=(hash)
-            @datashift_defaults = hash
-          end
-          def datashift_defaults
-            @datashift_defaults
-          end
-        end unless load_object_class.respond_to?(:datashift_defaults)
-      end
+       # default_data_object.instance_eval do
+        #  def datashift_defaults=(hash)
+         #   @datashift_defaults = hash
+        #  end
+        #  def datashift_defaults
+        #    @datashift_defaults
+        #  end
+        #end unless load_object_class.respond_to?(:datashift_defaults)
+      #end
       
       #puts load_object_class.new.to_yaml
       
@@ -175,12 +190,9 @@ module DataShift
       
       if(data[load_object_class.name])
         @default_values.merge!( data[load_object_class.name]['datashift_defaults'] )
+        
+        @override_values.merge!( data[load_object_class.name]['datashift_overrides'] )
       end
-      
-      #puts @default_data_object.methods.sort
-      #if(data[load_object_class.name.to_
-      
-      #loader.set_default_value('value_as_string', 'some default text' )
       
     end
     
@@ -197,7 +209,9 @@ module DataShift
       
       operator = method_detail.operator
       
-      if(default_value(operator) && (value.nil? || value.to_s.empty?))
+      override_value(operator)
+        
+      if((value.nil? || value.to_s.empty?) && default_value(operator))
         @current_value = default_value(operator)
       end
       
@@ -268,21 +282,23 @@ module DataShift
         @current_method_detail.assign(@load_object, @current_value)
       end
     end
+    
+    def failure
+      @failed_objects << @load_object unless( !load_object.new_record? || @failed_objects.include?(@load_object))
+    end
 
     def save
       #puts "DEBUG: SAVING #{load_object.class} : #{load_object.inspect}" #if(options[:verbose])
       begin
         result = @load_object.save
-        #puts "DEBUG: SAVED [#{result.inspect}]"
-        #puts "SAVED 2. #{load_object.errors.methods.inspect}"
-        #puts "SAVED 3. #{load_object.errors.full_messages.inspect}"
+        
         @loaded_objects << @load_object unless(@loaded_objects.include?(@load_object))
 
         return result
       rescue => e
-        @failed_objects << @load_object unless( !load_object.new_record? || @failed_objects.include?(@load_object))
+        failure
         puts "Error saving #{@load_object.class} : #{e.inspect}"
-        logger.debug e.backtrace
+        logger.error e.backtrace
         raise "Error in save whilst processing column #{@current_method_detail.name}" if(@options[:strict])
       end
     end
@@ -296,10 +312,19 @@ module DataShift
       @default_values[name] = value
     end
 
+    def set_override_value( operator, value )
+      @override_values[operator] = value
+    end
+    
     def default_value(name)
       @default_values[name]
     end
-
+    
+    def override_value( operator )
+      @current_value = @override_values[operator] if(@override_values[operator])
+    end
+    
+    
     def set_prefix( name, value )
       @prefixes[name] = value
     end

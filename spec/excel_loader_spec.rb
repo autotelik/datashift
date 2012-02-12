@@ -184,6 +184,18 @@ if(Guards::jruby?)
       
       p.value_as_string.should == "Default Project Value"    
     end
+
+
+   it "should provide facility to over ride values via YAML configuration", :excel => true do
+      loader = ExcelLoader.new(Project)
+      
+      loader.configure_from( File.join($DataShiftFixturePath, 'ProjectsDefaults.yml') )
+      
+      
+      loader.perform_load( File.join($DataShiftFixturePath, 'ProjectsSingleCategories.xls') )
+      
+      Project.all.each {|p| p.value_as_double.should == 99.23546 }
+    end
     
     
   end

@@ -25,9 +25,9 @@ namespace :datashift do
 
   namespace :import do
 
-    desc "Populate a model's table in db with data from .xls (Excel) file"
+    desc "Populate model's table with data from .xls (Excel) file"
   
-    task :excel, [:model, :loader, :input, :verbose] => [:environment] do |t, args|
+    task :excel, [:model, :loader, :input, :config, :verbose] => [:environment] do |t, args|
 
       # in familiar ruby style args seems to have been become empty using this new style for rake 0.9.2
       #  whatever format i try, on both Win and OSX .. so had to revert back to ENV
@@ -60,6 +60,11 @@ namespace :datashift do
         loader = DataShift::ExcelLoader.new(klass)
       end
 
+      puts "ARGS #{args.inspect} #{args[:verbose]} [#{args.verbose}]"
+      loader.logger.verbose if(ENV['verbose'])
+      
+      loader.configure_from( ENV['config'] ) if(ENV['config'])
+       
       loader.perform_load(input)
     end
 

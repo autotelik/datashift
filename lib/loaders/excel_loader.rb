@@ -65,6 +65,7 @@ module DataShift
         # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
         map_headers_to_operators( @headers, options[:strict] , @mandatory )
 
+        logger.info "Excel Loader prcoessing #{@excel.num_rows} rows"
         load_object_class.transaction do
           @loaded_objects =  []
 
@@ -93,8 +94,7 @@ module DataShift
               value = value_at(row, col)
 
               contains_data = true unless(value.nil? || value.to_s.empty?)
-
-              logger.debug "Excel process METHOD :#{method_detail.inspect} #{value.inspect}"
+              
               prepare_data(method_detail, value)
               
               process()
@@ -105,9 +105,14 @@ module DataShift
             # TODO - requirements to handle not valid ?
             # all or nothing or carry on and dump out the exception list at end
             #puts "DEBUG: FINAL SAVE #{load_object.inspect}"
-            save
-            #puts "DEBUG: SAVED #{load_object.inspect}"
-
+            unless(save)
+              failure
+              logger.error "Failed to save row [#{row}]"
+              logger.error load_object.errors.inspect
+            else
+              logger.info "Row #{row} succesfully SAVED : ID #{load_object.id}"
+            end
+            
             # don't forget to reset the object or we'll update rather than create
             new_load_object
 
