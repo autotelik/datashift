@@ -24,7 +24,7 @@ namespace :datashift do
 
   desc "Convert MS Word to HTML and seed_fu fixtures. help=true for detailed usage."
 
-  task :word2html, :help, :needs => [:environment] do |t, args|
+  task :word2html, [:help] => [:environment] do |t, args|
     x =<<-EOS
 
   USAGE::

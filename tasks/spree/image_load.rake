@@ -16,7 +16,7 @@ namespace :datashift do
 
     desc "Populate the DB with images.\nDefault location db/image_seeds, or specify :input=<path> or dir under db/image_seeds with :folder"
     # :dummy => dummy run without actual saving to DB
-    task :images, :input, :folder, :dummy, :sku, :skip_if_no_assoc, :skip_if_loaded, :model, :needs => :environment do |t, args|
+    task :images, [:input, :folder, :dummy, :sku, :skip_if_no_assoc, :skip_if_loaded, :model] => :environment do |t, args|
 
       require 'image_loader'
 
