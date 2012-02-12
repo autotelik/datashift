@@ -50,7 +50,7 @@ namespace :autotelik do
     end
  
     desc "Clear database and optional directories such as assets, then run db:seed"
-    task :seed_again, :assets, :needs => [:environment] do |t, args|
+    task :seed_again, [:assets] => [:environment] do |t, args|
 
       Rake::Task['autotelik:db:purge'].invoke( true )   # i.e ENV['exclude_system_tables'] = true
 
