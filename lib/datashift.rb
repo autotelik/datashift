@@ -121,7 +121,6 @@ module DataShift
       end
     
       def verbose
-        puts 'add a target to stdout'
         add(STDOUT)
       end
     

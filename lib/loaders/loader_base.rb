@@ -189,9 +189,12 @@ module DataShift
       puts data.inspect
       
       if(data[load_object_class.name])
-        @default_values.merge!( data[load_object_class.name]['datashift_defaults'] )
         
-        @override_values.merge!( data[load_object_class.name]['datashift_overrides'] )
+        deflts = data[load_object_class.name]['datashift_defaults']
+        @default_values.merge!(deflts) if deflts
+        
+        ovrides = data[load_object_class.name]['datashift_overrides']
+        @override_values.merge!(ovrides) if ovrides
       end
       
     end
