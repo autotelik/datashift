@@ -6,8 +6,9 @@
 # Details::   Specific over-rides/additions to support Spree Products
 #
 require 'loader_base'
-require 'excel_loader'
 require 'csv_loader'
+require 'excel_loader'
+require 'image_loader'
 
 module DataShift
 
@@ -17,6 +18,7 @@ module DataShift
 
       include DataShift::CsvLoading
       include DataShift::ExcelLoading
+      include DataShift::ImageLoading
 
       def initialize(product = nil)
         super( Product, product, :instance_methods => true  )
@@ -63,6 +65,10 @@ module DataShift
         elsif(@current_method_detail.operator?('product_properties') && current_value)
 
           add_properties
+
+        elsif(@current_method_detail.operator?('images') && current_value)
+
+          add_images
           
         elsif(@current_method_detail.operator?('count_on_hand') || @current_method_detail.operator?('on_hand') )
 
@@ -150,7 +156,27 @@ module DataShift
 
       end
 
+    
+      # Special case for Images
+      # A list of paths to Images with a optional 'alt' value - supplied in form :
+      #   path:alt|path2:alt2|path_3:alt3 etc
+      #
+      def add_images
+        # TODO smart column ordering to ensure always valid by time we get to associations
+        save_if_new
 
+        images = current_value.split(LoaderBase::multi_assoc_delim)
+
+        images.each do |image|
+          
+          img_path, alt_text = image.split(LoaderBase::name_value_delim)
+          
+          image = create_image(img_path, @load_object, :alt => alt_text)
+        end
+      
+      end
+
+      
       # Special case for ProductProperties since it can have additional value applied.
       # A list of Properties with a optional Value - supplied in form :
       #   property.name:value|property.name|property.name:value

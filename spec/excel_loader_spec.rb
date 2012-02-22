@@ -41,9 +41,9 @@ if(Guards::jruby?)
       end
 
 
-      MethodMapper.clear
-      MethodMapper.find_operators( @klazz )
-      MethodMapper.find_operators( @assoc_klazz )
+      MethodDictionary.clear
+      MethodDictionary.find_operators( @klazz )
+      MethodDictionary.find_operators( @assoc_klazz )
     end
   
     it "should be able to create a new excel loader and load object" do
@@ -106,6 +106,25 @@ if(Guards::jruby?)
   
     end
   
+    it "should process multiple associations with lookup specified in column from excel spreedsheet" do
+  
+      loader = ExcelLoader.new(Project)
+  
+      count = Project.count
+      loader.perform_load( $DataShiftFixturePath + '/ProjectsMultiCategoriesHeaderLookup.xls')
+  
+      loader.loaded_count.should == (Project.count - count)
+  
+      {'004' => 3, '005' => 1, '006' => 0, '007' => 1 }.each do|title, expected|
+        project = @klazz.find_by_title(title)
+  
+        project.should_not be_nil
+
+        project.should have(expected).categories
+      end
+  
+    end
+    
     it "should process excel spreedsheet with extra undefined columns" do
       loader = ExcelLoader.new(Project)
       lambda {loader.perform_load( ifixture_file('BadAssociationName.xls') ) }.should_not raise_error

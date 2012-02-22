@@ -39,7 +39,7 @@ describe 'SpreeLoader' do
 
   before(:each) do
     MethodMapper.clear
-    MethodMapper.find_operators( @klazz )
+    MethodDictionary.find_operators( @klazz )
   end
 
   
@@ -109,7 +109,7 @@ describe 'SpreeLoader' do
 
   it "should populate method details correctly for assignment operators (none columns on #{@klazz})" do
 
-    MethodMapper.find_operators( @klazz, :reload => true, :instance_methods => true )
+    MethodDictionary.find_operators( @klazz, :reload => true, :instance_methods => true )
 
     # Example of delegates i.e. cost_price column on Variant, delegated to Variant by Product
 
@@ -128,7 +128,7 @@ describe 'SpreeLoader' do
 
   it "should enable assignment via operators for none columns on #{@klazz}" do
 
-    MethodMapper.find_operators( @klazz, :reload => true, :instance_methods => true )
+    MethodDictionary.find_operators( @klazz, :reload => true, :instance_methods => true )
 
     klazz_object = @klazz.new
 
@@ -184,7 +184,7 @@ describe 'SpreeLoader' do
 
   it "should enable assignment to has_many association using existing objects" do
 
-    MethodMapper.find_operators( @klazz )
+    MethodDictionary.find_operators( @klazz )
 
     method_detail = MethodMapper.find_method_detail( @klazz, 'product_properties' )
 

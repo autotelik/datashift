@@ -18,7 +18,7 @@ group :development do
     gem 'activerecord-jdbcsqlite3-adapter'
   end
   
-  gem 'spree', '0.70.3'
+  gem 'spree', '1.0.0'
   gem "rspec", ">= 0"
   gem "shoulda", ">= 0"
   gem "rdoc", "~> 3.12"

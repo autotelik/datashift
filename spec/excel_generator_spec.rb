@@ -33,8 +33,8 @@ if(Guards::jruby?)
   
     before(:each) do
       MethodMapper.clear
-      MethodMapper.find_operators( @klazz )
-      MethodMapper.find_operators( @assoc_klazz )
+      MethodDictionary.find_operators( @klazz )
+      MethodDictionary.find_operators( @assoc_klazz )
     end
   
     it "should be able to create a new excel generator" do

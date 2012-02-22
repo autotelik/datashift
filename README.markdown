@@ -68,7 +68,7 @@ reflection information from ActiveRecord models (all different associations, inc
 
 A full picture of all possible operations on a class can be created very easily, for example ona  Blog model :
 
-    MethodMapper.find_operators( Blog )
+    MethodDictionary.find_operators( Blog )
 
 This then allows Import/Export to be achieved, by mapping the file's header and column data to MethodMapper's operators
 (i.e. the model's attributes and associations).
