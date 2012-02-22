@@ -81,18 +81,23 @@ module DataShift
       @multi_assoc_delim
     end
 
-    
+
     def self.set_multi_assoc_delim(x) @multi_assoc_delim = x; end
 
+    
     # Options
     #     :instance_methods => true
 
     def initialize(object_class, object = nil, options = {})
       @load_object_class = object_class
 
-      # Gather list of all possible 'setter' methods on AR class (instance variables and associations)
-      DataShift::MethodMapper.find_operators( @load_object_class, :reload => true, :instance_methods => options[:instance_methods] )
+      # Gather names of all possible 'setter' methods on AR class (instance variables and associations)
+      DataShift::MethodDictionary.find_operators( @load_object_class, :reload => true, :instance_methods => options[:instance_methods] )
 
+      # Create dictionary of data on all possible 'setter' methods which can be used to
+      # populate or integrate an object of type @load_object_class
+      DataShift::MethodDictionary.build_method_details(@load_object_class)
+      
       @method_mapper = DataShift::MethodMapper.new
       @options = options.clone
       @headers = []
@@ -123,7 +128,7 @@ module DataShift
     def map_headers_to_operators( headers, strict, mandatory = [])
       @headers = headers
       
-      @method_mapper.populate_methods( load_object_class, @headers )
+      @method_mapper.map_inbound_to_methods( load_object_class, @headers )
 
       unless(@method_mapper.missing_methods.empty?)
         puts "WARNING: Following column headings could not be mapped : #{@method_mapper.missing_methods.inspect}"
@@ -247,16 +252,16 @@ module DataShift
           # Size:large|Colour:red,green,blue   => generates find_by_size( 'large' ) and find_all_by_colour( ['red','green','blue'] )
 
           columns.each do |assoc|
-            operator, values = assoc.split(LoaderBase::name_value_delim)
+            find_operator, values = assoc.split(LoaderBase::name_value_delim)
 
             lookups = values.split(LoaderBase::multi_value_delim)
 
             if(lookups.size > 1)
 
-              @current_value = @current_method_detail.operator_class.send("find_all_by_#{operator}", lookups )
+              @current_value = @current_method_detail.operator_class.send("find_all_by_#{find_operator}", lookups )
 
               unless(lookups.size == @current_value.size)
-                found = @current_value.collect {|f| f.send(operator) }
+                found = @current_value.collect {|f| f.send(find_operator) }
                 @load_object.errors.add( method_detail.operator, "Association with key(s) #{(lookups - found).inspect} NOT found")
                 puts "WARNING: Association with key(s) #{(lookups - found).inspect} NOT found - Not added."
                 next if(@current_value.empty?)
@@ -264,7 +269,7 @@ module DataShift
 
             else
 
-              @current_value = @current_method_detail.operator_class.send("find_by_#{operator}", lookups )
+              @current_value = @current_method_detail.operator_class.send("find_by_#{find_operator}", lookups )
 
               unless(@current_value)
                 @load_object.errors.add( @current_method_detail.operator, "Association with key #{lookups} NOT found")

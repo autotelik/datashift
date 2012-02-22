@@ -8,39 +8,46 @@
 #             and a classes different types of assignment operators
 #
 require File.dirname(__FILE__) + '/spec_helper'
-
+    
 describe 'Method Mapping' do
 
   before(:all) do
     db_connect( 'test_file' )    # , test_memory, test_mysql
+    
+    # load our test model definitions - Project etc
+    require ifixture_file('test_model_defs')  
+
     migrate_up
-    @klazz = Project
-    @assoc_klazz = Milestone
   end
   
   before(:each) do
-    MethodMapper.clear
-    MethodMapper.find_operators( @klazz )
-    MethodMapper.find_operators( @assoc_klazz )
+    MethodDictionary.clear
+    MethodDictionary.find_operators( Project )
+    MethodDictionary.find_operators( Milestone )
+  end
+  
+  it "should store dictionary for multiple AR models" do
+    MethodDictionary.assignments.size.should == 2 
+    MethodDictionary.has_many.size.should == 2
   end
   
   it "should populate method map for a given AR model" do
 
-    MethodMapper.has_many.should_not be_empty
-    MethodMapper.has_many[Project].should include('milestones')
+    MethodDictionary.has_many.should_not be_empty
+    MethodDictionary.has_many[Project].should include('milestones')
 
-    MethodMapper.assignments.should_not be_empty
-    MethodMapper.assignments[Project].should include('id')
-    MethodMapper.assignments[Project].should include('value_as_string')
-    MethodMapper.assignments[Project].should include('value_as_text')
+    MethodDictionary.assignments.should_not be_empty
+    MethodDictionary.assignments[Project].should include('id')
+    MethodDictionary.assignments[Project].should include('value_as_string')
+    MethodDictionary.assignments[Project].should include('value_as_text')
 
-    MethodMapper.belongs_to.should_not be_empty
-    MethodMapper.belongs_to[Project].should be_empty
+    MethodDictionary.belongs_to.should_not be_empty
+    MethodDictionary.belongs_to[Project].should be_empty
 
 
-    MethodMapper.column_types.should be_is_a(Hash)
-    MethodMapper.column_types.should_not be_empty
-    MethodMapper.column_types[Project].size.should == Project.columns.size
+    MethodDictionary.column_types.should be_is_a(Hash)
+    MethodDictionary.column_types.should_not be_empty
+    MethodDictionary.column_types[Project].size.should == Project.columns.size
 
 
   end
@@ -50,16 +57,18 @@ describe 'Method Mapping' do
     # we should remove has-many & belongs_to from basic assignment set as they require a DB lookup
     # or a Model.create call, not a simple assignment
 
-    MethodMapper.assignments_for(@klazz).should_not include( MethodMapper.belongs_to_for(@klazz) )
-    MethodMapper.assignments_for(@klazz).should_not include( MethodMapper.has_many_for(@klazz) )
+    MethodDictionary.assignments_for(Project).should_not include( MethodDictionary.belongs_to_for(Project) )
+    MethodDictionary.assignments_for(Project).should_not include( MethodDictionary.has_many_for(Project) )
   end
 
 
   it "should populate assignment operators for method details for different forms of a column name" do
 
+    MethodDictionary.build_method_details( Project )
+    
     [:value_as_string, 'value_as_string', "VALUE as_STRING", "value as string"].each do |format|
 
-      method_details = MethodMapper.find_method_detail( @klazz, format )
+      method_details = MethodDictionary.find_method_detail( Project, format )
 
       method_details.class.should == MethodDetail
 
@@ -84,7 +93,7 @@ describe 'Method Mapping' do
 
     [:value_as_string, 'value_as_string', "VALUE as_STRING", "value as string"].each do |format|
 
-      method_details = MethodMapper.find_method_detail( @klazz, format )
+      method_details = MethodDictionary.find_method_detail( Project, format )
 
       method_details.class.should == MethodDetail
 
@@ -100,7 +109,7 @@ describe 'Method Mapping' do
 
     [:value_as_string, 'value_as_string', "VALUE as_STRING", "value as string"].each do |format|
 
-      method_details = MethodMapper.find_method_detail( Project, format )
+      method_details = MethodDictionary.find_method_detail( Project, format )
 
       method_details.operator_class_name.should == 'String'
       method_details.operator_class.should be_is_a(Class)
@@ -114,7 +123,7 @@ describe 'Method Mapping' do
     # milestone.project = project.id
     [:project, 'project', "PROJECT", "prOJECt"].each do |format|
 
-      method_details = MethodMapper.find_method_detail( Milestone, format )
+      method_details = MethodDictionary.find_method_detail( Milestone, format )
 
       method_details.should_not be_nil
 
@@ -129,13 +138,13 @@ describe 'Method Mapping' do
 
   it "should populate required Class for belongs_to operator method details" do
 
-    MethodMapper.find_operators( LoaderRelease )
-    MethodMapper.find_operators( LongAndComplexTableLinkedToVersion )
+    MethodDictionary.find_operators( LoaderRelease )
+    MethodDictionary.find_operators( LongAndComplexTableLinkedToVersion )
 
     # release.project = project.id
     [:project, 'project', "PROJECT", "prOJECt"].each do |format|
 
-      method_details = MethodMapper.find_method_detail( LoaderRelease, format )
+      method_details = MethodDictionary.find_method_detail( LoaderRelease, format )
 
       method_details.operator_class_name.should == 'Project'
       method_details.operator_class.should == Project
@@ -145,7 +154,7 @@ describe 'Method Mapping' do
     #LongAndComplexTableLinkedToVersion.version = version.id
 
     [:version, "Version", "verSION"].each do |format|
-      method_details = MethodMapper.find_method_detail( LongAndComplexTableLinkedToVersion, format )
+      method_details = MethodDictionary.find_method_detail( LongAndComplexTableLinkedToVersion, format )
 
       method_details.operator_type.should == :belongs_to
 
@@ -156,12 +165,12 @@ describe 'Method Mapping' do
 
    it "should populate required Class for has_one operator method details" do
 
-    MethodMapper.find_operators( Version )
+    MethodDictionary.find_operators( Version )
 
     # version.long_and_complex_table_linked_to_version = LongAndComplexTableLinkedToVersion.create()
 
     [:long_and_complex_table_linked_to_version, 'LongAndComplexTableLinkedToVersion', "Long And Complex_Table_Linked To  Version", "Long_And_Complex_Table_Linked_To_Version"].each do |format|
-      method_details = MethodMapper.find_method_detail( Version, format )
+      method_details = MethodDictionary.find_method_detail( Version, format )
 
       method_details.should_not be_nil
 
@@ -179,7 +188,7 @@ describe 'Method Mapping' do
 
     [:milestones, "Mile Stones", 'mileSTONES', 'MileStones'].each do |format|
 
-      method_details = MethodMapper.find_method_detail( Project, format )
+      method_details = MethodDictionary.find_method_detail( Project, format )
 
       method_details.class.should == MethodDetail
       
@@ -196,7 +205,7 @@ describe 'Method Mapping' do
  
   it "should return nil when non existent column name" do
     ["On sale", 'on_sale'].each do |format|
-      detail = MethodMapper.find_method_detail( @klazz, format )
+      detail = MethodDictionary.find_method_detail( Project, format )
 
       detail.should be_nil
     end
@@ -209,7 +218,7 @@ describe 'Method Mapping' do
 
     [:value_as_string, 'value_as_string', "VALUE as_STRING", "value as string"].each do |column_name_format|
 
-      method_details = MethodMapper.find_method_detail( @klazz, column_name_format )
+      method_details = MethodDictionary.find_method_detail( Project, column_name_format )
 
       method_details.class.should == MethodDetail
 
@@ -222,17 +231,17 @@ describe 'Method Mapping' do
   end
 
   it "should not by default map setter methods", :fail => true do
-    MethodMapper.assignments[Milestone].should_not include('title')
+    MethodDictionary.assignments[Milestone].should_not include('title')
   end
   
   it "should support reload and  inclusion of setter methods", :fail => true do
 
-    MethodMapper.assignments[Milestone].should_not include('title')
+    MethodDictionary.assignments[Milestone].should_not include('title')
         
-    MethodMapper.find_operators( Milestone, :reload => true, :instance_methods => true )
+    MethodDictionary.find_operators( Milestone, :reload => true, :instance_methods => true )
      
     # Milestone delegates :title to Project
-    MethodMapper.assignments[Milestone].should include('title')
+    MethodDictionary.assignments[Milestone].should include('title')
   end
 
 end

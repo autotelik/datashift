@@ -14,6 +14,35 @@ require 'to_b'
 
 module DataShift
 
+  class MethodDetailsManager
+
+    def initialize( klass )
+      @parent_class = klass
+      @method_details = {}
+    end
+    
+    def add(method_details)
+      @method_details[method_details.operator_type] ||= {}
+      @method_details[method_details.operator_type][method_details.name] = method_details
+    end
+
+    def <<(method_details)
+      add(method_details)      
+    end
+
+    def find(name, type)
+      method_details = get(type)
+     
+      method_details ?  method_details[name] : nil
+    end
+    
+    # type is expected to be one of MethodDetail::type_enum
+    def get( type )
+      @method_details[type]
+    end
+      
+  end
+  
   class MethodDetail
 
     def self.type_enum
@@ -30,14 +59,21 @@ module DataShift
 
     attr_reader :operator, :operator_type
 
-    # Store the raw (client supplied) name against the active record  klass(model), operator and types
+    # TODO make it a list/primary keys
+    attr_accessor :find_by_operator
+    
+    # Store the raw (client supplied) name against the active record  klass(model).
+    # Operator is the associated method call on klass,
+    # so client name maybe Price but true operator is price
+    # 
     # col_types can typically be derived from klass.columns - set of ActiveRecord::ConnectionAdapters::Column
 
-    def initialize(client_name, klass, operator, type, col_types = {} )
+    def initialize(client_name, klass, operator, type, col_types = {}, find_by_operator = nil )
       @klass, @name = klass, client_name
+      @find_by_operator = find_by_operator
 
       if( MethodDetail::type_enum.member?(type.to_sym) )
-        @operator_type = type
+        @operator_type = type.to_sym
       else
         raise "Bad operator Type #{type} passed to Method Detail"
       end
@@ -57,7 +93,7 @@ module DataShift
     # Return the actual operator's name for supplied method type
     # where type one of :assignment, :has_one, :belongs_to, :has_many etc
     def operator_for( type )
-      return operator if(@operator_type == type)
+      return operator if(@operator_type == type.to_sym)
       nil
     end
 
@@ -105,7 +141,7 @@ module DataShift
       
       @current_value = value
 
-     # logger.info("WARNING nil value supplied for Column [#{@name}]") if(@current_value.nil?)
+      # logger.info("WARNING nil value supplied for Column [#{@name}]") if(@current_value.nil?)
     
       if( operator_for(:belongs_to) )
       

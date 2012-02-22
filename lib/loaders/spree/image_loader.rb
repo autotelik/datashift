@@ -7,8 +7,48 @@ require 'loader_base'
 
 module DataShift
 
+   module ImageLoading
+
+     
+    # Note the Spree Image model sets default storage path to
+    # => :path => ":rails_root/public/assets/products/:id/:style/:basename.:extension"
+
+    def create(image_path, viewable_record = nil, options = {})
+
+      image = Image.new
+      
+      unless File.exists?(image_path)
+        puts "ERROR : Invalid Path"
+        return image
+      end
+
+      alt = if(options[:alt])
+        options[:alt]
+      else
+        (viewable_record and viewable_record.respond_to? :name) ? viewable_record.name : ""
+      end
+      
+      image.alt = alt
+
+      begin
+        image.attachment = File.new(image_path, "r")
+      rescue => e
+        puts e.inspect
+        puts "ERROR : Failed to read image #{image_path}"
+        return image
+      end
+
+      image.attachment.reprocess!
+      image.viewable =  viewable_record if viewable_record
+
+      puts image.save ? "Success: Crteated Image: #{image.inspect}" : "ERROR : Problem saving to DB Image: #{image.inspect}"
+    end
+  end
+  
   class ImageLoader < LoaderBase
 
+    include DataShift::ImageLoading
+        
     def initialize(image = nil)
       super( Image, image )
       raise "Failed to create Image for loading" unless @load_object
@@ -18,28 +58,7 @@ module DataShift
     # => :path => ":rails_root/public/assets/products/:id/:style/:basename.:extension"
 
     def process( image_path, record = nil)
-
-      unless File.exists?(image_path)
-        puts "ERROR : Invalid Path"
-        return
-      end
-
-      alt = (record and record.respond_to? :name) ? record.name : ""
-
-      @load_object.alt = alt
-
-      begin
-        @load_object.attachment = File.new(image_path, "r")
-      rescue => e
-        puts e.inspect
-        puts "ERROR : Failed to read image #{image_path}"
-        return
-      end
-
-      @load_object.attachment.reprocess!
-      @load_object.viewable = record if record
-
-      puts @load_object.save ? "Success: Uploaded Image: #{@load_object.inspect}" : "ERROR : Problem saving to DB Image: #{@load_object}"
+      @load_object = create_image(path, record)
     end
   end
 

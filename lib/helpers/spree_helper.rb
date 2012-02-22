@@ -5,6 +5,8 @@
 #
 # Details::   Spree Helper mixing in Support for testing or loading Rails Spree e-commerce.
 # 
+#             The Spree version you want to test should be picked up from the Gemfile
+# 
 #             Since datashift gem is not a Rails app or a Spree App, provides utilities to internally
 #             create a Spree Database, and to load Spree components, enabling standalone testing.
 #
@@ -41,20 +43,39 @@ module Spree
   end
     
   def self.boot
-    
+ 
     require 'spree'
     require 'spree_core'
 
-    $LOAD_PATH << root << lib_root << app_root << File.join(app_root, 'models')
+    #require 'rake'
+    #require 'rubygems/package_task'
+    #require 'thor/group'
+    require File.expand_path( lib_root + '/generators/spree/install/install_generator')
+    require 'spree/core/testing_support/common_rake'
 
-    require 'spree_core/preferences/model_hooks'
     
-    # Initialize preference system
-    ActiveRecord::Base.class_eval do
-      include Spree::Preferences
-      include Spree::Preferences::ModelHooks
-    end
+    Spree::SandboxGenerator.start ["--lib_name=spree", "--database=#{ENV['DB_NAME']}"]
+    Spree::InstallGenerator.start ["--auto-accept"]
 
+    cmd = "bundle exec rake assets:precompile:nondigest"; 
+    puts cmd; system cmd
+
+    
+    return
+    
+ 
+    # TODO how to check gem version actually loaded and do conditional
+    #
+    #if(PRE 1)
+      #require 'spree_core/preferences/model_hooks'
+    #
+    ## Initialize preference system
+    # ActiveRecord::Base.class_eval do
+    #   include Spree::Preferences
+    #   include Spree::Preferences::ModelHooks
+    # end
+    #end
+    
     gem 'paperclip'
     gem 'nested_set'
 
@@ -71,7 +92,8 @@ module Spree
 
     ActiveRecord::Base.send(:include, ActiveMerchant::Billing)
 
-    require 'scopes'
+     
+    #require 'scopes'
     
     # Not sure how Rails manages this seems lots of circular dependencies so
     # keep trying stuff till no more errors
@@ -106,14 +128,16 @@ module Spree
       end
     end
 
-    require 'product'
-    require 'lib/product_filters'
+    #if(PRE 1)require 'product'
+    #require 'lib/product_filters'
+    
+    
     load_models( true )
 
   end
 
   def self.load_models( report_errors = nil )
-    puts 'load from', root
+    puts 'Loading Spree models from', root
     Dir[root + '/app/models/**/*.rb'].each {|r|
       begin
         require r if File.file?(r)

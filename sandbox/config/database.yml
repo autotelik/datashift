@@ -1,0 +1,18 @@
+login: &login
+
+  adapter: sqlite3
+  pool: 5
+  timeout: 5000
+
+
+development:
+  <<: *login
+  database: db/dummy_dev
+
+test:
+  <<: *login
+  database: db/dummy_test
+
+production:
+  <<: *login
+  database: db/dummy_prod

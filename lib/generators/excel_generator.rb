@@ -26,7 +26,7 @@ module DataShift
       # Create an Excel file template (header row) representing supplied Model
     
       def generate(model, options = {})
-        MethodMapper.find_operators( model )
+        MethodDictionary.find_operators( model )
 
         @filename = options[:filename] if  options[:filename]
 
@@ -78,9 +78,9 @@ module DataShift
           excel.create_sheet( items.first.class.name )
         end
         
-        MethodMapper.find_operators( klass )
+        MethodDictionary.find_operators( klass )
          
-        MethodMapper.build_method_details( klass )
+        MethodDictionary.build_method_details( klass )
           
         work_list = (options[:with]) ? options[:with] : [:assignment, :belongs_to, :has_one, :has_many]
         

@@ -51,7 +51,7 @@ describe 'SpreeLoader' do
   before(:each) do
 
     MethodMapper.clear
-    MethodMapper.find_operators( @klazz )
+    MethodDictionary.find_operators( @klazz )
 
     # Reset main tables - TODO should really purge properly, or roll back a transaction
     [OptionType, OptionValue, Product, Property, Variant, Taxonomy, Taxon, Zone].each { |x| x.delete_all }
@@ -269,6 +269,15 @@ describe 'SpreeLoader' do
 
   end
 
+  it "should load Products with assoicated image", :img => true do
+    
+    @product_loader.perform_load( spree_fix('SpreeProductsWithImages.csv'), :mandatory => ['sku', 'name', 'price'] )
+     
+    p = Product.find_by_sku( "DEMO_001")
+    
+    p.images.should have_exactly(1).items
+  end
+  
   
   # REPEAT THE WHOLE TEST SUITE VIA CSV
 
@@ -282,6 +291,14 @@ describe 'SpreeLoader' do
   
   
   it "should load Products from multiple column csv as per .xls" do
+    test_variants_creation('SpreeProductsMultiColumn.csv')
+    
+    expected_multi_column_properties
+    
+    expected_multi_column_taxons
+  end
+
+  it "should load Products with assoicated image" do
     test_variants_creation('SpreeProductsMultiColumn.csv')
     
     expected_multi_column_properties
