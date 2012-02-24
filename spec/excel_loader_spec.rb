@@ -28,7 +28,7 @@ if(Guards::jruby?)
       db_clear()    # todo read up about proper transactional fixtures
 
 
-      @klazz = Project
+      Project = Project
       @assoc_klazz = Category
     end
   
@@ -36,49 +36,49 @@ if(Guards::jruby?)
 
       Project.delete_all
     
-      %w{category_001 category_002 category_003}.each do |cat|
+      %w{category_001 category_002 category_003 category_004 category_005}.each do |cat|
         @assoc_klazz.find_or_create_by_reference(cat)
       end
 
 
       MethodDictionary.clear
-      MethodDictionary.find_operators( @klazz )
+      MethodDictionary.find_operators( Project )
       MethodDictionary.find_operators( @assoc_klazz )
     end
   
     it "should be able to create a new excel loader and load object" do
-      loader = ExcelLoader.new( @klazz)
+      loader = ExcelLoader.new( Project)
     
       loader.load_object.should_not be_nil
-      loader.load_object.should be_is_a(@klazz)
+      loader.load_object.should be_is_a(Project)
       loader.load_object.new_record?.should be_true
     end
   
     it "should process a simple .xls spreedsheet" do
   
-      loader = ExcelLoader.new(@klazz)
+      loader = ExcelLoader.new(Project)
  
-      count = @klazz.count
+      count = Project.count
       loader.perform_load( $DataShiftFixturePath + '/SimpleProjects.xls')
   
-      loader.loaded_count.should == (@klazz.count - count)
+      loader.loaded_count.should == (Project.count - count)
   
     end
 
     it "should process multiple associationss from single column" do
 
-      @klazz.find_by_title('001').should be_nil
-      count = @klazz.count
+      Project.find_by_title('001').should be_nil
+      count = Project.count
 
-      loader = ExcelLoader.new(@klazz)
+      loader = ExcelLoader.new(Project)
     
       loader.perform_load( $DataShiftFixturePath + '/ProjectsSingleCategories.xls')
 
       loader.loaded_count.should be > 3
-      loader.loaded_count.should == (@klazz.count - count)
+      loader.loaded_count.should == (Project.count - count)
 
       {'001' => 2, '002' => 1, '003' => 3, '099' => 0 }.each do|title, expected|
-        project = @klazz.find_by_title(title)
+        project = Project.find_by_title(title)
 
         project.should_not be_nil
         puts "#{project.inspect} [#{project.categories.size}]"
@@ -97,7 +97,7 @@ if(Guards::jruby?)
       loader.loaded_count.should == (Project.count - count)
   
       {'004' => 3, '005' => 1, '006' => 0, '007' => 1 }.each do|title, expected|
-        project = @klazz.find_by_title(title)
+        project = Project.find_by_title(title)
   
         project.should_not be_nil
 
@@ -106,7 +106,7 @@ if(Guards::jruby?)
   
     end
   
-    it "should process multiple associations with lookup specified in column from excel spreedsheet" do
+    it "should process multiple associations with lookup specified in column from excel spreedsheet", :fail => true do
   
       loader = ExcelLoader.new(Project)
   
@@ -115,8 +115,8 @@ if(Guards::jruby?)
   
       loader.loaded_count.should == (Project.count - count)
   
-      {'004' => 3, '005' => 1, '006' => 0, '007' => 1 }.each do|title, expected|
-        project = @klazz.find_by_title(title)
+      {'004' => 4, '005' => 1, '006' => 0, '007' => 1 }.each do|title, expected|
+        project = Project.find_by_title(title)
   
         project.should_not be_nil
 

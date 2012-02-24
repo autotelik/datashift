@@ -247,33 +247,42 @@ module DataShift
           save_if_new
 
           # A single column can contain multiple associations delimited by special char
+          # Size:large|Colour:red,green,blue => ['Size:large', 'Colour:red,green,blue']
           columns = @current_value.to_s.split( LoaderBase::multi_assoc_delim)
 
           # Size:large|Colour:red,green,blue   => generates find_by_size( 'large' ) and find_all_by_colour( ['red','green','blue'] )
 
-          columns.each do |assoc|
-            find_operator, values = assoc.split(LoaderBase::name_value_delim)
+          columns.each do |col_str|
+            
+            find_operator, col_values = "",""
+           
+            if(@current_method_detail.find_by_operator)
+              find_operator, col_values = @current_method_detail.find_by_operator, col_str
+            else
+              find_operator, col_values = col_str.split(LoaderBase::name_value_delim)
+              raise "No key to find #{@current_method_detail.operator} in DB. Expected format key:value" unless(col_values)
+            end
+            
+            find_by_values = col_values.split(LoaderBase::multi_value_delim)
 
-            lookups = values.split(LoaderBase::multi_value_delim)
+            if(find_by_values.size > 1)
 
-            if(lookups.size > 1)
+              @current_value = @current_method_detail.operator_class.send("find_all_by_#{find_operator}", find_by_values )
 
-              @current_value = @current_method_detail.operator_class.send("find_all_by_#{find_operator}", lookups )
-
-              unless(lookups.size == @current_value.size)
+              unless(find_by_values.size == @current_value.size)
                 found = @current_value.collect {|f| f.send(find_operator) }
-                @load_object.errors.add( method_detail.operator, "Association with key(s) #{(lookups - found).inspect} NOT found")
+                @load_object.errors.add( @current_method_detail.operator, "Association with key(s) #{(find_by_values - found).inspect} NOT found")
                 puts "WARNING: Association with key(s) #{(lookups - found).inspect} NOT found - Not added."
                 next if(@current_value.empty?)
               end
 
             else
 
-              @current_value = @current_method_detail.operator_class.send("find_by_#{find_operator}", lookups )
+              @current_value = @current_method_detail.operator_class.send("find_by_#{find_operator}", find_by_values )
 
               unless(@current_value)
-                @load_object.errors.add( @current_method_detail.operator, "Association with key #{lookups} NOT found")
-                puts "WARNING: Association with key #{lookups} NOT found - Not added."
+                @load_object.errors.add( @current_method_detail.operator, "Association with key #{find_by_values} NOT found")
+                puts "WARNING: Association with key #{find_by_values} NOT found - Not added."
                 next
               end
 

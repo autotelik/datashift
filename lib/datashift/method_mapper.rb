@@ -55,10 +55,15 @@ module DataShift
       method_list.each do |name|
         x, lookup = name.split(MethodMapper::column_delim) 
         md = MethodDictionary::find_method_detail( klass, x )
-        md.find_
+        
+        # TODO be nice if we could cheeck that the assoc on klass responds to the specified
+        # lookup key now (nice n early)
+        # active_record_helper = "find_by_#{lookup}"
+        
+        md.find_by_operator = lookup if(lookup) # TODO and klass.x.respond_to?(active_record_helper))
         md ? @method_details << md : @missing_methods << x
       end
-      #@method_details.compact!  .. currently we may neeed to map via the index on @method_details so don't remove nils for now
+      #@method_details.compact!  .. currently we may need to map via the index on @method_details so don't remove nils for now
       @method_details
     end
 
