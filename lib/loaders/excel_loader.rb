@@ -51,7 +51,7 @@ module DataShift
         raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{header_row_index} contains headers" unless(@header_row)
 
         @headers = []
-        
+        category_003
         (0..JExcelFile::MAX_COLUMNS).each do |i|
           cell = @header_row.getCell(i)
           break unless cell
