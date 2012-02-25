@@ -40,7 +40,7 @@ module DataShift
         
         raise "Failed to create Excel WorkSheet for #{model.name}" unless excel.sheet
 
-        excel.set_headers(MethodMapper.assignments[model])
+        excel.set_headers(MethodDictionary.assignments[model])
 
         excel.save( @filename )
       end
@@ -82,16 +82,16 @@ module DataShift
          
         MethodDictionary.build_method_details( klass )
           
-        work_list = (options[:with]) ? options[:with] : [:assignment, :belongs_to, :has_one, :has_many]
+        work_list = (options[:with]) ? options[:with] : [:assignments, :belongs_to, :has_one, :has_many]
         
         headers = []
         
-        MethodMapper.method_details[klass].each do |method_detail|   
-          if(method_detail.operator_type == :assignment)
-            headers << "#{klass}:#{method_detail.operator}"
-          end
+        work_list.each do |mdtype|
+          method_details = MethodDictionary.send("#{mdtype}_for", klass)
+        
+          method_details.each {|md| headers << "#{md.operator}" }
         end
-      
+        
         excel.set_headers( headers )
                 
         data = []

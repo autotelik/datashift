@@ -32,7 +32,7 @@ if(Guards::jruby?)
     end
   
     before(:each) do
-      MethodMapper.clear
+      MethodDictionary.clear
       MethodDictionary.find_operators( @klazz )
       MethodDictionary.find_operators( @assoc_klazz )
     end

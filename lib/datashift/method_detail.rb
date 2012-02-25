@@ -14,8 +14,11 @@ require 'to_b'
 
 module DataShift
 
+  # Stores MethodDetails for a class mapped by type
   class MethodDetailsManager
 
+    attr_reader :method_details
+    
     def initialize( klass )
       @parent_class = klass
       @method_details = {}
