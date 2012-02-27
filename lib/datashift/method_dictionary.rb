@@ -146,6 +146,7 @@ module DataShift
       assignments.clear
       column_types.clear
       has_one.clear
+      method_details_mgrs.clear
     end
 
     def self.column_key(klass, column)

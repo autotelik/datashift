@@ -10,10 +10,11 @@
 #
 module DataShift
 
+  require 'generator_base'
+      
   if(Guards::jruby?)
 
     require 'jruby/jexcel_file'
-    require 'generator_base'
 
     class ExcelGenerator < GeneratorBase
 

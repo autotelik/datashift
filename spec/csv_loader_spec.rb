@@ -23,7 +23,7 @@ describe 'CSV Loader' do
   end
   
   before(:each) do
-    MethodMapper.clear
+    MethodDictionary.clear
     MethodDictionary.find_operators( @klazz )
     MethodDictionary.find_operators( @assoc_klazz )
   end
