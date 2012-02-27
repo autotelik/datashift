@@ -120,15 +120,18 @@ module DataShift
     end
 
     
-    # Core API - Given a list of free text column names from a file, map all headers to
-    # method mapper's operator list.
+    # Core API - Given a list of free text column names from a file, 
+    # map all headers to a method detail containing operator details.
+    # 
+    # This is then available through @method_mapper.method_details.each
+    # 
     # Options:
     #  strict : report any header values that can't be mapped as an error
     #
     def map_headers_to_operators( headers, strict, mandatory = [])
       @headers = headers
       
-      @method_mapper.map_inbound_to_methods( load_object_class, @headers )
+      method_details = @method_mapper.map_inbound_to_methods( load_object_class, @headers )
 
       unless(@method_mapper.missing_methods.empty?)
         puts "WARNING: Following column headings could not be mapped : #{@method_mapper.missing_methods.inspect}"
@@ -142,12 +145,12 @@ module DataShift
     end
 
 
-    # Core API - Given a free text column name from a file, search method mapper for
+    # Core API - Given a single free text column name from a file, search method mapper for
     # associated operator on base object class.
     # 
     # If suitable association found, process row data and then assign to current load_object
     def find_and_process(column_name, data)
-      method_detail = MethodMapper.find_method_detail( load_object_class, column_name )
+      method_detail = MethodDictionary.find_method_detail( load_object_class, column_name )
 
       if(method_detail)
         prepare_data(method_detail, data)

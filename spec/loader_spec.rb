@@ -14,12 +14,15 @@ describe 'Basic Loader' do
   before(:all) do
     db_connect( 'test_file' )    # , test_memory, test_mysql
     
+    # load our test model definitions - Project etc
+    require File.join($DataShiftFixturePath, 'test_model_defs') 
+      
     migrate_up
     @klazz = Project
   end
   
   before(:each) do
-    MethodMapper.clear
+    MethodDictionary.clear
     MethodDictionary.find_operators( @klazz )
   end
   
