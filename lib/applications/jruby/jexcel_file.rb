@@ -212,25 +212,37 @@ if(DataShift::Guards::jruby?)
     end
     
     # Save data from an AR record to the current row, based on the record's columns [c1,c2,c3]
-     
+    # Returns the number of the final column written to  
     def ar_to_xls_row(start_column, record)
       return unless( record.is_a?(ActiveRecord::Base))
         
+      column = start_column
       record.class.columns.each do |connection_column|    
-        ar_to_xls_cell(start_column, record, connection_column)
-        start_column += 1
+        ar_to_xls_cell(column, record, connection_column)
+        column += 1
       end
+      column
     end
     
     def ar_to_xls_cell(column, record, connection_column)  
-      datum = record.send(connection_column.name)
+      begin
+        datum = record.send(connection_column.name)
 
-      if(connection_column.sql_type =~ /date/) then 
-        @row.createCell(column - 1, HSSFCell::CELL_TYPE_STRING).setCellValue(datum.to_s)      
-      elsif connection_column.sql_type =~ /int/ then   
-        @row.createCell(column - 1, HSSFCell::CELL_TYPE_NUMERIC).setCellValue(datum.to_i)
-      else
-        @row.createCell(column - 1, HSSFCell::CELL_TYPE_STRING).setCellValue( datum.to_s ) 
+        if(connection_column.sql_type =~ /date/) 
+          @row.createCell(column - 1, HSSFCell::CELL_TYPE_STRING).setCellValue(datum.to_s) 
+          
+        elsif(connection_column.type == :boolean || connection_column.sql_type =~ /tinyint/) 
+          @row.createCell(column - 1, HSSFCell::CELL_TYPE_BOOLEAN).setCellValue(datum) 
+          
+        elsif(connection_column.sql_type =~ /int/) 
+          @row.createCell(column - 1, HSSFCell::CELL_TYPE_NUMERIC).setCellValue(datum.to_i)
+        else
+          @row.createCell(column - 1, HSSFCell::CELL_TYPE_STRING).setCellValue( datum.to_s ) 
+        end
+        
+      rescue => e
+        puts "Failed to export #{datum} from #{connection_column.inspect} to column #{column}"
+        puts e
       end
     end
       
