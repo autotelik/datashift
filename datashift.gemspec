@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "datashift"
-  s.version = "0.0.2"
+  s.version = "0.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thomas Statter"]
-  s.date = "2012-02-12"
+  s.date = "2012-02-27"
   s.description = "A suite of tools to move data between ActiveRecord models,databases,applications like Excel/Open Office, files and projects including Spree"
   s.email = "rubygems@autotelik.co.uk"
   s.extra_rdoc_files = [
@@ -19,13 +19,11 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     ".document",
-    "Gemfile",
     "LICENSE.txt",
     "README.markdown",
     "README.rdoc",
     "Rakefile",
     "VERSION",
-    "datashift-0.0.2.gem",
     "datashift.gemspec",
     "lib/applications/jruby/jexcel_file.rb",
     "lib/applications/jruby/word.rb",
@@ -34,6 +32,7 @@ Gem::Specification.new do |s|
     "lib/datashift/file_definitions.rb",
     "lib/datashift/mapping_file_definitions.rb",
     "lib/datashift/method_detail.rb",
+    "lib/datashift/method_dictionary.rb",
     "lib/datashift/method_mapper.rb",
     "lib/generators/csv_generator.rb",
     "lib/generators/excel_generator.rb",
@@ -64,17 +63,22 @@ Gem::Specification.new do |s|
     "spec/csv_loader_spec.rb",
     "spec/datashift_spec.rb",
     "spec/db/migrate/20110803201325_create_test_bed.rb",
+    "spec/excel_exporter_spec.rb",
     "spec/excel_generator_spec.rb",
     "spec/excel_loader_spec.rb",
     "spec/file_definitions.rb",
-    "spec/fixtures/.~lock.ProjectsSingleCategories.xls#",
     "spec/fixtures/BadAssociationName.xls",
     "spec/fixtures/DemoNegativeTesting.xls",
     "spec/fixtures/ProjectsDefaults.yml",
     "spec/fixtures/ProjectsMultiCategories.xls",
+    "spec/fixtures/ProjectsMultiCategoriesHeaderLookup.xls",
     "spec/fixtures/ProjectsSingleCategories.xls",
     "spec/fixtures/SimpleProjects.xls",
     "spec/fixtures/config/database.yml",
+    "spec/fixtures/images/DEMO_001_ror_bag.jpeg",
+    "spec/fixtures/images/DEMO_002_Powerstation.jpg",
+    "spec/fixtures/images/DEMO_003_ror_mug.jpeg",
+    "spec/fixtures/images/DEMO_004_ror_ringer.jpeg",
     "spec/fixtures/interact_models_db.sqlite",
     "spec/fixtures/interact_spree_db.sqlite",
     "spec/fixtures/negative/SpreeProdMiss1Mandatory.csv",
@@ -89,10 +93,12 @@ Gem::Specification.new do |s|
     "spec/fixtures/spree/SpreeProductsMultiColumn.xls",
     "spec/fixtures/spree/SpreeProductsSimple.csv",
     "spec/fixtures/spree/SpreeProductsSimple.xls",
+    "spec/fixtures/spree/SpreeProductsWithImages.xls",
     "spec/fixtures/spree/SpreeZoneExample.csv",
     "spec/fixtures/spree/SpreeZoneExample.xls",
     "spec/fixtures/test_model_defs.rb",
     "spec/loader_spec.rb",
+    "spec/method_dictionary_spec.rb",
     "spec/method_mapper_spec.rb",
     "spec/spec_helper.rb",
     "spec/spree_generator_spec.rb",
@@ -121,42 +127,9 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_development_dependency(%q<rails>, ["= 3.1.3"])
-      s.add_development_dependency(%q<activerecord>, ["= 3.1.3"])
-      s.add_development_dependency(%q<activesupport>, ["= 3.1.3"])
-      s.add_development_dependency(%q<jruby-openssl>, [">= 0"])
-      s.add_development_dependency(%q<activerecord-jdbcsqlite3-adapter>, [">= 0"])
-      s.add_development_dependency(%q<spree>, ["= 0.70.3"])
-      s.add_development_dependency(%q<rspec>, [">= 0"])
-      s.add_development_dependency(%q<shoulda>, [">= 0"])
-      s.add_development_dependency(%q<rdoc>, ["~> 3.12"])
-      s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
-      s.add_development_dependency(%q<jeweler>, ["~> 1.8.3"])
     else
-      s.add_dependency(%q<rails>, ["= 3.1.3"])
-      s.add_dependency(%q<activerecord>, ["= 3.1.3"])
-      s.add_dependency(%q<activesupport>, ["= 3.1.3"])
-      s.add_dependency(%q<jruby-openssl>, [">= 0"])
-      s.add_dependency(%q<activerecord-jdbcsqlite3-adapter>, [">= 0"])
-      s.add_dependency(%q<spree>, ["= 0.70.3"])
-      s.add_dependency(%q<rspec>, [">= 0"])
-      s.add_dependency(%q<shoulda>, [">= 0"])
-      s.add_dependency(%q<rdoc>, ["~> 3.12"])
-      s.add_dependency(%q<bundler>, ["~> 1.0.0"])
-      s.add_dependency(%q<jeweler>, ["~> 1.8.3"])
     end
   else
-    s.add_dependency(%q<rails>, ["= 3.1.3"])
-    s.add_dependency(%q<activerecord>, ["= 3.1.3"])
-    s.add_dependency(%q<activesupport>, ["= 3.1.3"])
-    s.add_dependency(%q<jruby-openssl>, [">= 0"])
-    s.add_dependency(%q<activerecord-jdbcsqlite3-adapter>, [">= 0"])
-    s.add_dependency(%q<spree>, ["= 0.70.3"])
-    s.add_dependency(%q<rspec>, [">= 0"])
-    s.add_dependency(%q<shoulda>, [">= 0"])
-    s.add_dependency(%q<rdoc>, ["~> 3.12"])
-    s.add_dependency(%q<bundler>, ["~> 1.0.0"])
-    s.add_dependency(%q<jeweler>, ["~> 1.8.3"])
   end
 end
 

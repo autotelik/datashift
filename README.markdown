@@ -54,7 +54,11 @@ Provides high level rake tasks for importing data via ActiveRecord models into a
  from various sources, currently csv or .xls files (Excel/Open Office)
 
 
-    bundle exec rake datashift:import:excel model=BlogPost input=BlogPostImport.xls verbose=true 
+    jruby -S rake datashift:import:excel model=BlogPost input=BlogPostImport.xls verbose=true 
+
+Provides high level rake tasks for exporting data to various sources, currently .xls files (Excel/Open Office)
+
+    jruby -S rake datashift:export:excel model=BlogPost result=BlogExport.xls 
 
 
 The library can be easily extended with Loaders to deal with non trivial cases required to exchange data between
@@ -63,19 +67,19 @@ The library can be easily extended with Loaders to deal with non trivial cases r
 Spree loaders are an example, these illustrate over riding processing for specific columns with
 complicated lookup requirements.
 
-A core feature of DataShift is the MethodMapper, which provides features for collecting
+A core feature of DataShift is the MethodDictionary and MethodMapper, which provides features for collecting
 reflection information from ActiveRecord models (all different associations, including join tables with many-to-many relationships).
 
 A full picture of all possible operations on a class can be created very easily, for example ona  Blog model :
 
     MethodDictionary.find_operators( Blog )
 
-This then allows Import/Export to be achieved, by mapping the file's header and column data to MethodMapper's operators
-(i.e. the model's attributes and associations).
+This then allows Import/Export to be achieved, by mapping the file's header and column data to the found operators
+i.e. the methods to set data on model's attributes and associations.
 
 Here we retrieve the method details for a column name from a file, "Blog Date"
 
-    MethodMapper.find_method_detail( Blog, "Blog Date" )
+    MethodDictionary.find_method_detail( Blog, "Blog Date" )
 
 Loaders can use this method lookup functionality, to find the correct association for a column heading,
 and populate AR object with row data.
@@ -88,7 +92,7 @@ and whenever possible, under the bonnet the data will be cast to correct DB type
 
 Here we show how a column name from a file, "Blog Date", can be mapped to Assign a stringified date, to the blog_date column, on a new Blog object :
 
-    MethodMapper.find_method_detail( Blog, "Blog Date" ).assign( Blog.new, "Sat Jul 23 2011" )
+    MethodDictionary.find_method_detail( Blog, "Blog Date" ).assign( Blog.new, "Sat Jul 23 2011" )
 
 Because it's based on reflection against the model, can build complex relationships between tables during import/export, 
 and extending data files with new columns need not require any additional Ruby coding.
@@ -173,13 +177,10 @@ This data can be exported directly to CSV or Excel/OpenOffice spreadsheets.
 
 - *Spree Rake Tasks*
 
-  Specific Rake tasks are also provided for Spree loading - currently supports Product with associations,
-  and Image loading.
+  Spree's product associations are non trivial so specific Rake tasks are also provided for loading Spree Producta
+  with all associations and Image loading.
 
     jruby -S rake datashift:spree:products input=C:\MyProducts.xls
-
-
-  **Product loading from Excel files specifically requires JRuby (But not Excel or OLE)**.
 
 
 - *Seamless Spree Image loading can be achieved by ensuring SKU or class Name features in Image filename.
