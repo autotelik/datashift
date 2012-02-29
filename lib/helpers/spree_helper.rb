@@ -10,7 +10,7 @@
 #             Since datashift gem is not a Rails app or a Spree App, provides utilities to internally
 #             create a Spree Database, and to load Spree components, enabling standalone testing.
 #
-# =>          Has been tested with 
+# =>          Has been tested with  0.7
 # 
 # # =>        TODO - Can we move to a Gemfile/bunlder
 #             require 'rubygems'
@@ -47,35 +47,35 @@ module Spree
     require 'spree'
     require 'spree_core'
 
-    #require 'rake'
-    #require 'rubygems/package_task'
-    #require 'thor/group'
-    require File.expand_path( lib_root + '/generators/spree/install/install_generator')
-    require 'spree/core/testing_support/common_rake'
+    if(Gem.loaded_specs['spree'].version.version.to_f < 1)
+      boot_pre_1
+    else
+      require File.expand_path( lib_root + '/generators/spree/install/install_generator')
+      require 'spree/core/testing_support/common_rake'
 
-    
-    Spree::SandboxGenerator.start ["--lib_name=spree", "--database=#{ENV['DB_NAME']}"]
-    Spree::InstallGenerator.start ["--auto-accept"]
 
-    cmd = "bundle exec rake assets:precompile:nondigest"; 
-    puts cmd; system cmd
+      Spree::SandboxGenerator.start ["--lib_name=spree", "--database=#{ENV['DB_NAME']}"]
+      Spree::InstallGenerator.start ["--auto-accept"]
 
-    
-    return
-    
+      cmd = "bundle exec rake assets:precompile:nondigest"; 
+      puts cmd; system cmd
+    end
+  end
+
+  def self.boot_pre_1
  
-    # TODO how to check gem version actually loaded and do conditional
+    require 'rake'
+    require 'rubygems/package_task'
+    require 'thor/group'
+
+    require 'spree_core/preferences/model_hooks'
     #
-    #if(PRE 1)
-      #require 'spree_core/preferences/model_hooks'
-    #
-    ## Initialize preference system
-    # ActiveRecord::Base.class_eval do
-    #   include Spree::Preferences
-    #   include Spree::Preferences::ModelHooks
-    # end
-    #end
-    
+    # Initialize preference system
+    ActiveRecord::Base.class_eval do
+      include Spree::Preferences
+      include Spree::Preferences::ModelHooks
+    end
+ 
     gem 'paperclip'
     gem 'nested_set'
 
@@ -91,9 +91,8 @@ module Spree
     require 'active_merchant/billing/gateway'
 
     ActiveRecord::Base.send(:include, ActiveMerchant::Billing)
-
-     
-    #require 'scopes'
+  
+    require 'scopes'
     
     # Not sure how Rails manages this seems lots of circular dependencies so
     # keep trying stuff till no more errors
@@ -128,14 +127,12 @@ module Spree
       end
     end
 
-    #if(PRE 1)require 'product'
-    #require 'lib/product_filters'
-    
-    
+  #  require 'lib/product_filters'
+     
     load_models( true )
 
   end
-
+  
   def self.load_models( report_errors = nil )
     puts 'Loading Spree models from', root
     Dir[root + '/app/models/**/*.rb'].each {|r|
@@ -149,6 +146,7 @@ module Spree
 
   def self.migrate_up
     load
+    boot
     ActiveRecord::Migrator.up( File.join(root, 'db/migrate') )
   end
 
