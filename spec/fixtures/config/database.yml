@@ -1,9 +1,12 @@
+# Used by spec helper to build test databases
+# These entires can be used in call to db_connect ( see spec_helper )
+
 <% adapter = 'sqlite3' %>
 <% adapter = 'jdbcsqlite3' if(Guards::jruby? ) %>
 
 test_mysql:
   adapter: jdbcmysql
-  database: interact_test_db
+  database: datashift_test_models_db
   username: test
   password: test
   host: localhost
@@ -14,12 +17,12 @@ test_memory:
 
 test_file:
   adapter: <%= adapter %>
-  database: <%= File.join($DataShiftFixturePath, 'interact_models_db.sqlite') %>
+  database: <%= File.join($DataShiftFixturePath, 'datashift_test_models_db.sqlite') %>
   encoding: utf8
   host: localhost
 
 test_spree_standalone:
   adapter: <%= adapter %>
-  database: <%= File.join($DataShiftFixturePath, 'interact_spree_db.sqlite') %>
+  database: <%= File.join($DataShiftFixturePath, 'datashift_Spree_db.sqlite') %>
   encoding: utf8
   host: localhost

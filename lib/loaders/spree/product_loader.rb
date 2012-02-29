@@ -25,7 +25,6 @@ module DataShift
         raise "Failed to create Product for loading" unless @load_object
       end
 
-
       # Based on filename call appropriate loading function
       # Currently supports :
       #   Excel/Open Office files saved as .xls
@@ -156,7 +155,6 @@ module DataShift
 
       end
 
-    
       # Special case for Images
       # A list of paths to Images with a optional 'alt' value - supplied in form :
       #   path:alt|path2:alt2|path_3:alt3 etc
