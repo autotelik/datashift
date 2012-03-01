@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "datashift"
-  s.version = "0.1.0"
+  s.version = "0.2.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thomas Statter"]
-  s.date = "2012-02-27"
+  s.date = "2012-02-29"
   s.description = "A suite of tools to move data between ActiveRecord models,databases,applications like Excel/Open Office, files and projects including Spree"
   s.email = "rubygems@autotelik.co.uk"
   s.extra_rdoc_files = [
@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "datashift-0.1.0.gem",
     "datashift.gemspec",
     "lib/applications/jruby/jexcel_file.rb",
     "lib/applications/jruby/word.rb",
@@ -60,6 +61,21 @@ Gem::Specification.new do |s|
     "lib/loaders/spreadsheet_loader.rb",
     "lib/loaders/spree/image_loader.rb",
     "lib/loaders/spree/product_loader.rb",
+    "public/spree/products/large/DEMO_001_ror_bag.jpeg",
+    "public/spree/products/large/DEMO_002_Powerstation.jpg",
+    "public/spree/products/large/DEMO_003_ror_mug.jpeg",
+    "public/spree/products/mini/DEMO_001_ror_bag.jpeg",
+    "public/spree/products/mini/DEMO_002_Powerstation.jpg",
+    "public/spree/products/mini/DEMO_003_ror_mug.jpeg",
+    "public/spree/products/original/DEMO_001_ror_bag.jpeg",
+    "public/spree/products/original/DEMO_002_Powerstation.jpg",
+    "public/spree/products/original/DEMO_003_ror_mug.jpeg",
+    "public/spree/products/product/DEMO_001_ror_bag.jpeg",
+    "public/spree/products/product/DEMO_002_Powerstation.jpg",
+    "public/spree/products/product/DEMO_003_ror_mug.jpeg",
+    "public/spree/products/small/DEMO_001_ror_bag.jpeg",
+    "public/spree/products/small/DEMO_002_Powerstation.jpg",
+    "public/spree/products/small/DEMO_003_ror_mug.jpeg",
     "spec/csv_loader_spec.rb",
     "spec/datashift_spec.rb",
     "spec/db/migrate/20110803201325_create_test_bed.rb",
@@ -75,12 +91,12 @@ Gem::Specification.new do |s|
     "spec/fixtures/ProjectsSingleCategories.xls",
     "spec/fixtures/SimpleProjects.xls",
     "spec/fixtures/config/database.yml",
+    "spec/fixtures/datashift_Spree_db.sqlite",
     "spec/fixtures/images/DEMO_001_ror_bag.jpeg",
     "spec/fixtures/images/DEMO_002_Powerstation.jpg",
     "spec/fixtures/images/DEMO_003_ror_mug.jpeg",
     "spec/fixtures/images/DEMO_004_ror_ringer.jpeg",
     "spec/fixtures/interact_models_db.sqlite",
-    "spec/fixtures/interact_spree_db.sqlite",
     "spec/fixtures/negative/SpreeProdMiss1Mandatory.csv",
     "spec/fixtures/negative/SpreeProdMiss1Mandatory.xls",
     "spec/fixtures/negative/SpreeProdMissManyMandatory.csv",
@@ -93,6 +109,7 @@ Gem::Specification.new do |s|
     "spec/fixtures/spree/SpreeProductsMultiColumn.xls",
     "spec/fixtures/spree/SpreeProductsSimple.csv",
     "spec/fixtures/spree/SpreeProductsSimple.xls",
+    "spec/fixtures/spree/SpreeProductsWithImages.csv",
     "spec/fixtures/spree/SpreeProductsWithImages.xls",
     "spec/fixtures/spree/SpreeZoneExample.csv",
     "spec/fixtures/spree/SpreeZoneExample.xls",
