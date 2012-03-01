@@ -31,10 +31,10 @@ describe 'SpreeLoader' do
 
     # we are not a Spree project, nor is it practical to externally generate
     # a complete Spree application for testing so we implement a mini migrate/boot of our own
-    Spree.load()          # require Spree gems
-    Spree.boot            # create a sort-of Spree app
+    SpreeHelper.load()          # require Spree gems
+    SpreeHelper.boot            # create a sort-of Spree app
     
-    Spree.migrate_up      # create an sqlite Spree database on the fly
+    SpreeHelper.migrate_up      # create an sqlite Spree database on the fly
 
     $SpreeFixturePath = File.join($DataShiftFixturePath, 'spree')
     
@@ -64,7 +64,7 @@ describe 'SpreeLoader' do
     Taxon.count.should == 2
     
         
-    @product_loader = DataShift::Spree::ProductLoader.new
+    @product_loader = DataShift::SpreeHelper::ProductLoader.new
   end
 
 

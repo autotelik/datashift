@@ -130,7 +130,7 @@ module DataShift
       
         # Try each association type, returning first that contains matching operator with name n
       
-        MethodDetail::type_enum.each do |t|
+        MethodDetail::supported_types_enum.each do |t|
           method_detail = md_mgr.find(n, t)
           return method_detail if(method_detail)
         end
@@ -158,7 +158,6 @@ module DataShift
       @method_details_mgrs
     end
 
-    # TODO - remove use of class variables - not good Ruby design
     def self.belongs_to
       @belongs_to ||={}
       @belongs_to

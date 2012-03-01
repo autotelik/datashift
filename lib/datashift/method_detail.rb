@@ -22,11 +22,16 @@ module DataShift
     def initialize( klass )
       @parent_class = klass
       @method_details = {}
+      @method_details_list = {}
     end
     
     def add(method_details)
       @method_details[method_details.operator_type] ||= {}
+      @method_details_list[method_details.operator_type] ||= []
+       
       @method_details[method_details.operator_type][method_details.name] = method_details
+      @method_details_list[method_details.operator_type] << method_details
+      @method_details_list[method_details.operator_type].uniq!
     end
 
     def <<(method_details)
@@ -39,16 +44,20 @@ module DataShift
       method_details ?  method_details[name] : nil
     end
     
-    # type is expected to be one of MethodDetail::type_enum
+    # type is expected to be one of MethodDetail::supportedtype_enum
     def get( type )
       @method_details[type]
     end
-      
+    
+    def get_list( type )
+      @method_details_list[type]
+    end
+    
   end
   
   class MethodDetail
 
-    def self.type_enum
+    def self.supported_types_enum
       @type_enum ||= Set[:assignment, :belongs_to, :has_one, :has_many]
       @type_enum
     end
@@ -75,7 +84,7 @@ module DataShift
       @klass, @name = klass, client_name
       @find_by_operator = find_by_operator
 
-      if( MethodDetail::type_enum.member?(type.to_sym) )
+      if( MethodDetail::supported_types_enum.member?(type.to_sym) )
         @operator_type = type.to_sym
       else
         raise "Bad operator Type #{type} passed to Method Detail"

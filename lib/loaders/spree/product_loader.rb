@@ -12,7 +12,7 @@ require 'image_loader'
 
 module DataShift
 
-  module Spree
+  module SpreeHelper
 
     class ProductLoader < LoaderBase
 
@@ -20,8 +20,11 @@ module DataShift
       include DataShift::ExcelLoading
       include DataShift::ImageLoading
 
+      # depending on version get_product_class should return us right class, namespaced or not
+
       def initialize(product = nil)
-        super( Product, product, :instance_methods => true  )
+        super( get_product_class(), product, :instance_methods => true  )
+     
         raise "Failed to create Product for loading" unless @load_object
       end
 
@@ -85,7 +88,7 @@ module DataShift
           if(@load_object.variants.size > 0 && current_value.include?(LoaderBase::multi_assoc_delim))
 
             #puts "DEBUG: COUNT_ON_HAND PER VARIANT",current_value.is_a?(String),
-              #&& current_value.is_a?(String) && current_value.include?(LoaderBase::multi_assoc_delim))
+            #&& current_value.is_a?(String) && current_value.include?(LoaderBase::multi_assoc_delim))
             # Check if we processed Option Types and assign count per option
             values = current_value.to_s.split(LoaderBase::multi_assoc_delim)
 
