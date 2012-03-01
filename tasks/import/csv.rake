@@ -34,7 +34,8 @@ namespace :datashift do
       require 'csv_loader'
       
       begin
-        klass = Kernel.const_get(model)
+        # support modules e.g "Spree::Property") 
+        klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
       rescue NameError
         raise "ERROR: No such AR Model found - check valid model supplied via model=<Class>"
       end
