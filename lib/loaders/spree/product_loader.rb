@@ -23,7 +23,7 @@ module DataShift
       # depending on version get_product_class should return us right class, namespaced or not
 
       def initialize(product = nil)
-        super( get_product_class(), product, :instance_methods => true  )
+        super( SpreeHelper::get_product_class(), product, :instance_methods => true  )
      
         raise "Failed to create Product for loading" unless @load_object
       end
