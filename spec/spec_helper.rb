@@ -45,14 +45,13 @@ module DataShift
     require 'logger'
     logdir = File.dirname(__FILE__) + '/logs'
     FileUtils.mkdir_p(logdir) unless File.exists?(logdir)
-    ActiveRecord::Base.logger = Logger.new(logdir + '/test.log')
+    ActiveRecord::Base.logger = Logger.new(logdir + '/datashift_spec.log')
 
     @ilog = ActiveRecord::Base.logger
 
     puts "Connecting to DB"
     ActiveRecord::Base.establish_connection( db )
 
-    
     # See errors  #<NameError: uninitialized constant RAILS_CACHE> when doing save (AR without Rails)
     # so copied this from ... Rails::Initializer.initialize_cache
     Object.const_set "RAILS_CACHE", ActiveSupport::Cache.lookup_store( :memory_store )
@@ -60,6 +59,7 @@ module DataShift
     @ilog.info "Connected to DB - #{ActiveRecord::Base.connection.inspect}"
   end
 
+  # These are our test models with associations
   def db_clear
     [Project, Milestone, Category, Version, LoaderRelease].each {|x| x.delete_all}
   end

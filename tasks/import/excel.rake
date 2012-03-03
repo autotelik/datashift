@@ -39,14 +39,17 @@ namespace :datashift do
       raise "ERROR: Could not find file #{args[:input]}" unless File.exists?(input)
 
       begin
-        klass = Kernel.const_get(model)
+        # support modules e.g "Spree::Property") 
+        klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
       rescue NameError
         raise "ERROR: No such AR Model found - check valid model supplied via model=<Class>"
       end
 
       if(ENV['loader'])
         begin
-          loader_klass = Kernel.const_get(ENV['loader'])
+          #loader_klass = Kernel.const_get(ENV['loader'])
+          # support modules e.g "Spree::Property") 
+          loader_klass = ModelMapper::class_from_string(ENV['loader'])  #Kernel.const_get(model)
 
           loader = loader_klass.new(klass)
 

@@ -22,14 +22,14 @@ describe 'SpreeLoader' do
 
     # we are not a Spree project, nor is it practical to externally generate
     # a complete Spree application for testing so we implement a mini migrate/boot of our own
-    Spree.load()            # require Spree gems
+    SpreeHelper.load()            # require Spree gems
 
     # key to YAML db e.g  test_memory, test_mysql
     db_connect( 'test_spree_standalone' )    
 
-    Spree.boot            # create a sort-of Spree app
+    SpreeHelper.boot            # create a sort-of Spree app
     
-    Spree.migrate_up      # create an sqlite Spree database on the fly
+    SpreeHelper.migrate_up      # create an sqlite Spree database on the fly
 
     @klazz = Product
 
@@ -38,44 +38,46 @@ describe 'SpreeLoader' do
   end
 
   before(:each) do
-    MethodMapper.clear
+    MethodDictionary.clear
     MethodDictionary.find_operators( @klazz )
   end
 
   
   it "should populate operators for a Spree Product" do
   
-    MethodMapper.has_many.should_not be_empty
-    MethodMapper.belongs_to.should_not be_empty
-    MethodMapper.assignments.should_not be_empty
+    MethodDictionary.has_many.should_not be_empty
+    MethodDictionary.belongs_to.should_not be_empty
+    MethodDictionary.assignments.should_not be_empty
 
-    assign = MethodMapper.assignments_for(@klazz)
+    assign = MethodDictionary.assignments_for(@klazz)
 
     assign.should include('available_on')   # Example of a simple column
 
-    MethodMapper.assignments[@klazz].should include('available_on')
+    MethodDictionary.assignments[@klazz].should include('available_on')
 
-    has_many_ops = MethodMapper.has_many_for(@klazz)
+    has_many_ops = MethodDictionary.has_many_for(@klazz)
 
     has_many_ops.should include('properties')   # Product can have many properties
 
-    MethodMapper.has_many[@klazz].should include('properties')
+    MethodDictionary.has_many[@klazz].should include('properties')
 
-    btf = MethodMapper.belongs_to_for(@klazz)
+    btf = MethodDictionary.belongs_to_for(@klazz)
 
     btf.should include('tax_category')    # Example of a belongs_to assignment
 
-    MethodMapper.belongs_to[@klazz].should include('tax_category')
+    MethodDictionary.belongs_to[@klazz].should include('tax_category')
 
-    MethodMapper.column_types[@klazz].size.should == @klazz.columns.size
+    MethodDictionary.column_types[@klazz].size.should == @klazz.columns.size
   end
 
 
   it "should find method details correctly for different forms of a column name" do
 
+    MethodDictionary.build_method_details( @klazz )
+        
     ["available On", 'available_on', "Available On", "AVAILABLE_ON"].each do |format|
 
-      method_details = MethodMapper.find_method_detail( @klazz, format )
+      method_details = MethodDictionary.find_method_detail( @klazz, format )
 
       method_details.operator.should == 'available_on'
       method_details.operator_for(:assignment).should == 'available_on'
@@ -93,10 +95,12 @@ describe 'SpreeLoader' do
 
   it "should populate method details correctly for has_many forms of association name" do
 
-    MethodMapper.has_many[@klazz].should include('product_option_types')
+    MethodDictionary.has_many[@klazz].should include('product_option_types')
 
+    MethodDictionary.build_method_details( @klazz )
+        
     ["product_option_types", "product option types", 'product Option_types', "ProductOptionTypes", "Product_Option_Types"].each do |format|
-      method_detail = MethodMapper.find_method_detail( @klazz, format )
+      method_detail = MethodDictionary.find_method_detail( @klazz, format )
 
       method_detail.should_not be_nil
 
@@ -111,17 +115,19 @@ describe 'SpreeLoader' do
 
     MethodDictionary.find_operators( @klazz, :reload => true, :instance_methods => true )
 
+    MethodDictionary.build_method_details( @klazz )
+        
     # Example of delegates i.e. cost_price column on Variant, delegated to Variant by Product
 
-    MethodMapper.assignments[@klazz].should include('cost_price')
-    MethodMapper.assignments[@klazz].should include('sku')
+    MethodDictionary.assignments[@klazz].should include('cost_price')
+    MethodDictionary.assignments[@klazz].should include('sku')
 
 
-    count_on_hand = MethodMapper.find_method_detail( @klazz, 'count on hand' )
+    count_on_hand = MethodDictionary.find_method_detail( @klazz, 'count on hand' )
     count_on_hand.should_not be_nil
     count_on_hand.operator.should == 'count_on_hand'
 
-    method = MethodMapper.find_method_detail( @klazz, 'sku' )
+    method = MethodDictionary.find_method_detail( @klazz, 'sku' )
     method.should_not be_nil
     method.operator.should == 'sku'
   end
@@ -130,13 +136,15 @@ describe 'SpreeLoader' do
 
     MethodDictionary.find_operators( @klazz, :reload => true, :instance_methods => true )
 
+    MethodDictionary.build_method_details( @klazz )
+        
     klazz_object = @klazz.new
 
     klazz_object.should be_new_record
 
     # we can use method details to populate a new AR object, essentailly same as
     # klazz_object.send( count_on_hand.operator, 2)
-    count_on_hand = MethodMapper.find_method_detail( @klazz, 'count on hand' )
+    count_on_hand = MethodDictionary.find_method_detail( @klazz, 'count on hand' )
 
     count_on_hand.assign( klazz_object, 2 )
     klazz_object.count_on_hand.should == 2
@@ -144,7 +152,7 @@ describe 'SpreeLoader' do
     count_on_hand.assign( klazz_object, 5 )
     klazz_object.count_on_hand.should == 5
 
-    method = MethodMapper.find_method_detail( @klazz, 'sku' )
+    method = MethodDictionary.find_method_detail( @klazz, 'sku' )
     method.should_not be_nil
 
     method.operator.should == 'sku'
@@ -156,7 +164,9 @@ describe 'SpreeLoader' do
 
   it "should enable assignment to has_many association on new object" do
  
-    method_detail = MethodMapper.find_method_detail( @klazz, 'taxons' )
+    MethodDictionary.build_method_details( @klazz )
+        
+    method_detail = MethodDictionary.find_method_detail( @klazz, 'taxons' )
 
     method_detail.operator.should == 'taxons'
 
@@ -186,7 +196,9 @@ describe 'SpreeLoader' do
 
     MethodDictionary.find_operators( @klazz )
 
-    method_detail = MethodMapper.find_method_detail( @klazz, 'product_properties' )
+    MethodDictionary.build_method_details( @klazz )
+        
+    method_detail = MethodDictionary.find_method_detail( @klazz, 'product_properties' )
 
     method_detail.operator.should == 'product_properties'
 

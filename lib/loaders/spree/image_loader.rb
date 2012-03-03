@@ -8,12 +8,11 @@ require 'loader_base'
 module DataShift
 
    module ImageLoading
-
-     
+ 
     # Note the Spree Image model sets default storage path to
     # => :path => ":rails_root/public/assets/products/:id/:style/:basename.:extension"
 
-    def create(image_path, viewable_record = nil, options = {})
+    def create_image(image_path, viewable_record = nil, options = {})
 
       image = Image.new
       
@@ -41,7 +40,7 @@ module DataShift
       image.attachment.reprocess!
       image.viewable =  viewable_record if viewable_record
 
-      puts image.save ? "Success: Crteated Image: #{image.inspect}" : "ERROR : Problem saving to DB Image: #{image.inspect}"
+      puts image.save ? "Success: Created Image: #{image.inspect}" : "ERROR : Problem saving to DB Image: #{image.inspect}"
     end
   end
   

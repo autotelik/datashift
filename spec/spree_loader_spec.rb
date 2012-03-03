@@ -31,17 +31,14 @@ describe 'SpreeLoader' do
 
     # we are not a Spree project, nor is it practical to externally generate
     # a complete Spree application for testing so we implement a mini migrate/boot of our own
-    Spree.load()          # require Spree gems
-    Spree.boot            # create a sort-of Spree app
+    SpreeHelper.load()          # require Spree gems
+    SpreeHelper.boot            # create a sort-of Spree app
     
-    Spree.migrate_up      # create an sqlite Spree database on the fly
-
-    @klazz = Product
+    SpreeHelper.migrate_up      # create an sqlite Spree database on the fly
 
     $SpreeFixturePath = File.join($DataShiftFixturePath, 'spree')
     
     $SpreeNegativeFixturePath = File.join($DataShiftFixturePath, 'negative')
-
   end
   
   def spree_fix( source)
@@ -50,8 +47,8 @@ describe 'SpreeLoader' do
 
   before(:each) do
 
-    MethodMapper.clear
-    MethodDictionary.find_operators( @klazz )
+    MethodDictionary.clear
+    MethodDictionary.find_operators( Product )
 
     # Reset main tables - TODO should really purge properly, or roll back a transaction
     [OptionType, OptionValue, Product, Property, Variant, Taxonomy, Taxon, Zone].each { |x| x.delete_all }
@@ -67,7 +64,7 @@ describe 'SpreeLoader' do
     Taxon.count.should == 2
     
         
-    @product_loader = DataShift::Spree::ProductLoader.new
+    @product_loader = DataShift::SpreeHelper::ProductLoader.new
   end
 
 
@@ -269,11 +266,11 @@ describe 'SpreeLoader' do
 
   end
 
-  it "should load Products with assoicated image", :img => true do
+  it "should load Products with associated image", :img => true do
     
     @product_loader.perform_load( spree_fix('SpreeProductsWithImages.csv'), :mandatory => ['sku', 'name', 'price'] )
      
-    p = Product.find_by_sku( "DEMO_001")
+    p = Product.find_by_name("Demo Product for AR Loader")
     
     p.images.should have_exactly(1).items
   end
