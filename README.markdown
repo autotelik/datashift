@@ -54,6 +54,8 @@ Provides high level rake tasks for importing data via ActiveRecord models into a
  from various sources, currently csv or .xls files (Excel/Open Office)
 
 
+    bundle exec rake datashift:import:csv model=BlogPost input=BlogPostImport.csv verbose=true 
+
     jruby -S rake datashift:import:excel model=BlogPost input=BlogPostImport.xls verbose=true 
 
 Provides high level rake tasks for exporting data to various sources, currently .xls files (Excel/Open Office)
