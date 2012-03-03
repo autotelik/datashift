@@ -35,7 +35,8 @@ namespace :datashift do
       raise "ERROR: Cannot process without AR Model - please supply model=<Class>" unless(model)
 
       begin
-        klass = Kernel.const_get(model)
+        # support modules e.g "Spree::Property") 
+        klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
       rescue NameError
         raise "ERROR: No such AR Model found - check valid model supplied via model=<Class>"
       end
@@ -64,7 +65,8 @@ namespace :datashift do
       raise "ERROR: Cannot process without AR Model - please supply model=<Class>" unless(model)
 
       begin
-        klass = Kernel.const_get(model)
+        # support modules e.g "Spree::Property") 
+        klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
       rescue NameError
         raise "ERROR: No such AR Model found - check valid model supplied via model=<Class>"
       end

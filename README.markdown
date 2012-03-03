@@ -11,16 +11,18 @@ all associations and with configurable defaults.
 
 Create, parse and use Excel/OpenOffice (.xls) documents dynamically from Ruby.
 
-High level rake tasks provided for key features.
-
 Easily extendable Loader functionality to deal with non trivial import cases, such
 as complex association lookups.
+
+High level rake tasks for import/export provided.
+
+Specific loaders and rake tasks for Spree E-Commerce, enabling import/export of all data including Products with
+complex associations such as Properties/Taxons/Options/Variants and Images.
 
 Specific loaders and rake tasks provided out the box for Spree E-Commerce,  
 enabling import/export of all data including Products with complex associations such as Options/Variants and Images.
 
-Many example Spreadsheets provided, fully documented with comments for each column.
-
+Many example Spreadsheets in spec/fixtures, fully documented with comments for each column.
 
 ## Installation
 
@@ -63,8 +65,8 @@ Provides high level rake tasks for exporting data to various sources, currently 
     jruby -S rake datashift:export:excel model=BlogPost result=BlogExport.xls 
 
 
-The library can be easily extended with Loaders to deal with non trivial cases required to exchange data between
- such files and any active record supported database.
+The library can be easily extended with Loaders to deal with non trivial cases,
+ for example when multiple lookups required to find right association.
 
 Spree loaders are an example, these illustrate over riding processing for specific columns with
 complicated lookup requirements.

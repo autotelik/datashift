@@ -1,0 +1,4 @@
+SKU,Name,Description,Available On,     Price,CostPrice,product_properties,Taxons,Variants,count_on_hand,Images
+DEMO_001,Demo Product for AR Loader,blah blah,14/02/2011,399.99,320,test_pp_001,Paintings|WaterColour,"mime_type:jpeg,PDF,PNG",12|6|7,spec/fixtures/images/DEMO_001_ror_bag.jpeg
+DEMO_002,Demo Excel Load via Jruby,less blah,14/05/2011,100,30,test_pp_003,Paintings|Landscape|Oils,"mime_type:jpeg, PDF,PNG",5|4|2,spec/fixtures/images/DEMO_002_Powerstation.jpg
+DEMO_003,Demo third row in future,more blah blah,01/07/2012,50.34,23.34,test_pp_002|test_pp_003:Example free value|yet_another_property,Drawings,"mime_type:jpeg,PDF,PNG|print_type:black_white,colour",12|4|7|12|18,spec/fixtures/images/DEMO_003_ror_mug.jpeg
