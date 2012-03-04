@@ -127,8 +127,10 @@ module DataShift
 
   else
     class  ExcelGenerator < GeneratorBase
-      def initialize
-        raise DataShift::BadRuby, "Please install and use JRuby for working with .xls files"
+      
+      def initialize(filename)
+        @filename = filename
+        raise DataShift::BadRuby, "Apologies but Datashift Excel facilities currently need JRuby. Please switch to, or install JRuby"
       end
     end
   end # jruby

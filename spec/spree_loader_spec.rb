@@ -20,19 +20,12 @@ describe 'SpreeLoader' do
 
   before(:all) do
 
-    # key to YAML db e.g  test_memory, test_mysql
-    db_connect( 'test_spree_standalone' )    
+    puts "Loading Spre....."
     
-    # See errors  #<NameError: uninitialized constant RAILS_CACHE> when doing save (AR without Rails)
-    # so copied this from ... Rails::Initializer.initialize_cache
-    Object.const_set "RAILS_CACHE", ActiveSupport::Cache.lookup_store( :memory_store )
-
-    RAILS_CACHE = ActiveSupport::Cache.lookup_store( :memory_store )
-
     # we are not a Spree project, nor is it practical to externally generate
     # a complete Spree application for testing so we implement a mini migrate/boot of our own
     SpreeHelper.load()          # require Spree gems
-    SpreeHelper.boot            # create a sort-of Spree app
+    SpreeHelper.boot( 'test_spree_standalone' )             # key to YAML db e.g  test_memory, test_mysql
     
     SpreeHelper.migrate_up      # create an sqlite Spree database on the fly
 
@@ -68,7 +61,7 @@ describe 'SpreeLoader' do
   end
 
 
-  it "should process a simple .xls spreadsheet" do
+  it "should process a simple .xls spreadsheet", :fail => true do
 
     Zone.delete_all
 
