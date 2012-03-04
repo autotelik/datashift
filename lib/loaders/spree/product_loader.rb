@@ -207,36 +207,69 @@ module DataShift
       end
 
       
+      
+      
+      
+      # Nested tree structure support ..
+      # 
+      # ... inside of main loop
+      # the_taxons = []
+      # taxon_col.split(/[\r\n]+/).each do |chain|
+      #  taxon = nil
+      #   names = chain.split(/\s*>\s*/)
+      #  names.each do |name|
+      #    taxon = Taxon.find_or_create_by_name_and_parent_id_and_taxonomy_id(name, taxon && taxon.id, main_taxonomy.id)
+      #  end
+      #  the_taxons << taxon
+      # end
+      # p.taxons = the_taxons
+ 
+      
+      # TAXON FORMAT 
+      # name|name>child>child|name
+       
       def add_taxons
         # TODO smart column ordering to ensure always valid by time we get to associations
         save_if_new
 
-        name_list = current_value.split(LoaderBase::multi_assoc_delim)
+        chain_list = current_value().split(LoaderBase::multi_assoc_delim)
 
-        taxons = name_list.collect do |t|
+        taxons = chain_list.collect do |chain|
+          name_list = chain.split(/\s*>\s*/)
 
-          taxon = Taxon.find_by_name(t)
+          taxon = nil
+          
+          begin
+            main_taxonomy ||= Taxonomy.find_by_name(t)
+         
+            name_list.collect do |name|
 
-          unless taxon
-            parent = Taxonomy.find_by_name(t)
+              main_taxonomy ||= Taxonomy.find__or_create_by_name(name)
+          
+            
+              taxon = Taxon.find_or_create_by_name_and_parent_id_and_taxonomy_id(name, taxon && taxon.id, main_taxonomy.id)
+          
+              #taxon = Taxon.find_by_name(t)
 
-            begin
-              if(parent)
-                # not sure this can happen but just incase we get a weird situation where we have
-                # a taxonomy without a root named the same - create the child taxon we require
-                taxon = Taxon.create(:name => t, :taxonomy_id => parent.id)
-              else
-                parent = Taxonomy.create!( :name => t )
+              #unless taxon
+              #parent = Taxonomy.find_by_name(t)
 
-                taxon = parent.root
-              end
 
-            rescue => e
-              e.backtrace
-              e.inspect
-              puts "ERROR : Cannot assign Taxon ['#{t}'] to Product ['#{load_object.name}']"
-              next
+              # if(parent)
+              # not sure this can happen but just incase we get a weird situation where we have
+              # a taxonomy without a root named the same - create the child taxon we require
+              #  taxon = Taxon.create(:name => t, :taxonomy_id => parent.id)
+              #else
+              # parent = Taxonomy.create!( :name => t )
+
+              # taxon = parent.root
+              #end
             end
+          rescue => e
+            e.backtrace
+            e.inspect
+            puts "ERROR : Cannot assign Taxon ['#{t}'] to Product ['#{load_object.name}']"
+            next
           end
           taxon
         end

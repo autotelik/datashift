@@ -14,7 +14,7 @@ Create, parse and use Excel/OpenOffice (.xls) documents dynamically from Ruby.
 Easily extendable Loader functionality to deal with non trivial import cases, such
 as complex association lookups.
 
-High level rake tasks for import/export provided.
+High level rake/thor command line tasks for import/export provided.
 
 Specific loaders and rake tasks for Spree E-Commerce, enabling import/export of all data including Products with
 complex associations such as Properties/Taxons/Options/Variants and Images.
@@ -38,6 +38,25 @@ To use :
 To pull the tasks in, add this call to your Rakefile :
 
      DataShift::load_tasks
+
+To use the Thor command line applications :
+
+    Create a high level .thor file - e.g mysite.thor - in your applications root directory 
+
+Pull in the thor commands :
+
+    require 'thor'
+    require 'datashift'
+
+    DataShift::load_commands
+
+To check the available tasks run
+
+    bundle exec rake -T datashift
+
+and/or
+
+    bundle exc thor list datashift
 
 N.B - To use the Excel loader, OLE and Excel are NOT required, however
 JRuby is required, since it uses Java's Apache POI under the hood to process .xls files.

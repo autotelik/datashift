@@ -39,6 +39,8 @@ module DataShift
 
     puts "Setting DB Config - #{db.inspect}"
     ActiveRecord::Base.configurations = db
+    
+    #dbtype = Rails.configuration.database_configuration[Rails.env]['adapter'].to_sym
 
     #ActiveRecord::Base.logger = Logger.new(STDOUT)
 

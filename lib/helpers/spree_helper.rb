@@ -25,9 +25,13 @@
 #             as the database is auto generated
 # =>          
 
-module DataShift
-  module SpreeHelper
 
+  
+module DataShift
+    
+  module SpreeHelper
+        
+        
     def self.root
       Gem.loaded_specs['spree_core'] ? Gem.loaded_specs['spree_core'].full_gem_path  : ""
     end
@@ -53,26 +57,82 @@ module DataShift
     end
 
     def self.load()
-      gem 'spree'
-    end
-    
-    def self.boot
- 
       require 'spree'
       require 'spree_core'
-
-      if(Gem.loaded_specs['spree'].version.version.to_f < 1)
-        boot_pre_1
+    end
+    
+    
+    # Datahift isi usually included and tasks pulled in by a parent/host application.
+    # So here we are hacking our way around the fact that datashift is not a Rails/Spree app/engine
+    # so that we can ** run our specs ** directly in datashift library
+    # i.e without ever having to install datashift in a host application
+    def self.boot( database_env )
+     
+      if( ! is_namespace_version )
+       db_connect( database_env )   
+       boot_pre_1
       else
-        require File.expand_path( lib_root + '/generators/spree/install/install_generator')
-        require 'spree/core/testing_support/common_rake'
+        
+        gem('rails', '3.1.3')
+        
+        db_connect( database_env, '3.1.3' )  
+        puts "New Spree 1.0.0 Spec Boot"
+        
+        require 'rails/all'
+
+        Dir.chdir( File.expand_path('../../../sandbox', __FILE__) )
+        
+        puts "New Spree 1.0.0 Spec Boot"
+       
+        require 'rails/all'
+
+        require 'config/environment'
+        
+        # == Booting process
+        #
+        # The application is also responsible for setting up and executing the booting
+        # process. From the moment you require "config/application.rb" in your app,
+        # the booting process goes like this:
+        #
+        #   1)  require "config/boot.rb" to setup load paths
+        #   2)  require railties and engines
+        #   3)  Define Rails.application as "class MyApp::Application < Rails::Application"
+        #   4)  Run config.before_configuration callbacks
+        #   5)  Load config/environments/ENV.rb
+        #   6)  Run config.before_initialize callbacks
+        #   7)  Run Railtie#initializer defined by railties, engines and application.
+        #       One by one, each engine sets up its load paths, routes and runs its config/initializers/* files.
+        #   9)  Custom Railtie#initializers added by railties, engines and applications are executed
+        #   10) Build the middleware stack and run to_prepare callbacks
+        #   11) Run config.before_eager_load and eager_load if cache classes is true
+        #   12) Run config.after_initialize callbacks
+                
+        puts Rails.methods.sort.inspect
+        
+        puts ActiveRecord::Base.configurations.inspect
+        puts ActiveRecord::Base.configurations.class.inspect
+        
+            
+        puts Rails.configuration.class.inspect
+        
+        puts Rails.configuration.inspect
+        
+        Rails.configuration.database_configuration[Rails.env]
+        
+        puts "1",Rails.configuration.database_configuration[Rails.env]
+        
+        puts "2",Rails.configuration.database_configuration[Rails.env]['adapter'].to_sym
+        
+        puts "Spree booted"
+        #require File.expand_path( SpreeHelper::lib_root + '/generators/spree/install/install_generator')
+        #require 'spree/core/testing_support/common_rake'
 
 
-        Spree::SandboxGenerator.start ["--lib_name=spree", "--database=#{ENV['DB_NAME']}"]
-        Spree::InstallGenerator.start ["--auto-accept"]
+        #Spree::SandboxGenerator.start ["--lib_name=spree", "--database=#{ENV['DB_NAME']}"]
+        #Spree::InstallGenerator.start ["--auto-accept"]
 
-        cmd = "bundle exec rake assets:precompile:nondigest"; 
-        puts cmd; system cmd
+        #cmd = "bundle exec rake assets:precompile:nondigest"; 
+        #puts cmd; system cmd
       end
     end
 
@@ -159,8 +219,6 @@ module DataShift
     end
 
     def self.migrate_up
-      load
-      boot
       ActiveRecord::Migrator.up( File.join(root, 'db/migrate') )
     end
 

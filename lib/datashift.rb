@@ -4,6 +4,12 @@
 # License::   TBD. Free, Open Source. MIT ?
 #
 # Details::   Active Record Loader
+# 
+# #  To pull Datashift commands into your main application :
+#
+#     require 'datashift'
+#
+#     DataShift::load_commands
 #
 require 'rbconfig'
   
@@ -94,6 +100,7 @@ module DataShift
 
   end
 
+  # Load all the datashift rake tasks and make them available throughout app
   def self.load_tasks
     # Long parameter lists so ensure rake -T produces nice wide output
     ENV['RAKE_COLUMNS'] = '180'
@@ -102,6 +109,30 @@ module DataShift
   end
 
   
+  # Load all the datashift Thor commands and make them available throughout app
+
+  def self.load_commands()
+    
+    base = File.join(library_path, 'thor', '**')
+    
+    Dir["#{base}/*.thor"].each do |f|
+    
+      next unless File.file?(f)
+      Thor::Util.load_thorfile(f)
+    end
+  end
+
+
+  def self.load_thorfiles(dir)
+    Dir.chdir(dir) do
+      thor_files = Dir.glob('**/*.thor').delete_if { |x| not File.file?(x) }
+      thor_files.each do |f|
+        Thor::Util.load_thorfile(f)
+      end
+    end
+  end
+
+
   module Logging
     
     class MultiIO
