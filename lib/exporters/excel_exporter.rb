@@ -10,13 +10,13 @@
 #
 module DataShift
 
-  require 'generator_base'
+  require 'exporter_base'
       
   if(Guards::jruby?)
 
     require 'jruby/jexcel_file'
 
-    class ExcelGenerator < GeneratorBase
+    class ExcelExporter < ExporterBase
 
       attr_accessor :filename
   
@@ -24,41 +24,37 @@ module DataShift
         @filename = filename
       end
 
-      # Create an Excel file template (header row) representing supplied Model
-    
-      def generate(klass, options = {})
-        MethodDictionary.find_operators( klass )
-
-        @filename = options[:filename] if  options[:filename]
+  
+      # Create an Excel file from list of ActiveRecord objects
+      def export(records, options = {})
 
         excel = JExcelFile.new()
 
         if(options[:sheet_name] )
           excel.create_sheet( options[:sheet_name] ) 
         else
-          excel.create_sheet( klass.name )
+          excel.create_sheet( records.first.class.name )
         end
+      
+        excel.ar_to_headers(records)
         
-        raise "Failed to create Excel WorkSheet for #{klass.name}" unless excel.sheet
+        excel.ar_to_xls(records)
 
-        excel.set_headers(MethodDictionary.assignments[klass])
-
-        excel.save( @filename )
+        excel.save( filename() )
       end
-
       
       # Create an Excel file from list of ActiveRecord objects
       # Specify which associations to export via :with or :exclude
       # Possible values are : [:assignment, :belongs_to, :has_one, :has_many]
       #
-      def generate_with_associations(klass, options = {})
+      def export_with_associations(klass, items, options = {})
 
         excel = JExcelFile.new()
 
         if(options[:sheet_name] )
           excel.create_sheet( options[:sheet_name] ) 
         else
-          excel.create_sheet( klass.name )
+          excel.create_sheet( items.first.class.name )
         end
         
         MethodDictionary.find_operators( klass )
@@ -90,12 +86,25 @@ module DataShift
         
         excel.set_headers( headers )
                 
+        data = []
+        
+        items.each do |record|
+          
+          MethodMapper.method_details[klass].each do |method_detail|   
+            if(method_detail.operator_type == :assignment)
+              data << record.send( method_detail.operator )
+            end
+          end
+        end
+        
+        excel.set_row(2,1,items)
+
         excel.save( filename() )
       end
     end # ExcelGenerator
 
   else
-    class  ExcelGenerator < GeneratorBase
+    class  ExcelExporter < ExcelBase
       
       def initialize(filename)
         @filename = filename
