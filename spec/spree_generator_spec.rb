@@ -48,15 +48,26 @@ describe 'SpreeLoader' do
     File.exists?(expect).should be_true
     
     puts "You can check results manually in file #{expect}"
+    
+    expect = result_file('taxon_export_spec.xls')
+
+    excel.filename = expect
+
+    excel.generate(@Taxon_klass)
+
+    File.exists?(expect).should be_true
+    
+    puts "You can check results manually in file #{expect}"
+    
   end
 
-  it "should export a Spree model and associations to .xls spreedsheet" do
+  it "should export Spree Product and all associations to .xls spreedsheet" do
 
-    expect = result_file('taxonomy_and_assoc_export_spec.xls')
+    expect = result_file('product_and_assoc_export_spec.xls')
 
     excel = ExcelGenerator.new(expect)
       
-    excel.generate_with_associations(@Taxonomy_klass)
+    excel.generate_with_associations(@klass)
 
     File.exists?(expect).should be_true
 
