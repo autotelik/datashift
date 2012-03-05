@@ -119,6 +119,7 @@ module SpecHelper
   def before_each_spree
       
     @klass = SpreeHelper::get_product_class
+    @Product_klass = @klass
     @Taxon_klass  = SpreeHelper::get_spree_class('Taxon')   
     @zone_klass   = SpreeHelper::get_spree_class('Zone')
         
@@ -127,7 +128,7 @@ module SpecHelper
     @Taxon_klass.delete_all
     @zone_klass.delete_all
     
-    %w{OptionType OptionValue Property Variant Taxonomy}.each do |k|
+    %w{OptionType OptionValue Property ProductProperty Variant Taxonomy}.each do |k|
       instance_variable_set("@#{k}_klass", SpreeHelper::get_spree_class(k)) 
       instance_variable_get("@#{k}_klass").delete_all
     end

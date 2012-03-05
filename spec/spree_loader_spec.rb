@@ -303,11 +303,10 @@ describe 'SpreeLoader' do
     ts.children.should have_exactly(0).items
 
  
-
   end
 
   it "should load Products with associated image", :img => true do
-    
+    pending("embedded images")
     @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsWithImages.csv'), :mandatory => ['sku', 'name', 'price'] )
      
     p = @klass.find_by_name("Demo Product for AR Loader")

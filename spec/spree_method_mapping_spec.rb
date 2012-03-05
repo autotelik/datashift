@@ -30,8 +30,8 @@ describe 'SpreeLoader' do
     before_each_spree
       
     MethodDictionary.clear
-    MethodDictionary.find_operators( @klazz )
-    MethodDictionary.build_method_details( @klazz )
+    MethodDictionary.find_operators( @Product_klass )
+    #MethodDictionary.build_method_details( @Product_klass )
   end
 
   
@@ -41,35 +41,35 @@ describe 'SpreeLoader' do
     MethodDictionary.belongs_to.should_not be_empty
     MethodDictionary.assignments.should_not be_empty
 
-    assign = MethodDictionary.assignments_for(@klazz)
+    assign = MethodDictionary.assignments_for(@Product_klass)
 
     assign.should include('available_on')   # Example of a simple column
 
-    MethodDictionary.assignments[@klazz].should include('available_on')
+    MethodDictionary.assignments[@Product_klass].should include('available_on')
 
-    has_many_ops = MethodDictionary.has_many_for(@klazz)
+    has_many_ops = MethodDictionary.has_many_for(@Product_klass)
 
     has_many_ops.should include('properties')   # Product can have many properties
 
-    MethodDictionary.has_many[@klazz].should include('properties')
+    MethodDictionary.has_many[@Product_klass].should include('properties')
 
-    btf = MethodDictionary.belongs_to_for(@klazz)
+    btf = MethodDictionary.belongs_to_for(@Product_klass)
 
     btf.should include('tax_category')    # Example of a belongs_to assignment
 
-    MethodDictionary.belongs_to[@klazz].should include('tax_category')
+    MethodDictionary.belongs_to[@Product_klass].should include('tax_category')
 
-    MethodDictionary.column_types[@klazz].size.should == @klazz.columns.size
+    MethodDictionary.column_types[@Product_klass].size.should == @Product_klass.columns.size
   end
 
 
   it "should find method details correctly for different forms of a column name" do
 
-    MethodDictionary.build_method_details( @klazz )
+    MethodDictionary.build_method_details( @Product_klass )
         
     ["available On", 'available_on', "Available On", "AVAILABLE_ON"].each do |format|
 
-      method_details = MethodDictionary.find_method_detail( @klazz, format )
+      method_details = MethodDictionary.find_method_detail( @Product_klass, format )
 
       method_details.operator.should == 'available_on'
       method_details.operator_for(:assignment).should == 'available_on'
@@ -87,12 +87,12 @@ describe 'SpreeLoader' do
 
   it "should populate method details correctly for has_many forms of association name" do
 
-    MethodDictionary.has_many[@klazz].should include('product_option_types')
+    MethodDictionary.has_many[@Product_klass].should include('product_option_types')
 
-    MethodDictionary.build_method_details( @klazz )
+    MethodDictionary.build_method_details( @Product_klass )
         
     ["product_option_types", "product option types", 'product Option_types', "ProductOptionTypes", "Product_Option_Types"].each do |format|
-      method_detail = MethodDictionary.find_method_detail( @klazz, format )
+      method_detail = MethodDictionary.find_method_detail( @Product_klass, format )
 
       method_detail.should_not be_nil
 
@@ -103,40 +103,40 @@ describe 'SpreeLoader' do
   end
 
 
-  it "should populate method details correctly for assignment operators (none columns on #{@klazz})" do
+  it "should populate method details correctly for assignment operators (none columns on #{@Product_klass})" do
 
-    MethodDictionary.find_operators( @klazz, :reload => true, :instance_methods => true )
+    MethodDictionary.find_operators( @Product_klass, :reload => true, :instance_methods => true )
 
-    MethodDictionary.build_method_details( @klazz )
+    MethodDictionary.build_method_details( @Product_klass )
         
     # Example of delegates i.e. cost_price column on Variant, delegated to Variant by Product
 
-    MethodDictionary.assignments[@klazz].should include('cost_price')
-    MethodDictionary.assignments[@klazz].should include('sku')
+    MethodDictionary.assignments[@Product_klass].should include('cost_price')
+    MethodDictionary.assignments[@Product_klass].should include('sku')
 
 
-    count_on_hand = MethodDictionary.find_method_detail( @klazz, 'count on hand' )
+    count_on_hand = MethodDictionary.find_method_detail( @Product_klass, 'count on hand' )
     count_on_hand.should_not be_nil
     count_on_hand.operator.should == 'count_on_hand'
 
-    method = MethodDictionary.find_method_detail( @klazz, 'sku' )
+    method = MethodDictionary.find_method_detail( @Product_klass, 'sku' )
     method.should_not be_nil
     method.operator.should == 'sku'
   end
 
-  it "should enable assignment via operators for none columns on #{@klazz}" do
+  it "should enable assignment via operators for none columns on #{@Product_klass}" do
 
-    MethodDictionary.find_operators( @klazz, :reload => true, :instance_methods => true )
+    MethodDictionary.find_operators( @Product_klass, :reload => true, :instance_methods => true )
 
-    MethodDictionary.build_method_details( @klazz )
+    MethodDictionary.build_method_details( @Product_klass )
         
-    klazz_object = @klazz.new
+    klazz_object = @Product_klass.new
 
     klazz_object.should be_new_record
 
     # we can use method details to populate a new AR object, essentailly same as
     # klazz_object.send( count_on_hand.operator, 2)
-    count_on_hand = MethodDictionary.find_method_detail( @klazz, 'count on hand' )
+    count_on_hand = MethodDictionary.find_method_detail( @Product_klass, 'count on hand' )
 
     count_on_hand.assign( klazz_object, 2 )
     klazz_object.count_on_hand.should == 2
@@ -144,7 +144,7 @@ describe 'SpreeLoader' do
     count_on_hand.assign( klazz_object, 5 )
     klazz_object.count_on_hand.should == 5
 
-    method = MethodDictionary.find_method_detail( @klazz, 'sku' )
+    method = MethodDictionary.find_method_detail( @Product_klass, 'sku' )
     method.should_not be_nil
 
     method.operator.should == 'sku'
@@ -156,61 +156,61 @@ describe 'SpreeLoader' do
 
   it "should enable assignment to has_many association on new object" do
  
-    MethodDictionary.build_method_details( @klazz )
+    MethodDictionary.build_method_details( @Product_klass )
         
-    method_detail = MethodDictionary.find_method_detail( @klazz, 'taxons' )
+    method_detail = MethodDictionary.find_method_detail( @Product_klass, 'taxons' )
 
     method_detail.operator.should == 'taxons'
 
-    klazz_object = @klazz.new
+    upload_object = @Product_klass.new
 
-    klazz_object.taxons.size.should == 0
+    upload_object.taxons.size.should == 0
 
     # NEW ASSOCIATION ASSIGNMENT
 
     # assign via the send operator directly on load object
-    klazz_object.send( method_detail.operator ) << Taxon.new
+    upload_object.send( method_detail.operator ) << @Taxon_klass.new
 
-    klazz_object.taxons.size.should == 1
+    upload_object.taxons.size.should == 1
 
-    klazz_object.send( method_detail.operator ) << [Taxon.new, Taxon.new]
-    klazz_object.taxons.size.should == 3
+    upload_object.send( method_detail.operator ) << [@Taxon_klass.new, @Taxon_klass.new]
+    upload_object.taxons.size.should == 3
 
     # Use generic assignment on method detail - expect has_many to use << not =
-    method_detail.assign( klazz_object, Taxon.new )
-    klazz_object.taxons.size.should == 4
+    method_detail.assign( upload_object, @Taxon_klass.new )
+    upload_object.taxons.size.should == 4
 
-    method_detail.assign( klazz_object, [Taxon.new, Taxon.new])
-    klazz_object.taxons.size.should == 6
+    method_detail.assign( upload_object, [@Taxon_klass.new, @Taxon_klass.new])
+    upload_object.taxons.size.should == 6
   end
 
   it "should enable assignment to has_many association using existing objects" do
 
-    MethodDictionary.find_operators( @klazz )
+    MethodDictionary.find_operators( @Product_klass )
 
-    MethodDictionary.build_method_details( @klazz )
+    MethodDictionary.build_method_details( @Product_klass )
         
-    method_detail = MethodDictionary.find_method_detail( @klazz, 'product_properties' )
+    method_detail = MethodDictionary.find_method_detail( @Product_klass, 'product_properties' )
 
     method_detail.operator.should == 'product_properties'
 
-    klazz_object = @klazz.new
+    klazz_object = @Product_klass.new
 
-    ProductProperty.new(:property => @prop1)
+    @ProductProperty_klass.new(:property => @prop1)
 
     # NEW ASSOCIATION ASSIGNMENT
-    klazz_object.send( method_detail.operator ) << ProductProperty.new
+    klazz_object.send( method_detail.operator ) << @ProductProperty_klass.new
 
     klazz_object.product_properties.size.should == 1
 
-    klazz_object.send( method_detail.operator ) << [ProductProperty.new, ProductProperty.new]
+    klazz_object.send( method_detail.operator ) << [@ProductProperty_klass.new, @ProductProperty_klass.new]
     klazz_object.product_properties.size.should == 3
 
     # Use generic assignment on method detail - expect has_many to use << not =
-    method_detail.assign( klazz_object, ProductProperty.new(:property => @prop1) )
+    method_detail.assign( klazz_object, @ProductProperty_klass.new(:property => @prop1) )
     klazz_object.product_properties.size.should == 4
 
-    method_detail.assign( klazz_object, [ProductProperty.new(:property => @prop2), ProductProperty.new(:property => @prop3)])
+    method_detail.assign( klazz_object, [@ProductProperty_klass.new(:property => @prop2), @ProductProperty_klass.new(:property => @prop3)])
     klazz_object.product_properties.size.should == 6
 
   end

@@ -132,22 +132,9 @@ module DataShift
 
     # Return the operator's expected class, if can be derived, else nil
     def operator_class()
-      @operator_class ||= if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))
-        begin
-          Kernel.const_get(operator.classify)
-        rescue; ""; end
-
-      elsif(@col_type)
-        begin
-          Kernel.const_get(@col_type.type.to_s.classify)
-        rescue; nil; end
-      else
-        nil
-      end
-
+      @operator_class ||= get_operator_class()
       @operator_class
     end
-
 
     def assign(record, value )
       
@@ -161,14 +148,18 @@ module DataShift
         insistent_belongs_to(record, @current_value)
 
       elsif( operator_for(:has_many) )
+        
+        puts "DEBUG : VALUE TYPE [#{value.class.name.include?(operator.classify)}] [#{ModelMapper.class_from_string(value.class.name)}]" unless(value.is_a?(Array))
+     
+        # The include? check is best I can come up with right now .. to handle module/namespaces
+        # TODO - can we determine the real class type of an association
+        # e.g given a association taxons, which operator.classify gives us Taxon, but actually it's Spree::Taxon
+        # so how do we get from 'taxons' to Spree::Taxons ? .. check if further info in reflect_on_all_associations
 
-        #puts "DEBUG : HAS_MANY :  #{@name} : #{operator}(#{operator_class}) - Lookup #{@current_value} in DB"
-        if(value.is_a?(Array) || value.is_a?(operator_class))
+        if(value.is_a?(Array) || value.class.name.include?(operator.classify))
           record.send(operator) << value
         else
           puts "ERROR #{value.class} - Not expected type for has_many #{operator} - cannot assign"
-          # TODO -  Not expected type - maybe try to look it up somehow ?"
-          #insistent_has_many(record, @current_value)
         end
 
       elsif( operator_for(:has_one) )
@@ -280,6 +271,24 @@ module DataShift
         end
       end
     end
+    
+    private
+    # Return the operator's expected class, if can be derived, else nil
+    def get_operator_class()
+      if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))  
+        begin     
+          Kernel.const_get(operator.classify)
+        rescue; nil; end
+
+      elsif(@col_type)
+        begin
+          Kernel.const_get(@col_type.type.to_s.classify)
+        rescue; nil; end
+      else
+        nil
+      end
+    end
+    
   end
   
 end

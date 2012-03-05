@@ -1,8 +1,9 @@
 class ModelMapper
   
-  # Helper to deal with modules/namespaced classes
-  # return the base class from a string.
-  # Support getting class from modules e.g "Spree::Property"
+  # Helper to deal with string versions of modules/namespaced classes
+  # Find and return the base class from a string.
+  # 
+  # e.g "Spree::Property" returns the Spree::Property class
   # Raises exception if no such class found
   def self.const_get_from_string(str)
     str.split('::').inject(Object) do |mod, class_name| 
