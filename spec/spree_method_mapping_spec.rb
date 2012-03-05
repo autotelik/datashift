@@ -19,27 +19,19 @@ include DataShift
 describe 'SpreeLoader' do
 
   before(:all) do
-
-    # we are not a Spree project, nor is it practical to externally generate
-    # a complete Spree application for testing so we implement a mini migrate/boot of our own
-    SpreeHelper.load()            # require Spree gems
-
-    # key to YAML db e.g  test_memory, test_mysql
-    db_connect( 'test_spree_standalone' )    
-
-    SpreeHelper.boot            # create a sort-of Spree app
-    
-    SpreeHelper.migrate_up      # create an sqlite Spree database on the fly
-
-    @klazz = Product
-
-    # Reset main tables - TODO should really purge properly, or roll back a transaction
-    [OptionType, OptionValue, Product, Property, Variant, Taxonomy, Taxon, Zone].each { |x| x.delete_all }
+    SpecHelper::before_all_spree
   end
 
   before(:each) do
+    
+    include SpecHelper
+    extend SpecHelper
+      
+    before_each_spree
+      
     MethodDictionary.clear
     MethodDictionary.find_operators( @klazz )
+    MethodDictionary.build_method_details( @klazz )
   end
 
   
