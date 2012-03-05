@@ -35,13 +35,23 @@ module DataShift
     def self.root
       Gem.loaded_specs['spree_core'] ? Gem.loaded_specs['spree_core'].full_gem_path  : ""
     end
+    
+    # Helpers so we can cope with both pre 1.0 and post 1.0 versions of Spree in same datashift version
 
+    def self.get_spree_class(x)
+      if(is_namespace_version())    
+        ModelMapper::class_from_string("Spree::#{x}")
+      else
+        ModelMapper::class_from_string(x.to_s)
+      end
+    end
+      
     def self.get_product_class
       if(is_namespace_version())
-          Spree::Product
-        else
-          Product
-        end
+        Spree::Product
+      else
+        Product
+      end
     end
     
     def self.is_namespace_version
@@ -69,70 +79,28 @@ module DataShift
     def self.boot( database_env )
      
       if( ! is_namespace_version )
-       db_connect( database_env )   
-       boot_pre_1
+        db_connect( database_env )
+        @dslog.info "Booting Spree using pre 1.0.0 version"
+        boot_pre_1
+        @dslog.info "Booted Spree using pre 1.0.0 version"
       else
+        
+        # TODO as Spree versions moves how do we best track reqd Rails version
+        # parse the gemspec of the core Gemfile ?
         
         gem('rails', '3.1.3')
         
         db_connect( database_env, '3.1.3' )  
-        puts "New Spree 1.0.0 Spec Boot"
         
-        require 'rails/all'
-
-        Dir.chdir( File.expand_path('../../../sandbox', __FILE__) )
-        
-        puts "New Spree 1.0.0 Spec Boot"
+        @dslog.info "Booting Spree using post 1.0.0 version"
        
         require 'rails/all'
+        
+        Dir.chdir( File.expand_path('../../../sandbox', __FILE__) )
 
-        require 'config/environment'
+        require 'config/environment.rb'
         
-        # == Booting process
-        #
-        # The application is also responsible for setting up and executing the booting
-        # process. From the moment you require "config/application.rb" in your app,
-        # the booting process goes like this:
-        #
-        #   1)  require "config/boot.rb" to setup load paths
-        #   2)  require railties and engines
-        #   3)  Define Rails.application as "class MyApp::Application < Rails::Application"
-        #   4)  Run config.before_configuration callbacks
-        #   5)  Load config/environments/ENV.rb
-        #   6)  Run config.before_initialize callbacks
-        #   7)  Run Railtie#initializer defined by railties, engines and application.
-        #       One by one, each engine sets up its load paths, routes and runs its config/initializers/* files.
-        #   9)  Custom Railtie#initializers added by railties, engines and applications are executed
-        #   10) Build the middleware stack and run to_prepare callbacks
-        #   11) Run config.before_eager_load and eager_load if cache classes is true
-        #   12) Run config.after_initialize callbacks
-                
-        puts Rails.methods.sort.inspect
-        
-        puts ActiveRecord::Base.configurations.inspect
-        puts ActiveRecord::Base.configurations.class.inspect
-        
-            
-        puts Rails.configuration.class.inspect
-        
-        puts Rails.configuration.inspect
-        
-        Rails.configuration.database_configuration[Rails.env]
-        
-        puts "1",Rails.configuration.database_configuration[Rails.env]
-        
-        puts "2",Rails.configuration.database_configuration[Rails.env]['adapter'].to_sym
-        
-        puts "Spree booted"
-        #require File.expand_path( SpreeHelper::lib_root + '/generators/spree/install/install_generator')
-        #require 'spree/core/testing_support/common_rake'
-
-
-        #Spree::SandboxGenerator.start ["--lib_name=spree", "--database=#{ENV['DB_NAME']}"]
-        #Spree::InstallGenerator.start ["--auto-accept"]
-
-        #cmd = "bundle exec rake assets:precompile:nondigest"; 
-        #puts cmd; system cmd
+        @dslog.info "Booted Spree using post 1.0.0 version"
       end
     end
 

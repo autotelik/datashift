@@ -14,7 +14,9 @@ module DataShift
 
     def create_image(image_path, viewable_record = nil, options = {})
 
-      image = Image.new
+      @@image_klass ||= SpreeHelper::get_spree_class('Image')
+      
+      image = @@image_klass.new
       
       unless File.exists?(image_path)
         puts "ERROR : Invalid Path"
@@ -49,7 +51,9 @@ module DataShift
     include DataShift::ImageLoading
         
     def initialize(image = nil)
-      super( Image, image )
+      @@image_klass ||= SpreeHelper::get_spree_class('Image')
+            
+      super( @@image_klass, image )
       raise "Failed to create Image for loading" unless @load_object
     end
 
