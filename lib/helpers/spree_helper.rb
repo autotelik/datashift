@@ -25,19 +25,33 @@
 #             as the database is auto generated
 # =>          
 
-module DataShift
-  module SpreeHelper
 
+  
+module DataShift
+    
+  module SpreeHelper
+        
+        
     def self.root
       Gem.loaded_specs['spree_core'] ? Gem.loaded_specs['spree_core'].full_gem_path  : ""
     end
+    
+    # Helpers so we can cope with both pre 1.0 and post 1.0 versions of Spree in same datashift version
 
+    def self.get_spree_class(x)
+      if(is_namespace_version())    
+        ModelMapper::class_from_string("Spree::#{x}")
+      else
+        ModelMapper::class_from_string(x.to_s)
+      end
+    end
+      
     def self.get_product_class
       if(is_namespace_version())
-          Spree::Product
-        else
-          Product
-        end
+        Spree::Product
+      else
+        Product
+      end
     end
     
     def self.is_namespace_version
@@ -53,26 +67,40 @@ module DataShift
     end
 
     def self.load()
-      gem 'spree'
-    end
-    
-    def self.boot
- 
       require 'spree'
       require 'spree_core'
-
-      if(Gem.loaded_specs['spree'].version.version.to_f < 1)
+    end
+    
+    
+    # Datahift isi usually included and tasks pulled in by a parent/host application.
+    # So here we are hacking our way around the fact that datashift is not a Rails/Spree app/engine
+    # so that we can ** run our specs ** directly in datashift library
+    # i.e without ever having to install datashift in a host application
+    def self.boot( database_env )
+     
+      if( ! is_namespace_version )
+        db_connect( database_env )
+        @dslog.info "Booting Spree using pre 1.0.0 version"
         boot_pre_1
+        @dslog.info "Booted Spree using pre 1.0.0 version"
       else
-        require File.expand_path( lib_root + '/generators/spree/install/install_generator')
-        require 'spree/core/testing_support/common_rake'
+        
+        # TODO as Spree versions moves how do we best track reqd Rails version
+        # parse the gemspec of the core Gemfile ?
+        
+        gem('rails', '3.1.3')
+        
+        db_connect( database_env, '3.1.3' )  
+        
+        @dslog.info "Booting Spree using post 1.0.0 version"
+       
+        require 'rails/all'
+        
+        Dir.chdir( File.expand_path('../../../sandbox', __FILE__) )
 
-
-        Spree::SandboxGenerator.start ["--lib_name=spree", "--database=#{ENV['DB_NAME']}"]
-        Spree::InstallGenerator.start ["--auto-accept"]
-
-        cmd = "bundle exec rake assets:precompile:nondigest"; 
-        puts cmd; system cmd
+        require 'config/environment.rb'
+        
+        @dslog.info "Booted Spree using post 1.0.0 version"
       end
     end
 
@@ -159,8 +187,6 @@ module DataShift
     end
 
     def self.migrate_up
-      load
-      boot
       ActiveRecord::Migrator.up( File.join(root, 'db/migrate') )
     end
 

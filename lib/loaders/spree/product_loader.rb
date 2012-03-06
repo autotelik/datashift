@@ -25,6 +25,14 @@ module DataShift
       def initialize(product = nil)
         super( SpreeHelper::get_product_class(), product, :instance_methods => true  )
      
+        @@option_type_klass ||= SpreeHelper::get_spree_class('OptionType')
+        @@option_value_klass ||= SpreeHelper::get_spree_class('OptionValue')
+        @@property_klass ||= SpreeHelper::get_spree_class('Property')
+        @@product_property_klass ||= SpreeHelper::get_spree_class('ProductProperty')
+        @@taxonomy_klass ||= SpreeHelper::get_spree_class('Taxonomy')
+        @@taxon_klass ||= SpreeHelper::get_spree_class('Taxon')
+        @@variant_klass ||= SpreeHelper::get_spree_class('Variant')
+        
         raise "Failed to create Product for loading" unless @load_object
       end
 
@@ -56,7 +64,7 @@ module DataShift
 
         # Special cases for Products, generally where a simple one stage lookup won't suffice
         # otherwise simply use default processing from base class
-        if((@current_method_detail.operator?('variants') || @current_method_detail.operator?('option_types')) && current_value)
+        if(current_value && (@current_method_detail.operator?('variants') || @current_method_detail.operator?('option_types')) )
 
           add_options
 
@@ -72,7 +80,8 @@ module DataShift
 
           add_images
           
-        elsif(@current_method_detail.operator?('count_on_hand') || @current_method_detail.operator?('on_hand') )
+        elsif(current_value && (@current_method_detail.operator?('count_on_hand') || @current_method_detail.operator?('on_hand')) )
+
 
           # Unless we can save here, in danger of count_on_hand getting wiped out.
           # If we set (on_hand or count_on_hand) on an unsaved object, during next subsequent save
@@ -82,13 +91,14 @@ module DataShift
           # TODO smart column ordering to ensure always valid - if we always make it very last column might not get wiped ?
           # 
           save_if_new
-         
+          
+  
           # Spree has some stock management stuff going on, so dont usually assign to column vut use
           # on_hand and on_hand=
           if(@load_object.variants.size > 0 && current_value.include?(LoaderBase::multi_assoc_delim))
 
             #puts "DEBUG: COUNT_ON_HAND PER VARIANT",current_value.is_a?(String),
-            #&& current_value.is_a?(String) && current_value.include?(LoaderBase::multi_assoc_delim))
+          
             # Check if we processed Option Types and assign count per option
             values = current_value.to_s.split(LoaderBase::multi_assoc_delim)
 
@@ -98,7 +108,7 @@ module DataShift
               puts "WARNING: Count on hand entries did not match number of Variants - None Set"
             end
           else
-            #puts "DEBUG: COUNT_ON_HAND #{current_value.to_i}"
+            puts "WARNING: Multiple count_on_hand values specified but no Variants/OptionTypes created" if(@load_object.variants.empty?)
             load_object.on_hand = current_value.to_i
           end
 
@@ -114,6 +124,7 @@ module DataShift
       # to define Variants on those options values.
       #
       def add_options
+        
         # TODO smart column ordering to ensure always valid by time we get to associations
         save_if_new
 
@@ -122,10 +133,10 @@ module DataShift
         option_types.each do |ostr|
           oname, value_str = ostr.split(LoaderBase::name_value_delim)
 
-          option_type = OptionType.find_by_name(oname)
+          option_type = @@option_type_klass.find_by_name(oname)
 
           unless option_type
-            option_type = OptionType.create( :name => oname, :presentation => oname.humanize)
+            option_type = @@option_type_klass.create( :name => oname, :presentation => oname.humanize)
             # TODO - dynamic creation should be an option
 
             unless option_type
@@ -142,18 +153,23 @@ module DataShift
           # Now get the value(s) for the option e.g red,blue,green for OptType 'colour'
           ovalues = value_str.split(',')
 
+          # TODO .. benchmarking to find most efficient way to create these but ensure Product.variants list
+          # populated .. currently need to call reload to ensure this (seems reqd for Spree 1/Rails 3, wasn't required b4
           ovalues.each_with_index do |ovname, i|
             ovname.strip!
-            ov = OptionValue.find_or_create_by_name(ovname)
+            ov = @@option_value_klass.find_or_create_by_name(ovname)
             if ov
-              object = Variant.create( :product => @load_object, :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :available_on => @load_object.available_on)
-              #puts "DEBUG: Create New Variant: #{object.inspect}"
-              object.option_values << ov
-              #@load_object.variants << object
+              variant = @@variant_klass.create( :product => @load_object, :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :available_on => @load_object.available_on)
+              #puts "DEBUG: Created New Variant: #{variant.inspect}"
+              variant.option_values << ov
             else
               puts "WARNING: Option #{ovname} NOT FOUND - No Variant created"
             end
           end
+          
+          #puts "DEBUG Load Object now has Variants : #{@load_object.variants.inspect}"
+          @load_object.reload
+          #puts "DEBUG Load Object now has Variants : #{@load_object.variants.inspect}"
         end
 
       end
@@ -190,14 +206,14 @@ module DataShift
 
         property_list.each do |pstr|
           pname, pvalue = pstr.split(LoaderBase::name_value_delim)
-          property = Property.find_by_name(pname)
+          property = @@property_klass.find_by_name(pname)
 
           unless property
-            property = Property.create( :name => pname, :presentation => pname.humanize)
+            property = @@property_klass.create( :name => pname, :presentation => pname.humanize)
           end
 
           if(property)
-            @load_object.product_properties << ProductProperty.create( :property => property, :value => pvalue)
+            @load_object.product_properties << @@product_property_klass.create( :property => property, :value => pvalue)
           else
             puts "WARNING: Property #{pname} NOT found - Not set Product"
           end
@@ -206,44 +222,66 @@ module DataShift
       
       end
 
+      # Nested tree structure support ..
+      # 
+      # ... inside of main loop
+      # the_taxons = []
+      # taxon_col.split(/[\r\n]+/).each do |chain|
+      #  taxon = nil
+      #   names = chain.split(/\s*>\s*/)
+      #  names.each do |name|
+      #    taxon = Taxon.find_or_create_by_name_and_parent_id_and_taxonomy_id(name, taxon && taxon.id, main_taxonomy.id)
+      #  end
+      #  the_taxons << taxon
+      # end
+      # p.taxons = the_taxons
+ 
       
+      # TAXON FORMAT 
+      # name|name>child>child|name
+       
       def add_taxons
         # TODO smart column ordering to ensure always valid by time we get to associations
         save_if_new
 
-        name_list = current_value.split(LoaderBase::multi_assoc_delim)
+        chain_list = current_value().split(LoaderBase::multi_assoc_delim)
 
-        taxons = name_list.collect do |t|
-
-          taxon = Taxon.find_by_name(t)
-
-          unless taxon
-            parent = Taxonomy.find_by_name(t)
-
+        chain_list.each do |chain|
+          
+          name_list = chain.split(/\s*>\s*/)
+          
+          # manage per chain
+          parent_taxonomy, parent, taxon = nil, nil, nil
+          
+          # Each chain can contain either a single Taxon, or the tree like structure parent>child>child     
+          taxons = name_list.collect do |name|
+          
+            #puts "DEBUG: NAME #{name.inspect}"             
             begin
-              if(parent)
-                # not sure this can happen but just incase we get a weird situation where we have
-                # a taxonomy without a root named the same - create the child taxon we require
-                taxon = Taxon.create(:name => t, :taxonomy_id => parent.id)
+              taxon = @@taxon_klass.find_by_name( name )
+
+              if(taxon)
+                parent_taxonomy ||= taxon.taxonomy
               else
-                parent = Taxonomy.create!( :name => t )
-
-                taxon = parent.root
+                parent_taxonomy ||= @@taxonomy_klass.find_or_create_by_name(name)
+   
+                taxon = @@taxon_klass.find_or_create_by_name_and_parent_id_and_taxonomy_id(name, parent && parent.id, parent_taxonomy.id)         
               end
-
             rescue => e
-              e.backtrace
-              e.inspect
-              puts "ERROR : Cannot assign Taxon ['#{t}'] to Product ['#{load_object.name}']"
+              puts e.inspect
+              puts "ERROR : Cannot assign Taxon ['#{taxon}'] to Product ['#{load_object.name}']"
               next
             end
+            
+            parent = taxon
+            taxon
           end
-          taxon
+          
+          unique_list = taxons.compact.uniq - (@load_object.taxons || [])
+        
+          #puts "DEBUG: Taxon nms to add #{unique_list.collect(&:name).inspect}"
+          @load_object.taxons << unique_list unless(unique_list.empty?)
         end
-
-        taxons.compact!
-
-        @load_object.taxons << taxons unless(taxons.empty?)
 
       end
 
