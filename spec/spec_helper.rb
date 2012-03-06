@@ -21,7 +21,6 @@ $DataShiftDatabaseYml = File.join($DataShiftFixturePath, 'config/database.yml')
 
 module DataShift
  
-
   def db_connect( env = 'test_file', version = nil)
 
     version ? gem('activerecord', version) : gem('activerecord')
@@ -39,6 +38,8 @@ module DataShift
 
     puts "Setting DB Config - #{db.inspect}"
     ActiveRecord::Base.configurations = db
+    
+    #dbtype = Rails.configuration.database_configuration[Rails.env]['adapter'].to_sym
 
     #ActiveRecord::Base.logger = Logger.new(STDOUT)
 
@@ -47,7 +48,7 @@ module DataShift
     FileUtils.mkdir_p(logdir) unless File.exists?(logdir)
     ActiveRecord::Base.logger = Logger.new(logdir + '/datashift_spec.log')
 
-    @ilog = ActiveRecord::Base.logger
+    @dslog = ActiveRecord::Base.logger
 
     puts "Connecting to DB"
     ActiveRecord::Base.establish_connection( db )
@@ -56,7 +57,7 @@ module DataShift
     # so copied this from ... Rails::Initializer.initialize_cache
     Object.const_set "RAILS_CACHE", ActiveSupport::Cache.lookup_store( :memory_store )
 
-    @ilog.info "Connected to DB - #{ActiveRecord::Base.connection.inspect}"
+    @dslog.info "Connected to DB - #{ActiveRecord::Base.connection.inspect}"
   end
 
   # These are our test models with associations
@@ -97,6 +98,43 @@ module DataShift
 
 end
 
+module SpecHelper
+  
+  $SpreeFixturePath = File.join($DataShiftFixturePath, 'spree')    
+  $SpreeNegativeFixturePath = File.join($DataShiftFixturePath, 'negative')
+    
+  def self.spree_fixture( source)
+    File.join($SpreeFixturePath, source)
+  end
+  
+  def self.before_all_spree 
+    # we are not a Spree project, nor is it practical to externally generate
+    # a complete Spree application for testing so we implement a mini migrate/boot of our own
+    SpreeHelper.load()          # require Spree gems
+    SpreeHelper.boot( 'test_spree_standalone' )             # key to YAML db e.g  test_memory, test_mysql
+    
+    SpreeHelper.migrate_up      # create an sqlite Spree database on the fly
+  end
+  
+  def before_each_spree
+      
+    @klass = SpreeHelper::get_product_class
+    @Product_klass = @klass
+    @Taxon_klass  = SpreeHelper::get_spree_class('Taxon')   
+    @zone_klass   = SpreeHelper::get_spree_class('Zone')
+        
+    # Reset main tables - TODO should really purge properly, or roll back a transaction      
+    @klass.delete_all
+    @Taxon_klass.delete_all
+    @zone_klass.delete_all
+    
+    %w{OptionType OptionValue Property ProductProperty Variant Taxonomy}.each do |k|
+      instance_variable_set("@#{k}_klass", SpreeHelper::get_spree_class(k)) 
+      instance_variable_get("@#{k}_klass").delete_all
+    end
+  end
+      
+end
 
 RSpec.configure do |config|
   # config.use_transactional_fixtures = true

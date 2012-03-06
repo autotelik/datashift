@@ -18,82 +18,68 @@ include DataShift
   
 describe 'SpreeLoader' do
 
+      
   before(:all) do
-
-    # key to YAML db e.g  test_memory, test_mysql
-    db_connect( 'test_spree_standalone' )    
-    
-    # See errors  #<NameError: uninitialized constant RAILS_CACHE> when doing save (AR without Rails)
-    # so copied this from ... Rails::Initializer.initialize_cache
-    Object.const_set "RAILS_CACHE", ActiveSupport::Cache.lookup_store( :memory_store )
-
-    RAILS_CACHE = ActiveSupport::Cache.lookup_store( :memory_store )
-
-    # we are not a Spree project, nor is it practical to externally generate
-    # a complete Spree application for testing so we implement a mini migrate/boot of our own
-    SpreeHelper.load()          # require Spree gems
-    SpreeHelper.boot            # create a sort-of Spree app
-    
-    SpreeHelper.migrate_up      # create an sqlite Spree database on the fly
-
-    $SpreeFixturePath = File.join($DataShiftFixturePath, 'spree')
-    
-    $SpreeNegativeFixturePath = File.join($DataShiftFixturePath, 'negative')
-  end
-  
-  def spree_fix( source)
-    File.join($SpreeFixturePath, source)
+    SpecHelper::before_all_spree
   end
 
   before(:each) do
 
-    MethodDictionary.clear
-    MethodDictionary.find_operators( Product )
-
-    # Reset main tables - TODO should really purge properly, or roll back a transaction
-    [OptionType, OptionValue, Product, Property, Variant, Taxonomy, Taxon, Zone].each { |x| x.delete_all }
-        
-    Product.count.should == 0
+    begin
     
-    Taxon.count.should == 0
-
-    # want to test both lookup and dynamic creation - this Taxonomy should be found, rest created
-    root = Taxonomy.create( :name => 'Paintings' )
-    Taxon.create( :name => 'Landscape', :taxonomy => root )
-
-    Taxon.count.should == 2
+      include SpecHelper
+      extend SpecHelper
+      
+      before_each_spree
     
-        
-    @product_loader = DataShift::SpreeHelper::ProductLoader.new
+      @klass.count.should == 0
+      @Taxon_klass.count.should == 0
+      @Variant_klass.count.should == 0
+      
+      MethodDictionary.clear
+      MethodDictionary.find_operators( @klass )
+
+      # want to test both lookup and dynamic creation - this Taxonomy should be found, rest created
+      root = @Taxonomy_klass.create( :name => 'Paintings' )
+    
+      @Taxon_klass.create( :name => 'Landscape', :taxonomy => root )
+
+      @Taxon_klass.count.should == 2
+    
+      @product_loader = DataShift::SpreeHelper::ProductLoader.new
+    rescue => e
+      puts e.inspect
+      puts e.backtrace
+    end
   end
 
 
   it "should process a simple .xls spreadsheet" do
 
-    Zone.delete_all
+    @zone_klass.delete_all
 
-    loader = ExcelLoader.new(Zone)
+    loader = ExcelLoader.new(@zone_klass)
     
-    loader.perform_load( spree_fix('SpreeZoneExample.xls') )
+    loader.perform_load( SpecHelper::spree_fixture('SpreeZoneExample.xls') )
 
-    loader.loaded_count.should == Zone.count
+    loader.loaded_count.should == @zone_klass.count
   end
 
   it "should process a simple csv file" do
 
-    Zone.delete_all
+    @zone_klass.delete_all
 
-    loader = CsvLoader.new(Zone)
+    loader = CsvLoader.new(@zone_klass)
 
-    loader.perform_load( spree_fix('SpreeZoneExample.csv') )
+    loader.perform_load( SpecHelper::spree_fixture('SpreeZoneExample.csv') )
 
-    loader.loaded_count.should == Zone.count
+    loader.loaded_count.should == @zone_klass.count
   end
   
 
   # Loader should perform identically regardless of source, whether csv, .xls etc
   
-  it "should load basic Products .xls via Spree loader", :focus => true do
+  it "should load basic Products .xls via Spree loader" do
     test_basic_product('SpreeProductsSimple.xls')
   end
 
@@ -107,16 +93,16 @@ describe 'SpreeLoader' do
   
   def test_basic_product( source )
     
-    @product_loader.perform_load( spree_fix(source), :mandatory => ['sku', 'name', 'price'] )
+    @product_loader.perform_load( SpecHelper::spree_fixture(source), :mandatory => ['sku', 'name', 'price'] )
 
-    Product.count.should == 3
+    @klass.count.should == 3
 
     @product_loader.failed_objects.size.should == 0
     @product_loader.loaded_objects.size.should == 3
 
-    @product_loader.loaded_count.should == Product.count
+    @product_loader.loaded_count.should == @klass.count
 
-    p = Product.first
+    p = @klass.first
     
     p.sku.should == "SIMPLE_001"
     p.price.should == 345.78
@@ -126,15 +112,15 @@ describe 'SpreeLoader' do
     p.option_types.should have_exactly(1).items
     p.count_on_hand.should == 12
     
-    Product.last.option_types.should have_exactly(2).items
-    Product.last.count_on_hand.should == 23
+    @klass.last.option_types.should have_exactly(2).items
+    @klass.last.count_on_hand.should == 23
   end
 
 
   # Operation and results should be identical when loading multiple associations
   # if using either single column embedded syntax, or one column per entry.
 
-  it "should load Products and create Variants from single column" do
+  it "should load Products and create Variants from single column", :fail => true do
     test_variants_creation('SpreeProducts.xls')
   end
 
@@ -144,7 +130,10 @@ describe 'SpreeLoader' do
   end
   
   def test_variants_creation( source )
-    @product_loader.perform_load( spree_fix(source), :mandatory => ['sku', 'name', 'price'] )
+    @klass.count.should == 0
+    @Variant_klass.count.should == 0
+    
+    @product_loader.perform_load( SpecHelper::spree_fixture(source), :mandatory => ['sku', 'name', 'price'] )
     
     expected_multi_column_variants
   end
@@ -153,10 +142,10 @@ describe 'SpreeLoader' do
   def expected_multi_column_variants
       
     # 3 MASTER products, 11 VARIANTS
-    Product.count.should == 3
-    Variant.count.should == 14
+    @klass.count.should == 3
+    @Variant_klass.count.should == 14
 
-    p = Product.first
+    p = @klass.first
 
     p.sku.should == "DEMO_001"
 
@@ -165,14 +154,14 @@ describe 'SpreeLoader' do
     p.description.should == "blah blah"
     p.cost_price.should == 320.00
 
-    Product.all.select {|m| m.is_master.should == true  }
+    @klass.all.select {|m| m.is_master.should == true  }
 
-    p.variants.should have_exactly(3).items
+    p.variants.should have_exactly(3).items  # count => 12|6|7
   
-    Variant.all[1].sku.should == "DEMO_001_0"
-    Variant.all[1].price.should == 399.99
+    @Variant_klass.all[1].sku.should == "DEMO_001_0"
+    @Variant_klass.all[1].price.should == 399.99
 
-    v = p.variants[0]
+    v = p.variants[0] 
 
     v.sku.should == "DEMO_001_0"
     v.price.should == 399.99
@@ -181,96 +170,146 @@ describe 'SpreeLoader' do
     p.variants[1].count_on_hand.should == 6
     p.variants[2].count_on_hand.should == 7
 
-    Variant.last.price.should == 50.34
-    Variant.last.count_on_hand.should == 18
+    @Variant_klass.last.price.should == 50.34
+    @Variant_klass.last.count_on_hand.should == 18
 
     @product_loader.failed_objects.size.should == 0
   end
 
-
+  ##################
+  ### PROPERTIES ###
+  ##################
+  
   # Operation and results should be identical when loading multiple associations
   # if using either single column embedded syntax, or one column per entry.
 
-  it "should load Products and multiple Properties from single column" do
+  it "should load Products and multiple Properties from single column", :props => true do
     test_properties_creation( 'SpreeProducts.xls' )
   end
 
-  it "should load Products and multiple Properties from multiple column" do
+  it "should load Products and multiple Properties from multiple column", :props => true do
     test_properties_creation( 'SpreeProductsMultiColumn.xls' )
   end
 
   def test_properties_creation( source )
 
     # want to test both lookup and dynamic creation - this Prop should be found, rest created
-    Property.create( :name => 'test_pp_001', :presentation => 'Test PP 001' )
+    @Property_klass.create( :name => 'test_pp_001', :presentation => 'Test PP 001' )
 
-    Property.count.should == 1
+    @Property_klass.count.should == 1
 
-    @product_loader.perform_load( spree_fix(source), :mandatory => ['sku', 'name', 'price'] )
+    @product_loader.perform_load( SpecHelper::spree_fixture(source), :mandatory => ['sku', 'name', 'price'] )
     
     expected_multi_column_properties
   
   end
   
   def expected_multi_column_properties
-    Property.count.should == 4
+    # 3 MASTER products, 11 VARIANTS
+    @klass.count.should == 3
+    @Variant_klass.count.should == 14
 
-    Product.first.properties.should have_exactly(1).items
+    @klass.first.properties.should have_exactly(1).items
 
-    p3 = Product.all.last
+    p3 = @klass.all.last
 
     p3.properties.should have_exactly(3).items
 
-    p3.properties.should include Property.find_by_name('test_pp_002')
+    p3.properties.should include @Property_klass.find_by_name('test_pp_002')
 
     # Test the optional text value got set on assigned product property
     p3.product_properties.select {|p| p.value == 'Example free value' }.should have_exactly(1).items
 
   end
+  
+  ##############
+  ### TAXONS ###
+  ##############
 
   # Operation and results should be identical when loading multiple associations
   # if using either single column embedded syntax, or one column per entry.
 
-  it "should load Products and multiple Taxons from single column" do
+  it "should load Products and multiple Taxons from single column", :taxon => true do
     test_taxon_creation( 'SpreeProducts.xls' )
   end
 
-  it "should load Products and multiple Taxons from multiple columns" do
+  it "should load Products and multiple Taxons from multiple columns", :taxons => true do
     test_taxon_creation( 'SpreeProductsMultiColumn.xls' )
   end
 
   def test_taxon_creation( source )
 
-    @product_loader.perform_load( spree_fix(source), :mandatory => ['sku', 'name', 'price'] )
+    # we want to test both find and find_or_create so should already have an object
+    # for find
+    @Taxonomy_klass.count.should == 1
+    @Taxon_klass.count.should == 2
+          
+    @product_loader.perform_load( SpecHelper::spree_fixture(source), :mandatory => ['sku', 'name', 'price'] )
     
     expected_multi_column_taxons
   end
   
   def expected_multi_column_taxons
       
-    Taxonomy.count.should == 4
-    Taxon.count.should == 5
-
-    Product.first.taxons.should have_exactly(2).items
-    Product.last.taxons.should have_exactly(1).items
-
-    p2 = Product.all[1]
-
-    p2.taxons.should have_exactly(3).items
-
-    t = Taxon.find_by_name('Oils')
-
-    t.should_not be_nil
+    #puts @Taxonomy_klass.all.collect( &:name).inspect
+    #puts @Taxon_klass.all.collect( &:name).inspect
     
-    p2.taxons.collect( &:id ).should include(t.id)
+    # Paintings alreadyexisted and had 1 child Taxon (Landscape)
+    # 2 nested Taxon (Paintings>Nature>Seascape) created under it so expect Taxonomy :
+    
+    # WaterColour	
+    # Oils	
+    # Paintings >Nature>Seascape + >Landscape	
+    # Drawings
 
+    @Taxonomy_klass.count.should == 4
+    @Taxon_klass.count.should == 7
+
+    @klass.first.taxons.should have_exactly(2).items
+    @klass.last.taxons.should have_exactly(2).items
+
+    p2 = @Variant_klass.find_by_sku("DEMO_002").product
+
+    # Paintings	Oils	Paintings>Nature>Seascape
+
+    #puts p2.taxons.collect(&:name).inspect
+      
+    p2.taxons.should have_exactly(4).items
+    
+    p2.taxons.collect(&:name).sort.should == ['Nature','Oils','Paintings','Seascape']
+     
+    paint_parent = @Taxonomy_klass.find_by_name('Paintings')
+         
+    paint_parent.taxons.should have_exactly(4).items # 3 children + all Taxonomies have a root Taxon
+    
+    paint_parent.taxons.collect(&:name).sort.should == ['Landscape','Nature','Paintings','Seascape']
+    
+    tn = @Taxon_klass.find_by_name('Nature')    # child with children 
+    ts = @Taxon_klass.find_by_name('Seascape')  # last child
+
+    ts.should_not be_nil
+    tn.should_not be_nil
+    
+    p2.taxons.collect( &:id ).should include(ts.id)
+    p2.taxons.collect( &:id ).should include(tn.id)
+    
+    puts tn.inspect
+    puts ts.inspect
+     
+    tn.parent.id.should == paint_parent.root.id
+    ts.parent.id.should == tn.id
+    
+    tn.children.should have_exactly(1).items
+    ts.children.should have_exactly(0).items
+
+ 
   end
 
   it "should load Products with associated image", :img => true do
-    
-    @product_loader.perform_load( spree_fix('SpreeProductsWithImages.csv'), :mandatory => ['sku', 'name', 'price'] )
+    pending("embedded images")
+    @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsWithImages.csv'), :mandatory => ['sku', 'name', 'price'] )
      
-    p = Product.find_by_name("Demo Product for AR Loader")
+    p = @klass.find_by_name("Demo Product for AR Loader")
     
     p.images.should have_exactly(1).items
   end
@@ -313,7 +352,7 @@ describe 'SpreeLoader' do
     expect {@product_loader.perform_load($SpreeNegativeFixturePath + '/SpreeProdMiss1Mandatory.xls', :mandatory => 'sku' )}.to raise_error(DataShift::MissingMandatoryError)
   end
 
-    it "should raise exception when mandatory columns missing from .csv", :ex => true do
+  it "should raise exception when mandatory columns missing from .csv", :ex => true do
     expect {@product_loader.perform_load($SpreeNegativeFixturePath + '/SpreeProdMissManyMandatory.csv', :mandatory => ['sku', 'name', 'price'] )}.to raise_error(DataShift::MissingMandatoryError)
   end
   

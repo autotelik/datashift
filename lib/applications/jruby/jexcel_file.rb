@@ -34,7 +34,7 @@ if(DataShift::Guards::jruby?)
     attr_accessor :book, :row, :date_style
     attr_reader   :sheet
 
-    MAX_COLUMNS = 256.freeze
+    MAX_COLUMNS = 256.freeze unless defined?(MAX_COLUMNS)
 
     def self.date_format
       HSSFDataFormat.getBuiltinFormat("m/d/yy h:mm")
@@ -77,13 +77,15 @@ if(DataShift::Guards::jruby?)
     def create(sheet_name)
       @book = HSSFWorkbook.new() if @book.nil?
 
+      acceptable_name = sheet_name.gsub(':', '').gsub(" ", '')
+      
       # Double check sheet doesn't already exist
-      if(@book.getSheetIndex(sheet_name) < 0)
-        sheet = @book.createSheet(sheet_name.gsub(" ", ''))
+      if(@book.getSheetIndex(acceptable_name) < 0)
+        sheet = @book.createSheet(acceptable_name.gsub(" ", ''))
 
-        @patriarchs.store(sheet_name, sheet.createDrawingPatriarch())
+        @patriarchs.store(acceptable_name, sheet.createDrawingPatriarch())
       end
-      @current_sheet = @book.getSheetIndex(sheet_name)
+      @current_sheet = @book.getSheetIndex(acceptable_name)
       
       @date_style = @book.createCellStyle
       @date_style.setDataFormat( JExcelFile::date_format )
