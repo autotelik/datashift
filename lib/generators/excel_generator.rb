@@ -48,8 +48,10 @@ module DataShift
 
       
       # Create an Excel file from list of ActiveRecord objects
-      # Specify which associations to export via :with or :exclude
-      # Possible values are : [:assignment, :belongs_to, :has_one, :has_many]
+      # To remove type(s) of associations specify option :
+      #   :exclude => [type(s)]
+      # Possible values are given by MethodDetail::supported_types_enum
+      #  ... [:assignment, :belongs_to, :has_one, :has_many]
       #
       def generate_with_associations(klass, options = {})
 
@@ -65,29 +67,21 @@ module DataShift
          
         MethodDictionary.build_method_details( klass )
            
-        work_list = options[:with] || MethodDetail::supported_types_enum
-        
+        work_list = MethodDetail::supported_types_enum.to_a
+        work_list -= options[:exclude].to_a
+         
         headers = []
-        puts "work_list :  [#{work_list.inspect}]"
       
         details_mgr = MethodDictionary.method_details_mgrs[klass]
                   
         work_list.each do |op_type|
           list_for_class_and_op = details_mgr.get_list(op_type)
-       
+          
           next if(list_for_class_and_op.nil? || list_for_class_and_op.empty?)
-         #if(work_list.include?(md.operator_type))
-              #each do |mdtype|
-          #end
-          #if(MethodDictionary.respond_to?("#{mdtype}_for") )
-           # method_details = MethodDictionary.send("#{mdtype}_for", klass)
-        
-            list_for_class_and_op.each {|md| headers << "#{md.operator}" }
-          #else
-           # puts "ERROR : Unknown option in :with [#{mdtype}]"
-         
+          list_for_class_and_op.each {|md| headers << "#{md.operator}" }
         end
         
+        puts "headers :  [#{headers.inspect}]"
         excel.set_headers( headers )
                 
         excel.save( filename() )
