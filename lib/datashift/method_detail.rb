@@ -14,47 +14,6 @@ require 'to_b'
 
 module DataShift
 
-  # Stores MethodDetails for a class mapped by type
-  class MethodDetailsManager
-
-    attr_reader :method_details
-    
-    def initialize( klass )
-      @parent_class = klass
-      @method_details = {}
-      @method_details_list = {}
-    end
-    
-    def add(method_details)
-      @method_details[method_details.operator_type] ||= {}
-      @method_details_list[method_details.operator_type] ||= []
-       
-      @method_details[method_details.operator_type][method_details.name] = method_details
-      @method_details_list[method_details.operator_type] << method_details
-      @method_details_list[method_details.operator_type].uniq!
-    end
-
-    def <<(method_details)
-      add(method_details)      
-    end
-
-    def find(name, type)
-      method_details = get(type)
-     
-      method_details ?  method_details[name] : nil
-    end
-    
-    # type is expected to be one of MethodDetail::supportedtype_enum
-    def get( type )
-      @method_details[type]
-    end
-    
-    def get_list( type )
-      @method_details_list[type]
-    end
-    
-  end
-  
   class MethodDetail
 
     def self.supported_types_enum
