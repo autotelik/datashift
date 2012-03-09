@@ -22,12 +22,12 @@ module DataShift
     end
     
     def add(method_details)
-      @method_details[method_details.operator_type.to_intern] ||= {}
-      @method_details_list[method_details.operator_type.to_intern] ||= []
+      @method_details[method_details.operator_type.to_sym] ||= {}
+      @method_details_list[method_details.operator_type.to_sym] ||= []
        
-      @method_details[method_details.operator_type.to_intern][method_details.name] = method_details
-      @method_details_list[method_details.operator_type.to_intern] << method_details
-      @method_details_list[method_details.operator_type.to_intern].uniq!
+      @method_details[method_details.operator_type.to_sym][method_details.name] = method_details
+      @method_details_list[method_details.operator_type.to_sym] << method_details
+      @method_details_list[method_details.operator_type.to_sym].uniq!
     end
 
     def <<(method_details)
@@ -42,11 +42,11 @@ module DataShift
     
     # type is expected to be one of MethodDetail::supportedtype_enum
     def get( type )
-      @method_details[type.to_intern]
+      @method_details[type.to_sym]
     end
     
     def get_list( type )
-      @method_details_list[type.to_intern]
+      @method_details_list[type.to_sym]
     end
     
   end
