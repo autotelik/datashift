@@ -23,5 +23,24 @@ describe 'DataShift' do
   it "should provide root_path" do
     DataShift.root_path.should_not be_empty
   end
+
+  it "should provide a log" do
+    class Blah
+      include DataShift::Logging
+      
+      def try_me
+        logger.info "hello datashift spec"
+      end
+    end
+    
+    
+    b = Blah.new()
+    
+    b.logger.info "try me"
+    
+    b.try_me
+    
+    
+  end
   
 end

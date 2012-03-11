@@ -194,7 +194,7 @@ module DataShift
       
       #puts load_object_class.new.to_yaml
       
-      puts data.inspect
+      logger.info("Read Datashift loading config: #{data.inspect}")
       
       if(data[load_object_class.name])
         

@@ -108,7 +108,7 @@ module DataShift
       
       def initialize(filename)
         @filename = filename
-        raise DataShift::BadRuby, "Apologies but Datashift Excel facilities currently need JRuby. Please switch to, or install JRuby"
+        raise DataShift::BadRuby, "Apologies but DataShift Excel facilities currently need JRuby. Please switch to, or install JRuby"
       end
     end
   end # jruby

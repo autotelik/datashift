@@ -38,7 +38,7 @@ if(Guards::jruby?)
     end
   
     it "should be able to create a new excel generator" do
-      generator = ExcelGenerator.new( 'dummy.xls' )
+      generator = ExcelExporter.new( 'dummy.xls' )
       
       generator.should_not be_nil
     end
@@ -47,7 +47,7 @@ if(Guards::jruby?)
 
       expect = result_file('project_template_spec.xls')
 
-      gen = ExcelGenerator.new( expect )
+      gen = ExcelExporter.new( expect )
     
       gen.generate(Project)
  
@@ -75,5 +75,5 @@ if(Guards::jruby?)
 
   end
 else
-  puts "WARNING: skipped excel_generator_spec : Requires JRUBY - JExcelFile requires JAVA"
+  puts "WARNING: skipped excel_exporter_spec : Requires JRUBY - JExcelFile requires JAVA"
 end # jruby

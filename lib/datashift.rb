@@ -1,11 +1,32 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2010 - 2012 Tom Statter
 # Author ::   Tom Statter
 # Date ::     Aug 2010
-# License::   TBD. Free, Open Source. MIT ?
+# License::   Free, Open Source.
 #
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#++
+
+
 # Details::   Active Record Loader
 # 
-# #  To pull Datashift commands into your main application :
+# To pull DataShift commands into your main application :
 #
 #     require 'datashift'
 #
@@ -93,6 +114,7 @@ module DataShift
     require_libs.each do |base|
       Dir[File.join(library_path, base, '*.rb')].each do |rb|
         unless File.directory? rb
+          #puts rb
           require rb
         end
       end
@@ -118,52 +140,6 @@ module DataShift
     
       next unless File.file?(f)
       Thor::Util.load_thorfile(f)
-    end
-  end
-
-  module Logging
-    
-    class MultiIO
-           
-      def initialize(*targets)
-        @targets = []
-        targets.each {|t| @targets << Logger.new(t) }
-      end
-
-      def add(target)
-        @targets << Logger.new(target)
-      end
-      
-      
-      def method_missing(method, *args, &block)
-        @targets.each {|t| t.send(method, *args, &block) }
-      end
-    
-      def verbose
-        add(STDOUT)
-      end
-    
-    end
-    
-    require 'logger'
-     
-    def logdir
-      @logdir ||= 'log'
-      @logdir
-    end
-  
-    def logger
-      @logger ||= open
-      @logger
-    end
-    
-    private
-    
-    def open( log = 'datashift.log')
-      FileUtils::mkdir(logdir) unless File.directory?(logdir)
-      log_file = File.open( File.join(logdir(), 'datashift.log'), "a")
-      @logger = MultiIO.new(log_file)
-      @logger
     end
   end
   
