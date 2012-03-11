@@ -3,7 +3,6 @@
 # Date ::     Mar 2012
 # License::   MIT.
 #
-#
 # Usage::
 #
 #  To pull Datashift commands into your main application :
@@ -14,25 +13,26 @@
 #
 #  Cmd Line:
 #
-# => bundle exec thor datashift:generate:excel --model <active record class> --result <output_template.xls>
+# => bundle exec thor datashift:generate:excel -m <active record class> -r <output_template.xls> -a
 #
 
 module Datashift
  
   class Generate < Thor     
-                                             
-    desc "excel --model <Class> --result <file.xls>", "generate a template from an active record model" 
+         
+    desc "excel", "generate a template from an active record model (with optional associations)" 
     method_option :model, :aliases => '-m', :required => true, :desc => "The active record model to export"
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
+    method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
+    method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
     
     def excel()
      
-     # TODO - We're assuming run from a rails app/top level dir...
-     # ...can we make this more robust ? e.g what about when using active record but not in Rails app, 
-     require File.expand_path('config/environment.rb')
-
-      
-     require 'excel_generator'
+      # TODO - We're assuming run from a rails app/top level dir...
+      # ...can we make this more robust ? e.g what about when using active record but not in Rails app, 
+      require File.expand_path('config/environment.rb')
+   
+      require 'excel_generator'
 
       model = options[:model]
       result = options[:result]
@@ -45,9 +45,19 @@ module Datashift
         raise "ERROR: No such Model [#{model}] found - check valid model supplied via -model <Class>"
       end
 
-      gen = DataShift::ExcelGenerator.new(result)
+      begin
+        gen = DataShift::ExcelGenerator.new(result)
 
-      gen.generate(klass)
+        if(options[:assoc])
+          opts = (options[:exclude]) ? {:exclude => options[:exclude]} : {}
+          gen.generate_with_associations(klass, opts)
+        else
+          gen.generate(klass)
+        end
+      rescue => e
+        puts "Warning: Error during generation, template may be incomplete"
+      end
+
     end
   end
 

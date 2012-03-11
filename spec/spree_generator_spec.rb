@@ -75,4 +75,18 @@ describe 'SpreeLoader' do
     
   end
     
+   it "should be able to exclude single associations from template" do
+
+    expect = result_file('product_and_assoc_export_spec.xls')
+
+    excel = ExcelGenerator.new(expect)
+      
+    excel.generate_with_associations(@klass, :exclude => :has_many)
+
+    File.exists?(expect).should be_true
+
+    puts "You can check results manually in file #{expect}"
+    
+  end
+  
 end

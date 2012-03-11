@@ -28,7 +28,7 @@ namespace :datashift do
 
       # COLUMNS WITH DEFAULTS - TODO create YAML configuration file to drive defaults etc
 
-      loader = DataShift::ProductLoader.new
+      loader = DataShift::SpreeHelper::ProductLoader.new
 
       loader.set_default_value('available_on', Time.now.to_s(:db) )
       loader.set_default_value('cost_price', 0.0 )
