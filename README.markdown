@@ -2,6 +2,8 @@
 
 Provides tools to shift data between Ruby, external applications, files and ActiveRecord.
 
+Wiki taking shape with more info here : <b>https://github.com/autotelik/datashift/wiki</b>
+
 ### Features
 
 Map Active Record models and associations to files, generate sample templates.
@@ -39,17 +41,23 @@ To pull the tasks in, add this call to your Rakefile :
 
      DataShift::load_tasks
 
+To keep the availability to only development mode use
+
+    if(Rails.env.development?)
+        DataShift::<b>load_tasks</b>
+    end
+
 To use the Thor command line applications :
 
     Create a high level .thor file - e.g mysite.thor - in your applications root directory 
 
 Pull in the thor commands :
-
+```
     require 'thor'
     require 'datashift'
 
-    DataShift::load_commands
-
+    DataShift::<b>load_commands</b>
+```
 To check the available tasks run
 
     bundle exec rake -T datashift
@@ -57,6 +65,10 @@ To check the available tasks run
 and/or
 
     bundle exc thor list datashift
+
+To get usgae information use thor help <command>, for example
+
+    bundle exec thor help datashift:generate:excel
 
 N.B - To use the Excel loader, OLE and Excel are NOT required, however
 JRuby is required, since it uses Java's Apache POI under the hood to process .xls files.

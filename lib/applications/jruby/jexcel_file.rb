@@ -272,10 +272,17 @@ if(DataShift::Guards::jruby?)
     end
     
     def save( filename = nil )
+   
       filename.nil? ? file = @filepath : file = filename
-      out = FileOutputStream.new(file)
-      @book.write(out) unless @book.nil?
-      out.close
+      begin
+        out = FileOutputStream.new(file)
+        @book.write(out) unless @book.nil?
+
+        out.close
+      rescue => e
+        puts e
+        raise "Cannot write file - is file already open in Excel ?"
+      end
     end
 
     def save_to_text( filename )

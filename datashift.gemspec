@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "datashift"
-  s.version = "0.2.1"
+  s.version = "0.2.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thomas Statter"]
-  s.date = "2012-02-29"
+  s.date = "2012-03-05"
   s.description = "A suite of tools to move data between ActiveRecord models,databases,applications like Excel/Open Office, files and projects including Spree"
   s.email = "rubygems@autotelik.co.uk"
   s.extra_rdoc_files = [
@@ -24,7 +24,6 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
-    "datashift-0.1.0.gem",
     "datashift.gemspec",
     "lib/applications/jruby/jexcel_file.rb",
     "lib/applications/jruby/word.rb",
@@ -35,10 +34,15 @@ Gem::Specification.new do |s|
     "lib/datashift/method_detail.rb",
     "lib/datashift/method_dictionary.rb",
     "lib/datashift/method_mapper.rb",
+    "lib/datashift/model_mapper.rb",
+    "lib/exporters/csv_exporter.rb",
+    "lib/exporters/excel_exporter.rb",
+    "lib/exporters/exporter_base.rb",
     "lib/generators/csv_generator.rb",
     "lib/generators/excel_generator.rb",
     "lib/generators/generator_base.rb",
     "lib/helpers/core_ext/to_b.rb",
+    "lib/helpers/rake_utils.rb",
     "lib/helpers/spree_helper.rb",
     "lib/java/poi-3.7/._poi-3.7-20101029.jar5645100390082102460.tmp",
     "lib/java/poi-3.7/LICENSE",
@@ -61,6 +65,7 @@ Gem::Specification.new do |s|
     "lib/loaders/spreadsheet_loader.rb",
     "lib/loaders/spree/image_loader.rb",
     "lib/loaders/spree/product_loader.rb",
+    "lib/thor/generate_excel.thor",
     "public/spree/products/large/DEMO_001_ror_bag.jpeg",
     "public/spree/products/large/DEMO_002_Powerstation.jpg",
     "public/spree/products/large/DEMO_003_ror_mug.jpeg",
@@ -76,6 +81,11 @@ Gem::Specification.new do |s|
     "public/spree/products/small/DEMO_001_ror_bag.jpeg",
     "public/spree/products/small/DEMO_002_Powerstation.jpg",
     "public/spree/products/small/DEMO_003_ror_mug.jpeg",
+    "sandbox/app/controllers/application_controller.rb",
+    "sandbox/config/application.rb",
+    "sandbox/config/database.yml",
+    "sandbox/config/environment.rb",
+    "sandbox/config/environments/development.rb",
     "spec/csv_loader_spec.rb",
     "spec/datashift_spec.rb",
     "spec/db/migrate/20110803201325_create_test_bed.rb",
@@ -92,6 +102,7 @@ Gem::Specification.new do |s|
     "spec/fixtures/SimpleProjects.xls",
     "spec/fixtures/config/database.yml",
     "spec/fixtures/datashift_Spree_db.sqlite",
+    "spec/fixtures/datashift_test_models_db.sqlite",
     "spec/fixtures/images/DEMO_001_ror_bag.jpeg",
     "spec/fixtures/images/DEMO_002_Powerstation.jpg",
     "spec/fixtures/images/DEMO_003_ror_mug.jpeg",
@@ -118,13 +129,13 @@ Gem::Specification.new do |s|
     "spec/method_dictionary_spec.rb",
     "spec/method_mapper_spec.rb",
     "spec/spec_helper.rb",
+    "spec/spree_exporter_spec.rb",
     "spec/spree_generator_spec.rb",
     "spec/spree_loader_spec.rb",
     "spec/spree_method_mapping_spec.rb",
     "tasks/config/seed_fu_product_template.erb",
     "tasks/config/tidy_config.txt",
-    "tasks/db_tasks.rake",
-    "tasks/excel_generator.rake",
+    "tasks/export/excel_generator.rake",
     "tasks/file_tasks.rake",
     "tasks/import/csv.rake",
     "tasks/import/excel.rake",
