@@ -11,6 +11,8 @@ module DataShift
 
   class MethodDictionary
 
+    include DataShift::Logging
+    
     def initialize
     end
 
@@ -28,6 +30,7 @@ module DataShift
         has_many[klass] = klass.reflect_on_all_associations(:has_many).map { |i| i.name.to_s }
         klass.reflect_on_all_associations(:has_and_belongs_to_many).inject(has_many[klass]) { |x,i| x << i.name.to_s }
       end
+      
       # puts "DEBUG: Has Many Associations:", has_many[klass].inspect
 
       # Find the belongs_to associations which can be populated via  Model.belongs_to_name = OtherArModelObject
@@ -48,7 +51,7 @@ module DataShift
       # Note, not all reflections return method names in same style so we convert all to
       # the raw form i.e without the '='  for consistency 
       if( options[:reload] || assignments[klass].nil? )
-
+ 
         assignments[klass] = klass.column_names
            
         if(options[:instance_methods] == true)

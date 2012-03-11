@@ -50,7 +50,7 @@ module DataShift
         elsif(ext == '.csv')
           perform_csv_load(file_name, options)
         else
-          raise DataShift::UnsupportedFileType, "#{ext} files not supported - Try CSV or OpenOffice/Excel .xls"
+          raise DataShift::UnsupportedFileType, "#{ext} files not supported - Try .csv or OpenOffice/Excel .xls"
         end
       end
       

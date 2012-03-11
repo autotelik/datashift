@@ -18,7 +18,9 @@ module DataShift
 
     class ExcelGenerator < GeneratorBase
 
-      attr_accessor :filename
+      include DataShift::Logging
+      
+      attr_accessor :excel, :filename
   
       def initialize(filename)
         @filename = filename
@@ -27,43 +29,28 @@ module DataShift
       # Create an Excel file template (header row) representing supplied Model
     
       def generate(klass, options = {})
-        MethodDictionary.find_operators( klass )
-
-        @filename = options[:filename] if  options[:filename]
-
-        excel = JExcelFile.new()
-
-        if(options[:sheet_name] )
-          excel.create_sheet( options[:sheet_name] ) 
-        else
-          excel.create_sheet( klass.name )
-        end
+     
+        prepare(klass, options)
         
-        raise "Failed to create Excel WorkSheet for #{klass.name}" unless excel.sheet
+        @excel.set_headers(MethodDictionary.assignments[klass])
 
-        excel.set_headers(MethodDictionary.assignments[klass])
-
-        excel.save( @filename )
+        logger.info("ExcelGenerator saving generated template #{@filename}")
+        
+        @excel.save( @filename )
       end
 
       
       # Create an Excel file from list of ActiveRecord objects
       # To remove type(s) of associations specify option :
       #   :exclude => [type(s)]
+      #   
       # Possible values are given by MethodDetail::supported_types_enum
       #  ... [:assignment, :belongs_to, :has_one, :has_many]
       #
+      # Options
       def generate_with_associations(klass, options = {})
 
-        excel = JExcelFile.new()
-
-        if(options[:sheet_name] )
-          excel.create_sheet( options[:sheet_name] ) 
-        else
-          excel.create_sheet( klass.name )
-        end
-        
-        MethodDictionary.find_operators( klass )
+        prepare(klass, options)
          
         MethodDictionary.build_method_details( klass )
            
@@ -81,10 +68,33 @@ module DataShift
           list_for_class_and_op.each {|md| headers << "#{md.operator}" }
         end
         
-        puts "headers :  [#{headers.inspect}]"
-        excel.set_headers( headers )
+        @excel.set_headers( headers )
                 
-        excel.save( filename() )
+        @excel.save( filename() )
+      end
+      
+      private
+      
+      def prepare(klass, options = {})
+        @filename = options[:filename] if  options[:filename]
+        
+        logger.info("ExcelGenerator creating template with associations for class #{klass}")
+        
+        @excel = JExcelFile.new()
+
+        if(options[:sheet_name] )
+          @excel.create_sheet( options[:sheet_name] ) 
+        else
+          @excel.create_sheet( klass.name )
+        end
+        
+        unless @excel.sheet
+          logger.error("Excel failed to create WorkSheet for #{klass.name}")
+        
+          raise "Failed to create Excel WorkSheet for #{klass.name}" 
+        end
+        
+        MethodDictionary.find_operators( klass )
       end
     end # ExcelGenerator
 
@@ -93,7 +103,7 @@ module DataShift
       
       def initialize(filename)
         @filename = filename
-        raise DataShift::BadRuby, "Apologies but Datashift Excel facilities currently need JRuby. Please switch to, or install JRuby"
+        raise DataShift::BadRuby, "Apologies but DataShift Excel facilities currently need JRuby. Please switch to, or install JRuby"
       end
     end
   end # jruby

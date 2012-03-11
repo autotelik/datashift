@@ -5,7 +5,7 @@ require File.dirname(__FILE__) + '/../lib/datashift'
 
 include DataShift
 
-#.# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2011
 # Author ::   Tom Statter
 # Date ::     Aug 2011
 # License::   MIT

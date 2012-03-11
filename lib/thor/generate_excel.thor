@@ -15,11 +15,17 @@
 #
 # => bundle exec thor datashift:generate:excel -m <active record class> -r <output_template.xls> -a
 #
+require 'datashift'
+  
 
+# Note, not DataShift, case sensitive, create namespace for command line : datashift
 module Datashift
- 
+
+          
   class Generate < Thor     
-         
+  
+    include DataShift::Logging
+      
     desc "excel", "generate a template from an active record model (with optional associations)" 
     method_option :model, :aliases => '-m', :required => true, :desc => "The active record model to export"
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
@@ -36,7 +42,9 @@ module Datashift
 
       model = options[:model]
       result = options[:result]
-      
+     
+      logger.info "Datashift: Start Excel template generation in #{result}"
+            
       begin
         # support modules e.g "Spree::Property") 
         klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
@@ -50,11 +58,14 @@ module Datashift
 
         if(options[:assoc])
           opts = (options[:exclude]) ? {:exclude => options[:exclude]} : {}
+          logger.info("Datashift: Generating with associations")
           gen.generate_with_associations(klass, opts)
         else
           gen.generate(klass)
         end
       rescue => e
+        puts e
+        puts e.backtrace
         puts "Warning: Error during generation, template may be incomplete"
       end
 
