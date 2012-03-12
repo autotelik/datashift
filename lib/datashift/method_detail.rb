@@ -16,6 +16,8 @@ module DataShift
 
   class MethodDetail
 
+    include DataShift::Logging
+    
     def self.supported_types_enum
       @type_enum ||= Set[:assignment, :belongs_to, :has_one, :has_many]
       @type_enum
@@ -108,7 +110,7 @@ module DataShift
 
       elsif( operator_for(:has_many) )
         
-        puts "DEBUG : VALUE TYPE [#{value.class.name.include?(operator.classify)}] [#{ModelMapper.class_from_string(value.class.name)}]" unless(value.is_a?(Array))
+        #puts "DEBUG : VALUE TYPE [#{value.class.name.include?(operator.classify)}] [#{ModelMapper.class_from_string(value.class.name)}]" unless(value.is_a?(Array))
      
         # The include? check is best I can come up with right now .. to handle module/namespaces
         # TODO - can we determine the real class type of an association
@@ -127,20 +129,20 @@ module DataShift
         if(value.is_a?(operator_class))
           record.send(operator + '=', value)
         else
-          puts "ERROR #{value.class} - Not expected type for has_one #{operator} - cannot assign"
+          logger.error("ERROR #{value.class} - Not expected type for has_one #{operator} - cannot assign")
           # TODO -  Not expected type - maybe try to look it up somehow ?"
           #insistent_has_many(record, @current_value)
         end
 
       elsif( operator_for(:assignment) && @col_type )
         #puts "DEBUG : COl TYPE defined for #{@name} : #{@assignment} => #{@current_value} #{@col_type.type}"
-        #puts "DEBUG : COl TYPE CAST: #{@current_value} => #{@col_type.type_cast( @current_value ).inspect}"
+       # puts "DEBUG : Column [#{@name}] : COl TYPE CAST: #{@current_value} => #{@col_type.type_cast( @current_value ).inspect}"
         record.send( operator + '=' , @col_type.type_cast( @current_value ) )
 
         #puts "DEBUG : MethodDetails Assignment RESULT: #{record.send(operator)}"
 
       elsif( operator_for(:assignment) )
-        #puts "DEBUG : Brute force assignment of value  #{@current_value} supplied for Column [#{@name}]"
+        #puts "DEBUG : Column [#{@name}] : Brute force assignment of value  #{@current_value}"
         # brute force case for assignments without a column type (which enables us to do correct type_cast)
         # so in this case, attempt straightforward assignment then if that fails, basic ops such as to_s, to_i, to_f etc
         insistent_assignment(record, @current_value)

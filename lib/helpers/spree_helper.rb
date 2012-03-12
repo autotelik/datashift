@@ -25,8 +25,6 @@
 #             as the database is auto generated
 # =>          
 
-
-  
 module DataShift
     
   module SpreeHelper
@@ -72,10 +70,15 @@ module DataShift
     end
     
     
-    # Datahift isi usually included and tasks pulled in by a parent/host application.
+    # Datashift is usually included and tasks pulled in by a parent/host application.
     # So here we are hacking our way around the fact that datashift is not a Rails/Spree app/engine
     # so that we can ** run our specs ** directly in datashift library
     # i.e without ever having to install datashift in a host application
+    #
+    # NOTES:
+    # => Will chdir into the sandbox to load environment as need to mimic being at root of a rails project
+    #    chdir back after environment loaded
+    
     def self.boot( database_env )
      
       if( ! is_namespace_version )
@@ -96,9 +99,17 @@ module DataShift
        
         require 'rails/all'
         
+        store_path = Dir.pwd
+        
         Dir.chdir( File.expand_path('../../../sandbox', __FILE__) )
 
+        rails_root = File.expand_path('../../../sandbox', __FILE__)
+        
+        $:.unshift rails_root
+        
         require 'config/environment.rb'
+        
+        Dir.chdir( store_path )
         
         @dslog.info "Booted Spree using post 1.0.0 version"
       end

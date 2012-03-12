@@ -25,6 +25,7 @@ module DataShift
       def initialize(product = nil)
         super( SpreeHelper::get_product_class(), product, :instance_methods => true  )
      
+        @@image_klass ||= SpreeHelper::get_spree_class('Image')
         @@option_type_klass ||= SpreeHelper::get_spree_class('OptionType')
         @@option_value_klass ||= SpreeHelper::get_spree_class('OptionValue')
         @@property_klass ||= SpreeHelper::get_spree_class('Property')
@@ -42,6 +43,8 @@ module DataShift
       #   CSV files
       def perform_load( file_name, options = {} )
 
+        raise DataShift::BadFile, "Cannot load #{file_name} file not found." unless(File.exists?(file_name))
+        
         ext = File.extname(file_name)
           
         if(ext == '.xls')
@@ -95,7 +98,7 @@ module DataShift
   
           # Spree has some stock management stuff going on, so dont usually assign to column vut use
           # on_hand and on_hand=
-          if(@load_object.variants.size > 0 && current_value.include?(LoaderBase::multi_assoc_delim))
+          if(@load_object.variants.size > 0 && current_value.to_s.include?(LoaderBase::multi_assoc_delim))
 
             #puts "DEBUG: COUNT_ON_HAND PER VARIANT",current_value.is_a?(String),
           
@@ -118,6 +121,13 @@ module DataShift
       end
 
       private
+      
+      # Take current column data and split into each association
+      # Supported Syntax :
+      #  assoc_find_name:value | assoc2_find_name:value | etc
+      def get_each_assoc
+        current_value.to_s.split( LoaderBase::multi_assoc_delim )
+      end
 
       # Special case for OptionTypes as it's two stage process
       # First add the possible option_types to Product, then we are able
@@ -128,7 +138,7 @@ module DataShift
         # TODO smart column ordering to ensure always valid by time we get to associations
         save_if_new
 
-        option_types = current_value.split( LoaderBase::multi_assoc_delim )
+        option_types = get_each_assoc#current_value.split( LoaderBase::multi_assoc_delim )
 
         option_types.each do |ostr|
           oname, value_str = ostr.split(LoaderBase::name_value_delim)
@@ -182,13 +192,13 @@ module DataShift
         # TODO smart column ordering to ensure always valid by time we get to associations
         save_if_new
 
-        images = current_value.split(LoaderBase::multi_assoc_delim)
+        images = get_each_assoc#current_value.split(LoaderBase::multi_assoc_delim)
 
         images.each do |image|
           
           img_path, alt_text = image.split(LoaderBase::name_value_delim)
           
-          image = create_image(img_path, @load_object, :alt => alt_text)
+          image = create_image(@@image_klass, img_path, @load_object, :alt => alt_text)
         end
       
       end
@@ -202,7 +212,7 @@ module DataShift
         # TODO smart column ordering to ensure always valid by time we get to associations
         save_if_new
 
-        property_list = current_value.split(LoaderBase::multi_assoc_delim)
+        property_list = get_each_assoc#current_value.split(LoaderBase::multi_assoc_delim)
 
         property_list.each do |pstr|
           pname, pvalue = pstr.split(LoaderBase::name_value_delim)
@@ -244,7 +254,7 @@ module DataShift
         # TODO smart column ordering to ensure always valid by time we get to associations
         save_if_new
 
-        chain_list = current_value().split(LoaderBase::multi_assoc_delim)
+        chain_list = get_each_assoc#current_value().split(LoaderBase::multi_assoc_delim)
 
         chain_list.each do |chain|
           

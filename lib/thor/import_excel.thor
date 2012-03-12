@@ -33,7 +33,7 @@ module Datashift
       
     desc "excel", "import .xls file for specifiec active record model" 
     method_option :model, :aliases => '-m', :required => true, :desc => "The related active record model"
-    method_option :inout, :aliases => '-r', :required => true, :desc => "The input .xls file"
+    method_option :input, :aliases => '-i', :required => true, :desc => "The input .xls file"
     method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include any associations supplied in the input"
     method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
     

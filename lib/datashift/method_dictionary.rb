@@ -24,6 +24,8 @@ module DataShift
     #   :instance_methods => if true include instance method type assignment operators as well as model's pure columns
     #
     def self.find_operators(klass, options = {} )
+      
+      raise "Cannot find operators supplied klass nil #{klass}" if(klass.nil?)
 
       # Find the has_many associations which can be populated via <<
       if( options[:reload] || has_many[klass].nil? )
