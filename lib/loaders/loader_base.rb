@@ -131,14 +131,18 @@ module DataShift
     def map_headers_to_operators( headers, strict, mandatory = [])
       @headers = headers
       
-      puts "HEADERS TO OPS"
-      method_details = @method_mapper.map_inbound_to_methods( load_object_class, @headers )
-puts "HEADERS TO OPS"
+      begin 
+        method_details = @method_mapper.map_inbound_to_methods( load_object_class, @headers )
+      rescue => e
+        logger.error("Failed to map header row to set of database operators : #{e.inspect}")
+        raise MappingDefinitionError, "Failed to map header row to set of database operators"
+      end
+      
       unless(@method_mapper.missing_methods.empty?)
         puts "WARNING: Following column headings could not be mapped : #{@method_mapper.missing_methods.inspect}"
         raise MappingDefinitionError, "Missing mappings for columns : #{@method_mapper.missing_methods.join(",")}" if(strict)
       end
-puts "HEADERS TO OPS"
+
       unless(@method_mapper.contains_mandatory?(mandatory) )
         @method_mapper.missing_mandatory(mandatory).each { |e| puts "ERROR: Mandatory column missing - expected column '#{e}'" }
         raise MissingMandatoryError, "Mandatory columns missing  - please fix and retry."
