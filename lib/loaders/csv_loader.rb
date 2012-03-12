@@ -14,8 +14,10 @@ module DataShift
      
   module CsvLoading
     
+    include DataShift::Logging
+    
     def perform_csv_load(file_name, options = {})
-
+       
       require "csv"
 
       # TODO - can we abstract out what a 'parsed file' is - so a common object can represent excel,csv etc
@@ -23,14 +25,12 @@ module DataShift
 
       @parsed_file = CSV.read(file_name)
 
-
-      @method_mapper = DataShift::MethodMapper.new
-
       @mandatory = options[:mandatory] || []
 
       # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
+      # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
       map_headers_to_operators( @parsed_file.shift, options[:strict] , @mandatory )
-
+        
       unless(@method_mapper.missing_methods.empty?)
         puts "WARNING: Following column headings could not be mapped : #{@method_mapper.missing_methods.inspect}"
         raise MappingDefinitionError, "ERROR: Missing mappings for #{@method_mapper.missing_methods.size} column headings"
@@ -45,6 +45,9 @@ module DataShift
         @loaded_objects =  []
 
         @parsed_file.each do |row|
+          
+          # First assign any default values for columns not included in parsed_file
+          process_missing_columns_with_defaults
 
           # TODO - Smart sorting of column processing order ....
           # Does not currently ensure mandatory columns (for valid?) processed first but model needs saving
@@ -67,7 +70,7 @@ module DataShift
           # TODO - handle when it's not valid ?
           # Process rest and dump out an exception list of Products ??
 
-          puts "SAVING ROW #{row} : #{load_object.inspect}" #if options[:verbose]
+          logger.info "Saving csv row #{row} to table object : #{load_object.inspect}" #if options[:verbose]
 
           save
 

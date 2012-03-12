@@ -16,8 +16,8 @@ module DataShift
 
   class LoaderBase
 
-    
     include DataShift::Logging
+    include DataShift::Populator
       
     attr_reader :headers
 
@@ -131,13 +131,14 @@ module DataShift
     def map_headers_to_operators( headers, strict, mandatory = [])
       @headers = headers
       
+      puts "HEADERS TO OPS"
       method_details = @method_mapper.map_inbound_to_methods( load_object_class, @headers )
-
+puts "HEADERS TO OPS"
       unless(@method_mapper.missing_methods.empty?)
         puts "WARNING: Following column headings could not be mapped : #{@method_mapper.missing_methods.inspect}"
         raise MappingDefinitionError, "Missing mappings for columns : #{@method_mapper.missing_methods.join(",")}" if(strict)
       end
-
+puts "HEADERS TO OPS"
       unless(@method_mapper.contains_mandatory?(mandatory) )
         @method_mapper.missing_mandatory(mandatory).each { |e| puts "ERROR: Mandatory column missing - expected column '#{e}'" }
         raise MissingMandatoryError, "Mandatory columns missing  - please fix and retry."
@@ -145,6 +146,15 @@ module DataShift
     end
 
 
+    # Process any defaults user has specified, for those columns that are not included in
+    # the incoming import format
+    def process_missing_columns_with_defaults()
+      inbound_ops = @method_mapper.operator_names
+      @default_values.each do |dn, dv|     
+        assignment(dn, @load_object, dv) unless(inbound_ops.include?(dn))
+      end
+    end
+    
     # Core API - Given a single free text column name from a file, search method mapper for
     # associated operator on base object class.
     # 
@@ -176,20 +186,20 @@ module DataShift
       #   IDEAS .....
       #
       #unless(@default_data_objects[load_object_class])
-    #
-     #   @default_data_objects[load_object_class] = load_object_class.new
+      #
+      #   @default_data_objects[load_object_class] = load_object_class.new
       
       #  default_data_object = @default_data_objects[load_object_class]
       
       
-       # default_data_object.instance_eval do
-        #  def datashift_defaults=(hash)
-         #   @datashift_defaults = hash
-        #  end
-        #  def datashift_defaults
-        #    @datashift_defaults
-        #  end
-        #end unless load_object_class.respond_to?(:datashift_defaults)
+      # default_data_object.instance_eval do
+      #  def datashift_defaults=(hash)
+      #   @datashift_defaults = hash
+      #  end
+      #  def datashift_defaults
+      #    @datashift_defaults
+      #  end
+      #end unless load_object_class.respond_to?(:datashift_defaults)
       #end
       
       #puts load_object_class.new.to_yaml

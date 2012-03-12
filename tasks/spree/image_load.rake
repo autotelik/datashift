@@ -14,7 +14,8 @@ namespace :datashift do
 
   namespace :spree do
 
-    desc "Populate the DB with images.\nDefault location db/image_seeds, or specify :input=<path> or dir under db/image_seeds with :folder"
+    #DEPRECATED FOTR THOR
+    #desc "Populate the DB with images.\nDefault location db/image_seeds, or specify :input=<path> or dir under db/image_seeds with :folder"
     # :dummy => dummy run without actual saving to DB
     task :images, [:input, :folder, :dummy, :sku, :skip_if_no_assoc, :skip_if_loaded, :model] => :environment do |t, args|
 
@@ -30,33 +31,37 @@ namespace :datashift do
         @image_cache =  File.join(@image_cache, args[:folder]) if(args[:folder])
       end
 
-      attachment_klazz = Product
+      
+      attachment_klazz = SpreeHelper::get_spree_class('Product' )
+      sku_klazz = SpreeHelper::get_spree_class('Variant' )
 
-      begin
-        attachment_klazz = Kernel.const_get(args[:model]) if(args[:model])
-      rescue NameError
-        attachment_klazz = Product
-      end
+      # TODO generalise for any paperclip project, for now just Spree
+      #begin
+      #  attachment_klazz = Kernel.const_get(args[:model]) if(args[:model])
+     # rescue NameError
+      #  raise "Could not find contant for model #{args[:model]}"
+      #end
 
       image_loader = ImageLoader.new
 
-      if(File.exists? @image_cache )
+      if(File.directory? @image_cache )
         puts "Loading images from #{@image_cache}"
 
         missing_records = []
-        Dir.glob("#{@image_cache}/*.{jpg,png,gif}") do |image_name|
+        Dir.glob("#{@image_cache}/**/*.{jpg,png,gif}") do |image_name|
 
-          puts "Processing #{image_name} : #{File.exists?(image_name)}"
           base_name = File.basename(image_name, '.*')
-
+           
+          puts "Processing #{base_name} : #{File.exists?(image_name)}"
+           
           record = nil
-          if(attachment_klazz == Product && args[:sku])
+          if(args[:sku])
             sku = base_name.slice!(/\w+/)
             sku.strip!
             base_name.strip!
 
             puts "Looking fo SKU #{sku}"
-            record = Variant.find_by_sku(sku)
+            record = sku_klazz.find_by_sku(sku)
             if record
               record = record.product   # SKU stored on Variant but we want it's master Product
             else

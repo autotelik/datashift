@@ -83,12 +83,16 @@ describe 'SpreeLoader' do
     test_basic_product('SpreeProductsSimple.xls')
   end
 
-  it "should load basic Products from .csv via Spree loader" do
+  it "should load basic Products from .csv via Spree loader", :csv => true do
     test_basic_product('SpreeProductsSimple.csv')
   end
 
+  it "should raise an error for missing file" do
+    lambda { test_basic_product('SpreeProductsSimple.txt') }.should raise_error BadFile
+  end
+
   it "should raise an error for unsupported file types" do
-    lambda { test_basic_product('SpreeProductsSimple.xml') }.should raise_error UnsupportedFileType
+    lambda { test_basic_product('SpreeProductsDefaults.yml') }.should raise_error UnsupportedFileType
   end
   
   def test_basic_product( source )
@@ -116,6 +120,53 @@ describe 'SpreeLoader' do
     @klass.last.count_on_hand.should == 23
   end
 
+  
+  it "should support default values for Spree Products loader", :fail => true do
+   
+    @expected_time =  Time.now.to_s(:db) 
+    
+    @product_loader.set_default_value('available_on', @expected_time)
+    @product_loader.set_default_value('cost_price', 1.0 )
+    @product_loader.set_default_value('meta_description', 'super duper meta desc.' )
+    @product_loader.set_default_value('meta_keywords', 'techno dubstep d&b' )
+      
+
+    @product_loader.set_prefix('sku', 'SPEC_')
+      
+    test_default_values
+
+  end
+
+  it "should support default values from config for Spree Products loader", :fail => true do
+   
+    @product_loader.configure_from(  SpecHelper::spree_fixture('SpreeProductsDefaults.yml') )
+    
+    @product_loader.set_prefix('sku', 'SPEC_')
+      
+    test_default_values
+
+  end
+  
+  def test_default_values
+    @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsMandatoryOnly.xls'), :mandatory => ['sku', 'name', 'price'] )
+    
+    @klass.count.should == 3
+
+    @product_loader.failed_objects.size.should == 0
+    @product_loader.loaded_objects.size.should == 3
+    
+    p = @klass.first
+    
+    p.sku.should == "SPEC_SIMPLE_001"
+      
+    @klass.all { |p|
+      p.sku.should.include "SPEC_"
+      p.cost_price = 1.0
+      p.available_on.should == @expected_time
+      p.meta_description.should == 'super duper meta desc.'
+      p.meta_keywords.should == 'techno dubstep d&b'
+    }
+  end
 
   # Operation and results should be identical when loading multiple associations
   # if using either single column embedded syntax, or one column per entry.
@@ -304,15 +355,6 @@ describe 'SpreeLoader' do
 
  
   end
-
-  it "should load Products with associated image", :img => true do
-    pending("embedded images")
-    @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsWithImages.csv'), :mandatory => ['sku', 'name', 'price'] )
-     
-    p = @klass.find_by_name("Demo Product for AR Loader")
-    
-    p.images.should have_exactly(1).items
-  end
   
   
   # REPEAT THE WHOLE TEST SUITE VIA CSV
@@ -334,14 +376,6 @@ describe 'SpreeLoader' do
     expected_multi_column_taxons
   end
 
-  it "should load Products with assoicated image" do
-    test_variants_creation('SpreeProductsMultiColumn.csv')
-    
-    expected_multi_column_properties
-    
-    expected_multi_column_taxons
-  end
-  
   
   it "should raise exception when mandatory columns missing from .xls", :ex => true do
     expect {@product_loader.perform_load($SpreeNegativeFixturePath + '/SpreeProdMissManyMandatory.xls', :mandatory => ['sku', 'name', 'price'] )}.to raise_error(DataShift::MissingMandatoryError)

@@ -137,7 +137,6 @@ module DataShift
     base = File.join(library_path, 'thor', '**')
     
     Dir["#{base}/*.thor"].each do |f|
-    
       next unless File.file?(f)
       Thor::Util.load_thorfile(f)
     end

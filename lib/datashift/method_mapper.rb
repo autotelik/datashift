@@ -22,6 +22,8 @@ module DataShift
 
   class MethodMapper
 
+    include DataShift::Logging
+    
     attr_accessor :header_row, :headers
     attr_accessor :method_details, :missing_methods
   
@@ -43,16 +45,21 @@ module DataShift
       @headers = []
     end
 
-    # Build complete picture of the methods whose names listed in method_list
-    # Handles method names as defined by a user or in file headers where names may
-    # not be exactly as required e.g handles capitalisation, white space, _ etc
+    # Build complete picture of the methods whose names listed in columns
+    # Handles method names as defined by a user, from spreadsheets or file headers where the names
+    # specified may not be exactly as required e.g handles capitalisation, white space, _ etc
     # Returns: Array of matching method_details
     #
-    def map_inbound_to_methods( klass, method_list )
+    def map_inbound_to_methods( klass, columns )
       
       @method_details, @missing_methods = [], []
     
-      method_list.each do |name|
+      columns.each do |name|
+        if(name.nil? or name.empty?)
+          logger.warn("Column list contains empty or null columns") 
+          next
+        end
+        
         x, lookup = name.split(MethodMapper::column_delim) 
         md = MethodDictionary::find_method_detail( klass, x )
         

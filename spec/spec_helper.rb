@@ -128,7 +128,7 @@ module SpecHelper
     @Taxon_klass.delete_all
     @zone_klass.delete_all
     
-    %w{OptionType OptionValue Property ProductProperty Variant Taxonomy}.each do |k|
+    %w{Image OptionType OptionValue Property ProductProperty Variant Taxonomy}.each do |k|
       instance_variable_set("@#{k}_klass", SpreeHelper::get_spree_class(k)) 
       instance_variable_get("@#{k}_klass").delete_all
     end

@@ -80,6 +80,10 @@ module DataShift
             break if @excel.sheet.getRow(row).nil?
 
             contains_data = false
+            
+            # First assign any default values for columns not included in parsed_file
+            process_missing_columns_with_defaults
+
 
             # TODO - Smart sorting of column processing order ....
             # Does not currently ensure mandatory columns (for valid?) processed first but model needs saving
@@ -87,7 +91,7 @@ module DataShift
 
             # as part of this we also attempt to save early, for example before assigning to
             # has_and_belongs_to associations which require the load_object has an id for the join table
-
+         
             # Iterate over the columns method_mapper found in Excel,
             # pulling data out of associated column
             @method_mapper.method_details.each_with_index do |method_detail, col|
