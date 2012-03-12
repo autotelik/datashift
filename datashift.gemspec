@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "datashift"
-  s.version = "0.2.2"
+  s.version = "0.4.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thomas Statter"]
-  s.date = "2012-03-05"
+  s.date = "2012-03-12"
   s.description = "A suite of tools to move data between ActiveRecord models,databases,applications like Excel/Open Office, files and projects including Spree"
   s.email = "rubygems@autotelik.co.uk"
   s.extra_rdoc_files = [
@@ -30,11 +30,14 @@ Gem::Specification.new do |s|
     "lib/datashift.rb",
     "lib/datashift/exceptions.rb",
     "lib/datashift/file_definitions.rb",
+    "lib/datashift/logging.rb",
     "lib/datashift/mapping_file_definitions.rb",
     "lib/datashift/method_detail.rb",
+    "lib/datashift/method_details_manager.rb",
     "lib/datashift/method_dictionary.rb",
     "lib/datashift/method_mapper.rb",
     "lib/datashift/model_mapper.rb",
+    "lib/datashift/populator.rb",
     "lib/exporters/csv_exporter.rb",
     "lib/exporters/excel_exporter.rb",
     "lib/exporters/exporter_base.rb",
@@ -66,6 +69,9 @@ Gem::Specification.new do |s|
     "lib/loaders/spree/image_loader.rb",
     "lib/loaders/spree/product_loader.rb",
     "lib/thor/generate_excel.thor",
+    "lib/thor/import_excel.thor",
+    "lib/thor/spree/bootstrap_cleanup.thor",
+    "lib/thor/spree/products_images.thor",
     "public/spree/products/large/DEMO_001_ror_bag.jpeg",
     "public/spree/products/large/DEMO_002_Powerstation.jpg",
     "public/spree/products/large/DEMO_003_ror_mug.jpeg",
@@ -116,6 +122,8 @@ Gem::Specification.new do |s|
     "spec/fixtures/simple_template_spec.xls",
     "spec/fixtures/spree/SpreeProducts.csv",
     "spec/fixtures/spree/SpreeProducts.xls",
+    "spec/fixtures/spree/SpreeProductsDefaults.yml",
+    "spec/fixtures/spree/SpreeProductsMandatoryOnly.xls",
     "spec/fixtures/spree/SpreeProductsMultiColumn.csv",
     "spec/fixtures/spree/SpreeProductsMultiColumn.xls",
     "spec/fixtures/spree/SpreeProductsSimple.csv",
@@ -131,6 +139,7 @@ Gem::Specification.new do |s|
     "spec/spec_helper.rb",
     "spec/spree_exporter_spec.rb",
     "spec/spree_generator_spec.rb",
+    "spec/spree_images_loader_spec.rb",
     "spec/spree_loader_spec.rb",
     "spec/spree_method_mapping_spec.rb",
     "tasks/config/seed_fu_product_template.erb",
@@ -140,7 +149,6 @@ Gem::Specification.new do |s|
     "tasks/import/csv.rake",
     "tasks/import/excel.rake",
     "tasks/spree/image_load.rake",
-    "tasks/spree/product_loader.rake",
     "tasks/word_to_seedfu.rake",
     "test/helper.rb",
     "test/test_interact.rb"
