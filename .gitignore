@@ -9,6 +9,7 @@ Gemfile.lock
 coverage
 coverage.data
 
+.~lock.*
 *~
 *.cache
 *.log
