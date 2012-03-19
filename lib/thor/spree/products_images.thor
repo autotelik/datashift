@@ -45,6 +45,7 @@ module Datashift
       else
         loader.set_default_value('available_on', Time.now.to_s(:db) )
         loader.set_default_value('cost_price', 0.0 )
+        loader.set_default_value('price', 0.0 )
       end
       
       loader.set_prefix('sku', options[:sku_prefix] ) if(options[:sku_prefix])
@@ -82,7 +83,11 @@ module Datashift
       require 'image_loader'
 
       @image_cache = options[:input]
-        
+       
+      puts "Using Product Name for lookup" unless(options[:sku])
+      puts "Using SKU for lookup" if(options[:sku])
+         
+     
       attachment_klazz  = DataShift::SpreeHelper::get_spree_class('Product' )
       sku_klazz         = DataShift::SpreeHelper::get_spree_class('Variant' )
 
@@ -140,10 +145,11 @@ module Datashift
           else
             missing_records << image_name
           end
+          
+          next if(options[:dummy]) # Don't actually create/upload to DB if we are doing dummy run
 
-          # Now do actual upload to DB unless we are doing a dummy run,
-          # or the Image must have an associated record
-          unless(options[:dummy] == 'true' || (options[:process_when_no_assoc] && record.nil?))
+          # Check if Image must have an associated record
+          if(record || (record.nil? && options[:process_when_no_assoc]))
             image_loader.reset()
             puts "Process Image"
             image_loader.process( image_name, record )

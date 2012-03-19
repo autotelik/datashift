@@ -114,14 +114,13 @@ describe 'SpreeLoader' do
     p.description.should == "blah blah"
     p.cost_price.should == 320.00
     p.option_types.should have_exactly(1).items
+    p.option_types.should have_exactly(1).items
     p.count_on_hand.should == 12
-    
-    @klass.last.option_types.should have_exactly(2).items
     @klass.last.count_on_hand.should == 23
   end
 
   
-  it "should support default values for Spree Products loader", :fail => true do
+  it "should support default values for Spree Products loader" do
    
     @expected_time =  Time.now.to_s(:db) 
     
@@ -137,7 +136,7 @@ describe 'SpreeLoader' do
 
   end
 
-  it "should support default values from config for Spree Products loader", :fail => true do
+  it "should support default values from config for Spree Products loader" do
    
     @product_loader.configure_from(  SpecHelper::spree_fixture('SpreeProductsDefaults.yml') )
     
@@ -171,12 +170,12 @@ describe 'SpreeLoader' do
   # Operation and results should be identical when loading multiple associations
   # if using either single column embedded syntax, or one column per entry.
 
-  it "should load Products and create Variants from single column", :fail => true do
+  it "should load Products and create Variants from single column" do
     test_variants_creation('SpreeProducts.xls')
   end
 
   
-  it "should load Products and create Variants from multiple column" do
+  it "should load Products and create Variants from multiple column", :fail => true do
     test_variants_creation('SpreeProductsMultiColumn.xls')
   end
   
@@ -207,20 +206,45 @@ describe 'SpreeLoader' do
 
     @klass.all.select {|m| m.is_master.should == true  }
 
-    p.variants.should have_exactly(3).items  # count => 12|6|7
-  
+
+    # mime_type:jpeg mime_type:PDF mime_type:PNG
+        
+    p.variants.should have_exactly(3).items 
+     
+    p.option_types.should have_exactly(1).items # mime_type
+    
+    p.option_types[0].name.should == "mime_type"
+    
     @Variant_klass.all[1].sku.should == "DEMO_001_0"
     @Variant_klass.all[1].price.should == 399.99
 
-    v = p.variants[0] 
+    # V1
+    v1 = p.variants[0] 
 
-    v.sku.should == "DEMO_001_0"
-    v.price.should == 399.99
-    v.count_on_hand.should == 12
+    v1.sku.should == "DEMO_001_0"
+    v1.price.should == 399.99    
+    v1.count_on_hand.should == 12
 
-    p.variants[1].count_on_hand.should == 6
-    p.variants[2].count_on_hand.should == 7
-
+    
+    v1.option_values.should have_exactly(1).items # mime_type: jpeg
+    v1.option_values[0].name.should == "jpeg"
+    
+    
+    v2 = p.variants[1]
+    v2.count_on_hand.should == 6
+    v2.option_values.should have_exactly(1).items # mime_type: jpeg
+    v2.option_values[0].name.should == "PDF"
+    
+    
+    v2.option_values[0].option_type.should_not be_nil
+    v2.option_values[0].option_type.position.should == 0
+    
+    
+    v3 = p.variants[2]
+    v3.count_on_hand.should == 7
+    v3.option_values.should have_exactly(1).items # mime_type: jpeg
+    v3.option_values[0].name.should == "PNG"
+    
     @Variant_klass.last.price.should == 50.34
     @Variant_klass.last.count_on_hand.should == 18
 

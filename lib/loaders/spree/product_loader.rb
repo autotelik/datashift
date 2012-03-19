@@ -35,6 +35,8 @@ module DataShift
         @@variant_klass ||= SpreeHelper::get_spree_class('Variant')
         
         raise "Failed to create Product for loading" unless @load_object
+        
+        puts "LOAD OBJECT", @load_object, @load_object.master
       end
 
       # Based on filename call appropriate loading function
@@ -98,21 +100,31 @@ module DataShift
   
           # Spree has some stock management stuff going on, so dont usually assign to column vut use
           # on_hand and on_hand=
-          if(@load_object.variants.size > 0 && current_value.to_s.include?(LoaderBase::multi_assoc_delim))
+          if(@load_object.variants.size > 0)
+            
+            if(current_value.to_s.include?(LoaderBase::multi_assoc_delim))
 
-            #puts "DEBUG: COUNT_ON_HAND PER VARIANT",current_value.is_a?(String),
+              #puts "DEBUG: COUNT_ON_HAND PER VARIANT",current_value.is_a?(String),
           
-            # Check if we processed Option Types and assign count per option
-            values = current_value.to_s.split(LoaderBase::multi_assoc_delim)
+              # Check if we processed Option Types and assign count per option
+              values = current_value.to_s.split(LoaderBase::multi_assoc_delim)
 
-            if(@load_object.variants.size == values.size)
-              @load_object.variants.each_with_index {|v, i| v.on_hand = values[i]; v.save; }
-            else
-              puts "WARNING: Count on hand entries did not match number of Variants - None Set"
+              if(@load_object.variants.size == values.size)
+                @load_object.variants.each_with_index {|v, i| v.on_hand = values[i].to_i; v.save; }
+              else
+                puts "WARNING: Count on hand entries did not match number of Variants - None Set"
+              end
             end
-          else
-            puts "WARNING: Multiple count_on_hand values specified but no Variants/OptionTypes created" if(@load_object.variants.empty?)
-            load_object.on_hand = current_value.to_i
+            
+            # can only set count on hand on Product if no Variants exist, else model throws
+            
+          elsif(@load_object.variants.size == 0) 
+            if(current_value.to_s.include?(LoaderBase::multi_assoc_delim))
+              puts "WARNING: Multiple count_on_hand values specified but no Variants/OptionTypes created" 
+              load_object.on_hand = current_value.to_s.split(LoaderBase::multi_assoc_delim).first.to_i
+            else
+              load_object.on_hand = current_value.to_i
+            end
           end
 
         else
@@ -167,7 +179,7 @@ module DataShift
           # populated .. currently need to call reload to ensure this (seems reqd for Spree 1/Rails 3, wasn't required b4
           ovalues.each_with_index do |ovname, i|
             ovname.strip!
-            ov = @@option_value_klass.find_or_create_by_name(ovname)
+            ov = @@option_value_klass.find_or_create_by_name_and_option_type_id(ovname, option_type.id)
             if ov
               variant = @@variant_klass.create( :product => @load_object, :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :available_on => @load_object.available_on)
               #puts "DEBUG: Created New Variant: #{variant.inspect}"
