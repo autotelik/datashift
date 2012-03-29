@@ -18,7 +18,7 @@ module DataShift
     def create_image(klass, image_path, viewable_record = nil, options = {})
        
       unless File.exists?(image_path) && File.readable?(image_path)
-        logger.error("Cannot process Image : Invalid Path #{image_path}")
+        logger.error("Cannot process Image from #{Dir.pwd}: Invalid Path #{image_path}")
         raise "Cannot process Image : Invalid Path #{image_path}"
       end
       
