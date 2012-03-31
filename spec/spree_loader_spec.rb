@@ -214,7 +214,8 @@ describe 'SpreeLoader' do
     p.option_types.should have_exactly(1).items # mime_type
     
     p.option_types[0].name.should == "mime_type"
-    
+    p.option_types[0].presentation.should == "Mime type"
+        
     @Variant_klass.all[1].sku.should == "DEMO_001_0"
     @Variant_klass.all[1].price.should == 399.99
 
@@ -228,13 +229,12 @@ describe 'SpreeLoader' do
     
     v1.option_values.should have_exactly(1).items # mime_type: jpeg
     v1.option_values[0].name.should == "jpeg"
-    
+
     
     v2 = p.variants[1]
     v2.count_on_hand.should == 6
     v2.option_values.should have_exactly(1).items # mime_type: jpeg
     v2.option_values[0].name.should == "PDF"
-    
     
     v2.option_values[0].option_type.should_not be_nil
     v2.option_values[0].option_type.position.should == 0

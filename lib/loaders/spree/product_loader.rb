@@ -36,7 +36,7 @@ module DataShift
         
         raise "Failed to create Product for loading" unless @load_object
         
-        puts "LOAD OBJECT", @load_object, @load_object.master
+        logger.debug "PRODUCT #{@load_object.inspect} MASTER: #{@load_object.master.inspect}"
       end
 
       # Based on filename call appropriate loading function
@@ -165,6 +165,7 @@ module DataShift
               puts "WARNING: OptionType #{oname} NOT found - Not set Product"
               next
             end
+            puts "Created missing OptionType #{option_type.inspect}"
           end
 
           @load_object.option_types << option_type unless @load_object.option_types.include?(option_type)

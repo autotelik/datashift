@@ -27,6 +27,14 @@ module Datashift
         puts "Clearing model #{DataShift::SpreeHelper::get_spree_class(k)}"
         instance_variable_get("@#{k}_klass").delete_all
       end
+      
+      if(File.exists?('public/spree/products') )
+        puts "Removing old Product assets from 'public/spree/products'"
+        FileUtils::rm_rf('public/public/spree/products') 
+      end
+      
+      FileUtils::rm_rf('MissingRecords') if(File.exists?('MissingRecords') )
+      
     end
   
   end
