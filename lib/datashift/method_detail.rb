@@ -11,6 +11,8 @@
 #             and assign values to AR object, without knowing anything about that receiving object.
 #
 require 'to_b'
+require 'logging'
+require 'set'
 
 module DataShift
 
