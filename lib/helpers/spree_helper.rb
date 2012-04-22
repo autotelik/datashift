@@ -79,7 +79,9 @@ module DataShift
     # => Will chdir into the sandbox to load environment as need to mimic being at root of a rails project
     #    chdir back after environment loaded
     
-    def self.boot( database_env )
+    #  gem('rails', '3.2.3')
+    
+    def self.boot( database_env, rails_version = '3.1.3' )
      
       if( ! is_namespace_version )
         db_connect( database_env )
@@ -91,9 +93,9 @@ module DataShift
         # TODO as Spree versions moves how do we best track reqd Rails version
         # parse the gemspec of the core Gemfile ?
         
-        gem('rails', '3.1.3')
+        gem('rails', rails_version)
         
-        db_connect( database_env, '3.1.3' )  
+        db_connect( database_env, rails_version )  
         
         @dslog.info "Booting Spree using post 1.0.0 version"
        

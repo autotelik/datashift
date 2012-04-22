@@ -12,6 +12,8 @@
 
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
 module Datashift
+  
+  puts "LOADED"
         
   class Spree < Thor     
   
@@ -24,7 +26,7 @@ module Datashift
     method_option :verbose, :aliases => '-v', :type => :boolean, :desc => "Verbose logging"
     method_option :config, :aliases => '-c',  :type => :string, :desc => "Configuration file containg defaults or over rides in YAML"
     
-    def products()  #, [:input, :verbose, :sku_prefix] => :environment do |t, args|
+    def products()
 
       # TODO - We're assuming run from a rails app/top level dir...
       # ...can we make this more robust ? e.g what about when using active record but not in Rails app, 

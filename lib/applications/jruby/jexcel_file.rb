@@ -123,7 +123,7 @@ if(DataShift::Guards::jruby?)
     # Process each row. (type is org.apache.poi.hssf.usermodel.HSSFRow)
 
     def each_row
-      @sheet.rowIterator.each { |row| yield row }
+      @sheet.rowIterator.each { |row| @row = row; yield row }
     end
 
     # Create new row, bring index in line with POI usage (our 1 is their 0)
@@ -150,7 +150,9 @@ if(DataShift::Guards::jruby?)
       create_row(1)
       return if headers.empty?
     
-      set_row(1, 1, headers)
+      headers.each_with_index do |datum, i|
+        @row.createCell(i, excel_cell_type(datum)).setCellValue(datum)
+      end
     end
 
     #  Populate a row  of cells with data in an array 

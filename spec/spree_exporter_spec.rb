@@ -12,7 +12,7 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
 require 'spree_helper'
-require 'excel_generator'
+require 'excel_exporter'
 
 include DataShift
   
@@ -20,6 +20,7 @@ describe 'SpreeLoader' do
 
   before(:all) do
     SpecHelper::before_all_spree
+    results_clear()
   end
 
   before do
@@ -29,36 +30,38 @@ describe 'SpreeLoader' do
       
     before_each_spree   # inits tests, cleans DB setups model types
     
+    @Taxon_klass.delete_all
+    
     # Create some test data
     root = @Taxonomy_klass.create( :name => 'Paintings' )
     
-    @Taxon_klass.create( :name => 'Landscape', :taxonomy => root )
-    @Taxon_klass.create( :name => 'Sea', :taxonomy => root )
+    @Taxon_klass.create( :name => 'Landscape', :description => "Nice paintings", :taxonomy_id => root.id )
+    @Taxon_klass.create( :name => 'Sea', :description => "Waves and sand", :taxonomy_id => root.id )
       
   end
 
   it "should export any Spree model to .xls spreedsheet" do
 
-    expect = result_file('taxonomy_export_spec.xls')
+    expect = result_file('taxon_export_spec.xls')
 
-    gen = ExcelGenerator.new(expect)
+    exporter = ExcelExporter.new(expect)
 
-    items = @Taxonomy_klass.all
+    items = @Taxon_klass.all
 
-    gen.export(items)
+    exporter.export(items)
 
     File.exists?(expect).should be_true
   end
 
   it "should export a Spree model and associations to .xls spreedsheet" do
 
-    expect = result_file('taxonomy_and_assoc_export_spec.xls')
+    expect = result_file('taxon_and_assoc_export_spec.xls')
 
-    gen = ExcelGenerator.new(expect)
+    exporter = ExcelExporter.new(expect)
 
-    items = @Taxonomy_klass.all
+    items = @Taxon_klass.all
       
-    gen.generate_with_associations(@Taxonomy_klass, items)
+    exporter.export_with_associations(@Taxon_klass, items)
 
     File.exists?(expect).should be_true
 

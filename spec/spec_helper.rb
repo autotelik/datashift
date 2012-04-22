@@ -1,5 +1,5 @@
-require 'erb'
-require 'yaml'
+
+require 'stringio'
 
 require File.dirname(__FILE__) + '/../lib/datashift'
 
@@ -14,7 +14,7 @@ include DataShift
 #
 #
 # We are not setup as a Rails project so need to mimic an active record database setup so
-# we have some  AR models top test against. Create an in memory database from scratch.
+# we have some  AR models to test against. Create an in memory database from scratch.
 #
 $DataShiftFixturePath = File.join(File.dirname(__FILE__), 'fixtures')
 $DataShiftDatabaseYml = File.join($DataShiftFixturePath, 'config/database.yml')
@@ -100,8 +100,11 @@ end
 
 module SpecHelper
   
+  # VERSIONS of Spree (1.1.0.rc1, 1.0.0, 0.11.2)
+  
   $SpreeFixturePath = File.join($DataShiftFixturePath, 'spree')    
   $SpreeNegativeFixturePath = File.join($DataShiftFixturePath, 'negative')
+  $SpreeRailsVersionToTest = '3.1.3'
     
   def self.spree_fixture( source)
     File.join($SpreeFixturePath, source)
@@ -111,7 +114,7 @@ module SpecHelper
     # we are not a Spree project, nor is it practical to externally generate
     # a complete Spree application for testing so we implement a mini migrate/boot of our own
     SpreeHelper.load()          # require Spree gems
-    SpreeHelper.boot( 'test_spree_standalone' )             # key to YAML db e.g  test_memory, test_mysql
+    SpreeHelper.boot( 'test_spree_standalone', $SpreeRailsVersionToTest )             # key to YAML db e.g  test_memory, test_mysql
     
     SpreeHelper.migrate_up      # create an sqlite Spree database on the fly
   end
@@ -136,6 +139,19 @@ module SpecHelper
       
 end
 
+def capture(stream)
+  begin
+    stream = stream.to_s
+    eval "$#{stream} = StringIO.new"
+    yield
+    result = eval("$#{stream}").string
+  ensure
+    eval("$#{stream} = #{stream.upcase}")
+  end
+
+  result
+end
+  
 RSpec.configure do |config|
   # config.use_transactional_fixtures = true
   # config.use_instantiated_fixtures  = false
