@@ -67,39 +67,39 @@ module DataShift
         puts "work_list :  [#{work_list.inspect}]"
       
         details_mgr = MethodDictionary.method_details_mgrs[klass]
-                  
+
+                        
+        data = []
+        # For each type belongs has_one, has_many etc find the operators
+        # and create headers, then for each record call those operators
         work_list.each do |op_type|
+          
           list_for_class_and_op = details_mgr.get_list(op_type)
        
           next if(list_for_class_and_op.nil? || list_for_class_and_op.empty?)
-         #if(work_list.include?(md.operator_type))
-              #each do |mdtype|
-          #end
-          #if(MethodDictionary.respond_to?("#{mdtype}_for") )
-           # method_details = MethodDictionary.send("#{mdtype}_for", klass)
-        
-            list_for_class_and_op.each {|md| headers << "#{md.operator}" }
-          #else
-           # puts "ERROR : Unknown option in :with [#{mdtype}]"
-         
-        end
-        
-        excel.set_headers( headers )
-                
-        data = []
-        
-        items.each do |record|
-          
-          MethodMapper.method_details[klass].each do |method_detail|   
-            if(method_detail.operator_type == :assignment)
-              data << record.send( method_detail.operator )
-            end
-          end
-        end
-        
-        excel.set_row(2,1,items)
 
-        excel.save( filename() )
+          # method_details = MethodDictionary.send("#{mdtype}_for", klass)
+        
+          list_for_class_and_op.each do |md| 
+            headers << "#{md.operator}"
+            items.each do |i| 
+              data << i.send( md.operator )
+            end
+         
+          end
+        
+          excel.set_headers( headers )
+        
+
+          row_index = 1
+        
+          items.each do |datum| 
+            excel.create_row(row_index += 1)
+            excel.ar_to_xls_row(1, datum)
+          end
+           
+          excel.save( filename() )
+        end
       end
     end # ExcelGenerator
 
