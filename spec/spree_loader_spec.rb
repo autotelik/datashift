@@ -32,12 +32,12 @@ describe 'SpreeLoader' do
       
       before_each_spree
     
-      @klass.count.should == 0
+      @Product_klass.count.should == 0
       @Taxon_klass.count.should == 0
       @Variant_klass.count.should == 0
       
       MethodDictionary.clear
-      MethodDictionary.find_operators( @klass )
+      MethodDictionary.find_operators( @Product_klass )
 
       # want to test both lookup and dynamic creation - this Taxonomy should be found, rest created
       root = @Taxonomy_klass.create( :name => 'Paintings' )
@@ -99,14 +99,14 @@ describe 'SpreeLoader' do
     
     @product_loader.perform_load( SpecHelper::spree_fixture(source), :mandatory => ['sku', 'name', 'price'] )
 
-    @klass.count.should == 3
+    @Product_klass.count.should == 3
 
     @product_loader.failed_objects.size.should == 0
     @product_loader.loaded_objects.size.should == 3
 
-    @product_loader.loaded_count.should == @klass.count
+    @product_loader.loaded_count.should == @Product_klass.count
 
-    p = @klass.first
+    p = @Product_klass.first
     
     p.sku.should == "SIMPLE_001"
     p.price.should == 345.78
@@ -116,7 +116,7 @@ describe 'SpreeLoader' do
     p.option_types.should have_exactly(1).items
     p.option_types.should have_exactly(1).items
     p.count_on_hand.should == 12
-    @klass.last.count_on_hand.should == 23
+    @Product_klass.last.count_on_hand.should == 23
   end
 
   
@@ -149,16 +149,16 @@ describe 'SpreeLoader' do
   def test_default_values
     @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsMandatoryOnly.xls'), :mandatory => ['sku', 'name', 'price'] )
     
-    @klass.count.should == 3
+    @Product_klass.count.should == 3
 
     @product_loader.failed_objects.size.should == 0
     @product_loader.loaded_objects.size.should == 3
     
-    p = @klass.first
+    p = @Product_klass.first
     
     p.sku.should == "SPEC_SIMPLE_001"
       
-    @klass.all { |p|
+    @Product_klass.all { |p|
       p.sku.should.include "SPEC_"
       p.cost_price = 1.0
       p.available_on.should == @expected_time
@@ -180,7 +180,7 @@ describe 'SpreeLoader' do
   end
   
   def test_variants_creation( source )
-    @klass.count.should == 0
+    @Product_klass.count.should == 0
     @Variant_klass.count.should == 0
     
     @product_loader.perform_load( SpecHelper::spree_fixture(source), :mandatory => ['sku', 'name', 'price'] )
@@ -192,10 +192,10 @@ describe 'SpreeLoader' do
   def expected_multi_column_variants
       
     # 3 MASTER products, 11 VARIANTS
-    @klass.count.should == 3
+    @Product_klass.count.should == 3
     @Variant_klass.count.should == 14
 
-    p = @klass.first
+    p = @Product_klass.first
 
     p.sku.should == "DEMO_001"
 
@@ -204,7 +204,7 @@ describe 'SpreeLoader' do
     p.description.should == "blah blah"
     p.cost_price.should == 320.00
 
-    @klass.all.select {|m| m.is_master.should == true  }
+    @Product_klass.all.select {|m| m.is_master.should == true  }
 
 
     # mime_type:jpeg mime_type:PDF mime_type:PNG
@@ -281,12 +281,12 @@ describe 'SpreeLoader' do
   
   def expected_multi_column_properties
     # 3 MASTER products, 11 VARIANTS
-    @klass.count.should == 3
+    @Product_klass.count.should == 3
     @Variant_klass.count.should == 14
 
-    @klass.first.properties.should have_exactly(1).items
+    @Product_klass.first.properties.should have_exactly(1).items
 
-    p3 = @klass.all.last
+    p3 = @Product_klass.all.last
 
     p3.properties.should have_exactly(3).items
 
@@ -340,8 +340,8 @@ describe 'SpreeLoader' do
     @Taxonomy_klass.count.should == 4
     @Taxon_klass.count.should == 7
 
-    @klass.first.taxons.should have_exactly(2).items
-    @klass.last.taxons.should have_exactly(2).items
+    @Product_klass.first.taxons.should have_exactly(2).items
+    @Product_klass.last.taxons.should have_exactly(2).items
 
     p2 = @Variant_klass.find_by_sku("DEMO_002").product
 
@@ -392,7 +392,7 @@ describe 'SpreeLoader' do
   end
   
   
-  it "should load Products from multiple column csv as per .xls" do
+  it "should load Products from multiple column csv as per .xls", :blah => true do
     test_variants_creation('SpreeProductsMultiColumn.csv')
     
     expected_multi_column_properties

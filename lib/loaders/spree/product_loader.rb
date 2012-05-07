@@ -43,16 +43,20 @@ module DataShift
       # Currently supports :
       #   Excel/Open Office files saved as .xls
       #   CSV files
+      # 
+      # OPTIONS :
+      #   strict : Raise exception if any column cannot be mapped
+       
       def perform_load( file_name, options = {} )
 
         raise DataShift::BadFile, "Cannot load #{file_name} file not found." unless(File.exists?(file_name))
         
         ext = File.extname(file_name)
           
-        if(ext == '.xls')
+        if(ext.casecmp('.xls') == 0)
           raise DataShift::BadRuby, "Please install and use JRuby for loading .xls files" unless(Guards::jruby?)
           perform_excel_load(file_name, options)
-        elsif(ext == '.csv')
+        elsif(ext.casecmp('.csv') == 0)
           perform_csv_load(file_name, options)
         else
           raise DataShift::UnsupportedFileType, "#{ext} files not supported - Try .csv or OpenOffice/Excel .xls"
@@ -182,9 +186,22 @@ module DataShift
             ovname.strip!
             ov = @@option_value_klass.find_or_create_by_name_and_option_type_id(ovname, option_type.id)
             if ov
-              variant = @@variant_klass.create( :product => @load_object, :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :available_on => @load_object.available_on)
+              begin
+               variant = @load_object.variants.create( :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :available_on => @load_object.available_on)
+               #variant = @@variant_klass.new( :product => @load_object, :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :available_on => @load_object.available_on)
+               #if(variant.valid?)
+                #  variant.save
+               variant.option_values << ov
+               #else
+                # puts "WARNING: For Option #{ovname} - Variant creation failed #{variant.errors.inspect}"
+               #end
+              rescue =>  e
+                puts "Failed to create a Variant for Product #{@load_object.name}"
+                puts e.inspect
+                puts e.backtrace
+              end
               #puts "DEBUG: Created New Variant: #{variant.inspect}"
-              variant.option_values << ov
+              
             else
               puts "WARNING: Option #{ovname} NOT FOUND - No Variant created"
             end

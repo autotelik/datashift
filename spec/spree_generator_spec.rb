@@ -24,7 +24,7 @@ describe 'SpreeLoader' do
 
   before do
     
-    include SpecHelper
+    #include SpecHelper
     extend SpecHelper
       
     before_each_spree   # inits tests, cleans DB setups model types
