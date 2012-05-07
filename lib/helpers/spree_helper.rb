@@ -3,22 +3,19 @@
 # Date ::     Aug 2011
 # License::   MIT
 #
-# Details::   Spree Helper mixing in Support for testing or loading Rails Spree e-commerce.
+# Details::   Spree Helper for Product Loading. 
 # 
-#             The Spree version you want to test should be picked up from the Gemfile
+#             Utils to try to manage different Spree versions seamlessly.
+#             
+#             Spree Helper for RSpec testing, enables mixing in Support for
+#             testing or loading Rails Spree e-commerce.
+# 
+#             The Spree version you want to test should be picked up from spec/Gemfile
 # 
 #             Since datashift gem is not a Rails app or a Spree App, provides utilities to internally
 #             create a Spree Database, and to load Spree components, enabling standalone testing.
 #
-# =>          Has been tested with  0.7
-# 
-# # =>        TODO - Can we move to a Gemfile/bunlder
-#             require 'rubygems'
-#             gemfile = File.expand_path("<%= gemfile_path %>", __FILE__)
-#
-#             ENV['BUNDLE_GEMFILE'] = gemfile
-#             require 'bundler'
-#             Bundler.setup
+# =>          Has been tested with  0.11.2, 0.7, 1.0.0
 #
 # =>          TODO - See if we can improve DB creation/migration ....
 #             N.B Some or all of Spree Tests may fail very first time run,
@@ -52,8 +49,12 @@ module DataShift
       end
     end
     
+    def self.version
+       Gem.loaded_specs['spree'] ? Gem.loaded_specs['spree'].version.version.to_f : 0
+    end
+    
     def self.is_namespace_version
-      Gem.loaded_specs['spree'].version.version.to_f >= 1
+      SpreeHelper::version >= 1
     end
   
     def self.lib_root
@@ -81,7 +82,7 @@ module DataShift
     
     #  gem('rails', '3.2.3')
     
-    def self.boot( database_env, rails_version = '3.1.3' )
+    def self.boot( database_env)#, rails_version = '3.1.3' )
      
       if( ! is_namespace_version )
         db_connect( database_env )
@@ -90,14 +91,12 @@ module DataShift
         @dslog.info "Booted Spree using pre 1.0.0 version"
       else
         
-        # TODO as Spree versions moves how do we best track reqd Rails version
-        # parse the gemspec of the core Gemfile ?
+
+        #em('rails', rails_version)
         
-        gem('rails', rails_version)
+        db_connect( database_env )#, rails_version )  
         
-        db_connect( database_env, rails_version )  
-        
-        @dslog.info "Booting Spree using post 1.0.0 version"
+        @dslog.info "Booting Spree using version #{SpreeHelper::version}"
        
         require 'rails/all'
         
@@ -113,7 +112,7 @@ module DataShift
         
         Dir.chdir( store_path )
         
-        @dslog.info "Booted Spree using post 1.0.0 version"
+        @dslog.info "Booted Spree using version #{SpreeHelper::version}"
       end
     end
 

@@ -21,10 +21,14 @@ $DataShiftDatabaseYml = File.join($DataShiftFixturePath, 'config/database.yml')
 
 module DataShift
  
-  def db_connect( env = 'test_file', version = nil)
+  def db_connect( env = 'test_file')
+        
+    gemfile =  File.join(DataShift::root_path, 'spec', 'Gemfile')
 
-    version ? gem('activerecord', version) : gem('activerecord')
-    
+    ENV['BUNDLE_GEMFILE'] = gemfile
+    require 'bundler'
+    Bundler.setup
+
     require 'active_record'
 
     # Some active record stuff seems to rely on the RAILS_ENV being set ?
@@ -41,13 +45,13 @@ module DataShift
     
     #dbtype = Rails.configuration.database_configuration[Rails.env]['adapter'].to_sym
 
-    #ActiveRecord::Base.logger = Logger.new(STDOUT)
-
     require 'logger'
     logdir = File.dirname(__FILE__) + '/logs'
     FileUtils.mkdir_p(logdir) unless File.exists?(logdir)
     ActiveRecord::Base.logger = Logger.new(logdir + '/datashift_spec.log')
 
+    # Anyway to direct one logger to another ????? ... Logger.new(STDOUT)
+    
     @dslog = ActiveRecord::Base.logger
 
     puts "Connecting to DB"
@@ -57,6 +61,8 @@ module DataShift
     # so copied this from ... Rails::Initializer.initialize_cache
     Object.const_set "RAILS_CACHE", ActiveSupport::Cache.lookup_store( :memory_store )
 
+    puts "Connected to DB"
+    
     @dslog.info "Connected to DB - #{ActiveRecord::Base.connection.inspect}"
   end
 
@@ -104,18 +110,20 @@ module SpecHelper
   
   $SpreeFixturePath = File.join($DataShiftFixturePath, 'spree')    
   $SpreeNegativeFixturePath = File.join($DataShiftFixturePath, 'negative')
-  $SpreeRailsVersionToTest = '3.1.3'
     
   def self.spree_fixture( source)
     File.join($SpreeFixturePath, source)
   end
   
   def self.before_all_spree 
+
     # we are not a Spree project, nor is it practical to externally generate
     # a complete Spree application for testing so we implement a mini migrate/boot of our own
-    SpreeHelper.load()          # require Spree gems
-    SpreeHelper.boot( 'test_spree_standalone', $SpreeRailsVersionToTest )             # key to YAML db e.g  test_memory, test_mysql
+    SpreeHelper.load()        
+    SpreeHelper.boot('test_spree_standalone')             # key to YAML db e.g  test_memory, test_mysql
     
+    puts "Testing Spree standalone - version #{SpreeHelper::version}"
+        
     SpreeHelper.migrate_up      # create an sqlite Spree database on the fly
   end
   

@@ -16,6 +16,9 @@ module DataShift
     
     include DataShift::Logging
     
+    # Options :
+    #   strict : Raise exception if any column cannot be mapped
+    
     def perform_csv_load(file_name, options = {})
        
       require "csv"
@@ -32,7 +35,7 @@ module DataShift
       map_headers_to_operators( @parsed_file.shift, options[:strict] , @mandatory )
         
       unless(@method_mapper.missing_methods.empty?)
-        puts "WARNING: Following column headings could not be mapped : #{@method_mapper.missing_methods.inspect}"
+        logger.error("Following column headings could not be mapped :\n#{@method_mapper.missing_methods.inspect}")
         raise MappingDefinitionError, "ERROR: Missing mappings for #{@method_mapper.missing_methods.size} column headings"
       end
 

@@ -126,7 +126,7 @@ module DataShift
     # This is then available through @method_mapper.method_details.each
     # 
     # Options:
-    #  strict : report any header values that can't be mapped as an error
+    #  strict : Raise an exception of any headers can't be mapped to an attribute/association
     #
     def map_headers_to_operators( headers, strict, mandatory = [])
       @headers = headers
