@@ -50,11 +50,11 @@ module DataShift
     end
     
     def self.version
-       Gem.loaded_specs['spree'] ? Gem.loaded_specs['spree'].version.version.to_f : 0
+       Gem.loaded_specs['spree'] ? Gem.loaded_specs['spree'].version.version : "0.0.0"
     end
     
     def self.is_namespace_version
-      SpreeHelper::version >= 1
+      SpreeHelper::version.to_f >= 1
     end
   
     def self.lib_root

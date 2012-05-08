@@ -187,20 +187,26 @@ module DataShift
             ov = @@option_value_klass.find_or_create_by_name_and_option_type_id(ovname, option_type.id)
             if ov
               begin
-               variant = @load_object.variants.create( :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :available_on => @load_object.available_on)
-               #variant = @@variant_klass.new( :product => @load_object, :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :available_on => @load_object.available_on)
-               #if(variant.valid?)
-                #  variant.save
-               variant.option_values << ov
-               #else
-                # puts "WARNING: For Option #{ovname} - Variant creation failed #{variant.errors.inspect}"
-               #end
+                # This one line seems to works for 1.1.0 - 3.2 but not 1.0.0 - 3.1 ??
+                if(SpreeHelper::version.to_f >= 1.1)
+                  variant = @load_object.variants.create( :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :available_on => @load_object.available_on)
+                else
+                  variant = @@variant_klass.create( :product => @load_object, :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :available_on => @load_object.available_on)
+                  #if(variant.valid?)
+                  # variant.save
+                  # @load_object.variants << variant
+               
+                  #else
+                  #puts "WARNING: For Option #{ovname} - Variant creation failed #{variant.errors.inspect}"
+                end
+                variant.option_values << ov
               rescue =>  e
                 puts "Failed to create a Variant for Product #{@load_object.name}"
                 puts e.inspect
                 puts e.backtrace
               end
-              #puts "DEBUG: Created New Variant: #{variant.inspect}"
+              
+              logger.debug "Created New Variant: #{variant.inspect}"
               
             else
               puts "WARNING: Option #{ovname} NOT FOUND - No Variant created"
@@ -208,7 +214,7 @@ module DataShift
           end
           
           #puts "DEBUG Load Object now has Variants : #{@load_object.variants.inspect}"
-          @load_object.reload
+          @load_object.reload unless @load_object.new_record? 
           #puts "DEBUG Load Object now has Variants : #{@load_object.variants.inspect}"
         end
 
@@ -229,6 +235,7 @@ module DataShift
           img_path, alt_text = image.split(LoaderBase::name_value_delim)
           
           image = create_image(@@image_klass, img_path, @load_object, :alt => alt_text)
+          logger.debug("Product assigned an Image : #{image.inspect}")
         end
       
       end
@@ -250,10 +257,20 @@ module DataShift
 
           unless property
             property = @@property_klass.create( :name => pname, :presentation => pname.humanize)
+            logger.debug "Created New Property #{property.inspect}"
           end
 
           if(property)
-            @load_object.product_properties << @@product_property_klass.create( :property => property, :value => pvalue)
+            if(SpreeHelper::version.to_f >= 1.1)
+              # Property now protected from mass assignment 
+              x = @@product_property_klass.new( :value => pvalue )
+              x.property = property
+              x.save
+              logger.debug "Created New ProductProperty #{x.inspect}"
+              @load_object.product_properties << x 
+            else
+              @load_object.product_properties << @@product_property_klass.create( :property => property, :value => pvalue)
+            end
           else
             puts "WARNING: Property #{pname} NOT found - Not set Product"
           end
@@ -263,20 +280,6 @@ module DataShift
       end
 
       # Nested tree structure support ..
-      # 
-      # ... inside of main loop
-      # the_taxons = []
-      # taxon_col.split(/[\r\n]+/).each do |chain|
-      #  taxon = nil
-      #   names = chain.split(/\s*>\s*/)
-      #  names.each do |name|
-      #    taxon = Taxon.find_or_create_by_name_and_parent_id_and_taxonomy_id(name, taxon && taxon.id, main_taxonomy.id)
-      #  end
-      #  the_taxons << taxon
-      # end
-      # p.taxons = the_taxons
- 
-      
       # TAXON FORMAT 
       # name|name>child>child|name
        
@@ -319,7 +322,7 @@ module DataShift
           
           unique_list = taxons.compact.uniq - (@load_object.taxons || [])
         
-          #puts "DEBUG: Taxon nms to add #{unique_list.collect(&:name).inspect}"
+          logger.debug("Product assigned to Taxons : #{unique_list.collect(&:name).inspect}")
           @load_object.taxons << unique_list unless(unique_list.empty?)
         end
 

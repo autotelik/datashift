@@ -61,6 +61,7 @@ module DataShift
         end
         
         x, lookup = name.split(MethodMapper::column_delim) 
+        #puts "DEBUG: Find Method Detail for #{x}"
         md = MethodDictionary::find_method_detail( klass, x )
         
         # TODO be nice if we could cheeck that the assoc on klass responds to the specified

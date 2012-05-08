@@ -9,7 +9,7 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 if(Guards::jruby?)
   require 'erb'
-  require 'excel_generator'
+  require 'excel_exporter'
 
   include DataShift
 
@@ -37,37 +37,36 @@ if(Guards::jruby?)
       MethodDictionary.find_operators( @assoc_klazz )
     end
   
-    it "should be able to create a new excel generator" do
+    it "should be able to create a new excel exporter" do
       generator = ExcelExporter.new( 'dummy.xls' )
       
       generator.should_not be_nil
     end
   
-    it "should generate template .xls file from model" do
+    it "should export a model to .xls file" do
 
-      expect = result_file('project_template_spec.xls')
+      expect = result_file('project_export_spec.xls')
 
       gen = ExcelExporter.new( expect )
     
-      gen.generate(Project)
+      gen.export(Project)
  
       File.exists?(expect).should be_true
       
       puts "Can manually check file @ #{expect}"
     end
 
-    it "should export a simple model to .xls spreedsheet" do
+    it "should export a  model and associations to .xls file" do
 
       Project.create( :value_as_string	=> 'Value as Text', :value_as_boolean => true,	:value_as_double => 75.672)
-      #001 Demo string	blah blah	2011-02-14	1.00	320.00
 
-      expect= result_file('simple_export_spec.xls')
+      expect= result_file('project_plus_assoc_export_spec.xls')
 
-      gen = ExcelGenerator.new(expect)
+      gen = ExcelExporter.new(expect)
 
       items = Project.all
 
-      gen.export(items)
+      gen.export_with_associations(Project, items)
 
       File.exists?(expect).should be_true
 

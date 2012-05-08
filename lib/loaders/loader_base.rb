@@ -113,10 +113,29 @@ module DataShift
       reset(object)
     end
 
+    
+    # Based on filename call appropriate loading function
+    # Currently supports :
+    #   Excel/Open Office files saved as .xls
+    #   CSV files
+    # 
+    # OPTIONS :
+    #   strict : Raise exception if any column cannot be mapped
+       
+    def perform_load( file_name, options = {} )
 
-    # kinda the derived classes interface - best way in Ruby ?
-    def perform_load( input, options = {} )
-      raise "WARNING- ABSTRACT METHOD CALLED - Please implement perform_load()"
+      raise DataShift::BadFile, "Cannot load #{file_name} file not found." unless(File.exists?(file_name))
+        
+      ext = File.extname(file_name)
+          
+      if(ext.casecmp('.xls') == 0)
+        raise DataShift::BadRuby, "Please install and use JRuby for loading .xls files" unless(Guards::jruby?)
+        perform_excel_load(file_name, options)
+      elsif(ext.casecmp('.csv') == 0)
+        perform_csv_load(file_name, options)
+      else
+        raise DataShift::UnsupportedFileType, "#{ext} files not supported - Try .csv or OpenOffice/Excel .xls"
+      end
     end
 
     
@@ -134,6 +153,7 @@ module DataShift
       begin 
         method_details = @method_mapper.map_inbound_to_methods( load_object_class, @headers )
       rescue => e
+        puts e.inspect
         logger.error("Failed to map header row to set of database operators : #{e.inspect}")
         raise MappingDefinitionError, "Failed to map header row to set of database operators"
       end

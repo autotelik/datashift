@@ -13,10 +13,11 @@ module DataShift
   # Stores MethodDetails for a class mapped by type
   class MethodDetailsManager
 
-    attr_reader :method_details
+    attr_reader :method_details, :method_details_list
+    attr_reader :managed_class_name
     
     def initialize( klass )
-      @parent_class = klass
+      @managed_class_name = klass.name
       @method_details = {}
       @method_details_list = {}
     end
@@ -47,6 +48,10 @@ module DataShift
     
     def get_list( type )
       @method_details_list[type.to_sym]
+    end
+    
+    def all_available_operators
+      method_details_list.values.flatten.collect(&:operator)
     end
     
   end
