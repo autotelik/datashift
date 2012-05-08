@@ -1,5 +1,6 @@
 # DATASHIFT
 
+sandbox
 sandbox/**
 
 # developing a gem so don't commit lock file

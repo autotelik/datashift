@@ -51,7 +51,9 @@ module DataShift
     class ImageLoader < LoaderBase
 
       include DataShift::ImageLoading
-        
+      include DataShift::CsvLoading
+      include DataShift::ExcelLoading
+      
       def initialize(image = nil)
         puts SpreeHelper::get_spree_class('Image')
         

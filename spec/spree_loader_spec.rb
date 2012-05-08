@@ -42,7 +42,9 @@ describe 'SpreeLoader' do
       # want to test both lookup and dynamic creation - this Taxonomy should be found, rest created
       root = @Taxonomy_klass.create( :name => 'Paintings' )
     
-      @Taxon_klass.create( :name => 'Landscape', :taxonomy => root )
+      t = @Taxon_klass.new( :name => 'Landscape' )
+      t.taxonomy = root
+      t.save
 
       @Taxon_klass.count.should == 2
     
@@ -304,7 +306,7 @@ describe 'SpreeLoader' do
   # Operation and results should be identical when loading multiple associations
   # if using either single column embedded syntax, or one column per entry.
 
-  it "should load Products and multiple Taxons from single column", :taxon => true do
+  it "should load Products and multiple Taxons from single column", :taxons => true do
     test_taxon_creation( 'SpreeProducts.xls' )
   end
 
@@ -329,7 +331,7 @@ describe 'SpreeLoader' do
     #puts @Taxonomy_klass.all.collect( &:name).inspect
     #puts @Taxon_klass.all.collect( &:name).inspect
     
-    # Paintings alreadyexisted and had 1 child Taxon (Landscape)
+    # Paintings already existed and had 1 child Taxon (Landscape)
     # 2 nested Taxon (Paintings>Nature>Seascape) created under it so expect Taxonomy :
     
     # WaterColour	
@@ -347,6 +349,9 @@ describe 'SpreeLoader' do
 
     # Paintings	Oils	Paintings>Nature>Seascape
 
+    # ["Nature", "Paintings", "Seascape"]
+
+    
     #puts p2.taxons.collect(&:name).inspect
       
     p2.taxons.should have_exactly(4).items
@@ -354,7 +359,10 @@ describe 'SpreeLoader' do
     p2.taxons.collect(&:name).sort.should == ['Nature','Oils','Paintings','Seascape']
      
     paint_parent = @Taxonomy_klass.find_by_name('Paintings')
-         
+    
+       
+    puts paint_parent.taxons.collect(&:name).sort.inspect
+     
     paint_parent.taxons.should have_exactly(4).items # 3 children + all Taxonomies have a root Taxon
     
     paint_parent.taxons.collect(&:name).sort.should == ['Landscape','Nature','Paintings','Seascape']
@@ -367,16 +375,13 @@ describe 'SpreeLoader' do
     
     p2.taxons.collect( &:id ).should include(ts.id)
     p2.taxons.collect( &:id ).should include(tn.id)
-    
-    puts tn.inspect
-    puts ts.inspect
+
      
     tn.parent.id.should == paint_parent.root.id
     ts.parent.id.should == tn.id
     
     tn.children.should have_exactly(1).items
     ts.children.should have_exactly(0).items
-
  
   end
   

@@ -45,28 +45,44 @@ describe 'SpreeLoader' do
   end
 
 
-  it "should load Products with associated image" do
+  it "should load Products with associated image from CSV" do
+    
+    # In >= 1.1.0 Image moved to master Variant from Product
+    if(SpreeHelper::version.to_f < 1.1)
    
-    @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsWithImages.csv'), :mandatory => ['sku', 'name', 'price'] )
+      @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsWithImages.csv'), :mandatory => ['sku', 'name', 'price'] )
      
-    p = @klass.find_by_name("Demo Product for AR Loader")
+      p = @klass.find_by_name("Demo Product for AR Loader")
     
-    p.name.should == "Demo Product for AR Loader"
-    p.images.should have_exactly(1).items
+      p.name.should == "Demo Product for AR Loader"
+      p.images.should have_exactly(1).items
     
-    @klass.all.each {|p| p.images.should have_exactly(1).items }
+      @klass.all.each {|p| p.images.should have_exactly(1).items }
+    end
   end
   
   
+  it "should load Products with associated image", :fail => true do
+   
+    if(SpreeHelper::version.to_f < 1.1)
+      @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsWithImages.xls'), :mandatory => ['sku', 'name', 'price'] )
+     
+      p = @klass.find_by_name("Demo Product for AR Loader")
+    
+      p.name.should == "Demo Product for AR Loader"
+      p.images.should have_exactly(1).items
+    
+      @klass.all.each {|p| p.images.should have_exactly(1).items }
+    end
+  end
+  
   it "should be able to assign Images to preloaded Products" do
     
-    @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsMultiColumn.csv'), :mandatory => ['sku', 'name', 'price'] )
-  
     @Image_klass.all.size.should == 0
-    
-    @klass.all.each {|p| p.images.should have_exactly(0).items }
-    
+
     loader = DataShift::SpreeHelper::ImageLoader.new
+    
+    loader.perform_load( SpecHelper::spree_fixture('SpreeProductImages.xls') )
     
   end
   

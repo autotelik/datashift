@@ -114,13 +114,13 @@ module DataShift
     # If not nil, returned method can be used directly in for example klass.new.send( call, .... )
     #
     def self.find_method_detail( klass, external_name )
-      operator = nil
 
-      # TODO - should we raise error to warn find_operators never called ?
       md_mgr = method_details_mgrs[klass] || MethodDetailsManager.new( klass )
          
+      # md_mgr.all_available_operators.each { |l| puts "DEBUG: Mapped Method : #{l.inspect}" }
+        
       name = external_name.to_s
-
+     
       # TODO - check out regexp to do this work better plus Inflections ??
       # Want to be able to handle any of ["Count On hand", 'count_on_hand', "Count OnHand", "COUNT ONHand" etc]
       [

@@ -56,18 +56,13 @@ if(Guards::jruby?)
       puts "Can manually check file @ #{expect}"
     end
 
-    it "should export a simple model to .xls spreedsheet" do
+    it "should genrate a complex template .xls file from model" do
 
-      Project.create( :value_as_string	=> 'Value as Text', :value_as_boolean => true,	:value_as_double => 75.672)
-      #001 Demo string	blah blah	2011-02-14	1.00	320.00
-
-      expect= result_file('simple_export_spec.xls')
+      expect= result_file('project_plus_assoc_template_spec.xls')
 
       gen = ExcelGenerator.new(expect)
 
-      items = Project.all
-
-      gen.export(items)
+      gen.generate_with_associations(Project)
 
       File.exists?(expect).should be_true
 
