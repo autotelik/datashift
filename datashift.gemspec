@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "datashift"
-  s.version = "0.4.3"
+  s.version = "0.5.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thomas Statter"]
-  s.date = "2012-03-31"
+  s.date = "2012-05-08"
   s.description = "A suite of tools to move data between ActiveRecord models,databases,applications like Excel/Open Office, files and projects including Spree"
   s.email = "rubygems@autotelik.co.uk"
   s.extra_rdoc_files = [
@@ -68,6 +68,7 @@ Gem::Specification.new do |s|
     "lib/loaders/spreadsheet_loader.rb",
     "lib/loaders/spree/image_loader.rb",
     "lib/loaders/spree/product_loader.rb",
+    "lib/thor/export_excel.thor",
     "lib/thor/generate_excel.thor",
     "lib/thor/import_excel.thor",
     "lib/thor/spree/bootstrap_cleanup.thor",
@@ -92,6 +93,7 @@ Gem::Specification.new do |s|
     "sandbox/config/database.yml",
     "sandbox/config/environment.rb",
     "sandbox/config/environments/development.rb",
+    "spec/Gemfile",
     "spec/csv_loader_spec.rb",
     "spec/datashift_spec.rb",
     "spec/db/migrate/20110803201325_create_test_bed.rb",
@@ -113,13 +115,13 @@ Gem::Specification.new do |s|
     "spec/fixtures/images/DEMO_002_Powerstation.jpg",
     "spec/fixtures/images/DEMO_003_ror_mug.jpeg",
     "spec/fixtures/images/DEMO_004_ror_ringer.jpeg",
-    "spec/fixtures/interact_models_db.sqlite",
     "spec/fixtures/negative/SpreeProdMiss1Mandatory.csv",
     "spec/fixtures/negative/SpreeProdMiss1Mandatory.xls",
     "spec/fixtures/negative/SpreeProdMissManyMandatory.csv",
     "spec/fixtures/negative/SpreeProdMissManyMandatory.xls",
     "spec/fixtures/simple_export_spec.xls",
     "spec/fixtures/simple_template_spec.xls",
+    "spec/fixtures/spree/SpreeProductImages.xls",
     "spec/fixtures/spree/SpreeProducts.csv",
     "spec/fixtures/spree/SpreeProducts.xls",
     "spec/fixtures/spree/SpreeProductsDefaults.yml",
@@ -142,6 +144,7 @@ Gem::Specification.new do |s|
     "spec/spree_images_loader_spec.rb",
     "spec/spree_loader_spec.rb",
     "spec/spree_method_mapping_spec.rb",
+    "spec/thor_spec.rb",
     "tasks/config/seed_fu_product_template.erb",
     "tasks/config/tidy_config.txt",
     "tasks/export/excel_generator.rake",
