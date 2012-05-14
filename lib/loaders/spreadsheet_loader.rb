@@ -19,6 +19,11 @@ module DataShift
 
   module SpreadsheetLoading
 
+    require 'spreadsheet'
+
+
+    # Spreadsheet.client_encoding = 'UTF-8'F
+    
     #  Options:
     #   [:header_row]   : Default is 0. Use alternative row as header definition.
     #   [:mandatory]    : Array of mandatory column names
@@ -29,9 +34,7 @@ module DataShift
 
       @mandatory = options[:mandatory] || []
 
-      @excel = JExcelFile.new
-
-      @excel.open(file_name)
+      @excel = Spreadsheet.open file_name
         
       #if(options[:verbose])
       puts "\n\n\nLoading from Excel file: #{file_name}"
@@ -58,7 +61,7 @@ module DataShift
       raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{header_row_index} contains headers" if(@headers.empty?)
 
       # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
-      map_headers_to_operators( @headers, options[:strict] , @mandatory )
+      map_headers_to_operators( @headers, options)
 
       load_object_class.transaction do
         @loaded_objects =  []

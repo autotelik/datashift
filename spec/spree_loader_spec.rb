@@ -19,17 +19,19 @@ include DataShift
 describe 'SpreeLoader' do
 
       
+  include SpecHelper
+  extend SpecHelper
+      
+      
   before(:all) do
-    SpecHelper::before_all_spree
+    before_all_spree
   end
 
   before(:each) do
 
     begin
     
-      include SpecHelper
-      extend SpecHelper
-      
+     
       before_each_spree
     
       @Product_klass.count.should == 0
@@ -58,24 +60,24 @@ describe 'SpreeLoader' do
 
   it "should process a simple .xls spreadsheet" do
 
-    @zone_klass.delete_all
+    @Zone_klass.delete_all
 
-    loader = ExcelLoader.new(@zone_klass)
+    loader = ExcelLoader.new(@Zone_klass)
     
     loader.perform_load( SpecHelper::spree_fixture('SpreeZoneExample.xls') )
 
-    loader.loaded_count.should == @zone_klass.count
+    loader.loaded_count.should == @Zone_klass.count
   end
 
   it "should process a simple csv file" do
 
-    @zone_klass.delete_all
+    @Zone_klass.delete_all
 
-    loader = CsvLoader.new(@zone_klass)
+    loader = CsvLoader.new(@Zone_klass)
 
     loader.perform_load( SpecHelper::spree_fixture('SpreeZoneExample.csv') )
 
-    loader.loaded_count.should == @zone_klass.count
+    loader.loaded_count.should == @Zone_klass.count
   end
   
 

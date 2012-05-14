@@ -35,15 +35,9 @@ namespace :datashift do
       attachment_klazz = SpreeHelper::get_spree_class('Product' )
       sku_klazz = SpreeHelper::get_spree_class('Variant' )
 
-      # TODO generalise for any paperclip project, for now just Spree
-      #begin
-      #  attachment_klazz = Kernel.const_get(args[:model]) if(args[:model])
-     # rescue NameError
-      #  raise "Could not find contant for model #{args[:model]}"
-      #end
-
       image_loader = ImageLoader.new
-
+      
+      
       if(File.directory? @image_cache )
         puts "Loading images from #{@image_cache}"
 

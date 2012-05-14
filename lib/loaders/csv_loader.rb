@@ -28,16 +28,9 @@ module DataShift
 
       @parsed_file = CSV.read(file_name)
 
-      @mandatory = options[:mandatory] || []
-
       # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
       # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
-      map_headers_to_operators( @parsed_file.shift, options[:strict] , @mandatory )
-        
-      unless(@method_mapper.missing_methods.empty?)
-        logger.error("Following column headings could not be mapped :\n#{@method_mapper.missing_methods.inspect}")
-        raise MappingDefinitionError, "ERROR: Missing mappings for #{@method_mapper.missing_methods.size} column headings"
-      end
+      map_headers_to_operators( @parsed_file.shift, options)
 
       #if(options[:verbose])
       puts "\n\n\nLoading from CSV file: #{file_name}"

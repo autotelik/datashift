@@ -16,23 +16,23 @@ require 'product_loader'
 
 include DataShift
   
-describe 'SpreeLoader' do
+describe 'SpreeImageLoading' do
 
+  include SpecHelper
+  extend SpecHelper
       
   before(:all) do
-    SpecHelper::before_all_spree
+    before_all_spree
   end
 
   before(:each) do
 
     begin
     
-      include SpecHelper
-      extend SpecHelper
-      
       before_each_spree
-    
-      @klass.count.should == 0
+
+      @Image_klass.count.should == 0
+      @Product_klass.count.should == 0
       
       MethodDictionary.clear
       MethodDictionary.find_operators( @klass )
@@ -48,42 +48,77 @@ describe 'SpreeLoader' do
   it "should load Products with associated image from CSV" do
     
     # In >= 1.1.0 Image moved to master Variant from Product
-    if(SpreeHelper::version.to_f < 1.1)
    
-      @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsWithImages.csv'), :mandatory => ['sku', 'name', 'price'] )
+    options = {:mandatory => ['sku', 'name', 'price']}
+    
+    options[:force_inclusion] = ['sku', 'images'] if(SpreeHelper::version.to_f > 1 )
+    
+    @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsWithImages.csv'), options )
      
-      p = @klass.find_by_name("Demo Product for AR Loader")
+    @Image_klass.all.each_with_index {|i, x| puts "RESULT IMAGE #{x}", i.inspect }
+        
+    p = @Product_klass.find_by_name("Demo Product for AR Loader")
     
-      p.name.should == "Demo Product for AR Loader"
-      p.images.should have_exactly(1).items
+    p.name.should == "Demo Product for AR Loader"
     
-      @klass.all.each {|p| p.images.should have_exactly(1).items }
-    end
+    p.images.should have_exactly(1).items
+    p.master.images.should have_exactly(1).items
+    
+    @Product_klass.all.each {|p| p.images.should have_exactly(1).items }
+    
+    @Image_klass.count.should == 3
   end
   
   
-  it "should load Products with associated image", :fail => true do
+  it "should load Products with associated image" do
    
-    if(SpreeHelper::version.to_f < 1.1)
-      @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsWithImages.xls'), :mandatory => ['sku', 'name', 'price'] )
+    options = {:mandatory => ['sku', 'name', 'price']}
+    
+    options[:force_inclusion] = ['sku', 'images'] if(SpreeHelper::version.to_f > 1 )
+    
+    @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsWithImages.xls'), options )
      
-      p = @klass.find_by_name("Demo Product for AR Loader")
+    @Image_klass.all.each_with_index {|i, x| puts "RESULT IMAGE #{x}", i.inspect }
+        
+    p = @klass.find_by_name("Demo Product for AR Loader")
     
-      p.name.should == "Demo Product for AR Loader"
-      p.images.should have_exactly(1).items
+    p.name.should == "Demo Product for AR Loader"
+    p.images.should have_exactly(1).items
     
-      @klass.all.each {|p| p.images.should have_exactly(1).items }
-    end
+    @Product_klass.all.each {|p| p.images.should have_exactly(1).items }
+     
+    @Image_klass.count.should == 3
+
   end
   
-  it "should be able to assign Images to preloaded Products" do
+  it "should be able to assign Images to preloaded Products", :fail => true  do
+    
+    MethodDictionary.find_operators( @Image_klass )
+    
+    @Product_klass.count.should == 0
+    
+    @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProducts.xls'))
     
     @Image_klass.all.size.should == 0
 
+    options = { :force_inclusion => ['sku', 'attachment'] } if(SpreeHelper::version.to_f > 1 )
+    
     loader = DataShift::SpreeHelper::ImageLoader.new
     
-    loader.perform_load( SpecHelper::spree_fixture('SpreeProductImages.xls') )
+    loader.perform_load( SpecHelper::spree_fixture('SpreeImages.xls'), options )
     
+    @Image_klass.all.each_with_index {|i, x| puts "RESULT IMAGE #{x}", i.inspect }
+     
+    @Image_klass.count.should == 3
+        
+    p = @klass.find_by_name("Demo Product for AR Loader")
+    
+    p.name.should == "Demo Product for AR Loader"
+    
+    p.images.should have_exactly(1).items
+    
+    @Product_klass.all.each {|p| p.images.should have_exactly(1).items }
+   
   end
   
 end
