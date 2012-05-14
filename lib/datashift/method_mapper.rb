@@ -50,7 +50,10 @@ module DataShift
     # specified may not be exactly as required e.g handles capitalisation, white space, _ etc
     # Returns: Array of matching method_details
     #
-    def map_inbound_to_methods( klass, columns )
+    def map_inbound_to_methods( klass, columns, options = {} )
+      
+      forced = [*options[:force_inclusion]].compact
+      forced.collect! { |f| f.downcase }
       
       @method_details, @missing_methods = [], []
     
@@ -60,16 +63,26 @@ module DataShift
           next
         end
         
-        x, lookup = name.split(MethodMapper::column_delim) 
+        operator, lookup = name.split(MethodMapper::column_delim) 
         #puts "DEBUG: Find Method Detail for #{x}"
-        md = MethodDictionary::find_method_detail( klass, x )
+        md = MethodDictionary::find_method_detail( klass, operator )
         
         # TODO be nice if we could cheeck that the assoc on klass responds to the specified
         # lookup key now (nice n early)
         # active_record_helper = "find_by_#{lookup}"
+        if(md.nil? && forced.include?(operator.downcase))
+          md = MethodDictionary::add(klass, operator)
+        end
         
-        md.find_by_operator = lookup if(lookup) # TODO and klass.x.respond_to?(active_record_helper))
-        md ? @method_details << md : @missing_methods << x
+        if(md)
+          
+          md.find_by_operator = lookup if(lookup) # TODO and klass.x.respond_to?(active_record_helper))
+           
+          @method_details << md
+        else
+          @missing_methods << operator
+        end
+        
       end
       #@method_details.compact!  .. currently we may need to map via the index on @method_details so don't remove nils for now
       @method_details

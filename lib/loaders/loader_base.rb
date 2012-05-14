@@ -120,8 +120,15 @@ module DataShift
     #   CSV files
     # 
     # OPTIONS :
-    #   strict : Raise exception if any column cannot be mapped
-       
+    #  
+    #  strict           : Raise an exception of any headers can't be mapped to an attribute/association
+    #  ignore           : List of column headers to ignore when building operator map
+    #  mandatory        : List of columns that must be present in headers
+    #  
+    #  force_inclusion  : List of columns that do not map to any operator but should be includeed in processing.
+    #                       This provides the opportunity for loaders to provide specific methods to handle these fields
+    #                       when no direct operator is available on the modle or it's associations
+    #
     def perform_load( file_name, options = {} )
 
       raise DataShift::BadFile, "Cannot load #{file_name} file not found." unless(File.exists?(file_name))
@@ -139,21 +146,33 @@ module DataShift
     end
 
     
+    
     # Core API - Given a list of free text column names from a file, 
     # map all headers to a method detail containing operator details.
     # 
     # This is then available through @method_mapper.method_details.each
     # 
     # Options:
-    #  strict : Raise an exception of any headers can't be mapped to an attribute/association
+    #  strict           : Raise an exception of any headers can't be mapped to an attribute/association
+    #  ignore           : List of column headers to ignore when building operator map
+    #  mandatory        : List of columns that must be present in headers
+    #  
+    #  force_inclusion  : List of columns that do not map to any operator but should be includeed in processing.
+    #                       This provides the opportunity for loaders to provide specific methods to handle these fields
+    #                       when no direct operator is available on the modle or it's associations
     #
-    def map_headers_to_operators( headers, strict, mandatory = [])
+    def map_headers_to_operators( headers, options = {} )
       @headers = headers
       
+      mandatory = options[:mandatory] || []
+            
+      
+      strict = (options[:strict] == true)
+      
       begin 
-        method_details = @method_mapper.map_inbound_to_methods( load_object_class, @headers )
+        @method_mapper.map_inbound_to_methods( load_object_class, @headers, options )
       rescue => e
-        puts e.inspect
+        puts e.inspect, e.backtrace
         logger.error("Failed to map header row to set of database operators : #{e.inspect}")
         raise MappingDefinitionError, "Failed to map header row to set of database operators"
       end
@@ -443,6 +462,15 @@ module DataShift
       end
     end
 
+    protected
+    
+    # Take current column data and split into each association
+    # Supported Syntax :
+    #  assoc_find_name:value | assoc2_find_name:value | etc
+    def get_each_assoc
+      current_value.to_s.split( LoaderBase::multi_assoc_delim )
+    end
+      
     private
 
     def save_if_new

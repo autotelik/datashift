@@ -72,8 +72,8 @@ module DataShift
       nil
     end
 
-    def operator?(name)
-      operator == name
+    def operator?(name, case_sensitive = false)
+      case_sensitive ? operator == name : operator.downcase == name.downcase
     end
 
     # Return the operator's expected class name, if can be derived, else nil

@@ -115,7 +115,7 @@ module SpecHelper
     File.join($SpreeFixturePath, source)
   end
   
-  def self.before_all_spree 
+  def before_all_spree 
 
     # we are not a Spree project, nor is it practical to externally generate
     # a complete Spree application for testing so we implement a mini migrate/boot of our own
@@ -125,22 +125,24 @@ module SpecHelper
     puts "Testing Spree standalone - version #{SpreeHelper::version}"
         
     SpreeHelper.migrate_up      # create an sqlite Spree database on the fly
+    
+    @spree_klass_list  =  %w{Image OptionType OptionValue Property ProductProperty Variant Taxon Taxonomy Zone}
+    
+    @klass = SpreeHelper::get_product_class
+    @Product_klass = @klass  
+  
+    @spree_klass_list.each do |k|
+      instance_variable_set("@#{k}_klass", SpreeHelper::get_spree_class(k)) 
+    end
+    
   end
   
   def before_each_spree
       
-    @klass = SpreeHelper::get_product_class
-    @Product_klass = @klass
-    @Taxon_klass  = SpreeHelper::get_spree_class('Taxon')   
-    @zone_klass   = SpreeHelper::get_spree_class('Zone')
-        
     # Reset main tables - TODO should really purge properly, or roll back a transaction      
-    @klass.delete_all
-    @Taxon_klass.delete_all
-    @zone_klass.delete_all
+    @Product_klass.delete_all
     
-    %w{Image OptionType OptionValue Property ProductProperty Variant Taxonomy}.each do |k|
-      instance_variable_set("@#{k}_klass", SpreeHelper::get_spree_class(k)) 
+   @spree_klass_list.each do |k|
       instance_variable_get("@#{k}_klass").delete_all
     end
   end

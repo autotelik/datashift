@@ -38,6 +38,9 @@ Jeweler::Tasks.new do |gem|
   gem.email = "rubygems@autotelik.co.uk"
   gem.authors = ["Thomas Statter"]
   # dependencies defined in Gemfile
+  gem.files.exclude ['sandbox']
+  
+  gem.add_dependency ['spreadsheet']
 end
 Jeweler::RubygemsDotOrgTasks.new
 

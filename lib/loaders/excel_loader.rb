@@ -25,14 +25,14 @@ module DataShift
     module ExcelLoading
 
       #  Options:
-      #   [:header_row]   : Default is 0. Use alternative row as header definition.
-      #   [:mandatory]    : Array of mandatory column names
-      #   [:strict]       : Raise exception when no mapping found for a column heading (non mandatory)
-      #   [:sheet_number]
+      #   [:sheet_number]    : Default is 0. The index of the Excel Worksheet to use.
+      #   [:header_row]      : Default is 0. Use alternative row as header definition.
+      #   [:mandatory]       : Array of mandatory column names
+      #   [:force_inclusion] : Array of inbound column names to force into mapping
+      #   [:strict]          : Raise exception when no mapping found for a column heading (non mandatory)
+
 
       def perform_excel_load( file_name, options = {} )
-
-        @mandatory = options[:mandatory] || []
 
         @excel = JExcelFile.new
 
@@ -64,7 +64,7 @@ module DataShift
 
         # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
         # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
-        map_headers_to_operators( @headers, options[:strict] , @mandatory )
+        map_headers_to_operators( @headers, options )
 
         logger.info "Excel Loader prcoessing #{@excel.num_rows} rows"
         load_object_class.transaction do

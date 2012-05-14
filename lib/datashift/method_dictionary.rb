@@ -59,6 +59,7 @@ module DataShift
         if(options[:instance_methods] == true)
           setters = klass.instance_methods.grep(/\w+=/).collect {|x| x.to_s }
 
+          # TODO - Since 3.2 this seems to return lots more stuff including validations which might not be appropriate
           if(klass.respond_to? :defined_activerecord_methods)
             setters = setters - klass.defined_activerecord_methods.to_a
           end
@@ -81,6 +82,13 @@ module DataShift
       end
     end
     
+
+    def self.add( klass, operator, type = :assignment)
+      method_details_mgr = get_method_details_mgr( klass )
+      md = MethodDetail.new(operator, klass, operator, type)
+      method_details_mgr <<  md
+      return md
+    end
     
     # Build a thorough and usable picture of the operators by building dictionary of our MethodDetail
     # objects which can be used to import/export data to objects of type 'klass'
@@ -115,7 +123,7 @@ module DataShift
     #
     def self.find_method_detail( klass, external_name )
 
-      md_mgr = method_details_mgrs[klass] || MethodDetailsManager.new( klass )
+      method_details_mgr = get_method_details_mgr( klass )
          
       # md_mgr.all_available_operators.each { |l| puts "DEBUG: Mapped Method : #{l.inspect}" }
         
@@ -136,7 +144,7 @@ module DataShift
         # Try each association type, returning first that contains matching operator with name n
       
         MethodDetail::supported_types_enum.each do |t|
-          method_detail = md_mgr.find(n, t)
+          method_detail = method_details_mgr.find(n, t)
           return method_detail if(method_detail)
         end
         
@@ -158,6 +166,11 @@ module DataShift
       "#{klass.name}:#{column}"
     end
     
+    def self.get_method_details_mgr( klass )
+      method_details_mgrs[klass] || MethodDetailsManager.new( klass )
+    end
+    
+        
     def self.method_details_mgrs
       @method_details_mgrs ||= {}
       @method_details_mgrs

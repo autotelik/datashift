@@ -39,30 +39,7 @@ module DataShift
         logger.debug "PRODUCT #{@load_object.inspect} MASTER: #{@load_object.master.inspect}"
       end
 
-      # Based on filename call appropriate loading function
-      # Currently supports :
-      #   Excel/Open Office files saved as .xls
-      #   CSV files
-      # 
-      # OPTIONS :
-      #   strict : Raise exception if any column cannot be mapped
-       
-      def perform_load( file_name, options = {} )
 
-        raise DataShift::BadFile, "Cannot load #{file_name} file not found." unless(File.exists?(file_name))
-        
-        ext = File.extname(file_name)
-          
-        if(ext.casecmp('.xls') == 0)
-          raise DataShift::BadRuby, "Please install and use JRuby for loading .xls files" unless(Guards::jruby?)
-          perform_excel_load(file_name, options)
-        elsif(ext.casecmp('.csv') == 0)
-          perform_csv_load(file_name, options)
-        else
-          raise DataShift::UnsupportedFileType, "#{ext} files not supported - Try .csv or OpenOffice/Excel .xls"
-        end
-      end
-      
       # Over ride base class process with some Spree::Product specifics
       #
       # What process a value string from a column, assigning value(s) to correct association on Product.
@@ -138,12 +115,7 @@ module DataShift
 
       private
       
-      # Take current column data and split into each association
-      # Supported Syntax :
-      #  assoc_find_name:value | assoc2_find_name:value | etc
-      def get_each_assoc
-        current_value.to_s.split( LoaderBase::multi_assoc_delim )
-      end
+
 
       # Special case for OptionTypes as it's two stage process
       # First add the possible option_types to Product, then we are able
