@@ -18,7 +18,7 @@ include DataShift
   
 describe 'SpreeGenerator' do
 
-  #include SpecHelper
+  include SpecHelper
   extend SpecHelper
     
   before(:all) do
