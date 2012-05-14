@@ -16,17 +16,19 @@ require 'excel_exporter'
 
 include DataShift
   
-describe 'SpreeLoader' do
+describe 'SpreeExporter' do
 
+  include SpecHelper
+  extend SpecHelper
+    
   before(:all) do
-    SpecHelper::before_all_spree
+    before_all_spree
     results_clear()
   end
 
   before do
     
-    include SpecHelper
-    extend SpecHelper
+
       
     before_each_spree   # inits tests, cleans DB setups model types
     

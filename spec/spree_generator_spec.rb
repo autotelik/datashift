@@ -16,17 +16,17 @@ require 'excel_generator'
 
 include DataShift
   
-describe 'SpreeLoader' do
+describe 'SpreeGenerator' do
 
+  #include SpecHelper
+  extend SpecHelper
+    
   before(:all) do
-    SpecHelper::before_all_spree
+    before_all_spree
   end
 
   before do
-    
-    #include SpecHelper
-    extend SpecHelper
-      
+       
     before_each_spree   # inits tests, cleans DB setups model types
     
     # Create some test data
@@ -75,7 +75,7 @@ describe 'SpreeLoader' do
     
   end
     
-   it "should be able to exclude single associations from template" do
+  it "should be able to exclude single associations from template" do
 
     expect = result_file('product_and_assoc_export_spec.xls')
 

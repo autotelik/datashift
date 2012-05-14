@@ -16,17 +16,17 @@ require 'product_loader'
 
 include DataShift
   
-describe 'SpreeLoader' do
+describe 'SpreeMethodMapping' do
 
+  include SpecHelper
+  extend SpecHelper
+    
   before(:all) do
-    SpecHelper::before_all_spree
+    before_all_spree
   end
 
   before(:each) do
-    
-    include SpecHelper
-    extend SpecHelper
-      
+   
     before_each_spree
       
     MethodDictionary.clear
