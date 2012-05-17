@@ -1,34 +1,20 @@
-# Used by spec helper to build test databases
-# These entires can be used in call to db_connect ( see spec_helper )
-
-<% adapter = 'sqlite3' %>
-<% adapter = 'jdbcsqlite3' if(Guards::jruby? ) %>
-
-test_mysql:
-  adapter: jdbcmysql
-  database: datashift_test_models_db
-  username: test
-  password: test
-  host: localhost
-
-test_memory:
-  adapter: <%= adapter %>
-  database: :memory
-
-test_file:
-  adapter: <%= adapter %>
-  database: <%= File.join($DataShiftFixturePath, 'datashift_test_models_db.sqlite') %>
-  encoding: utf8
-  host: localhost
-
-test_spree_standalone:
-  adapter: <%= adapter %>
-  database: <%= File.join($DataShiftFixturePath, 'datashift_Spree_db.sqlite') %>
-  encoding: utf8
-  host: localhost
-  
+# SQLite version 3.x
+#   gem 'activerecord-jdbcsqlite3-adapter'
+#
+# Configure Using Gemfile
+# gem 'activerecord-jdbcsqlite3-adapter'
+#
 development:
-  adapter: <%= adapter %>
-  database: <%= File.join($DataShiftFixturePath, 'datashift_Spree_db.sqlite') %>
-  encoding: utf8
-  host: localhost
+  adapter: sqlite3
+  database: db/development.sqlite3
+
+# Warning: The database defined as "test" will be erased and
+# re-generated from your development database when you run "rake".
+# Do not set this db to the same as development or production.
+test:
+  adapter: sqlite3
+  database: db/test.sqlite3
+
+production:
+  adapter: sqlite3
+  database: db/production.sqlite3

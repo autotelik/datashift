@@ -104,10 +104,9 @@ module DataShift
     end # ExcelGenerator
 
   else
-    class  ExcelExporter < ExcelBase
+    class  ExcelExporter < ExporterBase
       
       def initialize(filename)
-        @filename = filename
         raise DataShift::BadRuby, "Apologies but DataShift Excel facilities currently need JRuby. Please switch to, or install JRuby"
       end
     end

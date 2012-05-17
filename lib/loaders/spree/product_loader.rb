@@ -161,7 +161,7 @@ module DataShift
               begin
                 # This one line seems to works for 1.1.0 - 3.2 but not 1.0.0 - 3.1 ??
                 if(SpreeHelper::version.to_f >= 1.1)
-                  variant = @load_object.variants.create( :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :available_on => @load_object.available_on)
+                  variant = @load_object.variants.create( :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price)
                 else
                   variant = @@variant_klass.create( :product => @load_object, :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :available_on => @load_object.available_on)
                   #if(variant.valid?)
@@ -175,7 +175,7 @@ module DataShift
               rescue =>  e
                 puts "Failed to create a Variant for Product #{@load_object.name}"
                 puts e.inspect
-                puts e.backtrace
+                #puts e.backtrace
               end
               
               logger.debug "Created New Variant: #{variant.inspect}"

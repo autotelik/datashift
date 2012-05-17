@@ -32,9 +32,13 @@ describe 'SpreeGenerator' do
     # Create some test data
     root = @Taxonomy_klass.create( :name => 'Paintings' )
     
-    @Taxon_klass.create( :name => 'Landscape', :taxonomy => root )
-    @Taxon_klass.create( :name => 'Sea', :taxonomy => root )
-      
+    if(SpreeHelper::version.to_f > 1 )
+      root.taxons.create( :name => 'Landscape' )
+      root.taxons.create( :name => 'Sea' )
+    else
+      @Taxon_klass.create( :name => 'Landscape', :taxonomy => root )
+      @Taxon_klass.create( :name => 'Sea', :taxonomy => root )
+    end
   end
 
   it "should export any Spree model to .xls spreedsheet" do
