@@ -46,9 +46,9 @@ module DataShift
       
       if(SpreeHelper::version.to_f > 1 && viewable_record.is_a?(Spree::Product) )
        
-        image = klass.new( :attachment => file, :viewable => viewable_record.master, :alt => alt, :position => position)  
+        image = klass.new( :attachment => file, :alt => alt, :position => position)  
         
-        # not sure why this is required but it is ...
+        # mass assignment not allows for this field
         image.viewable = viewable_record.master
       else
         image = klass.new( :attachment => file,:viewable => viewable_record, :alt => alt, :position => position)  

@@ -196,7 +196,9 @@ describe 'SpreeMethodMapping' do
 
     klazz_object = @Product_klass.new
 
-    @ProductProperty_klass.new(:property => @prop1)
+    pp = @ProductProperty_klass.new
+    
+    pp.property = @prop1
 
     # NEW ASSOCIATION ASSIGNMENT
     klazz_object.send( method_detail.operator ) << @ProductProperty_klass.new
@@ -207,10 +209,15 @@ describe 'SpreeMethodMapping' do
     klazz_object.product_properties.size.should == 3
 
     # Use generic assignment on method detail - expect has_many to use << not =
-    method_detail.assign( klazz_object, @ProductProperty_klass.new(:property => @prop1) )
+    pp2 = @ProductProperty_klass.new
+    pp2.property = @prop1
+    method_detail.assign( klazz_object,  pp2)
     klazz_object.product_properties.size.should == 4
 
-    method_detail.assign( klazz_object, [@ProductProperty_klass.new(:property => @prop2), @ProductProperty_klass.new(:property => @prop3)])
+    pp3, pp4 = @ProductProperty_klass.new, @ProductProperty_klass.new
+    pp3.property = @prop2
+    pp4.property = @prop3
+    method_detail.assign( klazz_object, [pp3, pp4])
     klazz_object.product_properties.size.should == 6
 
   end

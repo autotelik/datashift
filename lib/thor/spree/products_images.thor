@@ -77,7 +77,7 @@ module Datashift
     method_option :verbose, :aliases => '-v', :type => :boolean, :desc => "Verbose logging"
     #method_option :config, :aliases => '-c',  :type => :string, :desc => "Configuration file containg defaults or over rides in YAML"
    
-    def images()#, [:input, :folder, :dummy, :sku, :skip_if_no_assoc, :skip_if_loaded, :model] => :environment do |t, args|
+    def images()
 
       require File.expand_path('config/environment.rb')
       
@@ -91,6 +91,7 @@ module Datashift
      
       attachment_klazz  = DataShift::SpreeHelper::get_spree_class('Product' )
       sku_klazz         = DataShift::SpreeHelper::get_spree_class('Variant' )
+      image_klazz       = DataShift::SpreeHelper::get_spree_class('Image' )
 
       # TODO generalise for any paperclip project, for now just Spree
       #begin
@@ -152,8 +153,8 @@ module Datashift
           # Check if Image must have an associated record
           if(record || (record.nil? && options[:process_when_no_assoc]))
             image_loader.reset()
-            puts "Process Image"
-            image_loader.process( image_name, record )
+            puts "Processing Image #{image_name}"
+            image_loader.create_image(image_klazz, image_name, record)
           end
 
         end
@@ -168,6 +169,7 @@ module Datashift
           end
         end
 
+        puts "Dummy Run - if happy run without -d" if(options[:dummy])
       else
         puts "ERROR: Supplied Path #{@image_cache} not accesible"
         exit(-1)

@@ -11,15 +11,11 @@
 #
 #     DataShift::load_commands
 #
-#  Requires Jruby, cmd Line:
+#  N.B Requires JRuby
 #
-# => bundle exec thor datashift:import:excel -m <active record class> -r <output_template.xls> -a
+# => bundle exec thor datashift:import:excel -m <active record class> -i <output_template.xls> -a
 #
-#  Cmd Line:
-#
-# => jruby -S rake datashift:import:excel model=<active record class> input=<file.xls>
-# => jruby -S rake datashift:import:excel model=<active record class> input=C:\MyProducts.xlsverbose=true
-#
+
 require 'datashift'
   
 
@@ -34,6 +30,7 @@ module Datashift
     desc "excel", "import .xls file for specifiec active record model" 
     method_option :model, :aliases => '-m', :required => true, :desc => "The related active record model"
     method_option :input, :aliases => '-i', :required => true, :desc => "The input .xls file"
+    method_option :config, :aliases => '-c', :desc => "YAML config file with defaults, over-rides etc"
     method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include any associations supplied in the input"
     method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
     
@@ -48,16 +45,17 @@ module Datashift
       model = options[:model]
       begin
         # support modules e.g "Spree::Property") 
-        klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
+        klass = ModelMapper::class_from_string(model) 
       rescue NameError
-        raise "ERROR: No such AR Model found - check valid model supplied via model=<Class>"
+        raise "ERROR: No such AR Model found - check valid model supplied with -m <Class>"
       end
 
-      if(ENV['loader'])
+      raise "ERROR: No such AR Model found - check valid model supplied with -m <Class>" if(klass.nil?) 
+      
+      if(options[:loader])
         begin
-          #loader_klass = Kernel.const_get(ENV['loader'])
-          # support modules e.g "Spree::Property") 
-          loader_klass = ModelMapper::class_from_string(ENV['loader'])  #Kernel.const_get(model)
+     
+          loader_klass = ModelMapper::class_from_string(options[:loader])  
 
           loader = loader_klass.new(klass)
 
@@ -71,11 +69,12 @@ module Datashift
         loader = DataShift::ExcelLoader.new(klass)
       end
 
-      logger.info("ARGS #{options.inspect} [#{options[:verbose]}]")
+      logger.info("ARGS #{options.inspect}")
       loader.logger.verbose if(ENV['verbose'])
       
-      loader.configure_from( ENV['config'] ) if(ENV['config'])
-       
+      loader.configure_from( options[:config] ) if(options[:config])
+
+
       loader.perform_load(options[:input])
     end
   end

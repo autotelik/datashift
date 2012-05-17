@@ -80,9 +80,7 @@ module DataShift
     # => Will chdir into the sandbox to load environment as need to mimic being at root of a rails project
     #    chdir back after environment loaded
     
-    #  gem('rails', '3.2.3')
-    
-    def self.boot( database_env)#, rails_version = '3.1.3' )
+    def self.boot( database_env)
      
       if( ! is_namespace_version )
         db_connect( database_env )
@@ -90,11 +88,8 @@ module DataShift
         boot_pre_1
         @dslog.info "Booted Spree using pre 1.0.0 version"
       else
-        
-
-        #em('rails', rails_version)
-        
-        db_connect( database_env )#, rails_version )  
+           
+        db_connect( database_env )
         
         @dslog.info "Booting Spree using version #{SpreeHelper::version}"
        
@@ -102,13 +97,24 @@ module DataShift
         
         store_path = Dir.pwd
         
-        Dir.chdir( File.expand_path('../../../sandbox', __FILE__) )
-
-        rails_root = File.expand_path('../../../sandbox', __FILE__)
+        spree_sanbox_app = File.expand_path('../../../sandbox', __FILE__)
+        
+        unless(File.exists?(spree_sanbox_app))
+          Dir.chdir( File.expand_path( "#{spree_sanbox_app}/..") )
+          system('rails new sandbox')
+        end
+  
+        rails_root = spree_sanbox_app
         
         $:.unshift rails_root
         
-        require 'config/environment.rb'
+        begin
+          require 'config/environment.rb'
+        rescue => e
+          #somethign in deface seems to blow up suddenly on 1.1
+          # puts e.backtrace
+          puts "Warning - Potential issue initializing Spree sanbox #{e.inspect}"
+        end
         
         Dir.chdir( store_path )
         
