@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thomas Statter"]
-  s.date = "2012-05-08"
+  s.date = "2012-05-18"
   s.description = "A suite of tools to move data between ActiveRecord models,databases,applications like Excel/Open Office, files and projects including Spree"
   s.email = "rubygems@autotelik.co.uk"
   s.extra_rdoc_files = [
@@ -24,7 +24,6 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
-    "datashift-0.5.0.gem",
     "datashift.gemspec",
     "lib/applications/jruby/jexcel_file.rb",
     "lib/applications/jruby/word.rb",
@@ -122,7 +121,7 @@ Gem::Specification.new do |s|
     "spec/fixtures/negative/SpreeProdMissManyMandatory.xls",
     "spec/fixtures/simple_export_spec.xls",
     "spec/fixtures/simple_template_spec.xls",
-    "spec/fixtures/spree/SpreeProductImages.xls",
+    "spec/fixtures/spree/SpreeImages.xls",
     "spec/fixtures/spree/SpreeProducts.csv",
     "spec/fixtures/spree/SpreeProducts.xls",
     "spec/fixtures/spree/SpreeProductsDefaults.yml",
@@ -167,9 +166,12 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
+      s.add_runtime_dependency(%q<spreadsheet>, [">= 0"])
     else
+      s.add_dependency(%q<spreadsheet>, [">= 0"])
     end
   else
+    s.add_dependency(%q<spreadsheet>, [">= 0"])
   end
 end
 
