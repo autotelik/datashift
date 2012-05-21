@@ -100,6 +100,7 @@ module DataShift
       
       @method_mapper = DataShift::MethodMapper.new
       @options = options.clone
+      @verbose_logging = @options[:verbose_logging]
       @headers = []
 
       @default_data_objects ||= {}
@@ -216,7 +217,11 @@ module DataShift
     
     # Default values can be provided in YAML config file
     #  Format :
-    #    Load Class
+    #  
+    #    LoaderClass:
+    #     option: value
+    #     
+    #    Load Class:    (e.g Spree:Product)
     #         atttribute: value
     
     def configure_from( yaml_file )
@@ -251,6 +256,8 @@ module DataShift
       
       if(data[load_object_class.name])
         
+        logger.info("Assigning defaults and over rides from config")
+        
         deflts = data[load_object_class.name]['datashift_defaults']
         @default_values.merge!(deflts) if deflts
         
@@ -258,6 +265,11 @@ module DataShift
         @override_values.merge!(ovrides) if ovrides
       end
       
+      if(data['LoaderBase'])
+        @options.merge!(data['LoaderBase'])
+      end
+      
+      logger.info("Loader Options : #{@options.inspect}")
     end
     
     # Set member variables to hold details and value.
@@ -285,13 +297,28 @@ module DataShift
       @current_value
     end
     
-
+    # return the find_by operator and the values to find
+    def get_find_operator_and_rest( column_data)
+    
+      find_operator, col_values = "",nil
+           
+      if(@current_method_detail.find_by_operator)
+        find_operator, col_values = @current_method_detail.find_by_operator, column_data
+      else
+        find_operator, col_values = column_data.split(LoaderBase::name_value_delim) 
+      end
+       
+      return find_operator, col_values
+    end
+    
     # Process a value string from a column.
     # Assigning value(s) to correct association on @load_object.
     # Method detail represents a column from a file and it's correlated AR associations.
     # Value string which may contain multiple values for a collection association.
     #
-    def process()
+    def process()  
+      
+      logger.info("Current value to assign : #{@current_value}") #if @options['verboose_logging']
       
       if(@current_method_detail.operator_for(:has_many))
 
@@ -310,17 +337,18 @@ module DataShift
 
           columns.each do |col_str|
             
-            find_operator, col_values = "",""
-           
-            if(@current_method_detail.find_by_operator)
-              find_operator, col_values = @current_method_detail.find_by_operator, col_str
-            else
-              find_operator, col_values = col_str.split(LoaderBase::name_value_delim)
-              raise "No key to find #{@current_method_detail.operator} in DB. Expected format key:value" unless(col_values)
-            end
+            find_operator, col_values = get_find_operator_and_rest( col_str )
             
+            #if(@current_method_detail.find_by_operator)
+            #   find_operator, col_values = @current_method_detail.find_by_operator, col_str
+            #  else
+            #    find_operator, col_values = col_str.split(LoaderBase::name_value_delim) 
+            #  end
+          
+            raise "Cannot perform DB find by #{find_operator}. Expected format key:value" unless(find_operator && col_values)
+             
             find_by_values = col_values.split(LoaderBase::multi_value_delim)
-
+                     
             if(find_by_values.size > 1)
 
               @current_value = @current_method_detail.operator_class.send("find_all_by_#{find_operator}", find_by_values )

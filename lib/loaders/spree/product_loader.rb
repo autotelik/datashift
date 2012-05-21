@@ -215,8 +215,10 @@ module DataShift
       
       # Special case for ProductProperties since it can have additional value applied.
       # A list of Properties with a optional Value - supplied in form :
-      #   property.name:value|property.name|property.name:value
-      #
+      #   property_name:value|property_name|property_name:value
+      #  Example :
+      #  test_pp_002|test_pp_003:Example free value|yet_another_property
+
       def add_properties
         # TODO smart column ordering to ensure always valid by time we get to associations
         save_if_new
@@ -224,27 +226,31 @@ module DataShift
         property_list = get_each_assoc#current_value.split(LoaderBase::multi_assoc_delim)
 
         property_list.each do |pstr|
-          pname, pvalue = pstr.split(LoaderBase::name_value_delim)
-          property = @@property_klass.find_by_name(pname)
+          
+        find_by_name, find_by_value = get_find_operator_and_rest( pstr )
+                  
+        raise "Cannot find Property via #{find_by_name} with value #{find_by_value}" unless(find_by_name && find_by_value)
+                        
+        property = @@property_klass.find_by_name(find_by_name)
 
           unless property
-            property = @@property_klass.create( :name => pname, :presentation => pname.humanize)
-            logger.debug "Created New Property #{property.inspect}"
+            property = @@property_klass.create( :name => find_by_name, :presentation => find_by_name.humanize)
+            logger.info "Created New Property #{property.inspect}"
           end
 
           if(property)
             if(SpreeHelper::version.to_f >= 1.1)
               # Property now protected from mass assignment 
-              x = @@product_property_klass.new( :value => pvalue )
+              x = @@product_property_klass.new( :value => find_by_value )
               x.property = property
               x.save
-              logger.debug "Created New ProductProperty #{x.inspect}"
+              logger.info "Created New ProductProperty #{x.inspect}"
               @load_object.product_properties << x 
             else
-              @load_object.product_properties << @@product_property_klass.create( :property => property, :value => pvalue)
+              @load_object.product_properties << @@product_property_klass.create( :property => property, :value => find_by_values)
             end
           else
-            puts "WARNING: Property #{pname} NOT found - Not set Product"
+            puts "WARNING: Property #{find_by_name} NOT found - Not set Product"
           end
          
         end
