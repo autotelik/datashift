@@ -124,6 +124,8 @@ module DataShift
           end
         end
         puts "Excel loading stage complete - #{loaded_objects.size} rows added."
+        
+        puts "WARNING : #{failed_objects.size} rows contained errors and #{failed_objects.size} records NOT created." unless failed_objects.empty?
       end
 
       def value_at(row, column)

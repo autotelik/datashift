@@ -104,6 +104,7 @@ describe 'SpreeLoader' do
     @product_loader.perform_load( SpecHelper::spree_fixture(source), :mandatory => ['sku', 'name', 'price'] )
 
     @Product_klass.count.should == 3
+    @Product_klass.active.size.should == 3
 
     @product_loader.failed_objects.size.should == 0
     @product_loader.loaded_objects.size.should == 3

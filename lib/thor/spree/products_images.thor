@@ -75,24 +75,27 @@ module Datashift
     method_option :sku_prefix, :aliases => '-p', :desc => "Prefix to add to each SKU in import file"
     method_option :dummy, :aliases => '-d', :type => :boolean, :desc => "Dummy run, do not actually save Image or Product"
     method_option :verbose, :aliases => '-v', :type => :boolean, :desc => "Verbose logging"
-    #method_option :config, :aliases => '-c',  :type => :string, :desc => "Configuration file containg defaults or over rides in YAML"
+    method_option :config, :aliases => '-c',  :type => :string, :desc => "Configuration file for Image Loader in YAML"
+    
    
     def images()
 
       require File.expand_path('config/environment.rb')
       
       require 'image_loader'
-
-      @image_cache = options[:input]
        
       puts "Using Product Name for lookup" unless(options[:sku])
       puts "Using SKU for lookup" if(options[:sku])
-         
-     
+           
       attachment_klazz  = DataShift::SpreeHelper::get_spree_class('Product' )
-      sku_klazz         = DataShift::SpreeHelper::get_spree_class('Variant' )
+      attachment_field  = 'name'
       image_klazz       = DataShift::SpreeHelper::get_spree_class('Image' )
 
+      if(options[:sku])
+        attachment_klazz =  DataShift::SpreeHelper::get_spree_class('Variant' ) 
+        attachment_field = 'sku'
+      end
+      
       # TODO generalise for any paperclip project, for now just Spree
       #begin
       #  attachment_klazz = Kernel.const_get(args[:model]) if(args[:model])
@@ -102,6 +105,22 @@ module Datashift
 
       image_loader = DataShift::SpreeHelper::ImageLoader.new
 
+      @loader_config = {}
+      
+      if(options[:config])
+        raise "Bad Config - Cannot find specified file #{options[:config]}" unless File.exists?(options[:config])
+        
+        image_loader.configure_from( options[:config] )
+        
+        @loader_config = YAML::load( File.open(options[:config]) )
+        
+        @loader_config = @loader_config['ImageLoader']
+      end
+      
+      puts "CONFIG: #{@loader_config.inspect}"
+      
+      @image_cache = options[:input]
+      
       if(File.directory? @image_cache )
         logger.info "Loading Spree images from #{@image_cache}"
 
@@ -109,32 +128,23 @@ module Datashift
         Dir.glob("#{@image_cache}/**/*.{jpg,png,gif}") do |image_name|
 
           base_name = File.basename(image_name, '.*')
-           
-          logger.info "Processing #{base_name} : #{File.exists?(image_name)}"
+          base_name.strip!
+                       
+          logger.info "Processing image #{base_name} : #{File.exists?(image_name)}"
            
           record = nil
-          if(options[:sku])
-            sku = base_name.slice!(/\w+/)
-            sku.strip!
-            base_name.strip!
-            
-            sku = "#{options[:sku_prefix]}#{sku}" if(options[:sku_prefix])
-
-            record = sku_klazz.find_by_sku(sku)
-            
-            unless record   # try splitting up filename in various ways looking for the SKU
-              sku.split( '_' ).each do |x| 
-                x = "#{options[:sku_prefix]}#{x}" if(options[:sku_prefix])
-                record = sku_klazz.find_by_sku(x)
-                break if record
-              end
-            end
-            
-            record = record.product if(record)  # SKU stored on Variant but we want it's master Product
-            
-          else
-            record = attachment_klazz.find_by_name(base_name)
+           
+          put "Processing image [#{base_name}]"
+           
+          # unless record   # try splitting up filename in various ways looking for the SKU
+          split_on = @loader_config[:split_file_name_on] || '_'
+              
+          base_name.split(split_on).each do |x| 
+            record = get_record_by(attachment_klazz, attachment_field, x)
+            break if record
           end
+            
+          record = record.product if(record)  # SKU stored on Variant but we want it's master Product
       
           if(record)
             logger.info "Found record for attachment : #{record.inspect}"
@@ -173,6 +183,20 @@ module Datashift
       else
         puts "ERROR: Supplied Path #{@image_cache} not accesible"
         exit(-1)
+      end
+    end
+   
+    private
+    
+    def get_record_by(klazz, field, value)
+      x =  (options[:sku_prefix]) ? "#{options[:sku_prefix]}#{value}" : value
+
+      if(@loader_config['case_sensitive'])
+        puts "Search case sensitive for [#{x}] on #{field}"
+         return klazz.find(:first, :conditions => [ "? = ?", field, x ])
+      else
+        puts "Search for [#{x}] on #{field}"
+        return klazz.find(:first, :conditions => [ "lower(?) = ?", field, x.downcase ])
       end
     end
   end
