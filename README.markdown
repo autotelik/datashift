@@ -32,7 +32,7 @@ Many example Spreadsheets/CSV files in spec/fixtures, fully documented with comm
 
 Add gem 'datashift' to your Gemfile/bundle, or install the latest gem as usual :
 
-    `gem install datashift`
+    gem install datashift
 
 To use :
 
@@ -53,8 +53,8 @@ To use the Thor command line applications :
 
     Create a high level .thor file - e.g mysite.thor - in your applications root directory 
 
-Pull in the thor commands :
-```
+Edit the file and add the following to pull in the thor commands :
+```ruby
     require 'thor'
     require 'datashift'
 
@@ -68,7 +68,7 @@ and/or
 
     bundle exc thor list datashift
 
-To get usgae information use thor help <command>, for example
+To get usage information use thor help <command>, for example
 
     bundle exec thor help datashift:generate:excel
 
