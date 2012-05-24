@@ -2,29 +2,31 @@
 
 Provides tools to shift data between Ruby, external applications, files and ActiveRecord.
 
-Wiki taking shape with more info here : <b>https://github.com/autotelik/datashift/wiki</b>
+Specific loaders and command line tasks for Spree E-Commerce.
+
+Wiki taking shape with more info here : **https://github.com/autotelik/datashift/wiki**
 
 ### Features
 
-Map Active Record models and associations to files, generate sample templates.
-
 Import and Export ActiveRecord models through .xls or CSV  files, including
 all associations and with configurable defaults.
+
+Export all data or simply generate a sample template with headers only.
 
 Create, parse and use Excel/OpenOffice (.xls) documents dynamically from Ruby.
 
 Easily extendable Loader functionality to deal with non trivial import cases, such
 as complex association lookups.
 
-High level rake/thor command line tasks for import/export provided.
+High level rake and thor command line tasks for import/export provided.
 
-Specific loaders and rake tasks for Spree E-Commerce, enabling import/export of all data including Products with
-complex associations such as Properties/Taxons/Options/Variants and Images.
+Specific loaders and command line tasks provided out the box for **Spree E-Commerce**, 
+enabling import/export of Product data including creating Variants with different
+ count on hands and all associations including Properties/Taxons/OptionTypes and Images.
 
-Specific loaders and rake tasks provided out the box for Spree E-Commerce,  
-enabling import/export of all data including Products with complex associations such as Options/Variants and Images.
+Loaders can be configured via YAML with over ride values, default values and mandatory column settingss.
 
-Many example Spreadsheets in spec/fixtures, fully documented with comments for each column.
+Many example Spreadsheets/CSV files in spec/fixtures, fully documented with comments for each column.
 
 ## Installation
 

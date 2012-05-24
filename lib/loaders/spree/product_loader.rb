@@ -228,8 +228,8 @@ module DataShift
         property_list.each do |pstr|
           
         find_by_name, find_by_value = get_find_operator_and_rest( pstr )
-                  
-        raise "Cannot find Property via #{find_by_name} with value #{find_by_value}" unless(find_by_name && find_by_value)
+                 
+        raise "Cannot find Property via #{find_by_name} (with value #{find_by_value})" unless(find_by_name)
                         
         property = @@property_klass.find_by_name(find_by_name)
 
