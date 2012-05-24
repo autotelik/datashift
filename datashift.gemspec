@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "datashift"
-  s.version = "0.6.0"
+  s.version = "0.6.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thomas Statter"]
-  s.date = "2012-05-18"
+  s.date = "2012-05-24"
   s.description = "A suite of tools to move data between ActiveRecord models,databases,applications like Excel/Open Office, files and projects including Spree"
   s.email = "rubygems@autotelik.co.uk"
   s.extra_rdoc_files = [
@@ -151,7 +151,6 @@ Gem::Specification.new do |s|
     "tasks/file_tasks.rake",
     "tasks/import/csv.rake",
     "tasks/import/excel.rake",
-    "tasks/spree/image_load.rake",
     "tasks/word_to_seedfu.rake",
     "test/helper.rb",
     "test/test_interact.rb"

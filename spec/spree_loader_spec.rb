@@ -83,11 +83,11 @@ describe 'SpreeLoader' do
 
   # Loader should perform identically regardless of source, whether csv, .xls etc
   
-  it "should load basic Products .xls via Spree loader" do
+  it "should load basic Products .xls via Spree loader", :fail => true do
     test_basic_product('SpreeProductsSimple.xls')
   end
 
-  it "should load basic Products from .csv via Spree loader", :csv => true do
+  it "should load basic Products from .csv via Spree loader", :csv => true, :fail => true do
     test_basic_product('SpreeProductsSimple.csv')
   end
 
@@ -104,7 +104,10 @@ describe 'SpreeLoader' do
     @product_loader.perform_load( SpecHelper::spree_fixture(source), :mandatory => ['sku', 'name', 'price'] )
 
     @Product_klass.count.should == 3
-    @Product_klass.active.size.should == 3
+    
+    # 2 products available_on set in past, 1 in future
+    @Product_klass.active.size.should == 2
+    @Product_klass.available.size.should == 2
 
     @product_loader.failed_objects.size.should == 0
     @product_loader.loaded_objects.size.should == 3
@@ -180,7 +183,7 @@ describe 'SpreeLoader' do
   end
 
   
-  it "should load Products and create Variants from multiple column", :fail => true do
+  it "should load Products and create Variants from multiple column #{SpecHelper::spree_fixture('SpreeProductsMultiColumn.xls')}", :fail => true do
     test_variants_creation('SpreeProductsMultiColumn.xls')
   end
   

@@ -28,5 +28,8 @@ describe 'Thor high level command line tasks' do
     Datashift::Spree.start(["products"])
   end
 
-    
+  it "should be able to run an export to excel from a simple command line task" do
+    Datashift::Spree.start(["products"])
+  end
+  
 end
