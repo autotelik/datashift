@@ -76,13 +76,18 @@ module Datashift
     method_option :dummy, :aliases => '-d', :type => :boolean, :desc => "Dummy run, do not actually save Image or Product"
     method_option :verbose, :aliases => '-v', :type => :boolean, :desc => "Verbose logging"
     method_option :config, :aliases => '-c',  :type => :string, :desc => "Configuration file for Image Loader in YAML"
-    
+    method_option :split_file_name_on,  :type => :string, :desc => "delimiter to progressivley split filename up looking for product name or SKU", :default => '_'
+    method_option :case_sensitive, :type => :boolean, :desc => "Use case sensitive where clause to find Product"
+    method_option :use_like, :type => :boolean, :desc => "Use LIKE 'string%' instead of = 'string' in where clause to find Product"
+  
    
     def images()
 
       require File.expand_path('config/environment.rb')
       
       require 'image_loader'
+       
+      @verbose = options[:verbose]
        
       puts "Using Product Name for lookup" unless(options[:sku])
       puts "Using SKU for lookup" if(options[:sku])
@@ -125,26 +130,37 @@ module Datashift
         logger.info "Loading Spree images from #{@image_cache}"
 
         missing_records = []
+         
+        # unless record   # try splitting up filename in various ways looking for the SKU
+        split_on = @loader_config[:split_file_name_on] || options[:split_file_name_on]
+        
         Dir.glob("#{@image_cache}/**/*.{jpg,png,gif}") do |image_name|
 
           base_name = File.basename(image_name, '.*')
           base_name.strip!
                        
-          logger.info "Processing image #{base_name} : #{File.exists?(image_name)}"
+          logger.info "Processing image file #{base_name} : #{File.exists?(image_name)}"
            
           record = nil
            
-          put "Processing image [#{base_name}]"
-           
-          # unless record   # try splitting up filename in various ways looking for the SKU
-          split_on = @loader_config[:split_file_name_on] || '_'
-              
+          puts "Search for product for image file [#{base_name}]"
+            
+          record = get_record_by(attachment_klazz, attachment_field, base_name)
+          
+          # try seperate portions of the filename
           base_name.split(split_on).each do |x| 
             record = get_record_by(attachment_klazz, attachment_field, x)
             break if record
-          end
+          end unless(record)
             
-          record = record.product if(record)  # SKU stored on Variant but we want it's master Product
+          # this time try sequentially scanning
+          base_name.split(split_on).inject("") do |str, x| 
+            record = get_record_by(attachment_klazz, attachment_field, str + x)
+            break if record
+            x
+          end unless(record)
+          
+          record = record.product if(record && record.respond_to?(:product))  # SKU stored on Variant but we want it's master Product
       
           if(record)
             logger.info "Found record for attachment : #{record.inspect}"
@@ -163,7 +179,7 @@ module Datashift
           # Check if Image must have an associated record
           if(record || (record.nil? && options[:process_when_no_assoc]))
             image_loader.reset()
-            puts "Processing Image #{image_name}"
+            puts "Creating Image #{image_name} against Product #{record.name}"
             image_loader.create_image(image_klazz, image_name, record)
           end
 
@@ -191,12 +207,15 @@ module Datashift
     def get_record_by(klazz, field, value)
       x =  (options[:sku_prefix]) ? "#{options[:sku_prefix]}#{value}" : value
 
-      if(@loader_config['case_sensitive'])
-        puts "Search case sensitive for [#{x}] on #{field}"
-         return klazz.find(:first, :conditions => [ "? = ?", field, x ])
+      if(options[:case_sensitive] || @loader_config['case_sensitive']) 
+        puts "Search case sensitive for [#{x}] on #{field}" if(@verbose)
+        return klazz.send("find_by_#{field}", x)
+      elsif(options[:use_like])
+        puts "Term : #{klazz}.where(\"#{field} LIKE '#{x}%'\")" if(@verbose)
+        return klazz.where("#{field} like ?", "#{x}%").first
       else
-        puts "Search for [#{x}] on #{field}"
-        return klazz.find(:first, :conditions => [ "lower(?) = ?", field, x.downcase ])
+        puts "Term : #{klazz}.where(\"#{field} LIKE '#{x}%'\")" if(@verbose)
+        return klazz.where("lower(#{field}) = ?", x.downcase).first
       end
     end
   end
