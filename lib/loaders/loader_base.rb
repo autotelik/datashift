@@ -28,7 +28,7 @@ module DataShift
 
     attr_accessor :loaded_objects, :failed_objects
 
-    attr_accessor :options
+    attr_accessor :options, :verbose
 
     # Support multiple associations being added to a base object to be specified in a single column.
     # 
@@ -100,7 +100,7 @@ module DataShift
       
       @method_mapper = DataShift::MethodMapper.new
       @options = options.clone
-      @verbose_logging = @options[:verbose_logging]
+      @verbose = @options[:verbose]
       @headers = []
 
       @default_data_objects ||= {}
@@ -214,20 +214,49 @@ module DataShift
       end
     end
     
-    
-    # Default values can be provided in YAML config file
+    def get_record_by(klazz, field, value)
+      x =  (@options[:sku_prefix]) ? "#{@options[:sku_prefix]}#{value}" : value
+
+      begin
+        if(@options[:case_sensitive]) 
+          puts "Search case sensitive for [#{x}] on #{field}" if(@verbose)
+          return klazz.send("find_by_#{field}", x)
+        elsif(@options[:use_like])
+          puts "Term : #{klazz}.where(\"#{field} LIKE '#{x}%'\")" if(@verbose)
+          return klazz.where("#{field} like ?", "#{x}%").first
+        else
+          puts "Term : #{klazz}.where(\"lower(#{field}) = '#{x.downcase}'\")" if(@verbose)
+          return klazz.where("lower(#{field}) = ?", x.downcase).first
+        end
+      rescue => e
+        logger.error("Exception attempting to find a record for [#{x}] on #{klazz}.#{field}")
+        logger.error e.backtrace
+        logger.error e.inspect
+        return nil
+      end
+    end
+      
+    # Default values and over rides can be provided in YAML config file.
+    # 
+    # Any Configuration under key 'LoaderBase' is merged into this classes
+    # existing options - taking precedence.
+    # 
     #  Format :
     #  
     #    LoaderClass:
     #     option: value
     #     
     #    Load Class:    (e.g Spree:Product)
-    #         atttribute: value
-    
+    #     datashift_defaults:     
+    #       value_as_string: "Default Project Value"  
+    #       category: reference:category_002    
+    #     
+    #     datashift_overrides:    
+    #       value_as_double: 99.23546
+    #
     def configure_from( yaml_file )
 
       data = YAML::load( File.open(yaml_file) )
-      
       
       # TODO - MOVE DEFAULTS TO OWN MODULE 
       # decorate the loading class with the defaults/ove rides to manage itself
@@ -389,7 +418,7 @@ module DataShift
     end
 
     def save
-      #puts "DEBUG: SAVING #{load_object.class} : #{load_object.inspect}" #if(options[:verbose])
+      puts "DEBUG: SAVING #{load_object.class} : #{load_object.inspect}" if(@verbose)
       begin
         result = @load_object.save
         

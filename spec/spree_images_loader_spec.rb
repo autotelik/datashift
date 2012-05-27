@@ -101,9 +101,10 @@ describe 'SpreeImageLoading' do
     
     @Image_klass.all.size.should == 0
 
-    options = { :force_inclusion => ['sku', 'attachment'] } if(SpreeHelper::version.to_f > 1 )
+    # force inclusion means add to operator list even if not present
+    options = { :verbose => true, :force_inclusion => ['sku', 'attachment'] } if(SpreeHelper::version.to_f > 1 )
     
-    loader = DataShift::SpreeHelper::ImageLoader.new
+    loader = DataShift::SpreeHelper::ImageLoader.new(nil, options)
     
     loader.perform_load( SpecHelper::spree_fixture('SpreeImages.xls'), options )
     
