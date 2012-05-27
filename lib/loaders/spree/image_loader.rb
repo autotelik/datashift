@@ -60,46 +60,46 @@ module DataShift
   end
 
   module SpreeHelper
-       
+     
+    # TODO - extract this out of SpreeHelper to create  a general paperclip loader
     class ImageLoader < LoaderBase
 
       include DataShift::ImageLoading
       include DataShift::CsvLoading
       include DataShift::ExcelLoading
       
-      def initialize(image = nil)
-        super( SpreeHelper::get_spree_class('Image'), image )
+      def initialize(image = nil, options = {})
+        super( SpreeHelper::get_spree_class('Image'), image, options )
         
+        if(SpreeHelper::version.to_f > 1.0 )
+          @attachment_klazz  = DataShift::SpreeHelper::get_spree_class('Variant' )
+        else
+          @attachment_klazz  = DataShift::SpreeHelper::get_spree_class('Product' )
+        end
+        
+        puts "Attachment Class is #{@attachment_klazz}" if(@verbose)
+          
         raise "Failed to create Image for loading" unless @load_object
-      end
-
-      def sku_klazz
-        @sku_klazz ||= SpreeHelper::get_spree_class('Variant' )
-        @sku_klazz
       end
       
       def process()
 
         if(current_value && @current_method_detail.operator?('attachment') )
+          
+          # assign the image file data as an attachment
           @load_object.attachment = get_file(current_value)
           
-          puts "Image attachment set : #{@load_object.inspect}"
+          puts "Image attachment created : #{@load_object.inspect}"
               
-        elsif(current_value && @current_method_detail.operator?('sku') )    
+        elsif(current_value && @current_method_detail.operator )    
           
-          return if(current_value.empty?)
-          puts "Looking for record with SKU #{current_value}"  
-          add_record( sku_klazz.find_by_sku(current_value) )
-               
-        elsif(current_value && @current_method_detail.operator?('name') )   
-                     
-          puts "Looking for record with NAME [#{current_value}]"
-          add_record attachment_klazz.find_by_name(current_value)
-        
+          # find the db record to assign our Image to
+          add_record( get_record_by(@attachment_klazz, @current_method_detail.operator, current_value) )
+                
         end
           
       end
-      
+    
       def add_record(record)
         if(record)
           if(SpreeHelper::version.to_f > 1 )
@@ -111,6 +111,7 @@ module DataShift
           puts "Image viewable set : #{record.inspect}"
           
         else
+          puts "WARNING - Cannot set viewable - No matching record supplied"
           logger.error"Failed to find a matching record"
         end
       end

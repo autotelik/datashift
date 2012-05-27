@@ -32,10 +32,8 @@ module DataShift
       # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
       map_headers_to_operators( @parsed_file.shift, options)
 
-      #if(options[:verbose])
       puts "\n\n\nLoading from CSV file: #{file_name}"
       puts "Processing #{@parsed_file.size} rows"
-      # end
 
       load_object_class.transaction do
         @loaded_objects =  []
@@ -66,7 +64,7 @@ module DataShift
           # TODO - handle when it's not valid ?
           # Process rest and dump out an exception list of Products ??
 
-          logger.info "Saving csv row #{row} to table object : #{load_object.inspect}" #if options[:verbose]
+          logger.info "Saving csv row #{row} to table object : #{load_object.inspect}"
 
           save
 
