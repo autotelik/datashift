@@ -27,7 +27,9 @@ module DataShift
       end
 
       # Create an Excel file template (header row) representing supplied Model
-    
+      # Options:
+      # * <tt>:autosize</tt> - Autosize all the columns
+      #
       def generate(klass, options = {})
      
         prepare(klass, options)
@@ -36,18 +38,25 @@ module DataShift
 
         logger.info("ExcelGenerator saving generated template #{@filename}")
         
+        @excel.autosize if(options[:autosize])
+        
         @excel.save( @filename )
       end
 
       
-      # Create an Excel file from list of ActiveRecord objects
-      # To remove type(s) of associations specify option :
-      #   :exclude => [type(s)]
+      # Create an Excel file template (header row) representing supplied Model
+      # and it's associations
+      # 
+      # Options:
+      # * <tt>:autosize</tt> - Autosize all the columns
+      #
+      # * <tt>:exclude</tt> - Associations to exclude.
+      #   You can specify a hash of {association_type => [array of association names] }
+      #   to exclude from the template.
       #   
-      # Possible values are given by MethodDetail::supported_types_enum
+      # Possible association_type values are given by MethodDetail::supported_types_enum
       #  ... [:assignment, :belongs_to, :has_one, :has_many]
       #
-      # Options
       def generate_with_associations(klass, options = {})
 
         prepare(klass, options)
@@ -69,6 +78,8 @@ module DataShift
         end
         
         @excel.set_headers( headers )
+        
+        @excel.autosize if(options[:autosize])
                 
         @excel.save( filename() )
       end

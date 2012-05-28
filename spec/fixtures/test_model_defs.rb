@@ -1,3 +1,7 @@
+# A set of models and associations we can use in our specs to test
+# basic database columns and also relationships
+
+# See Companion migration spec/db/migrate
 
 class Project < ActiveRecord::Base
 

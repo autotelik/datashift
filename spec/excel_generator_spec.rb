@@ -56,7 +56,7 @@ if(Guards::jruby?)
       puts "Can manually check file @ #{expect}"
     end
 
-    it "should genrate a complex template .xls file from model" do
+    it "should include all associations in template .xls file from model" do
 
       expect= result_file('project_plus_assoc_template_spec.xls')
 
@@ -67,7 +67,45 @@ if(Guards::jruby?)
       File.exists?(expect).should be_true
 
     end
+    
+    
+    it "should enable us to exclude cetain associations in template .xls file from model" do
 
+      expect= result_file('project_plus_some_assoc_template_spec.xls')
+
+      gen = ExcelGenerator.new(expect)
+
+      options = {:exclude => :milestones }
+      
+      gen.generate_with_associations(Project, options)
+
+      File.exists?(expect).should be_true
+      
+      excel = JExcelFile.new(expect)
+      
+      excel.each_row {|r| puts r.inspect }
+      
+    end
+    
+    
+    it "should enable us to autosize columns in the .xls file" do
+
+      expect= result_file('project_autosized_template_spec.xls')
+
+      gen = ExcelGenerator.new(expect)
+
+      options = {:autosize => true, :exclude => :milestones }
+      
+      gen.generate_with_associations(Project, options)
+
+      File.exists?(expect).should be_true
+      
+      excel = JExcelFile.new(expect)
+      
+      excel.each_row {|r| puts r.inspect }
+      
+    end
+    
   end
 else
   puts "WARNING: skipped excel_generator_spec : Requires JRUBY - JExcelFile requires JAVA"

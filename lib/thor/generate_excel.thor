@@ -13,7 +13,8 @@
 #
 #  Cmd Line:
 #
-# => bundle exec thor datashift:generate:excel -m <active record class> -r <output_template.xls> -a
+# => bundle exec thor list datashift
+#    bundle exec thor help  datashift:generate:excel
 #
 require 'datashift'
   
@@ -49,9 +50,11 @@ module Datashift
         klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
       rescue NameError => e
         puts e
-        raise "ERROR: No such Model [#{model}] found - check valid model supplied via -model <Class>"
+        raise Thor::Error.new("ERROR: No such Model [#{model}] found - check valid model supplied")
       end
 
+      raise Thor::Error.new("ERROR: No such Model [#{model}] found - check valid model supplied") unless(klass)
+      
       begin
         gen = DataShift::ExcelGenerator.new(result)
 

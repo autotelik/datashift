@@ -25,13 +25,15 @@ if(DataShift::Guards::jruby?)
     include_class 'org.apache.poi.hssf.usermodel.HSSFDataFormat'
     include_class 'org.apache.poi.hssf.usermodel.HSSFClientAnchor'
     include_class 'org.apache.poi.hssf.usermodel.HSSFRichTextString'
+    
+    include_class 'org.apache.poi.hssf.util.HSSFColor'
 
     include_class 'java.io.ByteArrayOutputStream'
     include_class 'java.util.Date'
     include_class 'java.io.FileInputStream'
     include_class 'java.io.FileOutputStream'
 
-    attr_accessor :book, :row, :date_style
+    attr_accessor :workbook, :row, :date_style
     attr_reader   :sheet
 
     MAX_COLUMNS = 256.freeze unless defined?(MAX_COLUMNS)
@@ -45,27 +47,25 @@ if(DataShift::Guards::jruby?)
       return 65535
     end
 
-    # The HSSFWorkbook uses 0 based indexes, whilst our companion jexcel_win32 class
-    # uses 1 based indexes. So they can be used interchangeably we bring indexes 
-    # inline with  JExcel usage in this class, as 1 based maps more intuitively for the user
-    # 
-    # i.e Row 1 passed to this class, internally means Row 0
+    # The HSSFWorkbook uses 0 based indexes, 
   
-    def initialize()
-      @book = nil
+    def initialize(filename = nil)
+      @workbook = nil
       # The @patriarchs hash is a workaround because HSSFSheet.getDrawingPatriarch()
       # causes a lot of issues (if it doesn't throw an exception!)
       @patriarchs = Hash.new
       
       @date_style = nil
+      
+      open(filename) if(filename)
     end
   
     def open(filename)
       inp = FileInputStream.new(filename)
 
-      @book = HSSFWorkbook.new(inp)
+      @workbook = HSSFWorkbook.new(inp)
       
-      @date_style = @book.createCellStyle
+      @date_style = @workbook.createCellStyle
       @date_style.setDataFormat( JExcelFile::date_format )
       
       @current_sheet = 0
@@ -75,19 +75,19 @@ if(DataShift::Guards::jruby?)
     # EXCEL ITEMS
     
     def create(sheet_name)
-      @book = HSSFWorkbook.new() if @book.nil?
+      @workbook = HSSFWorkbook.new() if @workbook.nil?
 
       acceptable_name = sheet_name.gsub(':', '').gsub(" ", '')
       
       # Double check sheet doesn't already exist
-      if(@book.getSheetIndex(acceptable_name) < 0)
-        sheet = @book.createSheet(acceptable_name.gsub(" ", ''))
+      if(@workbook.getSheetIndex(acceptable_name) < 0)
+        sheet = @workbook.createSheet(acceptable_name.gsub(" ", ''))
 
         @patriarchs.store(acceptable_name, sheet.createDrawingPatriarch())
       end
-      @current_sheet = @book.getSheetIndex(acceptable_name)
+      @current_sheet = @workbook.getSheetIndex(acceptable_name)
       
-      @date_style = @book.createCellStyle
+      @date_style = @workbook.createCellStyle
       @date_style.setDataFormat( JExcelFile::date_format )
       
       self.sheet()
@@ -98,18 +98,18 @@ if(DataShift::Guards::jruby?)
     # Return the current or specified HSSFSheet
     def sheet(i = nil)
       @current_sheet = i if i
-      @sheet = @book.getSheetAt(@current_sheet)
+      @sheet = @workbook.getSheetAt(@current_sheet)
     end
 
     def activate_sheet(sheet)
       active_sheet = @current_sheet
-      if(@book)
+      if(@workbook)
         i = sheet if sheet.kind_of?(Integer)
-        i = @book.getSheetIndex(sheet) if sheet.kind_of?(String)
+        i = @workbook.getSheetIndex(sheet) if sheet.kind_of?(String)
 
         if( i >= 0 )
-          @book.setActiveSheet(i) unless @book.nil?
-          active_sheet = @book.getSheetAt(i)
+          @workbook.setActiveSheet(i) unless @workbook.nil?
+          active_sheet = @workbook.getSheetAt(i)
           active_sheet.setActive(true)
         end unless i.nil?
       end
@@ -126,11 +126,11 @@ if(DataShift::Guards::jruby?)
       @sheet.rowIterator.each { |row| @row = row; yield row }
     end
 
-    # Create new row, bring index in line with POI usage (our 1 is their 0)
+    # Create new row,  index with POI usage starts at 0
     def create_row(index)
       return if @sheet.nil?
-      raise "BAD INDEX: Row indexing starts at 1" if(index == 0)
-      @row = @sheet.createRow(index - 1)
+      raise "BAD INDEX: Row indexing starts at 0" if(index < 0)
+      @row = @sheet.createRow(index)
       @row
     end
     
@@ -141,20 +141,34 @@ if(DataShift::Guards::jruby?)
     #  Populate a single cell with data
     #    
     def set_cell(row, column, datum)
-      @row = @sheet.getRow(row - 1) || create_row(row)
-      @row.createCell(column - 1, excel_cell_type(datum)).setCellValue(datum)
+      @row = @sheet.getRow(row) || create_row(row)
+      @row.createCell(column, excel_cell_type(datum)).setCellValue(datum)
     end
     
     # Convert array into a header row
-    def set_headers(headers)
-      create_row(1)
+    def set_headers(headers, apply_style = nil)
+      create_row(0)
       return if headers.empty?
     
+      style = apply_style || header_style()
+
       headers.each_with_index do |datum, i|
-        @row.createCell(i, excel_cell_type(datum)).setCellValue(datum)
+        c = @row.createCell(i, excel_cell_type(datum))
+        c.setCellValue(datum)
+        c.setCellStyle(style)
       end
     end
 
+    def header_style
+      return @header_style if @header_style
+      @header_style = @workbook.createCellStyle();
+      @header_style.setBorderTop(6) # double lines border
+      @header_style.setBorderBottom(1) # single line border
+      @header_style.setFillBackgroundColor(HSSFColor::GREY_25_PERCENT.index)
+      
+      @header_style
+    end
+    
     #  Populate a row  of cells with data in an array 
     #  where the co-ordinates relate to row/column start position
     #    
@@ -171,7 +185,8 @@ if(DataShift::Guards::jruby?)
       end
     end
   
-    # Return a mapping from Ruby type to type for HSSFCell
+    # Return the suitable type for a HSSFCell from a Ruby data type
+    
     def excel_cell_type(data)
         
       if(data.kind_of?(Numeric))
@@ -186,6 +201,17 @@ if(DataShift::Guards::jruby?)
       # HSSFCell::CELL_TYPE_FORMULA
     end
     
+    
+    # Auto size either the given column index or all columns
+    def autosize(column = nil)
+      return if @sheet.nil?
+      if (column.kind_of? Integer)
+        @sheet.autoSizeColumn(column)
+      else
+        @sheet.getRow(0).cellIterator.each{|c| @sheet.autoSizeColumn(c.getColumnIndex)}
+      end
+    end
+    
     # TODO - Move into an ActiveRecord helper module of it's own
     def ar_to_headers( records )
       return if( !records.first.is_a?(ActiveRecord::Base) || records.empty?)
@@ -193,23 +219,24 @@ if(DataShift::Guards::jruby?)
       headers = records.first.class.columns.collect( &:name )    
       set_headers( headers )
     end
-        
+      
+    
     # Pass a set of AR records
     def ar_to_xls(records, options = {})
       return if( ! records.first.is_a?(ActiveRecord::Base) || records.empty?)
       
       row_index = 
         if(options[:no_headers])
-        1
+        0
       else
         ar_to_headers( records )
-        2
+        1
       end
       
       records.each do |record|
         create_row(row_index)
  
-        ar_to_xls_row(1, record)
+        ar_to_xls_row(0, record)
         
         row_index += 1
       end
@@ -233,15 +260,15 @@ if(DataShift::Guards::jruby?)
         datum = record.send(connection_column.name)
 
         if(connection_column.sql_type =~ /date/) 
-          @row.createCell(column - 1, HSSFCell::CELL_TYPE_STRING).setCellValue(datum.to_s) 
+          @row.createCell(column, HSSFCell::CELL_TYPE_STRING).setCellValue(datum.to_s) 
           
         elsif(connection_column.type == :boolean || connection_column.sql_type =~ /tinyint/) 
-          @row.createCell(column - 1, HSSFCell::CELL_TYPE_BOOLEAN).setCellValue(datum) 
+          @row.createCell(column, HSSFCell::CELL_TYPE_BOOLEAN).setCellValue(datum) 
           
         elsif(connection_column.sql_type =~ /int/) 
-          @row.createCell(column - 1, HSSFCell::CELL_TYPE_NUMERIC).setCellValue(datum.to_i)
+          @row.createCell(column, HSSFCell::CELL_TYPE_NUMERIC).setCellValue(datum.to_i)
         else
-          @row.createCell(column - 1, HSSFCell::CELL_TYPE_STRING).setCellValue( datum.to_s ) 
+          @row.createCell(column, HSSFCell::CELL_TYPE_STRING).setCellValue( datum.to_s ) 
         end
         
       rescue => e
@@ -278,7 +305,7 @@ if(DataShift::Guards::jruby?)
       filename.nil? ? file = @filepath : file = filename
       begin
         out = FileOutputStream.new(file)
-        @book.write(out) unless @book.nil?
+        @workbook.write(out) unless @workbook.nil?
 
         out.close
       rescue => e
@@ -312,28 +339,19 @@ if(DataShift::Guards::jruby?)
   
     # Get a percentage style
     def getPercentStyle()
-      if (@percentCellStyle.nil? && @book)
-        @percentCellStyle = @book.createCellStyle();
+      if (@percentCellStyle.nil? && @workbook)
+        @percentCellStyle = @workbook.createCellStyle();
         @percentCellStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00%"));
       end
       return @percentCellStyle
     end
 
-    # Auto size either the given column index or all columns
-    def autosize(column = nil)
-      return if @sheet.nil?
-      if (column.kind_of? Integer)
-        @sheet.autoSizeColumn(column)
-      else
-        @sheet.getRow(0).cellIterator.each{|c| @sheet.autoSizeColumn(c.getColumnIndex)}
-      end
-    end
 
     def to_s
-      return "" unless @book
+      return "" unless @workbook
             
       outs = ByteArrayOutputStream.new
-      @book.write(outs);
+      @workbook.write(outs);
       outs.close();
       String.from_java_bytes(outs.toByteArray)
     end
