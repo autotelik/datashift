@@ -120,29 +120,18 @@ module Datashift
         attachment_klazz =  DataShift::SpreeHelper::get_spree_class('Variant' ) 
         attachment_field = 'sku'
       end
-      
-      # TODO generalise for any paperclip project, for now just Spree
-      #begin
-      #  attachment_klazz = Kernel.const_get(args[:model]) if(args[:model])
-      # rescue NameError
-      #  raise "Could not find contant for model #{args[:model]}"
-      #end
 
-      image_loader = DataShift::SpreeHelper::ImageLoader.new(nil, options.dup)
-
-      @loader_config = {}
-      
+      image_loader = DataShift::SpreeHelper::ImageLoader.new(nil, options)
+ 
       if(options[:config])
         raise "Bad Config - Cannot find specified file #{options[:config]}" unless File.exists?(options[:config])
         
         image_loader.configure_from( options[:config] )
-        
-        @loader_config = YAML::load( File.open(options[:config]) )
-        
-        @loader_config = @loader_config['ImageLoader']
       end
-      
-      puts "CONFIG: #{@loader_config.inspect}"
+
+      loader_config = image_loader.options
+ 
+      puts "CONFIG: #{loader_config.inspect}"
       
       @image_cache = options[:input]
       
@@ -156,7 +145,7 @@ module Datashift
       missing_records = []
          
       # unless record   # try splitting up filename in various ways looking for the SKU
-      split_on = @loader_config[:split_file_name_on] || options[:split_file_name_on]
+      split_on = loader_config[:split_file_name_on] || options[:split_file_name_on]
         
       Dir.glob("#{@image_cache}/**/*.{jpg,png,gif}") do |image_name|
 

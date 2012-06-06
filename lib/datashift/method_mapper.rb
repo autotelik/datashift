@@ -32,6 +32,9 @@ module DataShift
     # in the heading .. i.e Column header => 'BlogPosts:user_id' 
     # ... association has many BlogPosts selected via find_by_user_id
     # 
+    # in the heading .. i.e Column header => 'BlogPosts:user_name:John Smith' 
+    # ... association has many BlogPosts selected via find_by_user_name("John Smith")
+    #
     def self.column_delim
       @column_delim ||= ':'
       @column_delim
@@ -60,11 +63,12 @@ module DataShift
       columns.each do |name|
         if(name.nil? or name.empty?)
           logger.warn("Column list contains empty or null columns") 
+          @method_details << nil
           next
         end
         
         operator, lookup = name.split(MethodMapper::column_delim) 
-        #puts "DEBUG: Find Method Detail for #{x}"
+       
         md = MethodDictionary::find_method_detail( klass, operator )
         
         # TODO be nice if we could cheeck that the assoc on klass responds to the specified
@@ -76,8 +80,13 @@ module DataShift
         
         if(md)
           
-          md.find_by_operator = lookup if(lookup) # TODO and klass.x.respond_to?(active_record_helper))
-           
+          if(lookup)
+            find_by, find_value = lookup.split(MethodMapper::column_delim) 
+            md.find_by_value    = find_value 
+            md.find_by_operator = find_by # TODO and klass.x.respond_to?(active_record_helper))
+            #puts "DEBUG: Method Detail #{md.name};#{md.operator} : find_by_operator #{md.find_by_operator}"
+          end
+              
           @method_details << md
         else
           @missing_methods << operator

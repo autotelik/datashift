@@ -99,7 +99,8 @@ module DataShift
       DataShift::MethodDictionary.build_method_details(@load_object_class)
       
       @method_mapper = DataShift::MethodMapper.new
-      @options = options.clone
+      @options = options.dup    # clone can cause issues like 'can't modify frozen hash'
+
       @verbose = @options[:verbose]
       @headers = []
 
@@ -238,8 +239,10 @@ module DataShift
       
     # Default values and over rides can be provided in YAML config file.
     # 
-    # Any Configuration under key 'LoaderBase' is merged into this classes
-    # existing options - taking precedence.
+    # Any Config under key 'LoaderBase' is merged over existing options - taking precedence.
+    #  
+    # Any Config under a key equal to the full name of the Loader class (e.g DataShift::SpreeHelper::ImageLoader)
+    # is merged over existing options - taking precedence.
     # 
     #  Format :
     #  
@@ -298,6 +301,12 @@ module DataShift
         @options.merge!(data['LoaderBase'])
       end
       
+      puts("FUCK : #{self.class.name.inspect}")
+       
+      if(data[self.class.name])    
+        @options.merge!(data[self.class.name])
+      end
+      
       logger.info("Loader Options : #{@options.inspect}")
     end
     
@@ -326,18 +335,31 @@ module DataShift
       @current_value
     end
     
-    # return the find_by operator and the values to find
-    def get_find_operator_and_rest( column_data)
-    
-      find_operator, col_values = "",nil
-           
+    # Return the find_by operator and the rest of the (row,columns) data
+    #   price:0.99
+    # 
+    # Column headings can already contain the operator so possible that row only contains
+    #   0.99
+    # We leave it to caller to manage any other aspects or problems in 'rest'
+    #
+    def get_find_operator_and_rest(inbound_data)
+        
+      operator, rest = inbound_data.split(LoaderBase::name_value_delim) 
+     
+      #puts "DEBUG inbound_data: #{inbound_data} => #{operator} , #{rest}"
+       
+      # Find by operator embedded in row takes precedence over operator in column heading
       if(@current_method_detail.find_by_operator)
-        find_operator, col_values = @current_method_detail.find_by_operator, column_data
-      else
-        find_operator, col_values = column_data.split(LoaderBase::name_value_delim) 
+        # row contains 0.99 so rest is effectively operator, and operator is in method details
+        if(rest.nil?)
+          rest = operator
+          operator = @current_method_detail.find_by_operator
+        end
       end
        
-      return find_operator, col_values
+      #puts "DEBUG: get_find_operator_and_rest: #{operator} => #{rest}"
+      
+      return operator, rest
     end
     
     # Process a value string from a column.
@@ -377,6 +399,8 @@ module DataShift
             raise "Cannot perform DB find by #{find_operator}. Expected format key:value" unless(find_operator && col_values)
              
             find_by_values = col_values.split(LoaderBase::multi_value_delim)
+            
+            find_by_values << @current_method_detail.find_by_value if(@current_method_detail.find_by_value)
                      
             if(find_by_values.size > 1)
 

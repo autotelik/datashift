@@ -114,6 +114,7 @@ if(Guards::jruby?)
       loader.perform_load( $DataShiftFixturePath + '/ProjectsMultiCategoriesHeaderLookup.xls')
   
       loader.loaded_count.should == (Project.count - count)
+      loader.loaded_count.should > 3
   
       {'004' => 4, '005' => 1, '006' => 0, '007' => 1 }.each do|title, expected|
         project = Project.find_by_title(title)

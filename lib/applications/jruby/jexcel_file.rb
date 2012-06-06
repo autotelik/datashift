@@ -290,7 +290,7 @@ if(DataShift::Guards::jruby?)
     # Return the raw data of an HSSFCell
     def cell_value(cell)
       return unless cell
-      #puts "DEBUG CELL TYPE : #{cell} => #{cell.getCellType().inspect}"
+      puts "DEBUG CELL TYPE : #{cell} => #{cell.getCellType().inspect}"
       case (cell.getCellType())
       when HSSFCell::CELL_TYPE_FORMULA  then return cell.getCellFormula()
       when HSSFCell::CELL_TYPE_NUMERIC  then return cell.getNumericCellValue()
