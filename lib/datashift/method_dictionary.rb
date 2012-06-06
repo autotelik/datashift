@@ -145,7 +145,7 @@ module DataShift
       
         MethodDetail::supported_types_enum.each do |t|
           method_detail = method_details_mgr.find(n, t)
-          return method_detail if(method_detail)
+          return method_detail.clone if(method_detail)
         end
         
       end
