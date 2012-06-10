@@ -138,12 +138,13 @@ module DataShift
             # TODO - dynamic creation should be an option
 
             unless option_type
-              puts "WARNING: OptionType #{oname} NOT found - Not set Product"
+              puts "WARNING: OptionType #{oname} NOT found and could not create - Not set Product"
               next
             end
             puts "Created missing OptionType #{option_type.inspect}"
           end
 
+          # TODO - is include? very inefficient ??
           @load_object.option_types << option_type unless @load_object.option_types.include?(option_type)
 
           # Can be simply list of OptionTypes, some or all without values
