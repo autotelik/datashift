@@ -300,8 +300,6 @@ module DataShift
       if(data['LoaderBase'])
         @options.merge!(data['LoaderBase'])
       end
-      
-      puts("FUCK : #{self.class.name.inspect}")
        
       if(data[self.class.name])    
         @options.merge!(data[self.class.name])

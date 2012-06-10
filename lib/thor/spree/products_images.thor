@@ -132,6 +132,7 @@ module Datashift
       loader_config = image_loader.options
  
       puts "CONFIG: #{loader_config.inspect}"
+      puts "OPTIONS #{options.inspect}"
       
       @image_cache = options[:input]
       
@@ -145,8 +146,10 @@ module Datashift
       missing_records = []
          
       # unless record   # try splitting up filename in various ways looking for the SKU
-      split_on = loader_config[:split_file_name_on] || options[:split_file_name_on]
-        
+      split_on = loader_config['split_file_name_on'] || options[:split_file_name_on]
+       
+      puts "Will scan image names splitting on delimiter : #{split_on}"
+      
       Dir.glob("#{@image_cache}/**/*.{jpg,png,gif}") do |image_name|
 
         base_name = File.basename(image_name, '.*')
