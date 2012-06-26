@@ -39,8 +39,7 @@ module DataShift
 
         @excel = Spreadsheet.open file_name
         
-        #if(options[:verbose])
-        puts "\n\n\nLoading from Excel file: #{file_name}"
+        puts "\nLoading from Excel file: #{file_name}"
 
         sheet_number = options[:sheet_number] || 0
 

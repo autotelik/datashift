@@ -28,7 +28,7 @@ module DataShift
 
     attr_accessor :loaded_objects, :failed_objects
 
-    attr_accessor :options
+    attr_accessor :options, :verbose
 
     # Support multiple associations being added to a base object to be specified in a single column.
     # 
@@ -85,22 +85,29 @@ module DataShift
     def self.set_multi_assoc_delim(x) @multi_assoc_delim = x; end
 
     
+    # Builds the method dictionary for a class, enabling headers to be mapped to operators on that class.
+    #  
     # Options
-    #     :instance_methods => true
-
+    #  :instance_methods : Include setter type instance methods for assignment as well as AR columns
+    #  :reload : Force reload of the method dictionary for object_class
+    
     def initialize(object_class, object = nil, options = {})
       @load_object_class = object_class
 
       # Gather names of all possible 'setter' methods on AR class (instance variables and associations)
-      DataShift::MethodDictionary.find_operators( @load_object_class, :reload => true, :instance_methods => options[:instance_methods] )
-
-      # Create dictionary of data on all possible 'setter' methods which can be used to
-      # populate or integrate an object of type @load_object_class
-      DataShift::MethodDictionary.build_method_details(@load_object_class)
+      unless(MethodDictionary::for?(object_class) && options[:reload] == false)
+        puts "Building Method Dictionary for class #{object_class}"
+        DataShift::MethodDictionary.find_operators( @load_object_class, :reload => options[:reload], :instance_methods => options[:instance_methods] )
+        
+        # Create dictionary of data on all possible 'setter' methods which can be used to
+        # populate or integrate an object of type @load_object_class
+        DataShift::MethodDictionary.build_method_details(@load_object_class)
+      end
       
       @method_mapper = DataShift::MethodMapper.new
-      @options = options.clone
-      @verbose_logging = @options[:verbose_logging]
+      @options = options.dup    # clone can cause issues like 'can't modify frozen hash'
+
+      @verbose = @options[:verbose]
       @headers = []
 
       @default_data_objects ||= {}
@@ -127,8 +134,8 @@ module DataShift
     #  mandatory        : List of columns that must be present in headers
     #  
     #  force_inclusion  : List of columns that do not map to any operator but should be includeed in processing.
-    #                       This provides the opportunity for loaders to provide specific methods to handle these fields
-    #                       when no direct operator is available on the modle or it's associations
+    #                     This provides the opportunity for loaders to provide specific methods to handle these fields
+    #                     when no direct operator is available on the model or it's associations
     #
     def perform_load( file_name, options = {} )
 
@@ -179,7 +186,7 @@ module DataShift
       end
       
       unless(@method_mapper.missing_methods.empty?)
-        puts "WARNING: Following column headings could not be mapped : #{@method_mapper.missing_methods.inspect}"
+        puts "WARNING: These headings couldn't be mapped to class #{load_object_class} : #{@method_mapper.missing_methods.inspect}"
         raise MappingDefinitionError, "Missing mappings for columns : #{@method_mapper.missing_methods.join(",")}" if(strict)
       end
 
@@ -215,19 +222,52 @@ module DataShift
     end
     
     
-    # Default values can be provided in YAML config file
+    # Find a record for model klazz, looking up on field for x
+    # Responds to global Options :
+    # :case_sensitive : Default is a case insensitive lookup.
+    # :use_like : Attempts a lookup using ike and x% ratehr than equality
+    
+    def get_record_by(klazz, field, x)
+    
+      begin
+        if(@options[:case_sensitive]) 
+          return klazz.send("find_by_#{field}", x)
+        elsif(@options[:use_like])
+          return klazz.where("#{field} like ?", "#{x}%").first
+        else
+          return klazz.where("lower(#{field}) = ?", x.downcase).first
+        end
+      rescue => e
+        logger.error("Exception attempting to find a record for [#{x}] on #{klazz}.#{field}")
+        logger.error e.backtrace
+        logger.error e.inspect
+        return nil
+      end
+    end
+      
+    # Default values and over rides can be provided in YAML config file.
+    # 
+    # Any Config under key 'LoaderBase' is merged over existing options - taking precedence.
+    #  
+    # Any Config under a key equal to the full name of the Loader class (e.g DataShift::SpreeHelper::ImageLoader)
+    # is merged over existing options - taking precedence.
+    # 
     #  Format :
     #  
     #    LoaderClass:
     #     option: value
     #     
     #    Load Class:    (e.g Spree:Product)
-    #         atttribute: value
-    
+    #     datashift_defaults:     
+    #       value_as_string: "Default Project Value"  
+    #       category: reference:category_002    
+    #     
+    #     datashift_overrides:    
+    #       value_as_double: 99.23546
+    #
     def configure_from( yaml_file )
 
       data = YAML::load( File.open(yaml_file) )
-      
       
       # TODO - MOVE DEFAULTS TO OWN MODULE 
       # decorate the loading class with the defaults/ove rides to manage itself
@@ -268,6 +308,10 @@ module DataShift
       if(data['LoaderBase'])
         @options.merge!(data['LoaderBase'])
       end
+       
+      if(data[self.class.name])    
+        @options.merge!(data[self.class.name])
+      end
       
       logger.info("Loader Options : #{@options.inspect}")
     end
@@ -297,18 +341,31 @@ module DataShift
       @current_value
     end
     
-    # return the find_by operator and the values to find
-    def get_find_operator_and_rest( column_data)
-    
-      find_operator, col_values = "",nil
-           
+    # Return the find_by operator and the rest of the (row,columns) data
+    #   price:0.99
+    # 
+    # Column headings can already contain the operator so possible that row only contains
+    #   0.99
+    # We leave it to caller to manage any other aspects or problems in 'rest'
+    #
+    def get_find_operator_and_rest(inbound_data)
+        
+      operator, rest = inbound_data.split(LoaderBase::name_value_delim) 
+     
+      #puts "DEBUG inbound_data: #{inbound_data} => #{operator} , #{rest}"
+       
+      # Find by operator embedded in row takes precedence over operator in column heading
       if(@current_method_detail.find_by_operator)
-        find_operator, col_values = @current_method_detail.find_by_operator, column_data
-      else
-        find_operator, col_values = column_data.split(LoaderBase::name_value_delim) 
+        # row contains 0.99 so rest is effectively operator, and operator is in method details
+        if(rest.nil?)
+          rest = operator
+          operator = @current_method_detail.find_by_operator
+        end
       end
        
-      return find_operator, col_values
+      #puts "DEBUG: get_find_operator_and_rest: #{operator} => #{rest}"
+      
+      return operator, rest
     end
     
     # Process a value string from a column.
@@ -348,6 +405,8 @@ module DataShift
             raise "Cannot perform DB find by #{find_operator}. Expected format key:value" unless(find_operator && col_values)
              
             find_by_values = col_values.split(LoaderBase::multi_value_delim)
+            
+            find_by_values << @current_method_detail.find_by_value if(@current_method_detail.find_by_value)
                      
             if(find_by_values.size > 1)
 
@@ -389,7 +448,7 @@ module DataShift
     end
 
     def save
-      #puts "DEBUG: SAVING #{load_object.class} : #{load_object.inspect}" #if(options[:verbose])
+      puts "DEBUG: SAVING #{load_object.class} : #{load_object.inspect}" if(@verbose)
       begin
         result = @load_object.save
         
