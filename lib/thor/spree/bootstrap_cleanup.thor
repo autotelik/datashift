@@ -8,6 +8,18 @@
 # bundle exec thor datashift:spreeboot:cleanup
 #
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
+
+require File.expand_path('config/environment.rb')
+
+module Spree
+  class ProductsTaxon < ActiveRecord::Base
+        belongs_to :product
+            belongs_to :taxon
+    end
+  end
+  
+Spree::ProductsTaxon.new
+
 module Datashift
         
   class Spreeboot < Thor     
@@ -23,8 +35,8 @@ module Datashift
       require File.expand_path('config/environment.rb')
 
       cleanup =  %w{ Image OptionType OptionValue 
-                    Product Property ProductGroup ProductProperty ProductOptionType 
-                    Variant Taxonomy Taxon Zone
+                    Product Property ProductGroup ProductProperty ProductOptionType ProductsTaxon
+                    Variant Taxonomy Taxon Zone 
       }
 
       cleanup.each do |k|
