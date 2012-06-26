@@ -58,7 +58,7 @@ Edit the file and add the following to pull in the thor commands :
     require 'thor'
     require 'datashift'
 
-    DataShift::<b>load_commands</b>
+    DataShift::load_commands
 ```
 To check the available tasks run
 
