@@ -22,6 +22,8 @@ module Datashift
 
       require File.expand_path('config/environment.rb')
 
+      ActiveRecord::Base.connection.execute("TRUNCATE spree_products_taxons")
+      
       cleanup =  %w{ Image OptionType OptionValue 
                     Product Property ProductGroup ProductProperty ProductOptionType 
                     Variant Taxonomy Taxon Zone
@@ -33,14 +35,16 @@ module Datashift
         puts "Clearing model #{klass}"
         klass.delete_all
       else
-        puts "WARNING - Coulod not find AR model for class name #{k}"
+        puts "WARNING - Could not find AR model for class name #{k}"
       end
         
     end
       
-    if(File.exists?('public/spree/products') )
-      puts "Removing old Product assets from 'public/spree/products'"
-      FileUtils::rm_rf('public/public/spree/products') 
+    image_bank = 'public/spree/products'
+      
+    if(File.exists?(image_bank) )
+      puts "Removing old Product assets from '#{image_bank}'"
+      FileUtils::rm_rf(image_bank) 
     end
       
     FileUtils::rm_rf('MissingRecords') if(File.exists?('MissingRecords') )
