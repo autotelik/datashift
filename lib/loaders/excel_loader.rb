@@ -66,7 +66,7 @@ module DataShift
         # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
         map_headers_to_operators( @headers, options )
 
-        logger.info "Excel Loader prcoessing #{@excel.num_rows} rows"
+        logger.info "Excel Loader processing #{@excel.num_rows} rows"
         load_object_class.transaction do
           @loaded_objects =  []
 
@@ -124,8 +124,9 @@ module DataShift
           end
         end
         puts "Excel loading stage complete - #{loaded_objects.size} rows added."
+        puts "There were NO failures." if failed_objects.empty?
         
-        puts "WARNING : #{failed_objects.size} rows contained errors and #{failed_objects.size} records NOT created." unless failed_objects.empty?
+        puts "WARNING : Check logs : #{failed_objects.size} rows contained errors and #{failed_objects.size} records NOT created." unless failed_objects.empty?
       end
 
       def value_at(row, column)

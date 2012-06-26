@@ -9,7 +9,14 @@ class CreateTestBed < ActiveRecord::Migration
   
   def self.up
 
+    create_table :users do |t|
+      t.string   :title
+      t.string   :first_name
+    end
+    
+    # belongs_to  :user
     # has many :milestones
+    #
     create_table :projects do |t|
       t.string   :title
       t.string   :value_as_string
@@ -18,10 +25,13 @@ class CreateTestBed < ActiveRecord::Migration
       t.datetime :value_as_datetime, :default => nil
       t.integer  :value_as_integer, :default => 0
       t.decimal  :value_as_double, :precision => 8, :scale => 2, :default => 0.0
+      t.references :user
       t.timestamps
     end
 
-    # belongs_to  :project, project => has_many
+    # belongs_to  :project
+    # @project => has_many :milestones
+    
     create_table :milestones do |t|
       t.string     :name
       t.datetime   :datetime, :default => nil
@@ -73,6 +83,7 @@ class CreateTestBed < ActiveRecord::Migration
   end
 
   def self.down
+    drop_table :users
     drop_table :projects
     drop_table :categories
     drop_table :loader_releases

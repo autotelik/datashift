@@ -17,6 +17,11 @@ module DataShift
     end
 
 
+    # Has the dictionary been populated for  klass
+    def self.for?(klass)
+      return !(has_many[klass] || belongs_to[klass] || has_one[klass] || assignments[klass]).nil?
+    end
+    
     # Create simple picture of all the operator names for assignment available on an AR model,
     # grouped by type of association (includes belongs_to and has_many which provides both << and = )
     # Options:
@@ -43,7 +48,7 @@ module DataShift
       #puts "Belongs To Associations:", belongs_to[klass].inspect
 
       # Find the has_one associations which can be populated via  Model.has_one_name = OtherArModelObject
-      if( options[:reload] || self.has_one[klass].nil? )
+      if( options[:reload] || has_one[klass].nil? )
         has_one[klass] = klass.reflect_on_all_associations(:has_one).map { |i| i.name.to_s }
       end
 
@@ -145,7 +150,7 @@ module DataShift
       
         MethodDetail::supported_types_enum.each do |t|
           method_detail = method_details_mgr.find(n, t)
-          return method_detail if(method_detail)
+          return method_detail.clone if(method_detail)
         end
         
       end

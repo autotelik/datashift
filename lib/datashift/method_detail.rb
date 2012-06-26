@@ -35,7 +35,7 @@ module DataShift
     attr_reader :operator, :operator_type
 
     # TODO make it a list/primary keys
-    attr_accessor :find_by_operator
+    attr_accessor :find_by_operator, :find_by_value
     
     # Store the raw (client supplied) name against the active record  klass(model).
     # Operator is the associated method call on klass,
@@ -43,9 +43,10 @@ module DataShift
     # 
     # col_types can typically be derived from klass.columns - set of ActiveRecord::ConnectionAdapters::Column
 
-    def initialize(client_name, klass, operator, type, col_types = {}, find_by_operator = nil )
+    def initialize(client_name, klass, operator, type, col_types = {}, find_by_operator = nil, find_by_value = nil )
       @klass, @name = klass, client_name
       @find_by_operator = find_by_operator
+      @find_by_value = find_by_value
 
       if( MethodDetail::supported_types_enum.member?(type.to_sym) )
         @operator_type = type.to_sym

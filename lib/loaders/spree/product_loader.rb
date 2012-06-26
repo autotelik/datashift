@@ -138,12 +138,13 @@ module DataShift
             # TODO - dynamic creation should be an option
 
             unless option_type
-              puts "WARNING: OptionType #{oname} NOT found - Not set Product"
+              puts "WARNING: OptionType #{oname} NOT found and could not create - Not set Product"
               next
             end
             puts "Created missing OptionType #{option_type.inspect}"
           end
 
+          # TODO - is include? very inefficient ??
           @load_object.option_types << option_type unless @load_object.option_types.include?(option_type)
 
           # Can be simply list of OptionTypes, some or all without values
@@ -226,12 +227,13 @@ module DataShift
         property_list = get_each_assoc#current_value.split(LoaderBase::multi_assoc_delim)
 
         property_list.each do |pstr|
-          
-        find_by_name, find_by_value = get_find_operator_and_rest( pstr )
-                 
-        raise "Cannot find Property via #{find_by_name} (with value #{find_by_value})" unless(find_by_name)
+        
+          # Special case, we know we lookup on name so operator is effectively the name to lookup
+          find_by_name, find_by_value = get_find_operator_and_rest( pstr )
+     
+          raise "Cannot find Property via #{find_by_name} (with value #{find_by_value})" unless(find_by_name)
                         
-        property = @@property_klass.find_by_name(find_by_name)
+          property = @@property_klass.find_by_name(find_by_name)
 
           unless property
             property = @@property_klass.create( :name => find_by_name, :presentation => find_by_name.humanize)
@@ -244,8 +246,8 @@ module DataShift
               x = @@product_property_klass.new( :value => find_by_value )
               x.property = property
               x.save
-              logger.info "Created New ProductProperty #{x.inspect}"
               @load_object.product_properties << x 
+              logger.info "Created New ProductProperty #{x.inspect}"
             else
               @load_object.product_properties << @@product_property_klass.create( :property => property, :value => find_by_values)
             end
