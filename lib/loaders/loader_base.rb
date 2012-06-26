@@ -85,18 +85,24 @@ module DataShift
     def self.set_multi_assoc_delim(x) @multi_assoc_delim = x; end
 
     
+    # Builds the method dictionary for a class, enabling headers to be mapped to operators on that class.
+    #  
     # Options
-    #     :instance_methods => true
-
+    #  :instance_methods : Include setter type instance methods for assignment as well as AR columns
+    #  :reload : Force reload of the method dictionary for object_class
+    
     def initialize(object_class, object = nil, options = {})
       @load_object_class = object_class
 
       # Gather names of all possible 'setter' methods on AR class (instance variables and associations)
-      DataShift::MethodDictionary.find_operators( @load_object_class, :reload => true, :instance_methods => options[:instance_methods] )
-
-      # Create dictionary of data on all possible 'setter' methods which can be used to
-      # populate or integrate an object of type @load_object_class
-      DataShift::MethodDictionary.build_method_details(@load_object_class)
+      unless(MethodDictionary::for?(object_class) && options[:reload] == false)
+        puts "Building Method Dictionary for class #{object_class}"
+        DataShift::MethodDictionary.find_operators( @load_object_class, :reload => options[:reload], :instance_methods => options[:instance_methods] )
+        
+        # Create dictionary of data on all possible 'setter' methods which can be used to
+        # populate or integrate an object of type @load_object_class
+        DataShift::MethodDictionary.build_method_details(@load_object_class)
+      end
       
       @method_mapper = DataShift::MethodMapper.new
       @options = options.dup    # clone can cause issues like 'can't modify frozen hash'
@@ -128,8 +134,8 @@ module DataShift
     #  mandatory        : List of columns that must be present in headers
     #  
     #  force_inclusion  : List of columns that do not map to any operator but should be includeed in processing.
-    #                       This provides the opportunity for loaders to provide specific methods to handle these fields
-    #                       when no direct operator is available on the modle or it's associations
+    #                     This provides the opportunity for loaders to provide specific methods to handle these fields
+    #                     when no direct operator is available on the model or it's associations
     #
     def perform_load( file_name, options = {} )
 
@@ -180,7 +186,7 @@ module DataShift
       end
       
       unless(@method_mapper.missing_methods.empty?)
-        puts "WARNING: Following column headings could not be mapped : #{@method_mapper.missing_methods.inspect}"
+        puts "WARNING: These headings couldn't be mapped to class #{load_object_class} : #{@method_mapper.missing_methods.inspect}"
         raise MappingDefinitionError, "Missing mappings for columns : #{@method_mapper.missing_methods.join(",")}" if(strict)
       end
 
@@ -215,18 +221,20 @@ module DataShift
       end
     end
     
-    def get_record_by(klazz, field, value)
-      x =  (@options[:sku_prefix]) ? "#{@options[:sku_prefix]}#{value}" : value
-
+    
+    # Find a record for model klazz, looking up on field for x
+    # Responds to global Options :
+    # :case_sensitive : Default is a case insensitive lookup.
+    # :use_like : Attempts a lookup using ike and x% ratehr than equality
+    
+    def get_record_by(klazz, field, x)
+    
       begin
         if(@options[:case_sensitive]) 
-          puts "Search case sensitive for [#{x}] on #{field}" if(@verbose)
           return klazz.send("find_by_#{field}", x)
         elsif(@options[:use_like])
-          puts "Term : #{klazz}.where(\"#{field} LIKE '#{x}%'\")" if(@verbose)
           return klazz.where("#{field} like ?", "#{x}%").first
         else
-          puts "Term : #{klazz}.where(\"lower(#{field}) = '#{x.downcase}'\")" if(@verbose)
           return klazz.where("lower(#{field}) = ?", x.downcase).first
         end
       rescue => e

@@ -41,13 +41,11 @@ To use :
 
 To pull the tasks in, add this call to your Rakefile :
 
-     DataShift::load_tasks
+```ruby DataShift::load_tasks
 
 To keep the availability to only development mode use
 
-    if(Rails.env.development?)
-        DataShift::<b>load_tasks</b>
-    end
+```ruby DataShift::load_tasks if(Rails.env.development?)'''
 
 To use the Thor command line applications :
 
@@ -58,7 +56,7 @@ Edit the file and add the following to pull in the thor commands :
     require 'thor'
     require 'datashift'
 
-    DataShift::<b>load_commands</b>
+    DataShift::load_commands
 ```
 To check the available tasks run
 
