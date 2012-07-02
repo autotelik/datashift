@@ -430,4 +430,9 @@ describe 'SpreeLoader' do
     expect {@product_loader.perform_load($SpreeNegativeFixturePath + '/SpreeProdMiss1Mandatory.csv', :mandatory => 'sku' )}.to raise_error(DataShift::MissingMandatoryError)
   end
   
+
+  it "should create a Variant with multiple option types from single column", :new => true  do
+     @product_loader.perform_load( SpecHelper::spree_fixture('SpreeMultiVariant.xls'), :mandatory => ['sku', 'name', 'price'] )
+  end
+  
 end
