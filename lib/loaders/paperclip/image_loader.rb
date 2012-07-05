@@ -12,7 +12,13 @@ module DataShift
   module ImageLoading
  
     include DataShift::Logging
-     
+    
+    def self.get_files(path, options = {})
+      glob = (options['recursive'] || options[:recursive])  ? "**/*.{jpg,png,gif}" : "*.{jpg,png,gif}"
+      
+      Dir.glob("#{path}/#{glob}")
+    end
+  
     def get_file( attachment_path )
       
       unless File.exists?(attachment_path) && File.readable?(attachment_path)
