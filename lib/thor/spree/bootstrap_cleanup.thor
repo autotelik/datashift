@@ -29,32 +29,30 @@ module Datashift
       ActiveRecord::Base.connection.execute("TRUNCATE spree_products_taxons")
       
       cleanup =  %w{ Image OptionType OptionValue 
-                    Product Property ProductGroup ProductProperty ProductOptionType ProductsTaxon
-                    Variant Taxonomy Taxon Zone 
+                    Product Property ProductGroup ProductProperty ProductOptionType 
+                    Variant Taxonomy Taxon
       }
 
       cleanup.each do |k|
         klass = DataShift::SpreeHelper::get_spree_class(k)
-      if(klass)
-        puts "Clearing model #{klass}"
-        klass.delete_all
-      else
-        puts "WARNING - Could not find AR model for class name #{k}"
+        if(klass)
+          puts "Clearing model #{klass}"
+          klass.delete_all
+        else
+          puts "WARNING - Could not find AR model for class name #{k}"
+        end
       end
-        
+      
+      image_bank = 'public/spree/products'
+      
+      if(File.exists?(image_bank) )
+        puts "Removing old Product assets from '#{image_bank}'"
+        FileUtils::rm_rf(image_bank) 
+      end
+      
+      FileUtils::rm_rf('MissingRecords') if(File.exists?('MissingRecords') )
+      
     end
-      
-    image_bank = 'public/spree/products'
-      
-    if(File.exists?(image_bank) )
-      puts "Removing old Product assets from '#{image_bank}'"
-      FileUtils::rm_rf(image_bank) 
-    end
-      
-    FileUtils::rm_rf('MissingRecords') if(File.exists?('MissingRecords') )
-      
-  end
   
-end
-
+  end
 end
