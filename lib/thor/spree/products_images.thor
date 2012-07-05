@@ -154,9 +154,7 @@ module Datashift
        
       puts "Will scan image names splitting on delimiter : #{split_on}"
       
-      glob = (loader_config['recursive'] || options[:recursive])  ? "**/*.{jpg,png,gif}" : "*.{jpg,png,gif}"
-      
-      image_cache = Dir.glob("#{@image_path}/#{glob}")
+      image_cache = DataShift::ImageLoading::get_files(@image_path, options)
       
       image_cache.each do |image_name|
 
