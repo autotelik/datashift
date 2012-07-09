@@ -9,9 +9,11 @@ Wiki taking shape with more info here : **https://github.com/autotelik/datashift
 ### Features
 
 Import and Export ActiveRecord models through .xls or CSV  files, including
-all associations and with configurable defaults.
+all associations and setting configurable defaults or over rides.
 
-Export all data or simply generate a sample template with headers only.
+Generate a sample template with headers only.
+
+Export template and populate with model data 
 
 Create, parse and use Excel/OpenOffice (.xls) documents dynamically from Ruby.
 
@@ -24,7 +26,7 @@ Specific loaders and command line tasks provided out the box for **Spree E-Comme
 enabling import/export of Product data including creating Variants with different
  count on hands and all associations including Properties/Taxons/OptionTypes and Images.
 
-Loaders can be configured via YAML with over ride values, default values and mandatory column settingss.
+Loaders can be configured via YAML with over ride values, default values and mandatory column settings.
 
 Many example Spreadsheets/CSV files in spec/fixtures, fully documented with comments for each column.
 
@@ -41,11 +43,11 @@ To use :
 
 To pull the tasks in, add this call to your Rakefile :
 
-```ruby DataShift::load_tasks
+```ruby DataShift::load_tasks```
 
 To keep the availability to only development mode use
 
-```ruby DataShift::load_tasks if(Rails.env.development?)'''
+```ruby DataShift::load_tasks if(Rails.env.development?)```
 
 To use the Thor command line applications :
 
@@ -86,6 +88,9 @@ Guards are provided, and used internally, for mixed Ruby setups. Can be used lik
 Provides high level rake tasks for importing data via ActiveRecord models into a DB,
  from various sources, currently csv or .xls files (Excel/Open Office)
 
+N.B This is under active development, moving to thor tasks so maybe out of date
+
+Please try rake -T and  thor list to get upto date command lines
 
     bundle exec rake datashift:import:csv model=BlogPost input=BlogPostImport.csv verbose=true 
 
@@ -100,54 +105,9 @@ The library can be easily extended with Loaders to deal with non trivial cases,
  for example when multiple lookups required to find right association.
 
 Spree loaders are an example, these illustrate over riding processing for specific columns with
-complicated lookup requirements.
-
-A core feature of DataShift is the MethodDictionary and MethodMapper, which provides features for collecting
-reflection information from ActiveRecord models (all different associations, including join tables with many-to-many relationships).
-
-A full picture of all possible operations on a class can be created very easily, for example ona  Blog model :
-
-    MethodDictionary.find_operators( Blog )
-
-This then allows Import/Export to be achieved, by mapping the file's header and column data to the found operators
-i.e. the methods to set data on model's attributes and associations.
-
-Here we retrieve the method details for a column name from a file, "Blog Date"
-
-    MethodDictionary.find_method_detail( Blog, "Blog Date" )
-
-Loaders can use this method lookup functionality, to find the correct association for a column heading,
-and populate AR object with row data.
-
-This means data can be mapped to any model without any further coding. Generators are also supplied to export
-a models attributes and associations to files, thus providing template spreadsheets that any user can fill out.
-
-MethodMapper also stores column type information so the raw file data can be provided as is,
-and whenever possible, under the bonnet the data will be cast to correct DB type.
-
-Here we show how a column name from a file, "Blog Date", can be mapped to Assign a stringified date, to the blog_date column, on a new Blog object :
-
-    MethodDictionary.find_method_detail( Blog, "Blog Date" ).assign( Blog.new, "Sat Jul 23 2011" )
-
-Because it's based on reflection against the model, can build complex relationships between tables during import/export, 
-and extending data files with new columns need not require any additional Ruby coding.
-
-New columns can simply be added to the Excel/Open Office spreadsheet, or CSV file, setting the new
-attribute or association name in the header row. 
-
-
-The Loader attempts to handle various human read-able forms of column names.
-
-For example, given an association on the model called, product_properties, will successfully load
-from columns with headings such as 'product_properties', 'Product Properties', 'ProductProperties' 'product properties' etc
-
-For has_many associations, either multiple columns can be used,
- or multiple values can be specified in a single column using suitable delimiters.
-
-Modular - so complex associations/mappings that require non generic lookups, can be handled by extending the loader engine.
-
-Original focus was on support for the Open Source Spree e-commerce project, so includes specific loaders and rake tasks
-for loading Spree Products, and associated data such as Product Variants, and Images.
+complicated lookup requirements. Spree is the prime Open Source e-commerce project for Rails, 
+and the specific loaders and tasks support loading Spree Products, and associated data such as Variants,
+OptionTypes, Properties and Images.
 
 ## Template Generation and Export
 
@@ -254,48 +214,6 @@ So if our Project model has many Categories, we can supply a Category list, whic
 During loading, a call to find_all_by_reference will be made, picking up the 2 categories with matching references,
  and our Project model will contain those two i.e project.categories = [category_002,category_003]
 
-## Spree Suppprt
-
-### OptionTypes & Variants
-
-When loaded with the Spree specific tasks, spree specific over rides are supported, such as direct s
-support for OptionTypes with values
-
-Any 'Option Types' columns can contain the OptionType to associate with the Product, plus a selection of
-appropriate OptionValues to go with that Type. 
-
-For example, in a single column/row we could supply 2 OptionTypes (named, size & colour), with a selection values
-(such as small, medium etc)
-
-    'Option Types'
-    size:small,medium,large|colour:red,white
-
-If no such OptionType exists, e.g size, then a new one is created with the supplied name.
-
-Next the OptionValues are also parsed, again if no such OptionValue exists, e.g small, then a new one is created with the supplied name.
-
-Lastly a Variant is created on each OptionValue, with price and availaable dates being copied from Master.
-Currently a unique SKU is created by adding an index to the master's sku.
-
-TODO - Enable a hash of attributes to be supplied in association columns to enable more control over creation of associated objects.
-
-### Properties
-
-The properties to associate with this product.
-Properties are for small snippets of text, shared across many products,
-and are for display purposes only.
-
-An optional display value can be supplied to supplement the displayed text.
-
-As for all associations can contain multiple name/value sets in default form :
-
-    Property:display_value|Property:display_value
-
-Example - No values :
-    manufacturer|standard
-
-Example - Display  values :
-    manufacturer:somebody else plc|standard:ISOBlah21
 
 ## TODO
 

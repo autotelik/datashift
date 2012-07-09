@@ -53,7 +53,12 @@ module Datashift
       
       puts "DataShift::Product starting upload from file: #{input}"
 
-      loader.perform_load(input, :mandatory => ['sku', 'name', 'price'] )
+      options = {:mandatory => ['sku', 'name', 'price']}
+    
+      # In >= 1.1.0 Image moved to master Variant from Product
+      options[:force_inclusion] = ['images'] if(SpreeHelper::version.to_f > 1 )
+      
+      loader.perform_load(input, options)
     end
   
 
@@ -120,7 +125,7 @@ module Datashift
       attachment_klazz  = DataShift::SpreeHelper::get_spree_class('Product' )
       attachment_field  = 'name'
 
-      if(options[:sku])
+      if(options[:sku] || SpreeHelper::version.to_f > 1)
         attachment_klazz =  DataShift::SpreeHelper::get_spree_class('Variant' ) 
         attachment_field = 'sku'
       end
