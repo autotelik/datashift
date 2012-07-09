@@ -35,7 +35,10 @@ describe 'SpreeImageLoading' do
       @Product_klass.count.should == 0
       
       MethodDictionary.clear
-      MethodDictionary.find_operators( @klass )
+      
+      # For Spree important to get instance methods too as Product delegates
+      # many important attributes to Variant (master)
+      MethodDictionary.find_operators( @Product_klass, :instance_methods => true )
     
       @product_loader = DataShift::SpreeHelper::ProductLoader.new
     rescue => e
@@ -45,17 +48,13 @@ describe 'SpreeImageLoading' do
   end
 
 
-  it "should load Products with associated image from CSV" do
-    
-    # In >= 1.1.0 Image moved to master Variant from Product
-   
+  it "should create Image from path in Product loading column from CSV", :fail => true do
+       
     options = {:mandatory => ['sku', 'name', 'price']}
-    
-    options[:force_inclusion] = ['sku', 'images'] if(SpreeHelper::version.to_f > 1 )
     
     @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsWithImages.csv'), options )
      
-    @Image_klass.all.each_with_index {|i, x| puts "RESULT IMAGE #{x}", i.inspect }
+    @Image_klass.all.each_with_index {|i, x| puts "SPEC CHECK IMAGE #{x}", i.inspect }
         
     p = @Product_klass.find_by_name("Demo Product for AR Loader")
     
@@ -70,15 +69,11 @@ describe 'SpreeImageLoading' do
   end
   
   
-  it "should load Products with associated image" do
+  it "should create Image from path in Product loading column from Excel", :fail => true do
    
     options = {:mandatory => ['sku', 'name', 'price']}
     
-    options[:force_inclusion] = ['sku', 'images'] if(SpreeHelper::version.to_f > 1 )
-    
     @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsWithImages.xls'), options )
-     
-    @Image_klass.all.each_with_index {|i, x| puts "RESULT IMAGE #{x}", i.inspect }
         
     p = @klass.find_by_name("Demo Product for AR Loader")
     
@@ -91,7 +86,9 @@ describe 'SpreeImageLoading' do
 
   end
   
-  it "should be able to assign Images to preloaded Products", :fail => true  do
+  it "should be able to assign Images to preloaded Products"  do
+  
+    pending "Currently functionality supplied by a thor task images()"
     
     MethodDictionary.find_operators( @Image_klass )
     
@@ -101,24 +98,9 @@ describe 'SpreeImageLoading' do
     
     @Image_klass.all.size.should == 0
 
-    # force inclusion means add to operator list even if not present
-    options = { :verbose => true, :force_inclusion => ['sku', 'attachment'] } if(SpreeHelper::version.to_f > 1 )
-    
     loader = DataShift::SpreeHelper::ImageLoader.new(nil, options)
     
     loader.perform_load( SpecHelper::spree_fixture('SpreeImages.xls'), options )
-    
-    @Image_klass.all.each_with_index {|i, x| puts "RESULT IMAGE #{x}", i.inspect }
-     
-    @Image_klass.count.should == 3
-        
-    p = @klass.find_by_name("Demo Product for AR Loader")
-    
-    p.name.should == "Demo Product for AR Loader"
-    
-    p.images.should have_exactly(1).items
-    
-    @Product_klass.all.each {|p| p.images.should have_exactly(1).items }
    
   end
   

@@ -96,7 +96,7 @@ module DataShift
 
       # Gather names of all possible 'setter' methods on AR class (instance variables and associations)
       unless(MethodDictionary::for?(object_class) && options[:reload] == false)
-        puts "Building Method Dictionary for class #{object_class}"
+        #puts "Building Method Dictionary for class #{object_class}"
         DataShift::MethodDictionary.find_operators( @load_object_class, :reload => options[:reload], :instance_methods => options[:instance_methods] )
         
         # Create dictionary of data on all possible 'setter' methods which can be used to
