@@ -56,7 +56,7 @@ module Datashift
       options = {:mandatory => ['sku', 'name', 'price']}
     
       # In >= 1.1.0 Image moved to master Variant from Product
-      options[:force_inclusion] = ['images'] if(SpreeHelper::version.to_f > 1 )
+      options[:force_inclusion] = ['images'] if(DataShift::SpreeHelper::version.to_f > 1 )
       
       loader.perform_load(input, options)
     end

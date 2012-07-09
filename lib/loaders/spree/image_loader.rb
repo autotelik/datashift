@@ -35,7 +35,10 @@ module DataShift
       include DataShift::ExcelLoading
       
       def initialize(image = nil, options = {})
-        super( SpreeHelper::get_spree_class('Image'), image, options )
+        
+        opts = options.merge(:load => false)  # Don't need operators and no table Spree::Image
+
+        super( SpreeHelper::get_spree_class('Image'), image, opts )
         
         if(SpreeHelper::version.to_f > 1.0 )
           @attachment_klazz  = DataShift::SpreeHelper::get_spree_class('Variant' )
