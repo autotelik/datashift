@@ -15,7 +15,7 @@ Generate a sample template with headers only.
 
 Export template and populate with model data 
 
-Create, parse and use Excel/OpenOffice (.xls) documents dynamically from Ruby.
+Create, parse and use Excel/OpenOffice (.xls) documents dynamically from Ruby (jRuby is required for handling .xls documents).
 
 Easily extendable Loader functionality to deal with non trivial import cases, such
 as complex association lookups.
@@ -36,22 +36,23 @@ Add gem 'datashift' to your Gemfile/bundle, or install the latest gem as usual :
 
     gem install datashift
 
-To use :
+To use, put : 
 
     gem 'datashift'
+
+in your Gemfile and run "bundle install" or use:
+
     require 'datashift'
 
 To pull the tasks in, add this call to your Rakefile :
 
-```ruby DataShift::load_tasks```
+```DataShift::load_tasks```
 
 To keep the availability to only development mode use
 
-```ruby DataShift::load_tasks if(Rails.env.development?)```
+```DataShift::load_tasks if(Rails.env.development?)```
 
-To use the Thor command line applications :
-
-    Create a high level .thor file - e.g mysite.thor - in your applications root directory 
+Using the Thor command line applications is preferred over rake. To use the Thor command line applications, create a high level '.thor' file - e.g 'mysite.thor' - in your applications root directory 
 
 Edit the file and add the following to pull in the thor commands :
 ```ruby
@@ -62,11 +63,11 @@ Edit the file and add the following to pull in the thor commands :
 ```
 To check the available tasks run
 
-    bundle exec rake -T datashift
+    bundle exec thor list datashift
 
 and/or
 
-    bundle exc thor list datashift
+    bundle exec rake -T datashift
 
 To get usage information use thor help <command>, for example
 
