@@ -181,7 +181,9 @@ This data can be exported directly to CSV or Excel/OpenOffice spreadsheets.
 
 - *Seamless Spree Image loading can be achieved by ensuring SKU or class Name features in Image filename.
 
-  Lookup is performed either via the SKU being prepended to the image name, or by the image name being equal to the **name attribute** of the klass in question.
+  Lookup is performed either via the SKU being prepended to the image name, or by the image name being equal to the **name attribute** of the klass in question.  If using the SKU for lookup, the search splits the filenames on the underscore character ("_") so the underscore cannot be part of the SKU, or no match will be found.
+
+  Only image files with the suffixes .jpg, .jpeg, .png, and .gif will be found. The image_loader.rb and product_images.thor files can be edited to change this.
 
   Images can be attached to any class defined with a suitable association. The class to use can be configured in rake task via
   parameter klass=Xyz.
