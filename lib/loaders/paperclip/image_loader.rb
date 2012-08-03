@@ -14,7 +14,7 @@ module DataShift
     include DataShift::Logging
     
     def self.get_files(path, options = {})
-      glob = (options['recursive'] || options[:recursive])  ? "**/*.{jpg,png,gif}" : "*.{jpg,png,gif}"
+      glob = (options['recursive'] || options[:recursive])  ? "**/*.{jpg,jpeg,png,gif}" : "*.{jpg,jpeg,png,gif}"
       
       Dir.glob("#{path}/#{glob}")
     end

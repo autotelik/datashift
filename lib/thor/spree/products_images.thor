@@ -92,7 +92,7 @@ module Datashift
     desc "images", "Populate the DB with images from a directory\nwhere image names contain somewhere the Product Sku/Name"
     
     # :dummy => dummy run without actual saving to DB
-    method_option :input, :aliases => '-i', :required => true, :desc => "The input path containing images (.jpg, .gif, .png)"
+    method_option :input, :aliases => '-i', :required => true, :desc => "The input path containing images (.jpg, .jpeg .gif, .png)"
     
     method_option :recursive, :aliases => '-r', :type => :boolean, :desc => "Scan sub directories of input for images"
      
@@ -173,6 +173,8 @@ module Datashift
         record = nil
                    
         record = image_loader.get_record_by(attachment_klazz, attachment_field, base_name)
+		
+		
           
         # try seperate portions of the filename, front -> back
         base_name.split(split_on).each do |x| 
@@ -188,6 +190,7 @@ module Datashift
         end unless(record)
           
         record = record.product if(record && record.respond_to?(:product))  # SKU stored on Variant but we want it's master Product
+		
       
         if(record)
           logger.info "Found record for attachment : #{record.inspect}"
