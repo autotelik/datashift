@@ -37,7 +37,11 @@ module Datashift
         klass = DataShift::SpreeHelper::get_spree_class(k)
         if(klass)
           puts "Clearing model #{klass}"
-          klass.delete_all
+          begin
+            klass.delete_all
+          rescue => e
+            puts e
+          end
         else
           puts "WARNING - Could not find AR model for class name #{k}"
         end

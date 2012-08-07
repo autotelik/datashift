@@ -12,24 +12,39 @@ module DataShift
 
   class CsvExporter < ExporterBase
 
-    attr_accessor :excel, :filename
-  
     def initialize(filename)
-      @excel = nil
-      @filename = filename
+      super(filename)
     end
 
+    # Create CSV file from set of ActiveRecord objects
+    # Options :
+    # => :call => List of methods to additionally export on each record
+    #
+    def export(records, options = {})
+      
+      require 'csv'
+      File.open(filename, "w") do |csv|
+        records.each do |r|
+          next unless(r.is_a?(ActiveRecord::Base))
+          
+          csv_data = []
+
+          if(options[:call].is_a?(Array))
+            options[:call].each { |c| csv_data << r.send(c) }
+          end
+          
+          r.class.columns.each { |col| csv_data << r.send(col.name) }
+                    
+          csv << csv_data.join(",") << "\n"
+        end
+      end
+    end
+      
     # Create CSV file representing supplied Model
     
     def generate(model, options = {})
 
       @filename = options[:filename] if  options[:filename]
-    end
-
-  
-    # Create an Csv file representing supplied Model
-
-    def export(items, options = {})
     end
 
   end
