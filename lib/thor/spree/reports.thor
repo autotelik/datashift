@@ -4,7 +4,7 @@
 # License::   MIT. Free, Open Source.
 #
 # Usage::
-# bundle exec thor help datashift:spreeboot
+# bundle exec thor help datashift:reports:missing_images
 # bundle exec thor datashift:spreeboot:cleanup
 #
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
@@ -36,7 +36,7 @@ module Datashift
         fname = report ? report : "missing_images.xls"
         DataShift::ExcelExporter.new( fname ).export( missing )
       else
-        puts missing.collect(&:name).inspect
+        puts missing.collect(&:name).join('\n')
       end   
       
       @drop_box = "/home/stattert/Dropbox/DaveWebsiteInfo/"
