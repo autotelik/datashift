@@ -156,11 +156,11 @@ module Datashift
          
       # try splitting up filename in various ways looking for the SKU
       split_on = loader_config['split_file_name_on'] || options[:split_file_name_on]
-       
-      puts "Will scan image names splitting on delimiter : #{split_on}"
-      
+             
       image_cache = DataShift::ImageLoading::get_files(@image_path, options)
       
+      puts "Found #{image_cache.size} image files - splitting names on delimiter : #{split_on}"
+            
       image_cache.each do |image_name|
 
         image_base_name = File.basename(image_name)
