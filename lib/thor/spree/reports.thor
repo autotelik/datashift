@@ -22,6 +22,8 @@ module Datashift
     def missing_images(report = nil)
 
       require 'spree_helper'
+      require 'csv_exporter'
+      require 'image_loader'
       require 'image_loader'
 
       require File.expand_path('config/environment.rb')
@@ -32,10 +34,13 @@ module Datashift
       
       puts "There are #{missing.size} Products without an associated Image"
       
-      if(DataShift::Guards::jruby?)
-        fname = report ? report : "missing_images.xls"
-        DataShift::ExcelExporter.new( fname ).export( missing )
+      fname = report ? report : "missing_images"
+      
+      if(DataShift::Guards::jruby?)  
+        DataShift::ExcelExporter.new( fname + '.xls' ).export( missing )
       else
+        puts "Creating report #{fname}.csv"
+        DataShift::CsvExporter.new( fname + '.csv' ).export( missing, :call => ['sku'] )
         puts missing.collect(&:name).join('\n')
       end   
       
@@ -60,7 +65,7 @@ module Datashift
         DataShift::ImageLoading::get_files(File.join(@drop_box,p), options)
       end
       
-      puts images.inspect
+     # puts images.inspect
     end
   end
 end

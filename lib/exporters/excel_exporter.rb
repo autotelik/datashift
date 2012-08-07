@@ -90,7 +90,6 @@ module DataShift
         
           excel.set_headers( headers )
         
-
           row_index = 1
         
           items.each do |datum| 

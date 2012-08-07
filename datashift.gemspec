@@ -71,7 +71,7 @@ Gem::Specification.new do |s|
     "lib/loaders/spree/product_loader.rb",
     "lib/thor/export_excel.thor",
     "lib/thor/generate_excel.thor",
-    "lib/thor/import_excel.thor",
+    "lib/thor/import.thor",
     "lib/thor/spree/bootstrap_cleanup.thor",
     "lib/thor/spree/products_images.thor",
     "lib/thor/spree/reports.thor",
