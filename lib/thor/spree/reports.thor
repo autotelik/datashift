@@ -48,8 +48,6 @@ module Datashift
     02Seascapespainting  
     03Landscapes 
     04Spain 
-
-    07SignsJohnAllFolders 
     07_Mar 
     09Powerpointsermonaids
       }
