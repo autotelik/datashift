@@ -39,6 +39,12 @@ module DataShift
         logger.debug "PRODUCT #{@load_object.inspect} MASTER: #{@load_object.master.inspect}"
       end
 
+      def perform_load( file_name, options = {} )
+         # In >= 1.1.0 Image moved to master Variant from Product so no association called Images on Product anymore
+        options[:force_inclusion] = options[:force_inclusion] ? ['images'] : [*options[:force_inclusion]] << 'images'
+    
+        super(file_name, options)
+      end
 
       # Over ride base class process with some Spree::Product specifics
       #
@@ -120,69 +126,100 @@ module DataShift
       # Special case for OptionTypes as it's two stage process
       # First add the possible option_types to Product, then we are able
       # to define Variants on those options values.
+      #  To defiene a Variant : 
+      #  1) define at least one OptionType on Product, for example Size
+      #  2) Provide a value for at least one of these OptionType
+      #  3) A composite Variant can be created by supplyiung a vlaue for more than one OptionType
+      #       fro example Colour : Red and Size Medium
+      # Supported Syntax :
+      #  '|' seperates Variants
+      #   ',' list of option values
+      #  Examples : 
+      #     mime_type:jpeg;print_type:black_white|mime_type:jpeg|mime_type:png, PDF;print_type:colour
       #
       def add_options
         
         # TODO smart column ordering to ensure always valid by time we get to associations
         save_if_new
 
-        option_types = get_each_assoc#current_value.split( LoaderBase::multi_assoc_delim )
+        # example : mime_type:jpeg;print_type:black_white|mime_type:jpeg|mime_type:png, PDF;print_type:colour
+        
+        variants = get_each_assoc#current_value.split( LoaderBase::multi_assoc_delim )
 
-        option_types.each do |ostr|
-          oname, value_str = ostr.split(LoaderBase::name_value_delim)
+        # 1) mime_type:jpeg;print_type:black_white  2) mime_type:jpeg  3) mime_type:png, PDF;print_type:colour
 
-          option_type = @@option_type_klass.find_by_name(oname)
-
-          unless option_type
-            option_type = @@option_type_klass.create( :name => oname, :presentation => oname.humanize)
-            # TODO - dynamic creation should be an option
+        variants.each do |per_variant| 
+                
+          option_types = per_variant.split(';')    # [mime_type:jpeg, print_type:black_white]   
+          
+          optiontype_vlist_map = {}
+                      
+          option_types.each do |ostr|
+             
+            oname, value_str = ostr.split(LoaderBase::name_value_delim)
+    
+            option_type = @@option_type_klass.find_by_name(oname)
 
             unless option_type
-              puts "WARNING: OptionType #{oname} NOT found and could not create - Not set Product"
-              next
+              option_type = @@option_type_klass.create( :name => oname, :presentation => oname.humanize)
+              # TODO - dynamic creation should be an option
+
+              unless option_type
+                puts "WARNING: OptionType #{oname} NOT found and could not create - Not set Product"
+                next
+              end
+              puts "Created missing OptionType #{option_type.inspect}"
             end
-            puts "Created missing OptionType #{option_type.inspect}"
+
+            # OptionTypes must be specified first on Product to enable Variants to be created
+            # TODO - is include? very inefficient ??
+            @load_object.option_types << option_type unless @load_object.option_types.include?(option_type)
+
+            # Can be simply list of OptionTypes, some or all without values
+            next unless(value_str)
+
+            optiontype_vlist_map[option_type] = []
+            
+            # Now get the value(s) for the option e.g red,blue,green for OptType 'colour'   
+            optiontype_vlist_map[option_type] = value_str.split(',')
           end
+         
+          next if(optiontype_vlist_map.empty?) # only option types specified - no values
 
-          # TODO - is include? very inefficient ??
-          @load_object.option_types << option_type unless @load_object.option_types.include?(option_type)
-
-          # Can be simply list of OptionTypes, some or all without values
-          next unless(value_str)
-
-          # Now get the value(s) for the option e.g red,blue,green for OptType 'colour'
-          ovalues = value_str.split(',')
-
+          # Now create set of Variants, some of which maybe composites           
+          # Find the longest set of OVs to use as base for combining with the rest
+          sorted_map = optiontype_vlist_map.sort_by { |k,v| v.size }.reverse
+          
+          # ovalues = 'pdf','jpeg','png'
+          option_type, ovalues = sorted_map.shift
           # TODO .. benchmarking to find most efficient way to create these but ensure Product.variants list
           # populated .. currently need to call reload to ensure this (seems reqd for Spree 1/Rails 3, wasn't required b4
-          ovalues.each_with_index do |ovname, i|
-            ovname.strip!
-            ov = @@option_value_klass.find_or_create_by_name_and_option_type_id(ovname, option_type.id)
-            if ov
-              begin
-                # This one line seems to works for 1.1.0 - 3.2 but not 1.0.0 - 3.1 ??
-                if(SpreeHelper::version.to_f >= 1.1)
-                  variant = @load_object.variants.create( :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price)
-                else
-                  variant = @@variant_klass.create( :product => @load_object, :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :available_on => @load_object.available_on)
-                  #if(variant.valid?)
-                  # variant.save
-                  # @load_object.variants << variant
-               
-                  #else
-                  #puts "WARNING: For Option #{ovname} - Variant creation failed #{variant.errors.inspect}"
-                end
-                variant.option_values << ov
-              rescue =>  e
-                puts "Failed to create a Variant for Product #{@load_object.name}"
-                puts e.inspect
-                #puts e.backtrace
+          ovalues.each do |ovname|
+              
+            ov_list = []
+          
+            ov = @@option_value_klass.find_or_create_by_name_and_option_type_id(ovname.strip, option_type.id)
+                
+            ov_list << ov if ov
+              
+            sorted_map.each do |ot, ovlist| ovlist.each do |for_composite|
+                ov = @@option_value_klass.find_or_create_by_name_and_option_type_id(for_composite.strip, ot.id)
+                
+                ov_list << ov if(ov)
+              end 
+            end
+
+            unless(ov_list.empty?)
+              i = @load_object.variants.size + 1
+              
+              # This one line seems to works for 1.1.0 - 3.2 but not 1.0.0 - 3.1 ??
+              if(SpreeHelper::version.to_f >= 1.1)
+                variant = @load_object.variants.create( :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price)
+              else
+                variant = @@variant_klass.create( :product => @load_object, :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :available_on => @load_object.available_on)
               end
-              
-              logger.debug "Created New Variant: #{variant.inspect}"
-              
-            else
-              puts "WARNING: Option #{ovname} NOT FOUND - No Variant created"
+
+              variant.option_values << ov_list if(variant)
             end
           end
           
@@ -191,7 +228,7 @@ module DataShift
           #puts "DEBUG Load Object now has Variants : #{@load_object.variants.inspect}"
         end
 
-      end
+      end # each Variant
 
       # Special case for Images
       # A list of paths to Images with a optional 'alt' value - supplied in form :
@@ -204,10 +241,13 @@ module DataShift
         images = get_each_assoc#current_value.split(LoaderBase::multi_assoc_delim)
 
         images.each do |image|
-          
+          puts "Add Image #{image}"
           img_path, alt_text = image.split(LoaderBase::name_value_delim)
           
-          image = create_image(@@image_klass, img_path, @load_object, :alt => alt_text)
+          # moved from Prod to Variant in spree 1.x.x
+          attachment  = (SpreeHelper::version.to_f > 1) ? @load_object.master : @load_object
+          
+          image = create_image(@@image_klass, img_path, attachment, :alt => alt_text)
           logger.debug("Product assigned an Image : #{image.inspect}")
         end
       

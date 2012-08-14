@@ -85,24 +85,29 @@ module DataShift
     def self.set_multi_assoc_delim(x) @multi_assoc_delim = x; end
 
     
-    # Builds the method dictionary for a class, enabling headers to be mapped to operators on that class.
+    # Setup loading
+    # 
+    # Options to drive building the method dictionary for a class, enabling headers to be mapped to operators on that class.
     #  
     # Options
+    #  :load [default = true] : Load the method dictionary for object_class
+    #  
+    #  :reload           : Force load of the method dictionary for object_class even if already loaded
     #  :instance_methods : Include setter type instance methods for assignment as well as AR columns
-    #  :reload : Force reload of the method dictionary for object_class
+
     
     def initialize(object_class, object = nil, options = {})
       @load_object_class = object_class
 
       # Gather names of all possible 'setter' methods on AR class (instance variables and associations)
       unless(MethodDictionary::for?(object_class) && options[:reload] == false)
-        puts "Building Method Dictionary for class #{object_class}"
+        #puts "Building Method Dictionary for class #{object_class}"
         DataShift::MethodDictionary.find_operators( @load_object_class, :reload => options[:reload], :instance_methods => options[:instance_methods] )
         
         # Create dictionary of data on all possible 'setter' methods which can be used to
         # populate or integrate an object of type @load_object_class
         DataShift::MethodDictionary.build_method_details(@load_object_class)
-      end
+      end unless(options[:load] == false)
       
       @method_mapper = DataShift::MethodMapper.new
       @options = options.dup    # clone can cause issues like 'can't modify frozen hash'
