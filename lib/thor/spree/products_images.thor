@@ -53,7 +53,12 @@ module Datashift
       
       puts "DataShift::Product starting upload from file: #{input}"
 
-      loader.perform_load(input, :mandatory => ['sku', 'name', 'price'] )
+      options = {:mandatory => ['sku', 'name', 'price']}
+    
+      # In >= 1.1.0 Image moved to master Variant from Product
+      options[:force_inclusion] = ['images'] if(DataShift::SpreeHelper::version.to_f > 1 )
+      
+      loader.perform_load(input, options)
     end
   
 
@@ -92,7 +97,7 @@ module Datashift
     method_option :recursive, :aliases => '-r', :type => :boolean, :desc => "Scan sub directories of input for images"
      
     method_option :sku, :aliases => '-s', :desc => "Lookup Product based on image name starting with sku"
-    method_option :sku_prefix, :aliases => '-p', :desc => "Prefix to add to each SKU in import file before attempting lookup"
+    method_option :sku_prefix, :aliases => '-p', :desc => "SKU prefix to add to each image name before attempting Product lookup"
     method_option :dummy, :aliases => '-d', :type => :boolean, :desc => "Dummy run, do not actually save Image or Product"
     
     method_option :process_when_no_assoc, :aliases => '-f', :type => :boolean, :desc => "Process image even if no Product found - force loading"
@@ -120,7 +125,7 @@ module Datashift
       attachment_klazz  = DataShift::SpreeHelper::get_spree_class('Product' )
       attachment_field  = 'name'
 
-      if(options[:sku])
+      if(options[:sku] || SpreeHelper::version.to_f > 1)
         attachment_klazz =  DataShift::SpreeHelper::get_spree_class('Variant' ) 
         attachment_field = 'sku'
       end
@@ -151,33 +156,37 @@ module Datashift
          
       # try splitting up filename in various ways looking for the SKU
       split_on = loader_config['split_file_name_on'] || options[:split_file_name_on]
-       
-      puts "Will scan image names splitting on delimiter : #{split_on}"
-      
+             
       image_cache = DataShift::ImageLoading::get_files(@image_path, options)
       
+      puts "Found #{image_cache.size} image files - splitting names on delimiter : #{split_on}"
+            
       image_cache.each do |image_name|
 
         image_base_name = File.basename(image_name)
-        
+
+        logger.info "Processing image file #{image_base_name} "
+          
         base_name = File.basename(image_name, '.*')
         base_name.strip!
-                       
-        logger.info "Processing image file #{base_name} : #{File.exists?(image_name)}"
-           
+            
         record = nil
                    
         record = image_loader.get_record_by(attachment_klazz, attachment_field, base_name)
           
-        # try seperate portions of the filename, front -> back
-        base_name.split(split_on).each do |x| 
+        # try the seperate individual portions of the filename, front -> back
+        base_name.split(split_on).each do |x|
+          x = "#{options[:sku_prefix]}#{x}" if(options[:sku_prefix])
+         
           record = image_loader.get_record_by(attachment_klazz, attachment_field, x)
           break if record
         end unless(record)
             
-        # this time try sequentially scanning
-        base_name.split(split_on).inject("") do |str, x| 
-          record = image_loader.get_record_by(attachment_klazz, attachment_field, "#{str}#{x}")
+        # this time try sequentially and incrementally scanning
+        base_name.split(split_on).inject("") do |str, x|
+          z = (options[:sku_prefix]) ? "#{options[:sku_prefix]}#{str}#{x}": "#{str}#{x}"
+          puts z
+          record = image_loader.get_record_by(attachment_klazz, attachment_field, z)
           break if record
           x
         end unless(record)
@@ -220,9 +229,9 @@ module Datashift
         FileUtils.mkdir_p('MissingRecords') unless File.directory?('MissingRecords')
         
         puts "WARNING : #{missing_records.size} of #{image_cache.size} images could not be attached to a Product"
-        puts 'Copying all images with MISSING Records to ./MissingRecords >>'
+        puts 'For your convenience a copy of images with MISSING Products will be saved to :  ./MissingRecords'
         missing_records.each do |i|
-          puts "Copy #{i} to MissingRecords folder"
+          puts "Copying #{i} to MissingRecords folder" if(options[:verbose])
           FileUtils.cp( i, 'MissingRecords')  unless(options[:dummy] == 'true')
         end
       else

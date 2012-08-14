@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "datashift"
-  s.version = "0.7.0"
+  s.version = "0.8.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thomas Statter"]
-  s.date = "2012-05-27"
+  s.date = "2012-07-09"
   s.description = "A suite of tools to move data between ActiveRecord models,databases,applications like Excel/Open Office, files and projects including Spree"
   s.email = "rubygems@autotelik.co.uk"
   s.extra_rdoc_files = [
@@ -24,8 +24,6 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
-    "datashift-0.6.0.gem",
-    "datashift-0.6.1.gem",
     "datashift.gemspec",
     "lib/applications/jruby/jexcel_file.rb",
     "lib/applications/jruby/word.rb",
@@ -67,14 +65,16 @@ Gem::Specification.new do |s|
     "lib/loaders/csv_loader.rb",
     "lib/loaders/excel_loader.rb",
     "lib/loaders/loader_base.rb",
+    "lib/loaders/paperclip/image_loader.rb",
     "lib/loaders/spreadsheet_loader.rb",
     "lib/loaders/spree/image_loader.rb",
     "lib/loaders/spree/product_loader.rb",
     "lib/thor/export_excel.thor",
     "lib/thor/generate_excel.thor",
-    "lib/thor/import_excel.thor",
+    "lib/thor/import.thor",
     "lib/thor/spree/bootstrap_cleanup.thor",
     "lib/thor/spree/products_images.thor",
+    "lib/thor/spree/reports.thor",
     "public/spree/products/large/DEMO_001_ror_bag.jpeg",
     "public/spree/products/large/DEMO_002_Powerstation.jpg",
     "public/spree/products/large/DEMO_003_ror_mug.jpeg",
@@ -124,6 +124,7 @@ Gem::Specification.new do |s|
     "spec/fixtures/simple_export_spec.xls",
     "spec/fixtures/simple_template_spec.xls",
     "spec/fixtures/spree/SpreeImages.xls",
+    "spec/fixtures/spree/SpreeMultiVariant.csv",
     "spec/fixtures/spree/SpreeProducts.csv",
     "spec/fixtures/spree/SpreeProducts.xls",
     "spec/fixtures/spree/SpreeProductsDefaults.yml",
@@ -149,6 +150,7 @@ Gem::Specification.new do |s|
     "spec/thor_spec.rb",
     "tasks/config/seed_fu_product_template.erb",
     "tasks/config/tidy_config.txt",
+    "tasks/db_tasks.rake",
     "tasks/export/excel_generator.rake",
     "tasks/file_tasks.rake",
     "tasks/import/csv.rake",
