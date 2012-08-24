@@ -173,7 +173,9 @@ module Datashift
         record = nil
                    
         record = image_loader.get_record_by(attachment_klazz, attachment_field, base_name)
-          
+         
+        # TODO move into the ImageLoading module 
+        # 
         # try the seperate individual portions of the filename, front -> back
         base_name.split(split_on).each do |x|
           x = "#{options[:sku_prefix]}#{x}" if(options[:sku_prefix])
@@ -190,6 +192,8 @@ module Datashift
           break if record
           x
         end unless(record)
+        
+        # END TODO
           
         record = record.product if(record && record.respond_to?(:product))  # SKU stored on Variant but we want it's master Product
       
