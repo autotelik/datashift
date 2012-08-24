@@ -54,16 +54,13 @@ module DataShift
       work_list = options[:with] || MethodDetail::supported_types_enum
         
       headers = []
-      puts "work_list :  [#{work_list.inspect}]"
       
       details_mgr = MethodDictionary.method_details_mgrs[klass]
-
-                        
+                    
       data = []
       
       File.open(filename, "w") do |csv|
  
-   
         # For each type belongs has_one, has_many etc find the operators
         # and create headers, then for each record call those operators
         work_list.each do |op_type|
