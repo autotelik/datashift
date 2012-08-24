@@ -58,7 +58,7 @@ module Datashift
         if(options[:assoc])
           opts = (options[:exclude]) ? {:exclude => options[:exclude]} : {}
           logger.info("Datashift: Exporting with associations")
-          gen.export_with_associations(klass, opts)
+          gen.export_with_associations(klass, klass.all, opts)
         else
           gen.export(klass)
         end
@@ -103,7 +103,7 @@ module Datashift
         if(options[:assoc])
           opts = (options[:exclude]) ? {:exclude => options[:exclude]} : {}
           logger.info("Datashift: Exporting with associations")
-          gen.export_with_associations(klass, opts)
+          gen.export_with_associations(klass, klass.all, opts)
         else
           gen.export(klass)
         end
