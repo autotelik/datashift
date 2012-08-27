@@ -92,8 +92,9 @@ module Datashift
     desc "images", "Populate the DB with images from a directory\nwhere image names contain somewhere the Product Sku/Name"
     
     # :dummy => dummy run without actual saving to DB
-    method_option :input, :aliases => '-i', :required => true, :desc => "The input path containing images (.jpg, .gif, .png)"
+    method_option :input, :aliases => '-i', :required => true, :desc => "The input path containing images "
     
+    method_option :glob, :aliases => '-g',  :desc => 'The glob to use to find files e.g. \'{*.jpg,*.gif,*.png}\' '
     method_option :recursive, :aliases => '-r', :type => :boolean, :desc => "Scan sub directories of input for images"
      
     method_option :sku, :aliases => '-s', :desc => "Lookup Product based on image name starting with sku"
@@ -160,7 +161,7 @@ module Datashift
       image_cache = DataShift::ImageLoading::get_files(@image_path, options)
       
       puts "Found #{image_cache.size} image files - splitting names on delimiter : #{split_on}"
-            
+         
       image_cache.each do |image_name|
 
         image_base_name = File.basename(image_name)
