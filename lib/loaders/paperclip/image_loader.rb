@@ -22,7 +22,6 @@ module DataShift
       glob = options[:glob] ? options[:glob] : image_magik_glob
       glob = (options['recursive'] || options[:recursive])  ? "**/#{glob}" : glob
       
-      puts "FIND IMAGES : #{path}/#{glob}"
       Dir.glob("#{path}/#{glob}", File::FNM_CASEFOLD)
     end
   
