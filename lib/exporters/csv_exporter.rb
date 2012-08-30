@@ -25,8 +25,7 @@ module DataShift
     # => :call => List of methods to additionally call on each record
     #
     def export(records, options = {})
-      
-         
+          
       first = records[0]
       
       return unless(first.is_a?(ActiveRecord::Base))
@@ -65,6 +64,8 @@ module DataShift
     def export_with_associations(klass, records, options = {})
         
       f = options[:filename] || filename()
+      
+      char = options[:text_delim] || "'"  
        
       MethodDictionary.find_operators( klass )
         
@@ -91,7 +92,6 @@ module DataShift
         assoc_work_list.collect do |op_type|     
           headers << details_mgr.get_list(op_type).collect( &:operator).flatten
         end
-        puts headers
           
         csv << headers.join(",") << "\n"
         
@@ -100,15 +100,19 @@ module DataShift
           
           csv_data = []
 
-          csv_data = assignments.collect {|c| r.send(c) }
-
+          assignments.each { |a| 
+            col = r.send(a).to_s
+            col.include?(',') ? csv_data << "#{char}#{col}#{char}" : csv_data <<  col
+          }
+          
           assoc_work_list.each do |op_type| 
             details_mgr.get_operators(op_type).each do |operator| 
               assoc_object = r.send(operator) 
+              
               if(assoc_object.is_a?ActiveRecord::Base)
-                csv_data << assoc_object.attributes
+                csv_data << "#{char}#{assoc_object.attributes}{char}"
               elsif(assoc_object.is_a? Array)
-                csv_data << assoc_object.collect( &:attributes )
+                csv_data << "#{char}#{assoc_object.collect( &:attributes)}#{char}"
               else
                 csv_data << ""
               end
