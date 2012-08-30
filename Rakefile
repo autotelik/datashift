@@ -40,7 +40,8 @@ Jeweler::Tasks.new do |gem|
   # dependencies defined in Gemfile
   gem.files.exclude ['sandbox']
   
-  gem.add_dependency ['spreadsheet', 'csv_shaper']
+  gem.add_dependency 'spreadsheet'
+  gem.add_dependency 'csv_shaper'
 end
 Jeweler::RubygemsDotOrgTasks.new
 
