@@ -59,8 +59,6 @@ module DataShift
         if(current_value && (@current_method_detail.operator?('variants') || @current_method_detail.operator?('option_types')) )
 
           add_options
-          
-          puts "OBJECT On HAND", load_object.on_hand
 
         elsif(@current_method_detail.operator?('taxons') && current_value)
 

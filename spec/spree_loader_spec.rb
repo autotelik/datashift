@@ -130,8 +130,13 @@ describe 'SpreeLoader' do
     
     p.has_variants?.should be false
     p.master.count_on_hand.should == 12
-    p.count_on_hand.should == 12
     
+    puts SpreeHelper::version
+    puts SpreeHelper::version.to_f 
+    puts SpreeHelper::version > "1.1.2"
+     
+    SpreeHelper::version < "1.1.3" ?  p.count_on_hand.should == 12 : p.count_on_hand.should == 0
+   
     @Product_klass.last.master.count_on_hand.should == 23
   end
 

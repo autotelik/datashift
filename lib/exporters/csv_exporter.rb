@@ -21,28 +21,22 @@ module DataShift
     # Create CSV file from set of ActiveRecord objects
     # Options :
     # => :filename
-    # => :call => List of methods to additionally export on each record
+    # => :call => List of methods to additionally call on each record
     #
     def export(records, options = {})
+            
+      first = records[0]
+      
+      return unless(first.is_a?(ActiveRecord::Base))
       
       f = options[:filename] || filename()
-      
-      return unless(records && !records.empty?)
-      
-      csv_string = CsvShaper.encode do |csv|
-        csv.headers records[0].class
-
-        csv.rows records do |csv, r|
-          csv.cells r
-        end
-      end
-      
-      puts csv_string
-      
+     
       File.open(f, "w") do |csv|
         
-        headers = records[0].class.columns.collect { |col| col.name }
+        headers = first.class.columns.collect { |col| col.name }
            
+        [*options[:call]].each do |c| headers << c if(first.respond_to?(c)) end
+             
         csv << headers.join(",") << "\n"
         
         records.each do |r|
@@ -50,13 +44,9 @@ module DataShift
           
           csv_data = []
 
-          if(options[:call].is_a?(Array))
-            options[:call].each { |c| csv_data << r.send(c) }
-          end
-          
-          #r.class.columns.each { |col| csv_data << r.send(col.name) }
-                    
-          csv << r.to_csv << csv_data.join(",") << "\n"
+          headers.each { |h|  csv_data << r.send(h) }
+                          
+          csv << csv_data.join(",") << "\n"
         end
       end
     end
@@ -65,8 +55,10 @@ module DataShift
     # Specify which associations to export via :with or :exclude
     # Possible values are : [:assignment, :belongs_to, :has_one, :has_many]
     #
-    def export_with_associations(klass, items, options = {})
+    def export_with_associations(klass, records, options = {})
         
+      f = options[:filename] || filename()
+       
       MethodDictionary.find_operators( klass )
          
       MethodDictionary.build_method_details( klass )
@@ -75,14 +67,13 @@ module DataShift
     
       details_mgr = MethodDictionary.method_details_mgrs[klass]
                                  
-      headers, data = [], []
+      headers, csv_data = [], []
       
-      File.open(filename, "w") do |csv|
- 
-        # For each type belongs has_one, has_many etc find the operators
-        # and create headers, then for each record call those operators
+      File.open(f, "w") do |csv|
+
         work_list.each do |op_type|
           
+          # For each type belongs has_one, has_many etc find the operators
           list_for_class_and_op = details_mgr.get_list(op_type)
        
           next if(list_for_class_and_op.nil? || list_for_class_and_op.empty?)
@@ -91,17 +82,19 @@ module DataShift
         
           list_for_class_and_op.each do |md| 
             headers << "#{md.operator}"
-            items.each do |i| 
-              data << i.send( md.operator )
-            end
-         
           end
         end
         
         csv << headers.join(",") << "\n"
-         
-        data.each do |d|
-          csv << d.join(",") << "\n"
+        
+        records.each do |r|
+          next unless(r.is_a?(ActiveRecord::Base))
+          
+          csv_data = []
+
+          headers.each { |h| csv_data << r.send(h) }
+                          
+          csv << csv_data.join(",") << "\n"
         end
       end
     end
