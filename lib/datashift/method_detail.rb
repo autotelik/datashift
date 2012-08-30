@@ -25,6 +25,11 @@ module DataShift
       @type_enum
     end
 
+    def self.association_types_enum
+      @assoc_type_enum ||= Set[:belongs_to, :has_one, :has_many]
+      @assoc_type_enum
+    end
+    
     # When looking up an association, try each of these in turn till a match
     #  i.e find_by_name .. find_by_title and so on, lastly try the raw id
     @@insistent_find_by_list ||= [:name, :title, :id]

@@ -21,16 +21,20 @@ module DataShift
     # Create CSV file from set of ActiveRecord objects
     # Options :
     # => :filename
+    # => :text_delim => Char to use to delim columns, useful when data contain embedded ','
     # => :call => List of methods to additionally call on each record
     #
     def export(records, options = {})
-            
+      
+         
       first = records[0]
       
       return unless(first.is_a?(ActiveRecord::Base))
       
       f = options[:filename] || filename()
-     
+      
+      char = options[:text_delim] || "'"  
+      
       File.open(f, "w") do |csv|
         
         headers = first.class.columns.collect { |col| col.name }
@@ -44,7 +48,10 @@ module DataShift
           
           csv_data = []
 
-          headers.each { |h|  csv_data << r.send(h) }
+          headers.each { |h| 
+            col = r.send(h).to_s
+            col.include?(',') ? csv_data << "#{char}#{col}#{char}" : csv_data <<  col
+          }
                           
           csv << csv_data.join(",") << "\n"
         end
@@ -60,31 +67,32 @@ module DataShift
       f = options[:filename] || filename()
        
       MethodDictionary.find_operators( klass )
-         
+        
+      # builds all possible operators
       MethodDictionary.build_method_details( klass )
            
-      work_list = options[:with] || MethodDetail::supported_types_enum
-    
-      details_mgr = MethodDictionary.method_details_mgrs[klass]
-                                 
-      headers, csv_data = [], []
+      work_list = options[:with] ? Set(options[:with]) : MethodDetail::supported_types_enum
       
-      File.open(f, "w") do |csv|
+      assoc_work_list = work_list.dup
 
-        work_list.each do |op_type|
-          
-          # For each type belongs has_one, has_many etc find the operators
-          list_for_class_and_op = details_mgr.get_list(op_type)
-       
-          next if(list_for_class_and_op.nil? || list_for_class_and_op.empty?)
-
-          # method_details = MethodDictionary.send("#{mdtype}_for", klass)
-        
-          list_for_class_and_op.each do |md| 
-            headers << "#{md.operator}"
-          end
+      details_mgr = MethodDictionary.method_details_mgrs[klass]
+            
+      File.open(f, "w") do |csv|  
+      
+        headers, assignments, csv_data = [], []
+        # headers
+        if(work_list.include?(:assignment))
+          assignments << details_mgr.get_list(:assignment).collect( &:operator)
+          assoc_work_list.delete :assignment
         end
-        
+         
+        headers << assignments.flatten!
+        # based on users requested list ... belongs_to has_one, has_many etc ... select only those operators
+        assoc_work_list.collect do |op_type|     
+          headers << details_mgr.get_list(op_type).collect( &:operator).flatten
+        end
+        puts headers
+          
         csv << headers.join(",") << "\n"
         
         records.each do |r|
@@ -92,8 +100,20 @@ module DataShift
           
           csv_data = []
 
-          headers.each { |h| csv_data << r.send(h) }
-                          
+          csv_data = assignments.collect {|c| r.send(c) }
+
+          assoc_work_list.each do |op_type| 
+            details_mgr.get_operators(op_type).each do |operator| 
+              assoc_object = r.send(operator) 
+              if(assoc_object.is_a?ActiveRecord::Base)
+                csv_data << assoc_object.attributes
+              elsif(assoc_object.is_a? Array)
+                csv_data << assoc_object.collect( &:attributes )
+              else
+                csv_data << ""
+              end
+            end
+          end               
           csv << csv_data.join(",") << "\n"
         end
       end
