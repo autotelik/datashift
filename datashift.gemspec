@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thomas Statter"]
-  s.date = "2012-07-09"
+  s.date = "2012-08-30"
   s.description = "A suite of tools to move data between ActiveRecord models,databases,applications like Excel/Open Office, files and projects including Spree"
   s.email = "rubygems@autotelik.co.uk"
   s.extra_rdoc_files = [
@@ -69,7 +69,7 @@ Gem::Specification.new do |s|
     "lib/loaders/spreadsheet_loader.rb",
     "lib/loaders/spree/image_loader.rb",
     "lib/loaders/spree/product_loader.rb",
-    "lib/thor/export_excel.thor",
+    "lib/thor/export.thor",
     "lib/thor/generate_excel.thor",
     "lib/thor/import.thor",
     "lib/thor/spree/bootstrap_cleanup.thor",
@@ -90,11 +90,6 @@ Gem::Specification.new do |s|
     "public/spree/products/small/DEMO_001_ror_bag.jpeg",
     "public/spree/products/small/DEMO_002_Powerstation.jpg",
     "public/spree/products/small/DEMO_003_ror_mug.jpeg",
-    "sandbox/app/controllers/application_controller.rb",
-    "sandbox/config/application.rb",
-    "sandbox/config/database.yml",
-    "sandbox/config/environment.rb",
-    "sandbox/config/environments/development.rb",
     "spec/Gemfile",
     "spec/csv_loader_spec.rb",
     "spec/datashift_spec.rb",
@@ -153,7 +148,6 @@ Gem::Specification.new do |s|
     "tasks/db_tasks.rake",
     "tasks/export/excel_generator.rake",
     "tasks/file_tasks.rake",
-    "tasks/import/csv.rake",
     "tasks/import/excel.rake",
     "tasks/word_to_seedfu.rake",
     "test/helper.rb",
@@ -169,12 +163,12 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<spreadsheet>, [">= 0"])
+      s.add_runtime_dependency(%q<spreadsheetcsv_shaper>, [">= 0"])
     else
-      s.add_dependency(%q<spreadsheet>, [">= 0"])
+      s.add_dependency(%q<spreadsheetcsv_shaper>, [">= 0"])
     end
   else
-    s.add_dependency(%q<spreadsheet>, [">= 0"])
+    s.add_dependency(%q<spreadsheetcsv_shaper>, [">= 0"])
   end
 end
 

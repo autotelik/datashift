@@ -29,6 +29,16 @@ module DataShift
       
       return unless(records && !records.empty?)
       
+      csv_string = CsvShaper.encode do |csv|
+        csv.headers records[0].class
+
+        csv.rows records do |csv, r|
+          csv.cells r
+        end
+      end
+      
+      puts csv_string
+      
       File.open(f, "w") do |csv|
         
         headers = records[0].class.columns.collect { |col| col.name }
