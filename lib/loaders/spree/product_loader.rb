@@ -59,6 +59,8 @@ module DataShift
         if(current_value && (@current_method_detail.operator?('variants') || @current_method_detail.operator?('option_types')) )
 
           add_options
+          
+          puts "OBJECT On HAND", load_object.on_hand
 
         elsif(@current_method_detail.operator?('taxons') && current_value)
 
@@ -97,13 +99,14 @@ module DataShift
               values = current_value.to_s.split(LoaderBase::multi_assoc_delim)
 
               if(@load_object.variants.size == values.size)
-                @load_object.variants.each_with_index {|v, i| v.on_hand = values[i].to_i; v.save; }
+                @load_object.variants.each_with_index {|v, i| v.on_hand = values[i].to_i }
+                @load_object.save
               else
                 puts "WARNING: Count on hand entries did not match number of Variants - None Set"
               end
             end
             
-            # can only set count on hand on Product if no Variants exist, else model throws
+          # Can only set count on hand on Product if no Variants exist, else model throws
             
           elsif(@load_object.variants.size == 0) 
             if(current_value.to_s.include?(LoaderBase::multi_assoc_delim))
