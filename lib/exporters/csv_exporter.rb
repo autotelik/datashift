@@ -20,11 +20,21 @@ module DataShift
 
     # Create CSV file from set of ActiveRecord objects
     # Options :
+    # => :filename
     # => :call => List of methods to additionally export on each record
     #
     def export(records, options = {})
       
-      File.open(filename, "w") do |csv|
+      f = options[:filename] || filename()
+      
+      return unless(records && !records.empty?)
+      
+      File.open(f, "w") do |csv|
+        
+        headers = records[0].class.columns.collect { |col| col.name }
+           
+        csv << headers.join(",") << "\n"
+        
         records.each do |r|
           next unless(r.is_a?(ActiveRecord::Base))
           
@@ -34,9 +44,9 @@ module DataShift
             options[:call].each { |c| csv_data << r.send(c) }
           end
           
-          r.class.columns.each { |col| csv_data << r.send(col.name) }
+          #r.class.columns.each { |col| csv_data << r.send(col.name) }
                     
-          csv << csv_data.join(",") << "\n"
+          csv << r.to_csv << csv_data.join(",") << "\n"
         end
       end
     end
@@ -52,12 +62,10 @@ module DataShift
       MethodDictionary.build_method_details( klass )
            
       work_list = options[:with] || MethodDetail::supported_types_enum
-        
-      headers = []
-      
+    
       details_mgr = MethodDictionary.method_details_mgrs[klass]
-                    
-      data = []
+                                 
+      headers, data = [], []
       
       File.open(filename, "w") do |csv|
  
@@ -78,15 +86,12 @@ module DataShift
             end
          
           end
-
-          csv << headers.join(",")
-
-          csv << "\n"
+        end
+        
+        csv << headers.join(",") << "\n"
          
-          data.each do |d|
-            csv << d.join(",") << "\n"
-      
-          end
+        data.each do |d|
+          csv << d.join(",") << "\n"
         end
       end
     end
