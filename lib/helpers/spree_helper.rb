@@ -97,9 +97,10 @@ module DataShift
         
         store_path = Dir.pwd
         
-        spree_sanbox_app = File.expand_path('../../../sandbox', __FILE__)
+        spree_sanbox_app = File.expand_path('../../../spec/sandbox', __FILE__)
         
         unless(File.exists?(spree_sanbox_app))
+          puts "Creating new Rails sandbox for Spree : #{spree_sanbox_app}"
           Dir.chdir( File.expand_path( "#{spree_sanbox_app}/..") )
           system('rails new sandbox')
         end

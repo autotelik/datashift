@@ -60,7 +60,7 @@ module Datashift
           logger.info("Datashift: Exporting with associations")
           gen.export_with_associations(klass, klass.all, opts)
         else
-          gen.export(klass)
+          gen.export(klass.all, :sheet_name => klass.name)
         end
       rescue => e
         puts e
@@ -105,7 +105,7 @@ module Datashift
           logger.info("Datashift: Exporting with associations")
           gen.export_with_associations(klass, klass.all, opts)
         else
-          gen.export(klass)
+          gen.export(klass.all)
         end
       rescue => e
         puts e
