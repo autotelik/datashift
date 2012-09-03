@@ -71,7 +71,7 @@ module Datashift
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
     method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
     method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
-    method_option :call, :aliases => '-c',  :type => :array, :desc => "List of additional methods to call on model, useful for situations like delegated methods"
+    method_option :methods, :aliases => '-c',  :type => :array, :desc => "List of additional methods to call on model, useful for situations like delegated methods"
     
     def csv()
      

@@ -41,7 +41,7 @@ module DataShift
         excel.ar_to_xls(records)
 
               
-        # => :call => List of methods to additionally export on each record
+        # => :methods => List of methods to additionally export on each record
          
         excel.save( filename() )
       end
