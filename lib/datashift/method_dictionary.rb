@@ -59,7 +59,9 @@ module DataShift
       # the raw form i.e without the '='  for consistency 
       if( options[:reload] || assignments[klass].nil? )
  
-        assignments[klass] = klass.column_names
+        # TODO investigate difference with attribute_names - maybe column names can be assigned to an attribute
+        # so in terms of method calls on klass attribute_names might be safer
+        assignments[klass] = klass.column_names  
            
         if(options[:instance_methods] == true)
           setters = klass.instance_methods.grep(/\w+=/).collect {|x| x.to_s }

@@ -12,7 +12,7 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
 require 'spree_helper'
-require 'product_loader'
+#require 'product_loader'
 
 include DataShift
   

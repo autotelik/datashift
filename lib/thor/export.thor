@@ -44,13 +44,9 @@ module Datashift
      
       logger.info "Datashift: Start Excel export to #{result}"
             
-      begin
-        # support modules e.g "Spree::Property") 
-        klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
-      rescue NameError => e
-        puts e
-        raise "ERROR: No such Model [#{model}] found - check valid model supplied via -model <Class>"
-      end
+      klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
+    
+      raise "ERROR: No such Model [#{model}] found - check valid model supplied via -model <Class>" if(klass.nil?)
 
       begin
         gen = DataShift::ExcelExporter.new(result)
@@ -60,7 +56,7 @@ module Datashift
           logger.info("Datashift: Exporting with associations")
           gen.export_with_associations(klass, klass.all, opts)
         else
-          gen.export(klass)
+          gen.export(klass.all, :sheet_name => klass.name)
         end
       rescue => e
         puts e
@@ -75,6 +71,7 @@ module Datashift
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
     method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
     method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
+    method_option :methods, :aliases => '-c',  :type => :array, :desc => "List of additional methods to call on model, useful for situations like delegated methods"
     
     def csv()
      
@@ -89,23 +86,18 @@ module Datashift
      
       logger.info "Datashift: Start CSV export to #{result}"
             
-      begin
-        # support modules e.g "Spree::Property") 
-        klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
-      rescue NameError => e
-        puts e
-        raise "ERROR: No such Model [#{model}] found - check valid model supplied via -model <Class>"
-      end
+      klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
+    
+      raise "ERROR: No such Model [#{model}] found - check valid model supplied via -model <Class>" if(klass.nil?)
 
       begin
         gen = DataShift::CsvExporter.new(result)
 
         if(options[:assoc])
-          opts = (options[:exclude]) ? {:exclude => options[:exclude]} : {}
           logger.info("Datashift: Exporting with associations")
-          gen.export_with_associations(klass, klass.all, opts)
+          gen.export_with_associations(klass, klass.all, options)
         else
-          gen.export(klass)
+          gen.export(klass.all, options)
         end
       rescue => e
         puts e

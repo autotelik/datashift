@@ -35,11 +35,14 @@ module DataShift
         else
           excel.create_sheet( records.first.class.name )
         end
-      
+   
         excel.ar_to_headers(records)
         
         excel.ar_to_xls(records)
 
+              
+        # => :methods => List of methods to additionally export on each record
+         
         excel.save( filename() )
       end
       
