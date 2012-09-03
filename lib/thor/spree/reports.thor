@@ -37,10 +37,10 @@ module Datashift
       
         if(DataShift::Guards::jruby?)
           puts "Creating report #{fname}.xls"  
-          DataShift::ExcelExporter.new( fname + '.xls' ).export( missing, :call => ['sku'] )
+          DataShift::ExcelExporter.new( fname + '.xls' ).export( missing, :methods => ['sku'] )
         else
           puts "Creating report #{fname}.csv"
-          DataShift::CsvExporter.new( fname + '.csv' ).export( missing, :call => ['sku'] )
+          DataShift::CsvExporter.new( fname + '.csv' ).export( missing, :methods => ['sku'] )
           puts missing.collect(&:name).join('\n')
         end   
       
