@@ -13,30 +13,48 @@ module DataShift
 
   class CsvExporter < ExporterBase
 
+    attr_accessor :text_delim
     
     def initialize(filename)
       super(filename)
+      @text_delim = "\'"
     end
 
+    
+    # Return opposite of text delim - "hello, 'barry'" => '"hello, "barry""'
+    def escape_text_delim
+      return '"' if @text_delim == "\'"
+      "\'"
+    end
+    
     # Create CSV file from set of ActiveRecord objects
     # Options :
-    # => :call => List of methods to additionally export on each record
+    # => :filename
+    # => :text_delim => Char to use to delim columns, useful when data contain embedded ','
+    # => ::methods => List of methods to additionally call on each record
     #
     def export(records, options = {})
+          
+      first = records[0]
       
-      File.open(filename, "w") do |csv|
+      return unless(first.is_a?(ActiveRecord::Base))
+      
+      f = options[:filename] || filename()
+      
+      @text_delim = options[:text_delim] if(options[:text_delim])
+      
+      File.open(f, "w") do |csv|
+        
+        headers = first.serializable_hash.keys.collect { |col| col.name }
+           
+        [*options[:methods]].each do |c| headers << c if(first.respond_to?(c)) end
+             
+        csv << headers.join(",") << "\n"
+        
         records.each do |r|
           next unless(r.is_a?(ActiveRecord::Base))
           
-          csv_data = []
-
-          if(options[:call].is_a?(Array))
-            options[:call].each { |c| csv_data << r.send(c) }
-          end
-          
-          r.class.columns.each { |col| csv_data << r.send(col.name) }
-                    
-          csv << csv_data.join(",") << "\n"
+          csv << record_to_csv(r) << "\n"
         end
       end
     end
@@ -45,58 +63,118 @@ module DataShift
     # Specify which associations to export via :with or :exclude
     # Possible values are : [:assignment, :belongs_to, :has_one, :has_many]
     #
-    def export_with_associations(klass, items, options = {})
+    def export_with_associations(klass, records, options = {})
         
+      f = options[:filename] || filename()
+      
+      @text_delim = options[:text_delim] if(options[:text_delim])
+       
       MethodDictionary.find_operators( klass )
-         
+        
+      # builds all possible operators
       MethodDictionary.build_method_details( klass )
            
-      work_list = options[:with] || MethodDetail::supported_types_enum
-        
-      headers = []
+      work_list = options[:with] ? Set(options[:with]) : MethodDetail::supported_types_enum
       
+      assoc_work_list = work_list.dup
+
       details_mgr = MethodDictionary.method_details_mgrs[klass]
-                    
-      data = []
+
+      headers, assoc_operators, assignments = [], [], []
       
-      File.open(filename, "w") do |csv|
- 
-        # For each type belongs has_one, has_many etc find the operators
-        # and create headers, then for each record call those operators
-        work_list.each do |op_type|
+      # headers
+      if(work_list.include?(:assignment))
+        assignments << details_mgr.get_list(:assignment).collect( &:operator)
+        assoc_work_list.delete :assignment
+      end
+         
+      headers << assignments.flatten!
+      # based on users requested list ... belongs_to has_one, has_many etc ... select only those operators
+      assoc_operators = assoc_work_list.collect do |op_type|     
+        details_mgr.get_list(op_type).collect(&:operator).flatten
+      end
+      
+      assoc_operators.flatten!
+      
+      File.open(f, "w") do |csv|  
           
-          list_for_class_and_op = details_mgr.get_list(op_type)
-       
-          next if(list_for_class_and_op.nil? || list_for_class_and_op.empty?)
-
-          # method_details = MethodDictionary.send("#{mdtype}_for", klass)
+        csv << headers.join(Delimiters::csv_delim)
         
-          list_for_class_and_op.each do |md| 
-            headers << "#{md.operator}"
-            items.each do |i| 
-              data << i.send( md.operator )
-            end
-         
+        csv << Delimiters::csv_delim << assoc_operators.join(Delimiters::csv_delim) unless(assoc_operators.empty?)
+        
+        csv << Delimiters::eol
+        
+        records.each do |r|
+          next unless(r.is_a?(ActiveRecord::Base))
+          
+          csv_columns = []
+          # need to make sure order matches headers
+          # could look at collection headers via serializable hash.keys and then use 
+          # csv << record_to_csv(r) ??
+          assignments.each {|x| csv << escape(r.send(x)) << Delimiters::csv_delim }
+                 
+          # done records basic attributes now deal with associations
+          
+          #assoc_work_list.each do |op_type| 
+           # details_mgr.get_operators(op_type).each do |operator| 
+          assoc_operators.each do |operator| 
+              assoc_object = r.send(operator) 
+              
+              if(assoc_object.is_a?ActiveRecord::Base)
+                column_text = record_to_column(assoc_object)     # belongs_to or has_one
+                
+                csv << "#{@text_delim}#{column_text}#{@text_delim}" << Delimiters::csv_delim
+                #csv << record_to_csv(r)
+                
+              elsif(assoc_object.is_a? Array)
+                items_to_s = assoc_object.collect {|x| record_to_column(x) }
+                
+                # create a single column
+                csv << "#{@text_delim}#{items_to_s.join(Delimiters::multi_assoc_delim)}#{@text_delim}" << Delimiters::csv_delim
+                
+              else
+                csv << Delimiters::csv_delim
+              end
+            #end
           end
-
-          csv << headers.join(",")
-
-          csv << "\n"
-         
-          data.each do |d|
-            csv << d.join(",") << "\n"
-      
-          end
+          
+          csv << "\n"   # next record
+          
         end
       end
     end
     
-    # Create CSV file representing supplied Model
+  
+    # Convert an AR instance to a single CSV columns
+  
+    def record_to_column(record) 
     
-    def generate(model, options = {})
-
-      @filename = options[:filename] if  options[:filename]
+      csv_data = []
+      record.serializable_hash.each do |name, value|
+        value = 'nil' if value.nil?
+        text = value.to_s.gsub(@text_delim, escape_text_delim())
+        csv_data << "#{name.to_sym} => #{text}"
+      end
+      "#{csv_data.join(Delimiters::csv_delim)}"
     end
+    
+    
+    # Convert an AR instance to a set of CSV columns
+    def record_to_csv(record)
+      csv_data = record.serializable_hash.values.map(&:to_s).collect { |value| escape(value) }
+    
+      csv_data.join( Delimiters::csv_delim )
+    end
+    
 
+    private
+
+    def escape(value)
+      text = value.to_s.gsub(@text_delim, escape_text_delim())
+      
+      text = "#{@text_delim}#{text}#{@text_delim}" if(text.include?(Delimiters::csv_delim)) 
+      text
+    end
+    
   end
 end

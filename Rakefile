@@ -34,13 +34,13 @@ Jeweler::Tasks.new do |gem|
   gem.homepage = "http://github.com/autotelik/datashift"
   gem.license = "MIT"
   gem.summary = %Q{ Shift data betwen applications and Active Record}
-  gem.description = %Q{A suite of tools to move data between ActiveRecord models,databases,applications like Excel/Open Office, files and projects including Spree}
+  gem.description = %Q{Comprehensive Excel and CSV import/export tools. Shift data between ActiveRecord databases, applications, and projects like Spree}
   gem.email = "rubygems@autotelik.co.uk"
   gem.authors = ["Thomas Statter"]
   # dependencies defined in Gemfile
   gem.files.exclude ['sandbox']
   
-  gem.add_dependency ['spreadsheet']
+  gem.add_dependency 'spreadsheet'
 end
 Jeweler::RubygemsDotOrgTasks.new
 
