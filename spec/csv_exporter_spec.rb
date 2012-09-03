@@ -22,7 +22,6 @@ describe 'CSV Loader' do
     # handle migration changes or reset of test DB
     migrate_up
 
-    db_clear()    # todo read up about proper transactional fixtures
     results_clear()
   end
   
@@ -30,6 +29,7 @@ describe 'CSV Loader' do
     MethodDictionary.clear
     MethodDictionary.find_operators( Project )
     
+    db_clear()    # todo read up about proper transactional fixtures
   end
   
   it "should be able to create a new CSV exporter" do
@@ -42,29 +42,59 @@ describe 'CSV Loader' do
 
     expect = result_file('project_export_spec.csv')
 
-    gen = CsvExporter.new( expect )
-    
-    gen.export(Project)
+    exporter = CsvExporter.new( expect )
+     
+    Project.create( :value_as_string	=> 'Value as String', :value_as_boolean => true,	:value_as_double => 75.672)
+     
+    exporter.export(Project.all)
  
     File.exists?(expect).should be_true
       
     puts "Can manually check file @ #{expect}"
+    
+    File.foreach(expect) {}
+    count = $.
+    count.should == Project.count + 1
   end
 
+  it "should export a model and result of method calls on it to csv file" do
+
+    expect = result_file('project__with_methods_export_spec.csv')
+
+    exporter = CsvExporter.new( expect )
+     
+    Project.create( :value_as_string	=> 'Value as String', :value_as_boolean => true,	:value_as_double => 75.672)
+    Project.create( :value_as_string	=> 'Another Value as String', :value_as_boolean => false,	:value_as_double => 12)
+     
+    exporter.export(Project.all, {:methods => [:multiply]})
+ 
+    File.exists?(expect).should be_true
+      
+    puts "Can manually check file @ #{expect}"
+    
+    File.foreach(expect) {}
+    count = $.
+    count.should == Project.count + 1
+  end
+  
   it "should export a  model and associations to .xls file" do
 
-    Project.create( :value_as_string	=> 'Value as Text', :value_as_boolean => true,	:value_as_double => 75.672)
+    p = Project.create( :value_as_string	=> 'Value as String', :value_as_boolean => true,	:value_as_double => 75.672)
 
-    expect= result_file('project_plus_assoc_export_spec.xls')
+    p.milestones.create( :name => 'milestone_1', :cost => 23.45)
+    
+    expect= result_file('project_plus_assoc_export_spec.csv')
 
-    gen = ExcelExporter.new(expect)
+    gen = CsvExporter.new(expect)
 
-    items = Project.all
-
-    gen.export_with_associations(Project, items)
+    gen.export_with_associations(Project, Project.all)
 
     File.exists?(expect).should be_true
 
+    File.foreach(expect) {}
+    count = $.
+    count.should == Project.count + 1
+    
   end
 
 

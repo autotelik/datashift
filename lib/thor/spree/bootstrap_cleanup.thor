@@ -9,9 +9,6 @@
 #
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
 
-require File.expand_path('config/environment.rb')
-
-
 module Datashift
         
   class Spreeboot < Thor     
@@ -21,6 +18,8 @@ module Datashift
     desc "cleanup", "Remove Spree Product/Variant data from DB"
     
     def cleanup()
+
+      require File.expand_path('config/environment.rb')
 
       require 'spree_helper'
 
