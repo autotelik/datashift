@@ -49,7 +49,7 @@ if(Guards::jruby?)
 
       gen = ExcelExporter.new( expect )
     
-      gen.export(Project)
+      gen.export(Project.all)
  
       File.exists?(expect).should be_true
       
