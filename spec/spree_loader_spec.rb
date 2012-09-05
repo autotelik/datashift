@@ -92,11 +92,11 @@ describe 'SpreeLoader' do
   
   # Loader should perform identically regardless of source, whether csv, .xls etc
   
-  it "should load basic Products .xls via Spree loader", :fail => true do
+  it "should load basic Products .xls via Spree loader" do
     test_basic_product('SpreeProductsSimple.xls')
   end
 
-  it "should load basic Products from .csv via Spree loader", :fail => true do
+  it "should load basic Products from .csv via Spree loader" do
     test_basic_product('SpreeProductsSimple.csv')
   end
 
@@ -130,10 +130,6 @@ describe 'SpreeLoader' do
     
     p.has_variants?.should be false
     p.master.count_on_hand.should == 12
-    
-    puts SpreeHelper::version
-    puts SpreeHelper::version.to_f 
-    puts SpreeHelper::version > "1.1.2"
      
     SpreeHelper::version < "1.1.3" ?  p.count_on_hand.should == 12 : p.count_on_hand.should == 0
    
@@ -263,9 +259,7 @@ describe 'SpreeLoader' do
   
   def expected_multi_column_taxons
       
-    #puts @Taxonomy_klass.all.collect( &:name).inspect
-    #puts @Taxon_klass.all.collect( &:name).inspect
-    
+
     # Paintings already existed and had 1 child Taxon (Landscape)
     # 2 nested Taxon (Paintings>Nature>Seascape) created under it so expect Taxonomy :
     
@@ -320,15 +314,39 @@ describe 'SpreeLoader' do
  
   end
   
-  it "should correctly identify and create nested Taxons ", :taxons => true do#
-    x=<<-EOS
-lucky_product : A>mysubcat
-bad_luck : B>mysubcat
+  it "should load nested Taxons correctly even when same names", :taxons => true, :fail => true do
+    
+    @Taxonomy_klass.delete_all
+    @Taxon_klass.delete_all    
+    
+    @Taxonomy_klass.count.should == 0
+    @Taxon_klass.count.should == 0 
+    
+    @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsComplexTaxons.xls') )
+    
+    # Expected :
+    #   Paintings>Landscape 	
+    #   WaterColour	
+    #   Paintings 	
+    #   Oils    
+    #   Drawings>Landscape            - test same name for child (Paintings)
+    #   Paintings>Nature>Landscape    - test same name for child of a child
+    #   Landscape	
+      
+    #puts @Taxonomy_klass.all.collect(&:name).sort.inspect
+    @Taxonomy_klass.count.should == 5 
+    @Taxonomy_klass.all.collect(&:name).sort.should == ['Drawings', 'Landscape', 'Oils', 'Paintings','WaterColour']
+ 
+    puts @Taxon_klass.all.collect(&:name).sort.inspect
+    @Taxon_klass.count.should == 9
+    @Taxon_klass.all.collect(&:name).sort.should == ['Drawings', 'Landscape', 'Landscape', 'Landscape', 'Landscape', 'Nature', 'Oils', 'Paintings','WaterColour']
 
-The bad_luck product is created with in B and somehow pushed into A>mysubcat.
-The category B>mysubcat is not created at all...
-EOS
-     pending(x)
+    @Taxon_klass.find_by_name('Landscape').should have_exactly(4).items
+    
+    @Taxon_klass.find_by_name('Paintings').children.should have_exactly(3).items
+    @Taxon_klass.find_by_name('Drawings').children.should have_exactly(1).items
+    @Taxon_klass.find_by_name('Nature').children.should have_exactly(1).items
+    
 
   end
   
