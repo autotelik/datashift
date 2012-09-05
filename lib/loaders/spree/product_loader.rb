@@ -121,8 +121,6 @@ module DataShift
       end
 
       private
-      
-
 
       # Special case for OptionTypes as it's two stage process
       # First add the possible option_types to Product, then we are able
@@ -308,26 +306,29 @@ module DataShift
         # TODO smart column ordering to ensure always valid by time we get to associations
         save_if_new
 
-        chain_list = get_each_assoc#current_value().split(LoaderBase::multi_assoc_delim)
+        chain_list = get_each_assoc  # potentially multiple chains in single column (delimited by LoaderBase::multi_assoc_delim)
 
         chain_list.each do |chain|
-          
+  
+          # Each chain can contain either a single Taxon, or the tree like structure parent>child>child  
           name_list = chain.split(/\s*>\s*/)
           
-          # manage per chain
-          parent_taxonomy, parent, taxon = nil, nil, nil
+          parent, taxon = nil, nil
+                  
+          parent_name = name_list.shift
           
-          # Each chain can contain either a single Taxon, or the tree like structure parent>child>child     
+          parent_taxonomy = @@taxonomy_klass.find_or_create_by_name(parent_name)
+          
           taxons = name_list.collect do |name|
           
             #puts "DEBUG: NAME #{name.inspect}"             
             begin
-              taxon = @@taxon_klass.find_by_name( name )
+              taxon = parent_taxonomy.taxons.find_by_name( name )    # @@taxon_klass.find_by_name( name )
 
               if(taxon)
-                parent_taxonomy ||= taxon.taxonomy
+                #parent_taxonomy ||= taxon.taxonomy
               else
-                parent_taxonomy ||= @@taxonomy_klass.find_or_create_by_name(name)
+                #parent_taxonomy ||= @@taxonomy_klass.find_or_create_by_name(name)
    
                 taxon = @@taxon_klass.find_or_create_by_name_and_parent_id_and_taxonomy_id(name, parent && parent.id, parent_taxonomy.id)         
               end
@@ -337,7 +338,7 @@ module DataShift
               next
             end
             
-            parent = taxon
+            parent = taxon  # current taxon becomes next parent
             taxon
           end
           
