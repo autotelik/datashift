@@ -227,23 +227,43 @@ module DataShift
     end
     
     
-    # Find a record for model klazz, looking up on field for x
+    # Find a record for model klazz, looking up on field containing search_terms
     # Responds to global Options :
     # :case_sensitive : Default is a case insensitive lookup.
     # :use_like : Attempts a lookup using ike and x% ratehr than equality
     
-    def get_record_by(klazz, field, x)
+    
+    def get_record_by(klazz, field, search_terms, split_on = '_', split_on_prefix = nil)
     
       begin
-        if(@options[:case_sensitive]) 
-          return klazz.send("find_by_#{field}", x)
+        record = if(@options[:case_sensitive]) 
+          klazz.send("find_by_#{field}", search_terms)
         elsif(@options[:use_like])
-          return klazz.where("#{field} like ?", "#{x}%").first
+          klazz.where("#{field} like ?", "#{search_terms}%").first
         else
-          return klazz.where("lower(#{field}) = ?", x.downcase).first
+          klazz.where("lower(#{field}) = ?", search_terms.downcase).first
         end
+    
+        # try the separate individual portions of the search_terms, front -> back
+        search_terms.split(split_on).each do |x|
+          z = "#{split_on_prefix}#{x}" if(split_on_prefix)
+         
+          record = get_record_by(klazz, field, z, split_on, split_on_prefix)
+          break if record
+        end unless(record)
+            
+        # this time try sequentially and incrementally scanning
+        search_terms.split(split_on).inject("") do |str, x|
+          z = (split_on_prefix) ? "#{split_on_prefix}#{str}#{x}": "#{str}#{x}"
+          puts z
+          record = get_record_by(klazz, field, z, split_on, split_on_prefix)
+          break if record
+        end unless(record)      
+                
+        return record 
+        
       rescue => e
-        logger.error("Exception attempting to find a record for [#{x}] on #{klazz}.#{field}")
+        logger.error("Exception attempting to find a record for [#{search_terms}] on #{klazz}.#{field}")
         logger.error e.backtrace
         logger.error e.inspect
         return nil
