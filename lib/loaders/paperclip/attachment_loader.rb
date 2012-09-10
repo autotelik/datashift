@@ -52,19 +52,19 @@ module DataShift
     #
     #   alt : Alternatice text for images
     
-    def create_attachment(klass, attachment_path, viewable_record = nil, options = {})
+    def create_attachment(klass, attachment_path, record = nil, attach_to_record_field = nil, options = {})
        
-      has_attached_file = options[:has_attached_file_name].to_sym || :attachment
+      has_attached_file = options[:has_attached_file_name] ? options[:has_attached_file_name].to_sym : :attachment
       
-
       file = get_file(attachment_path)
 
       begin
         
-        attachment = klass.new( {has_attached_file => file, :viewable => viewable_record}, :without_protection => true)  
-        
-        #image.attachment.reprocess!  not sure this is required anymore
-        
+        attachment = if(record && attach_to_record_field)
+          klass.new( {has_attached_file => file}, :without_protection => true)  
+        else
+          klass.new( {has_attached_file => file, attach_to_record_field.to_sym => record}, :without_protection => true)  
+        end
         puts attachment.save ? "Success: Created #{attachment.id} : #{attachment.attachment_file_name}" : "ERROR : Problem saving to DB : #{attachment.inspect}"
       rescue => e
         puts "PaperClip error - Problem creating Attachment from : #{attachment_path}"
@@ -75,7 +75,9 @@ module DataShift
 
     class AttachmentLoader < LoaderBase
       
-      attr_accessor :attach_to_klazz
+      include DataShift::Paperclip
+      
+      attr_accessor :attach_to_klass
       
       def initialize(attachment_klazz, attachment = nil, options = {})
         
@@ -83,7 +85,7 @@ module DataShift
 
         super( attachment_klazz, attachment, opts )
         
-        @attach_to_klazz  = options[:attach_to_klazz]
+        @attach_to_klass  = options[:attach_to_klass]
            
         puts "Attachment Class is #{@attachment_klazz}" if(@verbose)
           
@@ -94,100 +96,72 @@ module DataShift
       
       def process_from_filesystem(path, options )
        
-        @attach_to_klazz  = options[:attach_to_klazz] if(options[:attach_to_klazz])
+        @attach_to_klass  = options[:attach_to_klazz] if(options[:attach_to_klazz])
        
-        raise "The class that attachments beloing to has not set" unless(@attach_to_klazz)
+        raise "The class that attachments belong to has not set" unless(@attach_to_klass)
         
         @attachment_path = path
         
         missing_records = []
          
         # try splitting up filename in various ways looking for the SKU
-        split_on = loader_config['split_file_name_on'] || options[:split_file_name_on]
+        split_search_term  = @config['split_file_name_on'] || options[:split_file_name_on]
              
         cache = Paperclip::get_files(@attachment_path, options)
       
-        puts "Found #{cache.size} files - splitting names on delimiter : #{split_on}"
+        puts "Found #{cache.size} files - splitting names on delimiter [#{split_search_term}]"
        
-        attachment_field = options[:attach_to_field]
+        lookup_field = options[:attach_to_lookup_field]
         
-        cache.each do |name|
+        cache.each do |file_name|
 
-          attachment_name = File.basename(name)
+          attachment_name = File.basename(file_name)
 
-          logger.info "Processing image file #{attachment_name} "
+          logger.info "Processing attachment file #{attachment_name} "
           
-          base_name = File.basename(name, '.*')
+          base_name = File.basename(file_name, '.*')
           base_name.strip!
             
           record = nil
                    
-          record = loader.get_record_by(@attach_to_klazz, attachment_field, base_name, split_on)
+          record = get_record_by(@attach_to_klass, lookup_field, base_name, split_search_term)
              
           if(record)
             logger.info "Found record for attachment : #{record.inspect}"
-    
-            if(options[:skip_when_assoc])
-            
-              paper_clip_name = attachment_name.gsub(Paperclip::Attachment::default_options[:restricted_characters], '_')
-            
-              exists = record.images.detect {|i| puts "Check #{paper_clip_name} matches #{i.attachment_file_name}"; i.attachment_file_name == paper_clip_name }
-              if(exists)
-                rid = record.respond_to?(:name) ? record.name : record.id
-                puts "Skipping Image #{name} already loaded for #{rid}"
-                logger.info "Skipping - Image #{name} already loaded for #{attachment_klazz}"
-                next 
-              end
-            end
           else
-            missing_records << name
+            missing_records << file_name
           end
           
           next if(options[:dummy]) # Don't actually create/upload to DB if we are doing dummy run
 
           # Check if Image must have an associated record
-          if(record || (record.nil? && options[:process_when_no_assoc]))
-            loader.reset()
+          if(record)
+            reset()
           
-            logger.info("Adding Image #{name} to Product #{record.name}")
-            loader.create_image(klazz, name, record)
-            puts "Added Image #{File.basename(name)} to Product #{record.sku} : #{record.name}" if(@verbose)
+            create_attachment(@load_object_class, file_name, record, options[:attach_to_klass_field], options)
+   
+            puts "Added Attachment #{File.basename(file_name)} to #{record.send(lookup_field)} : #{record.id}" if(@verbose)
           end
 
         end
 
         unless missing_records.empty?
-          FileUtils.mkdir_p('MissingRecords') unless File.directory?('MissingRecords')
+          FileUtils.mkdir_p('MissingAttachmentRecords') unless File.directory?('MissingAttachmentRecords')
         
-          puts "WARNING : #{missing_records.size} of #{cache.size} images could not be attached to a Product"
-          puts 'For your convenience a copy of images with MISSING Products will be saved to :  ./MissingRecords'
+          puts "WARNING : #{missing_records.size} of #{cache.size} files could not be attached to a #{@load_object_class}"
+          puts "For your convenience a copy of files with MISSING #{@load_object_class} :  ./MissingAttachmentRecords"
           missing_records.each do |i|
-            puts "Copying #{i} to MissingRecords folder" if(options[:verbose])
-            FileUtils.cp( i, 'MissingRecords')  unless(options[:dummy] == 'true')
+            puts "Copying #{i} to MissingAttachmentRecords folder" if(options[:verbose])
+            FileUtils.cp( i, 'MissingAttachmentRecords')  unless(options[:dummy] == 'true')
           end
         else
-          puts "All images (#{cache.size}) were succesfully attached to a Product"
+          puts "All files (#{cache.size}) were succesfully attached to a #{@load_object_class}"
         end
 
         puts "Dummy Run Complete- if happy run without -d" if(options[:dummy])
    
       end
-    
-      def add_record(record)
-        if(record)
-          if(SpreeHelper::version.to_f > 1 )
-            @load_object.viewable = record
-          else
-            @load_object.viewable = record.product   # SKU stored on Variant but we want it's master Product
-          end
-          @load_object.save
-          puts "Image viewable set : #{record.inspect}"
-          
-        else
-          puts "WARNING - Cannot set viewable - No matching record supplied"
-          logger.error"Failed to find a matching record"
-        end
-      end
+   
     end
     
   end
