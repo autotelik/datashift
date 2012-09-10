@@ -28,11 +28,8 @@ describe 'SpreeExporter' do
 
   before do
     
-
-      
     before_each_spree   # inits tests, cleans DB setups model types
     
-    @Taxon_klass.delete_all
     
     # Create some test data
     root = @Taxonomy_klass.create( :name => 'Paintings' )

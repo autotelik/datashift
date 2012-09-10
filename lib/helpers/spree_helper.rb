@@ -89,9 +89,9 @@ module DataShift
         @dslog.info "Booted Spree using pre 1.0.0 version"
       else
            
-        db_connect( database_env )
+        #db_connect( database_env )
         
-        @dslog.info "Booting Spree using version #{SpreeHelper::version}"
+        #@dslog.info "Booting Spree using version #{SpreeHelper::version}"
        
         require 'rails/all'
         
@@ -105,6 +105,8 @@ module DataShift
           system('rails new sandbox')
         end
   
+        puts "Using Rails sandbox for Spree : #{spree_sanbox_app}"
+        
         rails_root = spree_sanbox_app
         
         $:.unshift rails_root
@@ -113,9 +115,12 @@ module DataShift
           require 'config/environment.rb'
         rescue => e
           #somethign in deface seems to blow up suddenly on 1.1
-          # puts e.backtrace
-          puts "Warning - Potential issue initializing Spree sanbox #{e.inspect}"
+          puts "Warning - Potential issue initializing Spree sandbox:"
+          puts e.backtrace
+          puts "#{e.inspect}"
         end
+        
+        set_logger
         
         Dir.chdir( store_path )
         

@@ -10,7 +10,7 @@ require File.dirname(__FILE__) + '/spec_helper'
 require 'erb'
 require 'csv_exporter'
 
-describe 'CSV Loader' do
+describe 'CSV Exporter' do
 
   before(:all) do
     
