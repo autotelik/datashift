@@ -312,25 +312,23 @@ module DataShift
   
           # Each chain can contain either a single Taxon, or the tree like structure parent>child>child  
           name_list = chain.split(/\s*>\s*/)
-          
-          parent, taxon = nil, nil
-                  
+                            
           parent_name = name_list.shift
           
           parent_taxonomy = @@taxonomy_klass.find_or_create_by_name(parent_name)
           
-          taxons = name_list.collect do |name|
+          raise "Could not find or create Taxonomy #{parent_name}" unless parent_taxonomy 
           
-            #puts "DEBUG: NAME #{name.inspect}"             
+          parent = parent_taxonomy.root
+          
+          # Add the Taxons to Taxonomy from tree structure parent>child>child  
+          taxons = name_list.collect do |name|
+                     
             begin
-              taxon = parent_taxonomy.taxons.find_by_name( name )    # @@taxon_klass.find_by_name( name )
+              taxon = @@taxon_klass.find_or_create_by_name_and_parent_id_and_taxonomy_id(name, parent && parent.id, parent_taxonomy.id)        
 
-              if(taxon)
-                #parent_taxonomy ||= taxon.taxonomy
-              else
-                #parent_taxonomy ||= @@taxonomy_klass.find_or_create_by_name(name)
-   
-                taxon = @@taxon_klass.find_or_create_by_name_and_parent_id_and_taxonomy_id(name, parent && parent.id, parent_taxonomy.id)         
+              unless(taxon)
+                puts "Not found or created so now what ?"      
               end
             rescue => e
               puts e.inspect
