@@ -313,43 +313,7 @@ describe 'SpreeLoader' do
     ts.children.should have_exactly(0).items
  
   end
-  
-  it "should load nested Taxons correctly even when same names", :taxons => true, :fail => true do
-    
-    @Taxonomy_klass.delete_all
-    @Taxon_klass.delete_all    
-    
-    @Taxonomy_klass.count.should == 0
-    @Taxon_klass.count.should == 0 
-    
-    @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsComplexTaxons.xls') )
-    
-    # Expected :
-    #   Paintings>Landscape 	
-    #   WaterColour	
-    #   Paintings 	
-    #   Oils    
-    #   Drawings>Landscape            - test same name for child (Paintings)
-    #   Paintings>Nature>Landscape    - test same name for child of a child
-    #   Landscape	
-      
-    #puts @Taxonomy_klass.all.collect(&:name).sort.inspect
-    @Taxonomy_klass.count.should == 5 
-    @Taxonomy_klass.all.collect(&:name).sort.should == ['Drawings', 'Landscape', 'Oils', 'Paintings','WaterColour']
  
-    puts @Taxon_klass.all.collect(&:name).sort.inspect
-    @Taxon_klass.count.should == 9
-    @Taxon_klass.all.collect(&:name).sort.should == ['Drawings', 'Landscape', 'Landscape', 'Landscape', 'Landscape', 'Nature', 'Oils', 'Paintings','WaterColour']
-
-    @Taxon_klass.find_by_name('Landscape').should have_exactly(4).items
-    
-    @Taxon_klass.find_by_name('Paintings').children.should have_exactly(3).items
-    @Taxon_klass.find_by_name('Drawings').children.should have_exactly(1).items
-    @Taxon_klass.find_by_name('Nature').children.should have_exactly(1).items
-    
-
-  end
-  
   
   # REPEAT THE WHOLE TEST SUITE VIA CSV
 

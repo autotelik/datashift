@@ -41,6 +41,8 @@ Jeweler::Tasks.new do |gem|
   gem.files.exclude ['sandbox']
   
   gem.add_dependency 'spreadsheet'
+  gem.add_dependency 'rubyzip'
+  
 end
 Jeweler::RubygemsDotOrgTasks.new
 
