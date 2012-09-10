@@ -8,7 +8,6 @@ require 'paperclip/image_loader'
 
 module DataShift
 
-
   module DataShift::SpreeImageLoading
  
     include DataShift::Logging

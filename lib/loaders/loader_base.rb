@@ -28,8 +28,10 @@ module DataShift
 
     attr_accessor :loaded_objects, :failed_objects
 
-    attr_accessor :options, :verbose
+    attr_accessor :config, :verbose
 
+    def options() return @config; end
+    
     # Support multiple associations being added to a base object to be specified in a single column.
     # 
     # Entry represents the association to find via supplied name, value to use in the lookup.
@@ -110,9 +112,9 @@ module DataShift
       end unless(options[:load] == false)
       
       @method_mapper = DataShift::MethodMapper.new
-      @options = options.dup    # clone can cause issues like 'can't modify frozen hash'
+      @config = options.dup    # clone can cause issues like 'can't modify frozen hash'
 
-      @verbose = @options[:verbose]
+      @verbose = @config[:verbose]
       @headers = []
 
       @default_data_objects ||= {}
@@ -229,16 +231,15 @@ module DataShift
     
     # Find a record for model klazz, looking up on field containing search_terms
     # Responds to global Options :
-    # :case_sensitive : Default is a case insensitive lookup.
-    # :use_like : Attempts a lookup using ike and x% ratehr than equality
+    #   :case_sensitive : Default is a case insensitive lookup.
+    #   :use_like : Attempts a lookup using ike and x% ratehr than equality 
     
-    
-    def get_record_by(klazz, field, search_terms, split_on = '_', split_on_prefix = nil)
+    def get_record_by(klazz, field, search_terms, split_on = ' ', split_on_prefix = nil)
     
       begin
-        record = if(@options[:case_sensitive]) 
+        record = if(@config[:case_sensitive]) 
           klazz.send("find_by_#{field}", search_terms)
-        elsif(@options[:use_like])
+        elsif(@config[:use_like])
           klazz.where("#{field} like ?", "#{search_terms}%").first
         else
           klazz.where("lower(#{field}) = ?", search_terms.downcase).first
@@ -253,11 +254,12 @@ module DataShift
         end unless(record)
             
         # this time try sequentially and incrementally scanning
-        search_terms.split(split_on).inject("") do |str, x|
-          z = (split_on_prefix) ? "#{split_on_prefix}#{str}#{x}": "#{str}#{x}"
+        search_terms.split(split_on).inject("") do |str, term|
+          z = (split_on_prefix) ? "#{split_on_prefix}#{str}#{term}": "#{str}#{term}"
           puts z
           record = get_record_by(klazz, field, z, split_on, split_on_prefix)
           break if record
+          term
         end unless(record)      
                 
         return record 
@@ -331,14 +333,14 @@ module DataShift
       end
       
       if(data['LoaderBase'])
-        @options.merge!(data['LoaderBase'])
+        @config.merge!(data['LoaderBase'])
       end
        
       if(data[self.class.name])    
-        @options.merge!(data[self.class.name])
+        @config.merge!(data[self.class.name])
       end
       
-      logger.info("Loader Options : #{@options.inspect}")
+      logger.info("Loader Options : #{@config.inspect}")
     end
     
     # Set member variables to hold details and value.
@@ -400,7 +402,7 @@ module DataShift
     #
     def process()  
       
-      logger.info("Current value to assign : #{@current_value}") #if @options['verboose_logging']
+      logger.info("Current value to assign : #{@current_value}") #if @config['verboose_logging']
       
       if(@current_method_detail.operator_for(:has_many))
 
@@ -484,7 +486,7 @@ module DataShift
         failure
         puts "Error saving #{@load_object.class} : #{e.inspect}"
         logger.error e.backtrace
-        raise "Error in save whilst processing column #{@current_method_detail.name}" if(@options[:strict])
+        raise "Error in save whilst processing column #{@current_method_detail.name}" if(@config[:strict])
       end
     end
 
@@ -542,7 +544,7 @@ module DataShift
     end
 
     def abort_on_failure?
-      @options[:abort_on_failure] == 'true'
+      @config[:abort_on_failure] == 'true'
     end
 
     def loaded_count
