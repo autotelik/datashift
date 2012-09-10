@@ -11,7 +11,7 @@ module DataShift
 
   module ImageLoading
  
-    include DataShift::Logging
+    include DataShift::Paperclip
     
     # Get all image files (based on file extensions) from supplied path.
     # Options : 
@@ -25,22 +25,6 @@ module DataShift
       Dir.glob("#{path}/#{glob}", File::FNM_CASEFOLD)
     end
   
-    def get_file( attachment_path )
-      
-      unless File.exists?(attachment_path) && File.readable?(attachment_path)
-        logger.error("Cannot process Image from #{Dir.pwd}: Invalid Path #{attachment_path}")
-        raise "Cannot process Image : Invalid Path #{attachment_path}"
-      end
-     
-      file = begin
-        File.new(attachment_path, "rb")
-      rescue => e
-        puts e.inspect
-        raise "ERROR : Failed to read image #{attachment_path}"
-      end
-      
-      file
-    end
     
     # Note the paperclip attachment model defines the storage path via something like :
     # => :path => ":rails_root/public/blah/blahs/:id/:style/:basename.:extension"
