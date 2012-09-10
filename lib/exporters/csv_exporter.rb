@@ -34,9 +34,11 @@ module DataShift
     # => ::methods => List of methods to additionally call on each record
     #
     def export(records, options = {})
-          
-      first = records[0]
+       
+      raise ArgumentError.new('Please supply array of records to export') unless records.is_a? Array
       
+      first = records[0]
+     
       return unless(first.is_a?(ActiveRecord::Base))
       
       f = options[:filename] || filename()
@@ -45,16 +47,16 @@ module DataShift
       
       File.open(f, "w") do |csv|
         
-        headers = first.serializable_hash.keys.collect { |col| col.name }
+        headers = first.serializable_hash.keys.collect
            
-        [*options[:methods]].each do |c| headers << c if(first.respond_to?(c)) end
+        [*options[:methods]].each do |c| headers << c if(first.respond_to?(c)) end if(options[:methods])
              
-        csv << headers.join(",") << "\n"
+        csv << headers.join(Delimiters::csv_delim) << Delimiters::eol
         
         records.each do |r|
           next unless(r.is_a?(ActiveRecord::Base))
           
-          csv << record_to_csv(r) << "\n"
+          csv << record_to_csv(r, options) << Delimiters::eol
         end
       end
     end
@@ -138,14 +140,14 @@ module DataShift
             #end
           end
           
-          csv << "\n"   # next record
+          csv << Delimiters::eol   # next record
           
         end
       end
     end
     
   
-    # Convert an AR instance to a single CSV columns
+    # Convert an AR instance to a single CSV column
   
     def record_to_column(record) 
     
@@ -160,9 +162,11 @@ module DataShift
     
     
     # Convert an AR instance to a set of CSV columns
-    def record_to_csv(record)
-      csv_data = record.serializable_hash.values.map(&:to_s).collect { |value| escape(value) }
-    
+    def record_to_csv(record, options = {})
+      csv_data = record.serializable_hash.values.collect { |value| escape(value) }
+
+      [*options[:methods]].each { |x| csv_data << escape(record.send(x)) if(record.respond_to?(x)) } if(options[:methods])
+      
       csv_data.join( Delimiters::csv_delim )
     end
     

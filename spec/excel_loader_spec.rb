@@ -28,7 +28,6 @@ if(Guards::jruby?)
       db_clear()    # todo read up about proper transactional fixtures
 
 
-      Project = Project
       @assoc_klazz = Category
     end
   

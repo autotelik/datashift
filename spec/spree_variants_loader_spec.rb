@@ -69,6 +69,12 @@ describe 'Spree Variants Loader' do
     test_variants_creation('SpreeProductsMultiColumn.xls')
   end
   
+  
+  it "should load Products from multiple column csv as per .xls", :blah => true do
+    test_variants_creation('SpreeProductsMultiColumn.csv')
+  end
+  
+  
   def test_variants_creation( source )
     @Product_klass.count.should == 0
     @Variant_klass.count.should == 0
@@ -145,7 +151,7 @@ describe 'Spree Variants Loader' do
   # which creates a SINGLE Variant with 2 option types
 
   it "should create Variants with MULTIPLE option types from single column", :new => true  do
-     @product_loader.perform_load( SpecHelper::spree_fixture('SpreeMultiVariant.csv'), :mandatory => ['sku', 'name', 'price'] )
+    @product_loader.perform_load( SpecHelper::spree_fixture('SpreeMultiVariant.csv'), :mandatory => ['sku', 'name', 'price'] )
      
     # Product 1)
     # 1 + 2) mime_type:jpeg,PDF;print_type:colour	 equivalent to (mime_type:jpeg;print_type:colour|mime_type:PDF;print_type:colour)

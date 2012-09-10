@@ -42,15 +42,6 @@ describe 'SpreeLoader' do
       # For Spree important to get instance methods too as Product delegates
       # many important attributes to Variant (master)
       MethodDictionary.find_operators( @Product_klass, :instance_methods => true )
-
-      # want to test both lookup and dynamic creation - this Taxonomy should be found, rest created
-      root = @Taxonomy_klass.create( :name => 'Paintings' )
-    
-      t = @Taxon_klass.new( :name => 'Landscape' )
-      t.taxonomy = root
-      t.save
-
-      @Taxon_klass.count.should == 2
     
       @product_loader = DataShift::SpreeHelper::ProductLoader.new
     rescue => e
@@ -92,11 +83,11 @@ describe 'SpreeLoader' do
   
   # Loader should perform identically regardless of source, whether csv, .xls etc
   
-  it "should load basic Products .xls via Spree loader", :fail => true do
+  it "should load basic Products .xls via Spree loader" do
     test_basic_product('SpreeProductsSimple.xls')
   end
 
-  it "should load basic Products from .csv via Spree loader", :fail => true do
+  it "should load basic Products from .csv via Spree loader" do
     test_basic_product('SpreeProductsSimple.csv')
   end
 
@@ -130,10 +121,6 @@ describe 'SpreeLoader' do
     
     p.has_variants?.should be false
     p.master.count_on_hand.should == 12
-    
-    puts SpreeHelper::version
-    puts SpreeHelper::version.to_f 
-    puts SpreeHelper::version > "1.1.2"
      
     SpreeHelper::version < "1.1.3" ?  p.count_on_hand.should == 12 : p.count_on_hand.should == 0
    
@@ -234,124 +221,7 @@ describe 'SpreeLoader' do
 
   end
   
-  ##############
-  ### TAXONS ###
-  ##############
-
-  # Operation and results should be identical when loading multiple associations
-  # if using either single column embedded syntax, or one column per entry.
-
-  it "should load Products and multiple Taxons from single column", :taxons => true do
-    test_taxon_creation( 'SpreeProducts.xls' )
-  end
-
-  it "should load Products and multiple Taxons from multiple columns", :taxons => true do
-    test_taxon_creation( 'SpreeProductsMultiColumn.xls' )
-  end
-
-  def test_taxon_creation( source )
-
-    # we want to test both find and find_or_create so should already have an object
-    # for find
-    @Taxonomy_klass.count.should == 1
-    @Taxon_klass.count.should == 2
-          
-    @product_loader.perform_load( SpecHelper::spree_fixture(source), :mandatory => ['sku', 'name', 'price'] )
-    
-    expected_multi_column_taxons
-  end
-  
-  def expected_multi_column_taxons
-      
-    #puts @Taxonomy_klass.all.collect( &:name).inspect
-    #puts @Taxon_klass.all.collect( &:name).inspect
-    
-    # Paintings already existed and had 1 child Taxon (Landscape)
-    # 2 nested Taxon (Paintings>Nature>Seascape) created under it so expect Taxonomy :
-    
-    # WaterColour	
-    # Oils	
-    # Paintings >Nature>Seascape + >Landscape	
-    # Drawings
-
-    @Taxonomy_klass.count.should == 4
-    @Taxon_klass.count.should == 7
-
-    @Product_klass.first.taxons.should have_exactly(2).items
-    @Product_klass.last.taxons.should have_exactly(2).items
-
-    p2 = @Variant_klass.find_by_sku("DEMO_002").product
-
-    # Paintings	Oils	Paintings>Nature>Seascape
-
-    # ["Nature", "Paintings", "Seascape"]
-
-    
-    #puts p2.taxons.collect(&:name).inspect
-      
-    p2.taxons.should have_exactly(4).items
-    
-    p2.taxons.collect(&:name).sort.should == ['Nature','Oils','Paintings','Seascape']
-     
-    paint_parent = @Taxonomy_klass.find_by_name('Paintings')
-    
-       
-    puts paint_parent.taxons.collect(&:name).sort.inspect
-     
-    paint_parent.taxons.should have_exactly(4).items # 3 children + all Taxonomies have a root Taxon
-    
-    paint_parent.taxons.collect(&:name).sort.should == ['Landscape','Nature','Paintings','Seascape']
-    
-    tn = @Taxon_klass.find_by_name('Nature')    # child with children 
-    ts = @Taxon_klass.find_by_name('Seascape')  # last child
-
-    ts.should_not be_nil
-    tn.should_not be_nil
-    
-    p2.taxons.collect( &:id ).should include(ts.id)
-    p2.taxons.collect( &:id ).should include(tn.id)
-
-     
-    tn.parent.id.should == paint_parent.root.id
-    ts.parent.id.should == tn.id
-    
-    tn.children.should have_exactly(1).items
-    ts.children.should have_exactly(0).items
  
-  end
-  
-  it "should correctly identify and create nested Taxons ", :taxons => true do#
-    x=<<-EOS
-lucky_product : A>mysubcat
-bad_luck : B>mysubcat
-
-The bad_luck product is created with in B and somehow pushed into A>mysubcat.
-The category B>mysubcat is not created at all...
-EOS
-     pending(x)
-
-  end
-  
-  
-  # REPEAT THE WHOLE TEST SUITE VIA CSV
-
-  it "should load Products from single column csv as per .xls" do
-    test_variants_creation('SpreeProducts.csv')
-    
-    expected_multi_column_properties
-    
-    expected_multi_column_taxons
-  end
-  
-  
-  it "should load Products from multiple column csv as per .xls", :blah => true do
-    test_variants_creation('SpreeProductsMultiColumn.csv')
-    
-    expected_multi_column_properties
-    
-    expected_multi_column_taxons
-  end
-
   
   it "should raise exception when mandatory columns missing from .xls", :ex => true do
     expect {@product_loader.perform_load($SpreeNegativeFixturePath + '/SpreeProdMissManyMandatory.xls', :mandatory => ['sku', 'name', 'price'] )}.to raise_error(DataShift::MissingMandatoryError)

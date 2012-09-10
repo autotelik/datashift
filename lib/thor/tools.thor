@@ -25,7 +25,10 @@ module Datashift
     method_option :results, :aliases => '-r', :required => true, :desc => "The path to store resulting zip files"
  
     def zip()
-      
+     
+      require 'zip/zip'
+      require 'zip/zipfilesystem'
+
       ready_to_zip = {}
       Dir[File.join(options[:path], '**', '*.*')].each do |p|
         next if File.directory? p
@@ -33,10 +36,25 @@ module Datashift
         basename = File.basename(p, '.*')
         ready_to_zip[basename] ||= []       
         ready_to_zip[basename] << p  
-       end 
-       ready_to_zip.each do |basename, paths|
-         # Zip.add paths
-       end
+      end 
+      
+      output = options[:results]
+      
+      FileUtils::mkdir_p(output) unless File.exists?(output)
+      
+      puts "Creating #{ready_to_zip.keys.size} new zips"
+      ready_to_zip.each do |basename, paths|
+      
+        z= File.join(output, basename + '.zip')
+        puts "zipping to #{z}"
+        
+        Zip::ZipOutputStream.open(z) do |zos|
+          paths.each do |file|
+            zos.put_next_entry(File.basename(file))
+            zos.print IO.read(file)
+          end
+        end
+      end
       
     end   
   end
