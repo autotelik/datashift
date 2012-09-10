@@ -5,12 +5,12 @@
 
 Gem::Specification.new do |s|
   s.name = "datashift"
-  s.version = "0.8.0"
+  s.version = "0.9.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thomas Statter"]
-  s.date = "2012-08-30"
-  s.description = "A suite of tools to move data between ActiveRecord models,databases,applications like Excel/Open Office, files and projects including Spree"
+  s.date = "2012-09-10"
+  s.description = "Comprehensive Excel and CSV import/export tools. Shift data between ActiveRecord databases, applications, and projects like Spree"
   s.email = "rubygems@autotelik.co.uk"
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
     "lib/applications/jruby/jexcel_file.rb",
     "lib/applications/jruby/word.rb",
     "lib/datashift.rb",
+    "lib/datashift/delimiters.rb",
     "lib/datashift/exceptions.rb",
     "lib/datashift/file_definitions.rb",
     "lib/datashift/logging.rb",
@@ -65,6 +66,7 @@ Gem::Specification.new do |s|
     "lib/loaders/csv_loader.rb",
     "lib/loaders/excel_loader.rb",
     "lib/loaders/loader_base.rb",
+    "lib/loaders/paperclip/attachment_loader.rb",
     "lib/loaders/paperclip/image_loader.rb",
     "lib/loaders/spreadsheet_loader.rb",
     "lib/loaders/spree/image_loader.rb",
@@ -72,9 +74,11 @@ Gem::Specification.new do |s|
     "lib/thor/export.thor",
     "lib/thor/generate_excel.thor",
     "lib/thor/import.thor",
+    "lib/thor/paperclip.thor",
     "lib/thor/spree/bootstrap_cleanup.thor",
     "lib/thor/spree/products_images.thor",
     "lib/thor/spree/reports.thor",
+    "lib/thor/tools.thor",
     "public/spree/products/large/DEMO_001_ror_bag.jpeg",
     "public/spree/products/large/DEMO_002_Powerstation.jpg",
     "public/spree/products/large/DEMO_003_ror_mug.jpeg",
@@ -91,6 +95,7 @@ Gem::Specification.new do |s|
     "public/spree/products/small/DEMO_002_Powerstation.jpg",
     "public/spree/products/small/DEMO_003_ror_mug.jpeg",
     "spec/Gemfile",
+    "spec/csv_exporter_spec.rb",
     "spec/csv_loader_spec.rb",
     "spec/datashift_spec.rb",
     "spec/db/migrate/20110803201325_create_test_bed.rb",
@@ -122,6 +127,8 @@ Gem::Specification.new do |s|
     "spec/fixtures/spree/SpreeMultiVariant.csv",
     "spec/fixtures/spree/SpreeProducts.csv",
     "spec/fixtures/spree/SpreeProducts.xls",
+    "spec/fixtures/spree/SpreeProductsComplexTaxons.csv",
+    "spec/fixtures/spree/SpreeProductsComplexTaxons.xls",
     "spec/fixtures/spree/SpreeProductsDefaults.yml",
     "spec/fixtures/spree/SpreeProductsMandatoryOnly.xls",
     "spec/fixtures/spree/SpreeProductsMultiColumn.csv",
@@ -142,6 +149,8 @@ Gem::Specification.new do |s|
     "spec/spree_images_loader_spec.rb",
     "spec/spree_loader_spec.rb",
     "spec/spree_method_mapping_spec.rb",
+    "spec/spree_taxons_loader_spec.rb",
+    "spec/spree_variants_loader_spec.rb",
     "spec/thor_spec.rb",
     "tasks/config/seed_fu_product_template.erb",
     "tasks/config/tidy_config.txt",
@@ -164,11 +173,14 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<spreadsheet>, [">= 0"])
+      s.add_runtime_dependency(%q<rubyzip>, [">= 0"])
     else
       s.add_dependency(%q<spreadsheet>, [">= 0"])
+      s.add_dependency(%q<rubyzip>, [">= 0"])
     end
   else
     s.add_dependency(%q<spreadsheet>, [">= 0"])
+    s.add_dependency(%q<rubyzip>, [">= 0"])
   end
 end
 

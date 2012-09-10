@@ -47,7 +47,7 @@ module DataShift
     end
     
     def get_list( type )
-      @method_details_list[type.to_sym]
+      @method_details_list[type.to_sym] || []
     end
     
     def get_operators( op_type )
