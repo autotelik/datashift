@@ -13,7 +13,7 @@ if(Guards::jruby?)
 
   include DataShift
 
-  describe 'Excel Generator' do
+  describe 'Excel Exporter' do
 
     before(:all) do
       db_connect( 'test_file' )    # , test_memory, test_mysql

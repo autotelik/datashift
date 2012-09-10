@@ -22,7 +22,7 @@ $DataShiftDatabaseYml = File.join($DataShiftFixturePath, 'config/database.yml')
 module DataShift
  
   def db_connect( env = 'test_file')
-        
+ 
     gemfile =  File.join(DataShift::root_path, 'spec', 'Gemfile')
 
     ENV['BUNDLE_GEMFILE'] = gemfile
@@ -34,7 +34,11 @@ module DataShift
     # Some active record stuff seems to rely on the RAILS_ENV being set ?
 
     ENV['RAILS_ENV'] = env
-  
+ 
+    # We have multiple schemas and hence connections tested in single spec directory   
+    ActiveRecord::Base.clear_active_connections!()
+    
+    
     configuration = {}
 
     configuration[:database_configuration] = YAML::load( ERB.new(IO.read($DataShiftDatabaseYml)).result )
@@ -45,6 +49,23 @@ module DataShift
     
     #dbtype = Rails.configuration.database_configuration[Rails.env]['adapter'].to_sym
 
+    set_logger
+    
+    puts "Connecting to DB"
+    
+    ActiveRecord::Base.establish_connection( db )
+
+    # See errors  #<NameError: uninitialized constant RAILS_CACHE> when doing save (AR without Rails)
+    # so copied this from ... Rails::Initializer.initialize_cache
+    #Object.const_set "RAILS_CACHE", ActiveSupport::Cache.lookup_store( :memory_store ) unless defined?(RAILS_CACHE)
+
+    puts "Connected to DB"
+    
+    @dslog.info "Connected to DB - #{ActiveRecord::Base.connection.inspect}"
+  end
+
+  def set_logger
+    
     require 'logger'
     logdir = File.dirname(__FILE__) + '/logs'
     FileUtils.mkdir_p(logdir) unless File.exists?(logdir)
@@ -53,19 +74,8 @@ module DataShift
     # Anyway to direct one logger to another ????? ... Logger.new(STDOUT)
     
     @dslog = ActiveRecord::Base.logger
-
-    puts "Connecting to DB"
-    ActiveRecord::Base.establish_connection( db )
-
-    # See errors  #<NameError: uninitialized constant RAILS_CACHE> when doing save (AR without Rails)
-    # so copied this from ... Rails::Initializer.initialize_cache
-    Object.const_set "RAILS_CACHE", ActiveSupport::Cache.lookup_store( :memory_store )
-
-    puts "Connected to DB"
-    
-    @dslog.info "Connected to DB - #{ActiveRecord::Base.connection.inspect}"
   end
-
+  
   # These are our test models with associations
   def db_clear
     [Project, Milestone, Category, Version, LoaderRelease].each {|x| x.delete_all}
@@ -142,8 +152,12 @@ module SpecHelper
     # Reset main tables - TODO should really purge properly, or roll back a transaction      
     @Product_klass.delete_all
     
-   @spree_klass_list.each do |k|
-      instance_variable_get("@#{k}_klass").delete_all
+    @spree_klass_list.each do |k| z = SpreeHelper::get_spree_class(k); 
+      if(z.nil?)
+        puts "WARNING: Failed to find expected Spree CLASS #{k}" 
+      else
+        SpreeHelper::get_spree_class(k).delete_all 
+      end
     end
   end
       

@@ -35,22 +35,12 @@ describe 'SpreeLoader' do
     
       @Product_klass.count.should == 0
       @Taxon_klass.count.should == 0
-      @Variant_klass.count.should == 0
       
       MethodDictionary.clear
       
       # For Spree important to get instance methods too as Product delegates
       # many important attributes to Variant (master)
       MethodDictionary.find_operators( @Product_klass, :instance_methods => true )
-
-      # want to test both lookup and dynamic creation - this Taxonomy should be found, rest created
-      root = @Taxonomy_klass.create( :name => 'Paintings' )
-    
-      t = @Taxon_klass.new( :name => 'Landscape' )
-      t.taxonomy = root
-      t.save
-
-      @Taxon_klass.count.should == 2
     
       @product_loader = DataShift::SpreeHelper::ProductLoader.new
     rescue => e
@@ -63,21 +53,35 @@ describe 'SpreeLoader' do
   # Operation and results should be identical when loading multiple associations
   # if using either single column embedded syntax, or one column per entry.
 
-  it "should load Products and multiple Taxons from single column", :taxons => true do
+  it "should load Products and multiple Taxons from single column", :taxons => true, :fail => true do
     test_taxon_creation( 'SpreeProducts.xls' )
   end
 
-  it "should load Products and multiple Taxons from multiple columns", :taxons => true do
+  it "should load Products and multiple Taxons from multiple columns .xls", :taxons => true do
     test_taxon_creation( 'SpreeProductsMultiColumn.xls' )
   end
 
+  it "should load Products and multiple Taxons from multiple columns CSV", :taxons => true do
+    test_taxon_creation( 'SpreeProductsMultiColumn.csv' )
+  end
+  
   def test_taxon_creation( source )
 
     # we want to test both find and find_or_create so should already have an object
     # for find
+    # want to test both lookup and dynamic creation - this Taxonomy should be found, rest created
+    root = @Taxonomy_klass.create( :name => 'Paintings' )
+    
+    x = root.taxons.create( :name => 'Landscape')
+    root.root.children << x
+    
+  
     @Taxonomy_klass.count.should == 1
     @Taxon_klass.count.should == 2
-          
+    
+    root.root.children.should have_exactly(1).items
+    root.root.children[0].name.should == 'Landscape'
+    
     @product_loader.perform_load( SpecHelper::spree_fixture(source), :mandatory => ['sku', 'name', 'price'] )
     
     expected_multi_column_taxons
@@ -91,26 +95,25 @@ describe 'SpreeLoader' do
     
     # WaterColour	
     # Oils	
-    # Paintings >Nature>Seascape + >Landscape	
+    # Paintings >Nature>Seascape + Paintings>Landscape	
     # Drawings
+    
+    @Taxonomy_klass.all.collect(&:name).sort.should == ["Drawings", "Oils", "Paintings", "WaterColour"]
+       
 
     @Taxonomy_klass.count.should == 4
     @Taxon_klass.count.should == 7
 
-    @Product_klass.first.taxons.should have_exactly(2).items
-    @Product_klass.last.taxons.should have_exactly(2).items
+    @Product_klass.count.should == 3
+    
+    p = @Variant_klass.find_by_sku("DEMO_001").product
 
+    p.taxons.should have_exactly(2).items
+    p.taxons.collect(&:name).sort.should == ['Paintings','WaterColour']
+     
     p2 = @Variant_klass.find_by_sku("DEMO_002").product
 
-    # Paintings	Oils	Paintings>Nature>Seascape
-
-    # ["Nature", "Paintings", "Seascape"]
-
-    
-    #puts p2.taxons.collect(&:name).inspect
-      
-    p2.taxons.should have_exactly(4).items
-    
+    p2.taxons.should have_exactly(4).items    
     p2.taxons.collect(&:name).sort.should == ['Nature','Oils','Paintings','Seascape']
      
     paint_parent = @Taxonomy_klass.find_by_name('Paintings')
@@ -140,7 +143,7 @@ describe 'SpreeLoader' do
  
   end
   
-  it "should load nested Taxons correctly even when same names from csv", :taxons => true, :fail => true do
+  it "should load nested Taxons correctly even when same names from csv", :taxons => true do
     
     @Taxonomy_klass.delete_all
     @Taxon_klass.delete_all    
@@ -153,7 +156,7 @@ describe 'SpreeLoader' do
     expected_nested_multi_column_taxons
   end
 
-  it "should load nested Taxons correctly even when same names from xls", :taxons => true, :fail => true do
+  it "should load nested Taxons correctly even when same names from xls", :taxons => true do
     
     @Taxonomy_klass.delete_all
     @Taxon_klass.delete_all    
@@ -276,9 +279,11 @@ describe 'SpreeLoader' do
 
     # empty top level taxons
     ['Oils', 'Landscape'].each do |t|
-      o = @Taxon_klass.find_by_name_and_root(t, true)
-      o.children.should have_exactly(1).items
-      o.leaf?.should be true
+      tx = @Taxonomy_klass.find_by_name(t)
+      tx.taxons.should have_exactly(1).items
+      tx.root.name.should == t
+      tx.root.children.should have_exactly(0).items
+      tx.root.leaf?.should be true
     end
     
 
