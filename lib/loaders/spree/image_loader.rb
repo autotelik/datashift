@@ -4,32 +4,17 @@
 # License::   MIT. Free, Open Source.
 #
 require 'loader_base'
-require 'paperclip/image_loader'
+require 'paperclip/attachment_loader'
 
 module DataShift
 
-  module DataShift::SpreeImageLoading
- 
-    include DataShift::Logging
-    include DataShift::ImageLoading
-     
-    # Note the Spree Image model sets default storage path to
-    # => :path => ":rails_root/public/assets/products/:id/:style/:basename.:extension"
-
-    def create_image(klass, attachment_path, viewable_record = nil, options = {})
-        
-      viewable =  (SpreeHelper::version.to_f > 1 && viewable_record.is_a?(Spree::Product) ) ? viewable_record.master : viewable_record
-      
-      super(klass, attachment_path, viewable, options)
-    end
-  end
 
   module SpreeHelper
      
     # TODO - extract this out of SpreeHelper to create  a general paperclip loader
     class ImageLoader < LoaderBase
 
-      include DataShift::SpreeImageLoading
+#      include DataShift::SpreeImageLoading
       include DataShift::CsvLoading
       include DataShift::ExcelLoading
       

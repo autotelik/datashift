@@ -5,7 +5,7 @@
 #
 # => Provides facilities for bulk uploading/exporting attachments provided by PaperClip 
 # gem
-require 'loader_base'
+require 'datashift_paperclip'
 
 module DataShift
 
