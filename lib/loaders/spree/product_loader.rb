@@ -8,7 +8,8 @@
 require 'loader_base'
 require 'csv_loader'
 require 'excel_loader'
-require 'image_loader'
+
+require 'image_loading'
 
 module DataShift
 

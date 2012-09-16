@@ -25,8 +25,7 @@
 module DataShift
     
   module SpreeHelper
-        
-        
+            
     def self.root
       Gem.loaded_specs['spree_core'] ? Gem.loaded_specs['spree_core'].full_gem_path  : ""
     end
@@ -82,18 +81,19 @@ module DataShift
     
     def self.boot( database_env)
      
+      db_clear_connections
+      
       if( ! is_namespace_version )
+        
+        SpreeHelper.load() 
+        
         db_connect( database_env )
         @dslog.info "Booting Spree using pre 1.0.0 version"
         boot_pre_1
         @dslog.info "Booted Spree using pre 1.0.0 version"
       else
-           
-        #db_connect( database_env )
-        
-        #@dslog.info "Booting Spree using version #{SpreeHelper::version}"
-       
-        require 'rails/all'
+
+        #require 'rails/all'
         
         store_path = Dir.pwd
         

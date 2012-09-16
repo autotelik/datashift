@@ -7,7 +7,8 @@
 #
 require File.dirname(__FILE__) + '/spec_helper'
 
-if(Guards::jruby?)
+if(DataShift::Guards::jruby?)
+  
   require 'erb'
   require 'excel_exporter'
 

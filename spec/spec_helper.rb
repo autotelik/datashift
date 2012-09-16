@@ -1,10 +1,3 @@
-
-require 'stringio'
-
-require File.dirname(__FILE__) + '/../lib/datashift'
-
-include DataShift
-
 # Copyright:: (c) Autotelik Media Ltd 2011
 # Author ::   Tom Statter
 # Date ::     Aug 2011
@@ -16,29 +9,38 @@ include DataShift
 # We are not setup as a Rails project so need to mimic an active record database setup so
 # we have some  AR models to test against. Create an in memory database from scratch.
 #
+require 'active_record'
+require 'bundler'
+require 'stringio'
+
+require File.dirname(__FILE__) + '/../lib/datashift'
+
 $DataShiftFixturePath = File.join(File.dirname(__FILE__), 'fixtures')
 $DataShiftDatabaseYml = File.join($DataShiftFixturePath, 'config/database.yml')
 
 module DataShift
- 
-  def db_connect( env = 'test_file')
- 
-    gemfile =  File.join(DataShift::root_path, 'spec', 'Gemfile')
-
+    
+  def bundler_setup(gemfile)
     ENV['BUNDLE_GEMFILE'] = gemfile
-    require 'bundler'
     Bundler.setup
+  end
+  
+  def db_clear_connections
+    # We have multiple schemas and hence connections tested in single spec directory   
+    ActiveRecord::Base.clear_active_connections!()   
+  end
+  
+  def db_connect( env = 'test_file')
 
-    require 'active_record'
-
+    bundler_setup( File.join(DataShift::root_path, 'spec', 'Gemfile') )
+    
     # Some active record stuff seems to rely on the RAILS_ENV being set ?
 
     ENV['RAILS_ENV'] = env
  
     # We have multiple schemas and hence connections tested in single spec directory   
-    ActiveRecord::Base.clear_active_connections!()
-    
-    
+    db_clear_connections
+     
     configuration = {}
 
     configuration[:database_configuration] = YAML::load( ERB.new(IO.read($DataShiftDatabaseYml)).result )
@@ -129,7 +131,7 @@ module SpecHelper
 
     # we are not a Spree project, nor is it practical to externally generate
     # a complete Spree application for testing so we implement a mini migrate/boot of our own
-    SpreeHelper.load()        
+    #       
     SpreeHelper.boot('test_spree_standalone')             # key to YAML db e.g  test_memory, test_mysql
     
     puts "Testing Spree standalone - version #{SpreeHelper::version}"
@@ -163,33 +165,24 @@ module SpecHelper
       
 end
 
-def capture(stream)
-  begin
-    stream = stream.to_s
-    eval "$#{stream} = StringIO.new"
-    yield
-    result = eval("$#{stream}").string
-  ensure
-    eval("$#{stream} = #{stream.upcase}")
-  end
-
-  result
-end
   
 RSpec.configure do |config|
-  # config.use_transactional_fixtures = true
-  # config.use_instantiated_fixtures  = false
-  # config.fixture_path = RAILS_ROOT + '/spec/fixtures'
+  config.before do
+    ARGV.replace []
+  end
 
-  # You can declare fixtures for each behaviour like this:
-  #   describe "...." do
-  #     fixtures :table_a, :table_b
-  #
-  # Alternatively, if you prefer to declare them only once, you can
-  # do so here, like so ...
-  #
-  #   config.global_fixtures = :table_a, :table_b
-  #
-  # If you declare global fixtures, be aware that they will be declared
-  # for all of your examples, even those that don't use them.
+  def capture(stream)
+    begin
+      stream = stream.to_s
+      eval "$#{stream} = StringIO.new"
+      yield
+      result = eval("$#{stream}").string
+    ensure
+      eval("$#{stream} = #{stream.upcase}")
+    end
+
+    result
+  end
+
+  alias :silence :capture
 end
