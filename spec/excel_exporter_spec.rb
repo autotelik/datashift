@@ -17,10 +17,11 @@ if(DataShift::Guards::jruby?)
   describe 'Excel Exporter' do
 
     before(:all) do
+      
+      # load our test model definitions - Project etc  
+      require ifixture_file('test_model_defs')  
+  
       db_connect( 'test_file' )    # , test_memory, test_mysql
-
-      # load our test model definitions - Project etc
-      require File.join($DataShiftFixturePath, 'test_model_defs')  
    
       # handle migration changes or reset of test DB
       migrate_up

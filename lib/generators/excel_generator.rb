@@ -12,9 +12,7 @@ module DataShift
 
   require 'generator_base'
       
-  if(Guards::jruby?)
-
-    require 'jruby/jexcel_file'
+    require 'excel'
 
     class ExcelGenerator < GeneratorBase
 
@@ -38,9 +36,9 @@ module DataShift
 
         logger.info("ExcelGenerator saving generated template #{@filename}")
         
-        @excel.autosize if(options[:autosize])
+        #@excel.autosize if(options[:autosize])
         
-        @excel.save( @filename )
+        @excel.write( @filename )
       end
 
       
@@ -79,9 +77,9 @@ module DataShift
         
         @excel.set_headers( headers )
         
-        @excel.autosize if(options[:autosize])
+       # @excel.autosize if(options[:autosize])
                 
-        @excel.save( filename() )
+        @excel.write( filename() )
       end
       
       private
@@ -91,32 +89,20 @@ module DataShift
         
         logger.info("ExcelGenerator creating template with associations for class #{klass}")
         
-        @excel = JExcelFile.new()
+        @excel = Excel.new()
 
-        if(options[:sheet_name] )
-          @excel.create_sheet( options[:sheet_name] ) 
-        else
-          @excel.create_sheet( klass.name )
-        end
+        name  = options[:sheet_name] || klass.name
         
-        unless @excel.sheet
-          logger.error("Excel failed to create WorkSheet for #{klass.name}")
+        sheet = @excel.create_worksheet( name ) 
+    
+        unless sheet
+          logger.error("Excel failed to create WorkSheet for #{name}")
         
-          raise "Failed to create Excel WorkSheet for #{klass.name}" 
+          raise "Failed to create Excel WorkSheet for #{name}" 
         end
         
         MethodDictionary.find_operators( klass )
       end
     end # ExcelGenerator
-
-  else
-    class  ExcelGenerator < GeneratorBase
-      
-      def initialize(filename)
-        @filename = filename
-        raise DataShift::BadRuby, "Apologies but DataShift Excel facilities currently need JRuby. Please switch to, or install JRuby"
-      end
-    end
-  end # jruby
   
 end # DataShift

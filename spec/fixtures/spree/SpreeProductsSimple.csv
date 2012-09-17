@@ -1,4 +1,0 @@
-"SKU","Name","Description","Available On","     Price","CostPrice","count_on_hand","Option Types"
-"SIMPLE_001","Simple Product for AR Loader","blah blah","2011-02-14",345.78,320.00,12,"mime_type"
-"SIMPLE_002","Simple Excel Load via Jruby","less blah","2011-05-14",100.00,30.00,5,"mime_type"
-"SIMPLE_003","Simple third row avail in future","more blah blah","2112-07-01",50.34,23.34,23,"mime_type|print_type"

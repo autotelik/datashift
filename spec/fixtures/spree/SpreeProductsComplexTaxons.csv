@@ -1,6 +1,0 @@
-"SKU","Name","Description","Available On","     Price","CostPrice","Taxons","Taxons","Taxons","count_on_hand"
-"test_ct_001","Demo Product for AR Loader","blah blah","2011-02-14",399.99,320.00,"Paintings>Landscape","WaterColour",,2
-"test_ct_002","Demo Excel Load","less blah","2011-05-14",100.00,30.00,"Paintings","Oils","Paintings>Nature>Landscape",5
-"test_ct_003","Demo third row in future","more blah blah","2012-07-01",50.34,23.34,"Drawings>Landscape","Landscape",,7
-"test_ct_004","Demo four","blah","2012-07-01",0.34,0.01,"Drawings>Landscape",,"Paintings>Nature>Seascape>Cliffs",3
-"test_ct_005","Demo five","blah","2012-07-01",3.34,3.01,"Drawings>Landscape>Bristol","Oils",,3
