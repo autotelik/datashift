@@ -9,7 +9,7 @@
 #             Tests the method mapping aspect, such as that we correctly identify 
 #             Spree Product attributes and associations
 #             
-require File.dirname(__FILE__) + '/spec_helper'
+require File.join(File.expand_path(File.dirname(__FILE__)  + '/..'), "spec_helper")
 
 require 'spree_helper'
 #require 'product_loader'

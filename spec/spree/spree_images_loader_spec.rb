@@ -9,7 +9,7 @@
 #             Provides Loaders and rake tasks specifically tailored for uploading or exporting
 #             Spree Products, associations and Images
 #
-require File.dirname(__FILE__) + '/spec_helper'
+require File.join(File.expand_path(File.dirname(__FILE__)  + '/..'), "spec_helper")
 
 require 'spree_helper'
 require 'product_loader'
@@ -75,7 +75,7 @@ describe 'SpreeImageLoading' do
     
     @product_loader.perform_load( SpecHelper::spree_fixture('SpreeProductsWithImages.xls'), options )
         
-    p = @klass.find_by_name("Demo Product for AR Loader")
+    p = @Product_klass.find_by_name("Demo Product for AR Loader")
     
     p.name.should == "Demo Product for AR Loader"
     p.images.should have_exactly(1).items

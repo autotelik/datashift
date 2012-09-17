@@ -15,6 +15,8 @@ require 'stringio'
 
 require File.dirname(__FILE__) + '/../lib/datashift'
 
+require 'spree_helper'
+
 $DataShiftFixturePath = File.join(File.dirname(__FILE__), 'fixtures')
 $DataShiftDatabaseYml = File.join($DataShiftFixturePath, 'config/database.yml')
 
@@ -127,25 +129,28 @@ module SpecHelper
     File.join($SpreeFixturePath, source)
   end
   
+  def set_spree_class_helpers
+    @spree_klass_list  =  %w{Image OptionType OptionValue Property ProductProperty Variant Taxon Taxonomy Zone}
+    
+    @Product_klass = DataShift::SpreeHelper::get_product_class  
+  
+    @spree_klass_list.each do |k|
+      instance_variable_set("@#{k}_klass", DataShift::SpreeHelper::get_spree_class(k)) 
+    end
+  end
+  
   def before_all_spree 
 
     # we are not a Spree project, nor is it practical to externally generate
     # a complete Spree application for testing so we implement a mini migrate/boot of our own
     #       
-    SpreeHelper.boot('test_spree_standalone')             # key to YAML db e.g  test_memory, test_mysql
+    DataShift::SpreeHelper.boot('test_spree_standalone')             # key to YAML db e.g  test_memory, test_mysql
     
-    puts "Testing Spree standalone - version #{SpreeHelper::version}"
+    puts "Testing Spree standalone - version #{DataShift::SpreeHelper::version}"
         
-    SpreeHelper.migrate_up      # create an sqlite Spree database on the fly
+    DataShift::SpreeHelper.migrate_up      # create an sqlite Spree database on the fly
     
-    @spree_klass_list  =  %w{Image OptionType OptionValue Property ProductProperty Variant Taxon Taxonomy Zone}
-    
-    @klass = SpreeHelper::get_product_class
-    @Product_klass = @klass  
-  
-    @spree_klass_list.each do |k|
-      instance_variable_set("@#{k}_klass", SpreeHelper::get_spree_class(k)) 
-    end
+    set_spree_class_helpers
     
   end
   
@@ -154,11 +159,11 @@ module SpecHelper
     # Reset main tables - TODO should really purge properly, or roll back a transaction      
     @Product_klass.delete_all
     
-    @spree_klass_list.each do |k| z = SpreeHelper::get_spree_class(k); 
+    @spree_klass_list.each do |k| z = DataShift::SpreeHelper::get_spree_class(k); 
       if(z.nil?)
         puts "WARNING: Failed to find expected Spree CLASS #{k}" 
       else
-        SpreeHelper::get_spree_class(k).delete_all 
+        DataShift::SpreeHelper::get_spree_class(k).delete_all 
       end
     end
   end
