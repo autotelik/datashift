@@ -442,7 +442,7 @@ module DataShift
               unless(find_by_values.size == @current_value.size)
                 found = @current_value.collect {|f| f.send(find_operator) }
                 @load_object.errors.add( @current_method_detail.operator, "Association with key(s) #{(find_by_values - found).inspect} NOT found")
-                puts "WARNING: Association with key(s) #{(lookups - found).inspect} NOT found - Not added."
+                puts "WARNING: Association #{@current_method_detail.operator} with key(s) #{(find_by_values - found).inspect} NOT found - Not added."
                 next if(@current_value.empty?)
               end
 

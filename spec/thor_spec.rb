@@ -19,6 +19,7 @@ describe 'Thor high level command line tasks' do
   end
   
   before(:each) do
+    db_clear_connections
   end
   
   #thor datashift:export:csv -m, --model=MODEL -r, --result=RESULT              ...
@@ -26,46 +27,28 @@ describe 'Thor high level command line tasks' do
   #thor datashift:generate:excel -m, --model=MODEL -r, --result=RESULT          ...
   #thor datashift:import:csv -i, --input=INPUT -m, --model=MODEL                ...
   #thor datashift:import:excel -i, --input=INPUT -m, --model=MODEL              ...
-  #thor datashift:paperclip:attach -a, --attachment-klass=ATTACHMENT_KLASS -f, -...
-  #thor datashift:spree:attach_images -i, --input=INPUT                         ...
-  #thor datashift:spree:images -i, --input=INPUT                                ...
-  #thor datashift:spree:products -i, --input=INPUT                              ...
-  #thor datashift:spreeboot:cleanup                                             ...
-  #thor datashift:spreereports:no_image                                         ...
+  #thor datashift:paperclip:attach -a, --attachment-klass=ATTACHMENT_KLASS -f, -...                                     ...
   #thor datashift:tools:zip -p, --path=PATH -r, --results=RESULTS               ...
 
   it "should list available datashift thor tasks" do
     x = capture(:stdout){ Thor::Runner.start(["list"]) }
     x.should =~ /.+datashift.+\n---------\n/
+    x.should =~ / csv -i/
     x.should =~ / excel -i/
-    x.should =~ / products -i/
   end
 
-   # N.B Tasks that fire up Rails application need to be run in own Thread or else get
-   #  ...  You cannot have more than one Rails::Application
-      
-  it "should be able to run simple excel import CLI" do
-    
-    run_in( SpreeHelper::spree_sandbox() ) do
-      x = capture(:stdout){ Thor::Runner.start(["datashift:import:excel", '-m', 'Project', '-i', DataShift::ifixture_file('ProjectsSingleCategories.xls')]) }
-    
-      puts x
-    end
-  end
-  
-  it "should be able to run simple excel import CLI" do
-    
+  # N.B Tasks that fire up Rails application need to be run in own Thread or else get
+  #  ...  You cannot have more than one Rails::Application
+        
+  it "should be able to import a model from a complex excel through import CLI" do
     x = Thread.new {
-    run_in( DataShift::rails_sandbox() ) do
-      x = capture(:stdout){ 
-        Thor::Runner.start(["datashift:import:excel", '-m', 'Spree::Zone', '-i', RSpecSpreeHelper::spree_fixture('SpreeZoneExample.xls')]) 
-      }
-    
-      puts x
-    end
+      run_in(rails_sandbox()) do
+        stdout = capture(:stdout){ 
+          Thor::Runner.start(["datashift:import:excel", '-m', 'Project', '-i', ifixture_file('ProjectsSingleCategories.xls')]) 
+          }
+        puts stdout
+      end
     }
     x.join
   end
-  
-  
 end

@@ -12,10 +12,11 @@ require File.dirname(__FILE__) + '/spec_helper'
 describe 'Method Mapping' do
 
   before(:all) do
-    db_connect( 'test_file' )    # , test_memory, test_mysql
     
-    # load our test model definitions - Project etc
+    # load our test model definitions - Project etc  
     require ifixture_file('test_model_defs')  
+  
+    db_connect( 'test_file' )    # , test_memory, test_mysql
 
     migrate_up
   end

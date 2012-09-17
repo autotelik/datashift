@@ -12,10 +12,11 @@ require 'erb'
 describe 'Basic Loader' do
 
   before(:all) do
-    db_connect( 'test_file' )    # , test_memory, test_mysql
     
-    # load our test model definitions - Project etc
-    require File.join($DataShiftFixturePath, 'test_model_defs') 
+    # load our test model definitions - Project etc  
+    require ifixture_file('test_model_defs')  
+  
+    db_connect( 'test_file' )    # , test_memory, test_mysql
       
     migrate_up
     @klazz = Project

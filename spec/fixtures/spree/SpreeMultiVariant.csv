@@ -1,4 +1,0 @@
-"SKU","Name","Description","Available On","     Price","CostPrice","Option Types","Option Types","Variants","count_on_hand"
-"MV_001","Demo Product for AR Loader","blah blah","2011-02-14",399.99,320.00,"mime_type:jpeg, PDF;print_type:colour",,"mime_type:PNG","12|6|7"
-"MV_002","Demo Excel Load via Jruby","less blah","2011-05-14",100.00,30.00,"mime_type:jpeg;print_type:black_white",,"mime_type:PNG;print_type:black_white","5|4"
-"MV_003","Demo third row in future","more blah blah","2012-07-01",50.34,23.34,"mime_type:jpeg;print_type:colour, sepia;size:large|mime_type:PNG","mime_type:PDF|print_type:black_white",,"12|4|7|12"

@@ -12,10 +12,11 @@ require File.dirname(__FILE__) + '/spec_helper'
 describe 'Method Mapping' do
 
   before(:all) do
-    db_connect( 'test_file' )    # , test_memory, test_mysql
     
-    # load our test model definitions - Project etc
+    # load our test model definitions - Project etc  
     require ifixture_file('test_model_defs')  
+  
+    db_connect( 'test_file' )    # , test_memory, test_mysql
 
     migrate_up
   end
@@ -170,7 +171,7 @@ describe 'Method Mapping' do
     end
   end
 
-   it "should populate required Class for has_one operator method details" do
+  it "should populate required Class for has_one operator method details" do
 
     MethodDictionary.find_operators( Version )
     MethodDictionary.build_method_details( Version )
@@ -223,7 +224,7 @@ describe 'Method Mapping' do
 
 
   it "should find a set of methods based on a list of column names" do
-     pending("key API - map column headers to set of methods")
+    pending("key API - map column headers to set of methods")
   end
 
   it "should not by default map setter methods", :fail => true do

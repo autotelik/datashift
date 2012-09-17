@@ -18,7 +18,7 @@ module DataShift
       
     def initialize(attachment_klazz, attachment = nil, options = {})
         
-      opts = options.merge(:load => false)  # Don't need operators and no table Spree::Image
+      opts = options.merge(:load => false) 
 
       super( attachment_klazz, attachment, opts )
         
