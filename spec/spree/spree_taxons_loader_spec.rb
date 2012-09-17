@@ -9,7 +9,7 @@
 #             Provides Loaders and rake tasks specifically tailored for uploading or exporting
 #             Spree Products, associations and Images
 #
-require File.dirname(__FILE__) + '/spec_helper'
+require File.join(File.expand_path(File.dirname(__FILE__)  + '/..'), "spec_helper")
 
 require 'spree_helper'
 require 'product_loader'
@@ -117,9 +117,6 @@ describe 'SpreeLoader' do
     p2.taxons.collect(&:name).sort.should == ['Nature','Oils','Paintings','Seascape']
      
     paint_parent = @Taxonomy_klass.find_by_name('Paintings')
-    
-       
-    puts paint_parent.taxons.collect(&:name).sort.inspect
      
     paint_parent.taxons.should have_exactly(4).items # 3 children + all Taxonomies have a root Taxon
     

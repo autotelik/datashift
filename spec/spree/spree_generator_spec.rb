@@ -9,7 +9,7 @@
 #             Provides Loaders and rake tasks specifically tailored for uploading or exporting
 #             Spree Products, associations and Images
 #
-require File.dirname(__FILE__) + '/spec_helper'
+require File.join(File.expand_path(File.dirname(__FILE__)  + '/..'), "spec_helper")
 
 require 'spree_helper'
 require 'excel_generator'
@@ -71,7 +71,7 @@ describe 'SpreeGenerator' do
 
     excel = ExcelGenerator.new(expect)
       
-    excel.generate_with_associations(@klass)
+    excel.generate_with_associations(@Product_klass)
 
     File.exists?(expect).should be_true
 
@@ -85,7 +85,7 @@ describe 'SpreeGenerator' do
 
     excel = ExcelGenerator.new(expect)
       
-    excel.generate_with_associations(@klass, :exclude => :has_many)
+    excel.generate_with_associations(@Product_klass, :exclude => :has_many)
 
     File.exists?(expect).should be_true
 

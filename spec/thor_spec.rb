@@ -12,12 +12,13 @@ require 'thor/runner'
 
 require File.dirname(__FILE__) + '/spec_helper'
 
-  
 describe 'Thor high level command line tasks' do
 
-  DataShift::load_commands
- 
-  before(:each) do
+  include SpecHelper
+  extend SpecHelper   
+        
+  before(:all) do
+    DataShift::load_commands
   end
   
   before(:each) do
@@ -43,12 +44,11 @@ describe 'Thor high level command line tasks' do
     x.should =~ / products -i/
   end
 
-  it "should be able to run spree product loader CLI" do
-    Datashift::Spree.start(["products"])
+  it "should be able to run simple excel import CLI" do
+    x = capture(:stdout){ Thor::Runner.start(["datashift:import:excel", '-m', 'Spree::Zone', '-i', SpecHelper::spree_fixture('SpreeZoneExample.xls')]) }
+    
+    puts x
   end
-
-  it "should be able to run an export to excel from a simple command line task" do
-    Datashift::Spree.start(["images"])
-  end
+  
   
 end

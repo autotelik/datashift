@@ -9,7 +9,7 @@
 #             Provides Loaders and rake tasks specifically tailored for uploading or exporting
 #             Spree Products, associations and Images
 #
-require File.dirname(__FILE__) + '/spec_helper'
+require File.join(File.expand_path(File.dirname(__FILE__)  + '/..'), "spec_helper")
 
 require 'spree_helper'
 require 'product_loader'
@@ -179,9 +179,6 @@ describe 'Spree Variants Loader' do
     p.variants_including_master.should have_exactly(4).items 
     p.variants.should have_exactly(3).items  
      
-    p.variants.each { |v| v.option_values.each {|o| puts o.inspect } }        
-    
-    p.option_types.each { |ot| puts ot.inspect }
     p.option_types.should have_exactly(2).items # mime_type, print_type
     
     v1 = p.variants[0]

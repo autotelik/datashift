@@ -19,12 +19,32 @@ module Datashift
   
     include DataShift::Logging
       
-    desc "zip", "Create zip of matching digital files" 
+    desc "zip", "Create zip of files" 
+
+    method_option :path, :aliases => '-p', :required => true, :desc => "The path to the digital files"
+    method_option :output, :aliases => '-o', :required => true, :desc => "The resulting zip file name"
+ 
+    def zip()
+     
+      require 'zip/zip'
+      require 'zip/zipfilesystem'
+
+      output = options[:output]
+
+      Zip::ZipOutputStream.open(output) do |zos|
+        Dir[File.join(options[:path], '**', '*.*')].each do |p|
+          zos.put_next_entry(File.basename(p))
+          zos.print IO.read(p)
+        end
+      end
+    end
+    
+    desc "zip_matching", "Create zip of matching digital files e.g zip up pdf, jpg and png versions of a file" 
 
     method_option :path, :aliases => '-p', :required => true, :desc => "The path to the digital files"
     method_option :results, :aliases => '-r', :required => true, :desc => "The path to store resulting zip files"
  
-    def zip()
+    def zip_matching()
      
       require 'zip/zip'
       require 'zip/zipfilesystem'
@@ -57,6 +77,7 @@ module Datashift
       end
       
     end   
+    
   end
 
 end
