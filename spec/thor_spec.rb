@@ -13,10 +13,7 @@ require 'thor/runner'
 require File.dirname(__FILE__) + '/spec_helper'
 
 describe 'Thor high level command line tasks' do
-
-  include SpecHelper
-  extend SpecHelper   
-        
+         
   before(:all) do
     DataShift::load_commands
   end
@@ -44,10 +41,30 @@ describe 'Thor high level command line tasks' do
     x.should =~ / products -i/
   end
 
+   # N.B Tasks that fire up Rails application need to be run in own Thread or else get
+   #  ...  You cannot have more than one Rails::Application
+      
   it "should be able to run simple excel import CLI" do
-    x = capture(:stdout){ Thor::Runner.start(["datashift:import:excel", '-m', 'Spree::Zone', '-i', SpecHelper::spree_fixture('SpreeZoneExample.xls')]) }
     
-    puts x
+    run_in( SpreeHelper::spree_sandbox() ) do
+      x = capture(:stdout){ Thor::Runner.start(["datashift:import:excel", '-m', 'Project', '-i', DataShift::ifixture_file('ProjectsSingleCategories.xls')]) }
+    
+      puts x
+    end
+  end
+  
+  it "should be able to run simple excel import CLI" do
+    
+    x = Thread.new {
+    run_in( DataShift::rails_sandbox() ) do
+      x = capture(:stdout){ 
+        Thor::Runner.start(["datashift:import:excel", '-m', 'Spree::Zone', '-i', RSpecSpreeHelper::spree_fixture('SpreeZoneExample.xls')]) 
+      }
+    
+      puts x
+    end
+    }
+    x.join
   end
   
   
