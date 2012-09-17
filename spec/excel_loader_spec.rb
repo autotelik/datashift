@@ -39,7 +39,6 @@ if(Guards::jruby?)
         @assoc_klazz.find_or_create_by_reference(cat)
       end
 
-
       MethodDictionary.clear
       MethodDictionary.find_operators( Project )
       MethodDictionary.find_operators( @assoc_klazz )
@@ -162,7 +161,10 @@ if(Guards::jruby?)
       p.value_as_string.should == 'some default text'
       p.value_as_double.should == 45.467
       p.value_as_boolean.should == true
-      p.value_as_datetime.should == texpected
+      p.value_as_datetime.to_s(:db).should == texpected
+
+      # expected: "2012-09-17 10:00:52"
+      # got: Mon Sep 17 10:00:52 +0100 2012 (using ==)
 
       p_no_defs = Project.first
       

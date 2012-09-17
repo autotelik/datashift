@@ -16,9 +16,9 @@ require 'excel_exporter'
 
 describe 'SpreeExporter' do
 
-  include SpecHelper
-  extend SpecHelper
-    
+  include RSpecSpreeHelper
+  extend RSpecSpreeHelper
+  
   before(:all) do
     before_all_spree
     results_clear()
@@ -26,8 +26,7 @@ describe 'SpreeExporter' do
 
   before do
     
-    before_each_spree   # inits tests, cleans DB setups model types
-    
+    RSpecSpreeHelper::before_each_spree   # inits tests, cleans DB setups model types
     
     # Create some test data
     root = @Taxonomy_klass.create( :name => 'Paintings' )
