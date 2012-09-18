@@ -31,9 +31,9 @@ module DataShift
       excel = Excel.new
 
       if(options[:sheet_name] )
-        excel.create_worksheet( options[:sheet_name] ) 
+        excel.create_worksheet( :name => options[:sheet_name] ) 
       else
-        excel.create_worksheet( records.first.class.name )
+        excel.create_worksheet( :name => records.first.class.name )
       end
    
       excel.ar_to_headers(records)
@@ -55,9 +55,9 @@ module DataShift
       excel = Excel.new
 
       if(options[:sheet_name] )
-        excel.create_worksheet( options[:sheet_name] ) 
+        excel.create_worksheet( :name => options[:sheet_name] ) 
       else
-        excel.create_worksheet( items.first.class.name )
+        excel.create_worksheet( :name => items.first.class.name )
       end
         
       MethodDictionary.find_operators( klass )

@@ -10,14 +10,11 @@
 #             type applications, files and databases.
 #
 #             Provides support for moving data between .xls (Excel/OpenOffice)
-#             Spreedsheets via JRuby and AR, enabling direct import/export of 
+#             Spreedsheets via Ruby and AR, enabling direct import/export of 
 #             ActiveRecord models with all their associations from database.
 #
 #             Provides support for moving data between csv files and AR, enabling direct
 #             import/export of AR models and their associations from database.
-#             
-#             Provides rake tasks specifically tailored for uploading or exporting
-#             Spree Products, associations and Images
 #
 ## encoding: utf-8
 
@@ -33,7 +30,7 @@ Jeweler::Tasks.new do |gem|
   gem.name = DataShift.gem_name
   gem.homepage = "http://github.com/autotelik/datashift"
   gem.license = "MIT"
-  gem.summary = %Q{ Shift data betwen Excel/CSAV and any Ruby app}
+  gem.summary = %Q{ Shift data betwen Excel/CSV and any Ruby app}
   gem.description = %Q{ Comprehensive tools to import/export between Excel/CSV and ActiveRecord databases, Rails apps, and any Ruby projec.}
   gem.email = "rubygems@autotelik.co.uk"
   gem.authors = ["Thomas Statter"]

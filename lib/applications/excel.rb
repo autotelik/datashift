@@ -4,6 +4,10 @@
 # License::   
 #
 # Details::   A wrapper around creating and directly manipulating Excel files. 
+#             Acts as proxy over main Ruby gem spreadsheet and our own JRuby only implementation using Apache POI
+#             Aim is to make it seamless to switch between any Excel implementation
+#             
+#             http://spreadsheet.rubyforge.org/GUIDE_txt.html
 #
 require 'guards'
 
@@ -15,6 +19,7 @@ module ExcelProxy
       JExcelFile
     else
       require 'spreadsheet'
+      require 'spreadsheet_extensions'
       Spreadsheet
     end
   end
@@ -34,7 +39,7 @@ class Excel #< BasicObject
     @excel_class = ExcelProxy::proxy_class
     @excel = ExcelProxy::proxy_object
   end
-     
+   
   # Forward all undefined methods to the wrapped Excel object.
   def method_missing(method, *args, &block)
     #puts @excel.class, method, args.inspect
@@ -43,6 +48,12 @@ class Excel #< BasicObject
       @excel.send(method, *args, &block)
     elsif(@excel.worksheets.last.respond_to?(method))  # active_worksheet doesn't work so use the latest
       @excel.worksheets.last.send(method, *args, &block) 
+    elsif(@excel_class.respond_to?(method))
+      if(method == :open || method == 'open')
+        @excel = @excel_class.send(method, *args, &block)
+      else
+        @excel_class.send(method, *args, &block)
+      end
     else            
       super
     end

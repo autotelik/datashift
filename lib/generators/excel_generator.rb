@@ -93,7 +93,7 @@ module DataShift
 
         name  = options[:sheet_name] || klass.name
         
-        sheet = @excel.create_worksheet( name ) 
+        sheet = @excel.create_worksheet( :name => name ) 
     
         unless sheet
           logger.error("Excel failed to create WorkSheet for #{name}")

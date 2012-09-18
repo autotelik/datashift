@@ -28,7 +28,6 @@ module DataShift
     #   [:force_inclusion] : Array of inbound column names to force into mapping
     #   [:strict]          : Raise exception when no mapping found for a column heading (non mandatory)
 
-
     def perform_excel_load( file_name, options = {} )
 
       @excel = Excel.new
@@ -43,7 +42,7 @@ module DataShift
       @sheet = @excel.worksheet( sheet_number )
 
       header_row_index =  options[:header_row] || 0
-      @header_row = @sheet.getRow(header_row_index)
+      @header_row = @sheet.row(header_row_index)
 
       raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{header_row_index} contains headers" unless(@header_row)
 
@@ -52,37 +51,42 @@ module DataShift
       # TODO - make more robust
       # There is no actual max columns in Excel .. you will run out of memory though at some point
       (0..1024).each do |i|
-        cell = @header_row.getCell(i)
+        cell = @header_row[i, cell]
         break unless cell
-        header = "#{@excel.cell_value(cell).to_s}".strip
+        header = "#{cell.to_s}".strip
         break if header.empty?
         @headers << header
       end
 
       raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{header_row_index} contains headers" if(@headers.empty?)
 
+      
       # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
       # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
       map_headers_to_operators( @headers, options )
 
-      logger.info "Excel Loader processing #{@excel.num_rows} rows"
+      logger.info "Excel Loader processing #{@sheet.num_rows} rows"
+      
+            loaded_objects.clear
+            
+      puts "SIZE NOW", loaded_objects.size
       load_object_class.transaction do
-        @loaded_objects =  []
-
-        (1..@excel.num_rows).collect do |row|
-
+       
+        @sheet.each_with_index do |row, i|
+                 
+          next if(i == header_row_index)
+          
           # Excel num_rows seems to return all 'visible' rows, which appears to be greater than the actual data rows
           # (TODO - write spec to process .xls with a huge number of rows)
           #
           # This is rubbish but currently manually detect when actual data ends, this isn't very smart but
           # got no better idea than ending once we hit the first completely empty row
-          break if @excel.sheet.getRow(row).nil?
+          break if row.nil?
 
           contains_data = false
             
           # First assign any default values for columns not included in parsed_file
           process_missing_columns_with_defaults
-
 
           # TODO - Smart sorting of column processing order ....
           # Does not currently ensure mandatory columns (for valid?) processed first but model needs saving
@@ -95,7 +99,7 @@ module DataShift
           # pulling data out of associated column
           @method_mapper.method_details.each_with_index do |method_detail, col|
 
-            value = value_at(row, col)
+            value = row[col]
 
             contains_data = true unless(value.nil? || value.to_s.empty?)
               
@@ -122,6 +126,9 @@ module DataShift
 
         end
       end
+      
+      loaded_objects.compact! if(loaded_objects)
+      
       puts "Excel loading stage complete - #{loaded_objects.size} rows added."
       puts "There were NO failures." if failed_objects.empty?
         
