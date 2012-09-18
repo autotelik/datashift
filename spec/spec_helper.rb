@@ -89,6 +89,8 @@ RSpec.configure do |config|
   end
   
   def bundler_setup(gemfile)
+    $stderr.puts "No Such Gemfile #{gemfile}" unless File.exists?(gemfile)
+    
     ENV['BUNDLE_GEMFILE'] = gemfile
     #Bundler.setup
     begin
@@ -143,18 +145,6 @@ RSpec.configure do |config|
     puts "Connected to DB"
     
     @dslog.info "Connected to DB - #{ActiveRecord::Base.connection.inspect}"
-  end
-
-  def set_logger( name = 'datashift_spec.log')
-    
-    require 'logger'
-    logdir = File.dirname(__FILE__) + '/logs'
-    FileUtils.mkdir_p(logdir) unless File.exists?(logdir)
-    ActiveRecord::Base.logger = Logger.new( File.join(logdir, name) )
-
-    # Anyway to direct one logger to another ????? ... Logger.new(STDOUT)
-    
-    @dslog = ActiveRecord::Base.logger
   end
   
   # These are our test models with associations

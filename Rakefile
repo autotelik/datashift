@@ -33,8 +33,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = DataShift.gem_name
   gem.homepage = "http://github.com/autotelik/datashift"
   gem.license = "MIT"
-  gem.summary = %Q{ Shift data betwen applications and Active Record}
-  gem.description = %Q{Comprehensive Excel and CSV import/export tools. Shift data between ActiveRecord databases, applications, and projects like Spree}
+  gem.summary = %Q{ Shift data betwen Excel/CSAV and any Ruby app}
+  gem.description = %Q{ Comprehensive tools to import/export between Excel/CSV and ActiveRecord databases, Rails apps, and any Ruby projec.}
   gem.email = "rubygems@autotelik.co.uk"
   gem.authors = ["Thomas Statter"]
   # dependencies defined in Gemfile

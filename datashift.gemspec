@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thomas Statter"]
   s.date = "2012-09-10"
-  s.description = "Comprehensive Excel and CSV import/export tools. Shift data between ActiveRecord databases, applications, and projects like Spree"
+  s.description = "Comprehensive tools to import/export between Excel/CSV and ActiveRecord databases, Rails apps, and any Ruby project"
   s.email = "rubygems@autotelik.co.uk"
   s.extra_rdoc_files = [
     "LICENSE.txt",
