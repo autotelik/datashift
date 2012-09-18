@@ -125,6 +125,8 @@ module DataShift
       @prefixes       = {}
       @postfixes      = {}
       
+      @loaded_objects = []
+      
       reset(object)
     end
 
@@ -151,7 +153,6 @@ module DataShift
       ext = File.extname(file_name)
           
       if(ext.casecmp('.xls') == 0)
-        raise DataShift::BadRuby, "Please install and use JRuby for loading .xls files" unless(Guards::jruby?)
         perform_excel_load(file_name, options)
       elsif(ext.casecmp('.csv') == 0)
         perform_csv_load(file_name, options)

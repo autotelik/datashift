@@ -11,6 +11,12 @@ describe 'Excel Proxy' do
     @excel = Excel.new
   end
 
+  it "can open an existing spreadsheet" do
+
+    sheet = @excel.open( ifixture_file('ProjectsSingleCategories.xls') )
+
+    sheet.should_not be_nil
+  end
   
   it "can create new un-named worksheet" do
     sheet1 = @excel.create_worksheet
@@ -34,17 +40,26 @@ describe 'Excel Proxy' do
     sheet2.name.should == "underworld"
   end
   
-  it "can access list of worksheets" do
+  it "can create multiple named worksheets" do
 
     @excel.create_worksheet( :name => "underworld")
     @excel.create_worksheet( :name => "jeff mills")  
     @excel.create_worksheet( :name => "autechre")
-    
-    @excel.worksheets.should have_exactly(3).items
-    
+    @excel.create_worksheet( :name => "swarms")
+        
+    @excel.worksheets.should have_exactly(4).items
+  end
+  
+  it "can access a worksheet by index" do
+
+    @excel.create_worksheet( :name => "underworld")
+    @excel.create_worksheet( :name => "jeff mills")  
+    @excel.create_worksheet( :name => "autechre")
+        
     @excel.worksheets[0].name.should == "underworld" 
     @excel.worksheets[2].name.should == "autechre" 
   end
+  
   
   it "can access a worksheet by ID" do
 

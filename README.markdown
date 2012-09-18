@@ -1,21 +1,25 @@
 ##  DataShift 
 
-Provides tools to shift data between Ruby, external applications, files and ActiveRecord.
+Provides tools to shift data between Excel/CSV files and Rails projects and Ruby applications
 
-Specific loaders and command line tasks for Spree E-Commerce.
+Impoer and export models fully with all associaitons.
 
-Wiki taking shape with more info here : **https://github.com/autotelik/datashift/wiki**
+Specific loaders and command line tools for Spree E-Commerce (full Product loading) and Paperclip attachments.
+
+Comprehensive Wiki here : **https://github.com/autotelik/datashift/wiki**
 
 ### Features
 
-Import and Export ActiveRecord models through .xls or CSV  files, including
-all associations and setting configurable defaults or over rides.
+Import and Export ActiveRecord models direct to CSV or Excel/OpenOffice (.xls) (JRuby, 1.8.7, REE) (1.9.3 in pipeline)
+
+You can select which associations to include and for import, set configurable defaults or over rides.
+
+Create, parse and use Excel/OpenOffice (.xls) documents dynamically from Ruby. (JRuby, 1.8.7, REE) (1.9.3 in pipeline)
 
 Generate a sample template with headers only.
 
 Export template and populate with model data 
 
-Create, parse and use Excel/OpenOffice (.xls) documents dynamically from Ruby.
 
 Easily extendable Loader functionality to deal with non trivial import cases, such
 as complex association lookups.
@@ -41,42 +45,25 @@ To use :
     gem 'datashift'
     require 'datashift'
 
-To pull the tasks in, add this call to your Rakefile :
-
-<<<<<<< HEAD
-```ruby 
-    DataShift::load_tasks
-```
-
-To keep the availability to only development mode use
-
-```ruby 
-    DataShift::load_tasks if(Rails.env.development?)
-```
-=======
-```ruby DataShift::load_tasks```
-
-To keep the availability to only development mode use
-
-```ruby DataShift::load_tasks if(Rails.env.development?)```
->>>>>>> a6d5d492fd9df38a4acb8c50423219994b4b5601
 
 To use the Thor command line applications :
 
-    Create a high level .thor file - e.g mysite.thor - in your applications root directory 
+    Create a high level .thor file - e.g mysite.thor - in your Rails root directory 
 
 Edit the file and add the following to pull in the thor commands :
+
 ```ruby
     require 'thor'
     require 'datashift'
 
     DataShift::load_commands
 ```
+
+To keep the availability to only development mode use
+
+```ruby DataShift::load_commands if(Rails.env.development?)```
+
 To check the available tasks run
-
-    bundle exec rake -T datashift
-
-and/or
 
     bundle exc thor list datashift
 
@@ -84,8 +71,11 @@ To get usage information use thor help <command>, for example
 
     bundle exec thor help datashift:generate:excel
 
-N.B - To use the Excel loader, OLE and Excel are NOT required, however
-JRuby is required, since it uses Java's Apache POI under the hood to process .xls files.
+To use Excel OLE and MS Excel are NOT required.
+
+Currently 1.9.3 not supported, but specs pass with all other main Rubies.
+
+Includes a wrapper around brilliant Apache POI libraries for anyone using JRuby.
 
 Guards are provided, and used internally, for mixed Ruby setups. Can be used like :
 
@@ -97,20 +87,17 @@ Guards are provided, and used internally, for mixed Ruby setups. Can be used lik
 
 ## Active Record - Import/Export
 
-Provides high level rake tasks for importing data via ActiveRecord models into a DB,
+Provides high level tasks for importing data via ActiveRecord models into a DB,
  from various sources, currently csv or .xls files (Excel/Open Office)
 
-N.B This is under active development, moving to thor tasks so maybe out of date
+Please use thor list and thor help <xxx> to get latest command lines
 
-Please try rake -T and  thor list to get upto date command lines
+    bundle exec thor datashift:import:csv model=BlogPost input=BlogPostImport.csv verbose=true 
 
-    bundle exec rake datashift:import:csv model=BlogPost input=BlogPostImport.csv verbose=true 
 
-    jruby -S rake datashift:import:excel model=BlogPost input=BlogPostImport.xls verbose=true 
+Provides high level  tasks for exporting data to various sources, currently .xls files (Excel/Open Office)
 
-Provides high level rake tasks for exporting data to various sources, currently .xls files (Excel/Open Office)
-
-    jruby -S rake datashift:export:excel model=BlogPost result=BlogExport.xls 
+    bundle exec thor datashift:export:excel model=BlogPost result=BlogExport.xls 
 
 
 The library can be easily extended with Loaders to deal with non trivial cases,
@@ -143,13 +130,27 @@ This data can be exported directly to CSV or Excel/OpenOffice spreadsheets.
 
 ## Features
 
+- *Associations*
+
+  Can import/export 'belongs_to, 'has_many' and 'has_one' associations, including assignment of multiple objects
+  via either multiple columns, or via a DSL for creating multiple entries in a single (column). 
+
+  The DSL can also be used to define which fields to lookup associations, and assign values to other fields.
+
+  See Wiki for more details on DSL syntax.
+
+  Supports delegated attributes.
+
 - *High level wrappers around applications including Excel and Word
 
   Quickly and easily access common enterprise applications through Ruby
 
-  Wrapper around MS Excel File format, acheived via Apache POI under JRuby, so not restricted to Windows
-  and Excel does not need to be installed.
+  MS Excel itself does not need to be installed.
 
+  Our proxy for Excel allows seamless switching between 'spreadsheet' gem and datashift's own JRuby wrapper over Apache POI.
+
+  When using JRuby, Apache POI may offer advanced facilities not found in standard Ruby spreadsheet gem
+  
   The required POI jars are already included.
 
 - *Direct Excel export*
@@ -168,26 +169,21 @@ This data can be exported directly to CSV or Excel/OpenOffice spreadsheets.
   an approximation of the actual associations, so given 'Product Properties' heading,
   finds real association 'product_properties' to send or call on the AR object
 
-- *Associations*
-
-  Can handle 'belongs_to, 'has_many' and 'has_one' associations, including assignment of multiple objects
-  via either multiple columns, or via specially delimited entry in a single (column). See Details section.
-
-  Supports delegated attributes.
-
-- *Rake Tasks*
-
-  High level Rake tasks are provided, only required to supply model class, and file location :
-
-    jruby -S rake datashift:import:excel model=MusicTrack input=MyTrackListing.xls
 
 
-- *Spree Rake Tasks*
+- *Thor Tasks*
+
+  High level Thor CLIs are provided, only required to supply model class, and file location :
+
+    thor datashift:import:excel model=MusicTrack input=MyTrackListing.xls
+
+
+- *Spree Tasks*
 
   Spree's product associations are non trivial so specific Rake tasks are also provided for loading Spree Producta
   with all associations and Image loading.
 
-    jruby -S rake datashift:spree:products input=C:\MyProducts.xls
+    thor datashift:spree:products input=C:\MyProducts.xls
 
 
 - *Seamless Spree Image loading can be achieved by ensuring SKU or class Name features in Image filename.
@@ -198,14 +194,12 @@ This data can be exported directly to CSV or Excel/OpenOffice spreadsheets.
   parameter klass=Xyz.
 
   In the Spree tasks, this defaults to Product, so attempts to attach Image to a Product via Product SKU or Name.
- 
-  Image loading **does not** specifically require JRuby
 
   A report is generated in the current working directory detailing any Images in the paths that could not be matched with a Product.
 
-  rake  datashift:spree:images input=C:\images\product_images skip_if_no_assoc=true
+    thor  datashift:spree:images input=C:\images\product_images skip_if_no_assoc=true
 
-  rake  datashift:spree:images input=C:\images\taxon_icons skip_if_no_assoc=true klass=Taxon
+    thor datashift:spree:images input=C:\images\taxon_icons skip_if_no_assoc=true klass=Taxon
 
 ## Import to Active Record
 
@@ -228,8 +222,6 @@ During loading, a call to find_all_by_reference will be made, picking up the 2 c
 
 
 ## TODO
-
-  - Add direct Image loading to Spree  i.e should be able to specify just path in a column .. "/images/red-tshirt.jpg"
 
   - Smart sorting of column processing order ....
 

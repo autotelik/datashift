@@ -80,7 +80,7 @@ if(DataShift::Guards::jruby?)
     # Create and return a new worksheet. 
     # Not set to the active worksheet
     
-    def create_worksheet( options = {})
+    def create_worksheet( options = {} )
       sheet_name = options[:name]
       
       @workbook = HSSFWorkbook.new() if @workbook.nil?

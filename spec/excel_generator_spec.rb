@@ -69,7 +69,7 @@ describe 'Excel Generator' do
   end
     
     
-  it "should enable us to exclude cetain associations in template .xls file from model" do
+  it "should enable us to exclude cetain associations in template .xls file from model", :fail => true do
 
     expect= result_file('project_plus_some_assoc_template_spec.xls')
 
@@ -79,12 +79,17 @@ describe 'Excel Generator' do
       
     gen.generate_with_associations(Project, options)
 
-    File.exists?(expect).should be_true
+    File.exists?(expect).should be_true, "Failed to find expected result file #{expect}"
       
     excel = Excel.new
     excel.open(expect)
+    
+    excel.worksheets.should have(1).items
+    
+    excel.worksheet(0).name.should == 'Project'
       
-    excel.each {|r| puts r.inspect }
+    headers = excel.worksheets[0].row(0)
+    headers.should include 'title'
       
   end
     

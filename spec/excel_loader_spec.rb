@@ -50,7 +50,7 @@ describe 'Excel Loader' do
     loader.load_object.new_record?.should be_true
   end
   
-  it "should process a simple .xls spreedsheet" do
+  it "should process a simple .xls spreedsheet", :fail => true do
   
     loader = ExcelLoader.new(Project)
  
@@ -101,7 +101,7 @@ describe 'Excel Loader' do
   
   end
   
-  it "should process multiple associations with lookup specified in column from excel spreedsheet", :fail => true do
+  it "should process multiple associations with lookup specified in column from excel spreedsheet" do
   
     loader = ExcelLoader.new(Project)
   
