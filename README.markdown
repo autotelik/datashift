@@ -2,11 +2,12 @@
 
 Provides tools to shift data between Excel/CSV files and Rails projects and Ruby applications
 
-Impoer and export models fully with all associaitons.
-
-Specific loaders and command line tools for Spree E-Commerce (full Product loading) and Paperclip attachments.
+Import and export models fully with all associations.
 
 Comprehensive Wiki here : **https://github.com/autotelik/datashift/wiki**
+
+Specific command line tools and full Product loading for Spree E-Commerce 
+now seperate gem at [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
 
 ### Features
 
@@ -20,6 +21,7 @@ Generate a sample template with headers only.
 
 Export template and populate with model data 
 
+Bulk import tools for Paperclip attachments.
 
 Easily extendable Loader functionality to deal with non trivial import cases, such
 as complex association lookups.
@@ -36,19 +38,23 @@ Many example Spreadsheets/CSV files in spec/fixtures, fully documented with comm
 
 ## Installation
 
-Add gem 'datashift' to your Gemfile/bundle, or install the latest gem as usual :
+Add gem 'datashift' to your Gemfile/bundle or use ```gem install```
 
-    gem install datashift
+    ```ruby gem 'datashift' ```
+
+For Spree support also add :
+
+    ```ruby gem 'datashift_spree' ```
 
 To use :
 
-    gem 'datashift'
     require 'datashift'
 
+To use the Thor command line applications, pull in the tasks.
 
-To use the Thor command line applications :
+Generally the easiest way is to, create a high level .thor file in your Rails root directory
 
-    Create a high level .thor file - e.g mysite.thor - in your Rails root directory 
+    e.g mysite.thor  
 
 Edit the file and add the following to pull in the thor commands :
 
@@ -65,7 +71,7 @@ To keep the availability to only development mode use
 
 To check the available tasks run
 
-    bundle exc thor list datashift
+    bundle exec thor list datashift
 
 To get usage information use thor help <command>, for example
 
