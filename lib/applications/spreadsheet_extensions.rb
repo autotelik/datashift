@@ -8,9 +8,12 @@
 # 
 # ... to do extract into separate module with pure ruby that works with both POI and Spreadsheet
 
-
-class Spreadsheet::Worksheet 
+require 'excel_base'
   
+class Spreadsheet::Worksheet 
+     
+   include ExcelBase
+    
   # Convert array into a header row
   def set_headers(headers, apply_style = nil)
     return if headers.empty?
@@ -23,6 +26,6 @@ class Spreadsheet::Worksheet
   def num_rows
     rows.size
   end
-    
+  
 end
   

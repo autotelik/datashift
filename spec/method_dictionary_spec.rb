@@ -227,11 +227,11 @@ describe 'Method Mapping' do
     pending("key API - map column headers to set of methods")
   end
 
-  it "should not by default map setter methods", :fail => true do
+  it "should not by default map setter methods" do
     MethodDictionary.assignments[Milestone].should_not include('title')
   end
   
-  it "should support reload and  inclusion of setter methods", :fail => true do
+  it "should support reload and  inclusion of setter methods" do
 
     MethodDictionary.assignments[Milestone].should_not include('title')
         

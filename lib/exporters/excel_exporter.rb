@@ -39,11 +39,8 @@ module DataShift
       excel.ar_to_headers(records)
         
       excel.ar_to_xls(records)
-
-              
-      # => :methods => List of methods to additionally export on each record
-         
-      excel.save( filename() )
+  
+      excel.write( filename() )
     end
       
     # Create an Excel file from list of ActiveRecord objects
@@ -91,14 +88,15 @@ module DataShift
         
         excel.set_headers( headers )
         
-        row_index = 1
+        row = 1
+        column = 0
         
-        items.each do |datum| 
-          excel.create_row(row_index += 1)
-          excel.ar_to_xls_row(1, datum)
+        items.each do |row_of_data| 
+          excel.ar_to_xls_row(row, column, row_of_data)
+          row += 1
         end
            
-        excel.save( filename() )
+        excel.write( filename() )
       end
     end
   end # ExcelGenerator

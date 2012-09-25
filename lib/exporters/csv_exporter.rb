@@ -125,6 +125,8 @@ module DataShift
               if(assoc_object.is_a?ActiveRecord::Base)
                 column_text = record_to_column(assoc_object)     # belongs_to or has_one
                 
+              # TODO -ColumnPacker class shared between excel/csv
+              
                 csv << "#{@text_delim}#{column_text}#{@text_delim}" << Delimiters::csv_delim
                 #csv << record_to_csv(r)
                 

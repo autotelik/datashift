@@ -54,8 +54,27 @@ describe 'Excel Generator' do
     File.exists?(expect).should be_true
       
     puts "Can manually check file @ #{expect}"
+    
+    excel = Excel.new
+    excel.open(expect)
+    
+    excel.worksheets.should have(1).items
+    
+    excel.worksheet(0).name.should == 'Project'
+      
+    headers = excel.worksheets[0].row(0)
+    
+    [ "title", "value_as_string", "value_as_text", "value_as_boolean", "value_as_datetime", "value_as_integer", "value_as_double"].each do |check|
+      headers.include?(check).should == true
+    end
   end
 
+  # has_one  :owner
+  # has_many :milestones
+  # has_many :loader_releases
+  # has_many :versions, :through => :loader_releases
+  # has_and_belongs_to_many :categories
+  
   it "should include all associations in template .xls file from model" do
 
     expect= result_file('project_plus_assoc_template_spec.xls')
@@ -66,16 +85,28 @@ describe 'Excel Generator' do
 
     File.exists?(expect).should be_true
 
+    excel = Excel.new
+    excel.open(expect)
+    
+    excel.worksheets.should have(1).items
+    
+    excel.worksheet(0).name.should == 'Project'
+      
+    headers = excel.worksheets[0].row(0)
+    
+    ["owner", "milestones", "loader_releases", "versions", "categories"].each do |check|
+      headers.include?(check).should == true
+    end
   end
-    
-    
-  it "should enable us to exclude cetain associations in template .xls file from model", :fail => true do
+   
+      
+  it "should enable us to exclude associations by type in template .xls file", :fail => true do
 
     expect= result_file('project_plus_some_assoc_template_spec.xls')
 
     gen = ExcelGenerator.new(expect)
 
-    options = {:exclude => :milestones }
+    options = {:exclude => :has_many }
       
     gen.generate_with_associations(Project, options)
 
@@ -89,8 +120,47 @@ describe 'Excel Generator' do
     excel.worksheet(0).name.should == 'Project'
       
     headers = excel.worksheets[0].row(0)
-    headers.should include 'title'
+    
+    headers.include?('title').should == true
+    headers.include?('owner').should == true
+    
+    ["milestones", "loader_releases", "versions", "categories"].each do |check|
+      headers.should_not include check
+    end
+ 
+  end
+  
+    
+  it "should enable us to exclude certain associations in template .xls file ", :fail => true do
+
+    expect= result_file('project_plus_some_assoc_template_spec.xls')
+
+    gen = ExcelGenerator.new(expect)
+
+    options = {:remove => [:milestones, :versions] }
       
+    gen.generate_with_associations(Project, options)
+
+    File.exists?(expect).should be_true, "Failed to find expected result file #{expect}"
+      
+    excel = Excel.new
+    excel.open(expect)
+    
+    excel.worksheets.should have(1).items
+    
+    excel.worksheet(0).name.should == 'Project'
+      
+    headers = excel.worksheets[0].row(0)
+
+    ["title", "loader_releases", "owner", "categories"].each do |check|
+      headers.should include check
+    end
+    
+
+    ["milestones",  "versions", ].each do |check|
+      headers.should_not include check
+    end
+    
   end
     
     
@@ -108,8 +178,6 @@ describe 'Excel Generator' do
       
     excel = Excel.new
     excel.open(expect)
-      
-    excel.each {|r| puts r.inspect }
       
   end
     

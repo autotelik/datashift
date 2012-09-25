@@ -257,7 +257,6 @@ module DataShift
         # this time try sequentially and incrementally scanning
         search_terms.split(split_on).inject("") do |str, term|
           z = (split_on_prefix) ? "#{split_on_prefix}#{str}#{term}": "#{str}#{term}"
-          puts z
           record = get_record_by(klazz, field, z, split_on, split_on_prefix)
           break if record
           term

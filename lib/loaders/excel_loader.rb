@@ -30,6 +30,8 @@ module DataShift
 
     def perform_excel_load( file_name, options = {} )
 
+      raise MissingHeadersError, "Minimum row for Headers is 0 - passed #{options[:header_row]}" if(options[:header_row] && options[:header_row].to_i < 0)
+           
       @excel = Excel.new
 
       @excel.open(file_name)
@@ -39,6 +41,7 @@ module DataShift
 
       sheet_number = options[:sheet_number] || 0
 
+      
       @sheet = @excel.worksheet( sheet_number )
 
       header_row_index =  options[:header_row] || 0
@@ -48,10 +51,10 @@ module DataShift
 
       @headers = []
 
-      # TODO - make more robust
+      # TODO - make more robust - currently end on first empty column
       # There is no actual max columns in Excel .. you will run out of memory though at some point
-      (0..1024).each do |i|
-        cell = @header_row[i, cell]
+      (0..1024).each do |column|
+        cell = @header_row[column]
         break unless cell
         header = "#{cell.to_s}".strip
         break if header.empty?
@@ -67,9 +70,8 @@ module DataShift
 
       logger.info "Excel Loader processing #{@sheet.num_rows} rows"
       
-            loaded_objects.clear
+      loaded_objects.clear
             
-      puts "SIZE NOW", loaded_objects.size
       load_object_class.transaction do
        
         @sheet.each_with_index do |row, i|

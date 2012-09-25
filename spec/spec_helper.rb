@@ -21,7 +21,7 @@ RSpec.configure do |config|
     ARGV.replace []
   end
 
-  include Thor::Actions 
+
     
   def run_in(dir )
     puts "RSpec .. running test in path [#{dir}]"
