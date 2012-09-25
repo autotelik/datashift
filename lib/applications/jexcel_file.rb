@@ -179,7 +179,7 @@ if(DataShift::Guards::jruby?)
     def set_cell(row, column, value)
       @row = row(row)
       
-      @row.get_or_create_cell(column, value).setCellValue((value || ""))
+      @row[column] = value
     end
     
     def write( filename = nil )

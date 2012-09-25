@@ -33,7 +33,7 @@ if(DataShift::Guards::jruby?)
     end
     
     def []=( column, value )
-      get_or_create_cell(column, value).setCellValue((value.to_s || ""))
+      get_or_create_cell(column, value).setCellValue( poi_cell_value(value) )
     end
   
     def get_or_create_cell( column, value = nil )

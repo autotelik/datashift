@@ -30,9 +30,7 @@ module ExcelBase
     end
       
     records.each do |record|
-      create_row(row_index)
- 
-      ar_to_xls_row(0, record)
+      ar_to_xls_row(row_index, 0, record)
         
       row_index += 1
     end
