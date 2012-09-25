@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "datashift"
-  s.version = "0.9.0"
+  s.version = "0.10.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Thomas Statter"]
-  s.date = "2012-09-18"
+  s.date = "2012-09-25"
   s.description = " Comprehensive tools to import/export between Excel/CSV and ActiveRecord databases, Rails apps, and any Ruby projec."
   s.email = "rubygems@autotelik.co.uk"
   s.extra_rdoc_files = [
@@ -25,12 +25,15 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "datashift.gemspec",
+    "lib/applications/apache_poi_extensions.rb",
     "lib/applications/excel.rb",
-    "lib/applications/jexcel.rb",
+    "lib/applications/excel_base.rb",
     "lib/applications/jexcel_file.rb",
     "lib/applications/jexcel_file_extensions.rb",
     "lib/applications/jruby/old_pre_proxy_jexcel_file.rb",
     "lib/applications/jruby/word.rb",
+    "lib/applications/ruby_poi_translations.rb",
+    "lib/applications/spreadsheet_extensions.rb",
     "lib/datashift.rb",
     "lib/datashift/delimiters.rb",
     "lib/datashift/exceptions.rb",
@@ -74,7 +77,7 @@ Gem::Specification.new do |s|
     "lib/loaders/paperclip/datashift_paperclip.rb",
     "lib/loaders/paperclip/image_loading.rb",
     "lib/thor/export.thor",
-    "lib/thor/generate_excel.thor",
+    "lib/thor/generate.thor",
     "lib/thor/import.thor",
     "lib/thor/paperclip.thor",
     "lib/thor/tools.thor",
@@ -181,9 +184,7 @@ Gem::Specification.new do |s|
     "tasks/config/seed_fu_product_template.erb",
     "tasks/config/tidy_config.txt",
     "tasks/db_tasks.rake",
-    "tasks/export/excel_generator.rake",
     "tasks/file_tasks.rake",
-    "tasks/import/excel.rake",
     "tasks/word_to_seedfu.rake"
   ]
   s.homepage = "http://github.com/autotelik/datashift"
