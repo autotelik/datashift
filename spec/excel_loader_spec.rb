@@ -42,7 +42,7 @@ describe 'Excel Loader' do
     MethodDictionary.find_operators( @assoc_klazz )
   end
   
-  it "should be able to create a new excel loader and load object", :fail => true do
+  it "should be able to create a new excel loader and load object" do
     loader = ExcelLoader.new( Project)
     
     loader.load_object.should_not be_nil
@@ -50,7 +50,7 @@ describe 'Excel Loader' do
     loader.load_object.new_record?.should be_true
   end
   
-  it "should process a simple .xls spreedsheet", :fail => true do
+  it "should process a simple .xls spreedsheet" do
   
     loader = ExcelLoader.new(Project)
  
@@ -76,7 +76,7 @@ describe 'Excel Loader' do
       project = Project.find_by_title(title)
 
       project.should_not be_nil
-      puts "#{project.inspect} [#{project.categories.size}]"
+      #puts "#{project.inspect} [#{project.categories.size}]"
       
       project.should have(expected).categories
     end

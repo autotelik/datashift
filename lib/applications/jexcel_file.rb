@@ -13,12 +13,17 @@ if(DataShift::Guards::jruby?)
   
   require 'java'
   
-  require 'jexcel'
+  require 'excel_base'
+  require 'ruby_poi_translations'
   
   class JExcelFile
     
-    include JExcel
-    extend JExcel
+    include ExcelBase
+    
+    include RubyPoiTranslations
+    extend RubyPoiTranslations
+        
+    include Enumerable
     
     include_class 'org.apache.poi.hssf.util.HSSFColor'
     java_import 'org.apache.poi.poifs.filesystem.POIFSFileSystem'
@@ -29,9 +34,6 @@ if(DataShift::Guards::jruby?)
     java_import 'org.apache.poi.hssf.usermodel.HSSFDataFormat'
     java_import 'org.apache.poi.hssf.usermodel.HSSFClientAnchor'
     java_import 'org.apache.poi.hssf.usermodel.HSSFRichTextString'
-    
-    
-    include Enumerable
 
     attr_accessor :workbook, :row, :date_style
     attr_reader   :sheet, :current_sheet_index
@@ -203,7 +205,7 @@ if(DataShift::Guards::jruby?)
     private
        
     def create_sheet_and_set_styles( sheet_name )
-      @sheet = @workbook.createSheet(sheet_name)
+      @sheet = @workbook.createSheet( sanitize_sheet_name(sheet_name) )
 
       @patriarchs.store(sheet_name, @sheet.createDrawingPatriarch())
      
@@ -211,8 +213,10 @@ if(DataShift::Guards::jruby?)
       @date_style.setDataFormat( JExcelFile::date_format )
       @sheet
     end
+    
   end
   
   require 'jexcel_file_extensions'
+  require 'apache_poi_extensions'
   
 end

@@ -11,7 +11,7 @@ if(DataShift::Guards::jruby?)
   require 'benchmark'
   require "poi-3.7-20101029.jar"
   
-  module JExcel
+  module RubyPoiTranslations
   
     java_import 'org.apache.poi.poifs.filesystem.POIFSFileSystem'
 
@@ -59,40 +59,6 @@ if(DataShift::Guards::jruby?)
       end
       # HSSFCell::CELL_TYPE_FORMULA
     end
-  end
-        
-  # Extend the Poi classes with some syntactic sugar
-  
-  class Java::OrgApachePoiHssfUsermodel::HSSFSheet
-    def name() 
-      getSheetName
-    end
-  end
-  
-  class Java::OrgApachePoiHssfUsermodel::HSSFRow
-    
-    include JExcel
-    
-    def []( column)
-      cell_value( get_or_create_cell( column )  )
-    end
-    
-    def []=( column, value )
-      get_or_create_cell(column, value).setCellValue((value.to_s || ""))
-    end
-  
-    def get_or_create_cell( column, value = nil )
-      if(value)
-        java_send(:getCell, [Java::int], column) || createCell(column, poi_cell_type(value))
-      else
-        java_send(:getCell, [Java::int], column) || java_send(:createCell, [Java::int], column)
-      end
-    end
-    
-    def idx 
-      getRowNum() 
-    end
-     
   end
   
 end

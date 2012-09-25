@@ -12,97 +12,107 @@ module DataShift
 
   require 'generator_base'
       
-    require 'excel'
+  require 'excel'
 
-    class ExcelGenerator < GeneratorBase
+  class ExcelGenerator < GeneratorBase
 
-      include DataShift::Logging
+    include DataShift::Logging
       
-      attr_accessor :excel, :filename
+    attr_accessor :excel, :filename
   
-      def initialize(filename)
-        @filename = filename
-      end
+    def initialize(filename)
+      @filename = filename
+    end
 
-      # Create an Excel file template (header row) representing supplied Model
-      # Options:
-      # * <tt>:autosize</tt> - Autosize all the columns
-      #
-      def generate(klass, options = {})
+    # Create an Excel file template (header row) representing supplied Model
+    # Options:
+    # * <tt>:autosize</tt> - Autosize all the columns
+    #
+    def generate(klass, options = {})
      
-        prepare(klass, options)
+      prepare_excel(klass, options)
         
-        @excel.set_headers(MethodDictionary.assignments[klass])
+      @excel.set_headers(MethodDictionary.assignments[klass])
 
-        logger.info("ExcelGenerator saving generated template #{@filename}")
+      logger.info("ExcelGenerator saving generated template #{@filename}")
         
-        #@excel.autosize if(options[:autosize])
+      #@excel.autosize if(options[:autosize])
         
-        @excel.write( @filename )
-      end
+      @excel.write( @filename )
+    end
 
       
-      # Create an Excel file template (header row) representing supplied Model
-      # and it's associations
-      # 
-      # Options:
-      # * <tt>:autosize</tt> - Autosize all the columns
-      #
-      # * <tt>:exclude</tt> - Associations to exclude.
-      #   You can specify a hash of {association_type => [array of association names] }
-      #   to exclude from the template.
-      #   
-      # Possible association_type values are given by MethodDetail::supported_types_enum
-      #  ... [:assignment, :belongs_to, :has_one, :has_many]
-      #
-      def generate_with_associations(klass, options = {})
+    # Create an Excel file template (header row) representing supplied Model
+    # and it's associations
+    # 
+    # Options:
+    # * <tt>:autosize</tt> - Autosize all the columns
+    #
+    # * <tt>:exclude</tt> - Association TYPE(s) to exclude.
+    #   You can specify a hash of {association_type => [array of association names] }
+    #   to exclude from the template.
+    #   
+    #     Possible association_type values are given by MethodDetail::supported_types_enum
+    #       ... [:assignment, :belongs_to, :has_one, :has_many]
+    #       
+    # * <tt>:remove</tt> - Association NAME(s) to remove .. :title, :id, :name
+    # .
+    def generate_with_associations(klass, options = {})
 
-        prepare(klass, options)
+      prepare_excel(klass, options)
          
-        MethodDictionary.build_method_details( klass )
+      MethodDictionary.build_method_details( klass )
            
-        work_list = MethodDetail::supported_types_enum.to_a
-        work_list -= options[:exclude].to_a
+      work_list = MethodDetail::supported_types_enum.to_a - [ *options[:exclude] ]
+        
+      remove_list = [ *options[:remove] ].compact.collect{|x| x.to_s.downcase.to_sym }
          
-        headers = []
+      headers = []
       
-        details_mgr = MethodDictionary.method_details_mgrs[klass]
+      details_mgr = MethodDictionary.method_details_mgrs[klass]
                   
-        work_list.each do |op_type|
-          list_for_class_and_op = details_mgr.get_list(op_type)
+      work_list.each do |assoc_type|
+        method_details_for_assoc_type = details_mgr.get_list_of_method_details(assoc_type)
           
-          next if(list_for_class_and_op.nil? || list_for_class_and_op.empty?)
-          list_for_class_and_op.each {|md| headers << "#{md.operator}" }
-        end
+        next if(method_details_for_assoc_type.nil? || method_details_for_assoc_type.empty?)
         
-        @excel.set_headers( headers )
-        
-       # @excel.autosize if(options[:autosize])
-                
-        @excel.write( filename() )
-      end
-      
-      private
-      
-      def prepare(klass, options = {})
-        @filename = options[:filename] if  options[:filename]
-        
-        logger.info("ExcelGenerator creating template with associations for class #{klass}")
-        
-        @excel = Excel.new()
+        method_details_for_assoc_type.each do |md| 
+          comparable_association = md.operator.to_s.downcase.to_sym
 
-        name  = options[:sheet_name] || klass.name
-        
-        sheet = @excel.create_worksheet( :name => name ) 
-    
-        unless sheet
-          logger.error("Excel failed to create WorkSheet for #{name}")
-        
-          raise "Failed to create Excel WorkSheet for #{name}" 
+          i = remove_list.index { |r| r == comparable_association }
+             
+          (i) ? remove_list.delete_at(i) : headers << "#{md.operator}"
         end
-        
-        MethodDictionary.find_operators( klass )
       end
-    end # ExcelGenerator
+        
+      @excel.set_headers( headers )
+        
+      # @excel.autosize if(options[:autosize])
+                
+      @excel.write( filename() )
+    end
+      
+    private
+      
+    def prepare_excel(klass, options = {})
+      @filename = options[:filename] if  options[:filename]
+        
+      logger.info("ExcelGenerator creating template with associations for class #{klass}")
+        
+      @excel = Excel.new()
+
+      name  = options[:sheet_name] || klass.name
+        
+      sheet = @excel.create_worksheet( :name => name ) 
+    
+      unless sheet
+        logger.error("Excel failed to create WorkSheet for #{name}")
+        
+        raise "Failed to create Excel WorkSheet for #{name}" 
+      end
+        
+      MethodDictionary.find_operators( klass )
+    end
+  end # ExcelGenerator
   
 end # DataShift

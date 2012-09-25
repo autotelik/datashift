@@ -50,9 +50,13 @@ module DataShift
       @method_details_list[type.to_sym] || []
     end
     
+    alias_method(:get_list_of_method_details, :get_list) 
+    
     def get_operators( op_type )
       get_list(op_type).collect { |md| md.operator }
     end
+    
+    alias_method(:get_list_of_operators, :get_list) 
      
     def all_available_operators
       method_details_list.values.flatten.collect(&:operator)

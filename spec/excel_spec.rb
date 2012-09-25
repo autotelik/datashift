@@ -40,6 +40,14 @@ describe 'Excel Proxy' do
     sheet2.name.should == "underworld"
   end
   
+  it "ensures name of worksheet sanitized" do
+    sheet = @excel.create_worksheet( :name => "daft: ?punk")
+    sheet.name.should == "daft punk"
+    
+    sheet = @excel.create_worksheet( :name => "under[]world")
+    sheet.name.should == "underworld"
+  end
+  
   it "can create multiple named worksheets" do
 
     @excel.create_worksheet( :name => "underworld")
@@ -130,6 +138,26 @@ describe 'Excel Proxy' do
   end
  
   
+  it "can iterate over the cells in a row"do
+
+    sheet = @excel.create_worksheet
+    
+    values = [ 'hello world', 12.30, "", 4 ]
+    
+    values.each_with_index do |v, i| 
+      @excel[0, i] = v
+    end
+
+    row = @excel.row(0)
+     
+    row.each { |col| col.should == values.shift  }
+  end
+  
+  
+  it "can support bools" do
+    pending("reading back value sometimes returns "" when cell was set to false")
+  end
+
   it "can write an Excel file" do
     @excel = Excel.new
 
