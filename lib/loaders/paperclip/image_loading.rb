@@ -6,59 +6,43 @@
 # => Provides facilities for bulk uploading/exporting attachments provided by PaperClip 
 # gem
 require 'datashift_paperclip'
+require 'attachment_loader'
 
 module DataShift
 
   module ImageLoading
  
-    include DataShift::Paperclip
-    
-    # Get all image files (based on file extensions) from supplied path.
-    # Options : 
-    #     :glob : The glob to use to find files
-    # =>  :recursive : Descend tree looking for files rather than just supplied path
-    
-    def self.get_files(path, options = {})
-      glob = options[:glob] ? options[:glob] : image_magik_glob
-      glob = (options['recursive'] || options[:recursive])  ? "**/#{glob}" : glob
-      
-      Dir.glob("#{path}/#{glob}", File::FNM_CASEFOLD)
+    include DataShift::Paperclip 
+
+    def initialize(attachment_klazz, attachment = nil, options = {})
+      super( attachment_klazz, attachment, options )
     end
-  
     
     # Note the paperclip attachment model defines the storage path via something like :
+    # 
     # => :path => ":rails_root/public/blah/blahs/:id/:style/:basename.:extension"
+    # 
     # Options 
-    #   has_attached_file_name : Paperclip attachment name defined with macro 'has_attached_file :name'  e.g has_attached_file :avatar
-    #
-    def create_image(klass, attachment_path, viewable_record = nil, options = {})
-       
-      has_attached_file = options[:has_attached_file_name] || :attachment
+    # 
+    #   See also DataShift::paperclip create_attachment for more options
+    #   
+    #   Example:  Image is a model class with an attachment.
+    #             Image table contains a viewable field which can contain other  models,
+    #             such as Product, User etc all of which can have an Image
+    #             
+    #   :viewable_record 
+    #   
+    def create_attachment(klass, attachment_path, record = nil, attach_to_record_field = nil, options = {})
+            
+      attachment_options = options.dup
       
-      alt = if(options[:alt])
-        options[:alt]
-      else
-        (viewable_record and viewable_record.respond_to? :name) ? viewable_record.name : ""
-      end
-    
-      position = (viewable_record and viewable_record.respond_to?(:images)) ? viewable_record.images.length : 0
-          
-      file = get_file(attachment_path)
+      attributes = {:alt => (options[:alt] || "") }
+      
+      attributes[:position] = (record and record.respond_to?(:images)) ? record.images.length : 0
 
-      begin
-        
-        image = klass.new( 
-          {has_attached_file.to_sym => file, :viewable => viewable_record, :alt => alt, :position => position},
-          :without_protection => true
-        )  
-        
-        #image.attachment.reprocess!  not sure this is required anymore
-        
-        puts image.save ? "Success: Created Image: #{image.id} : #{image.attachment_file_name}" : "ERROR : Problem saving to DB Image: #{image.inspect}"
-      rescue => e
-        puts "PaperClip error - Problem creating an Image from : #{attachment_path}"
-        puts e.inspect, e.backtrace
-      end
+      attachment_options.merge!( attributes )
+    
+      super(klass, attachment_path, record, attach_to_record_field, attachment_options)
     end
     
     # Set of file extensions ImageMagik can process so default glob

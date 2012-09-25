@@ -13,6 +13,8 @@ module DataShift
     
     include DataShift::Logging
     
+    attr_accessor :attachment
+    
     # Get all image files (based on file extensions) from supplied path.
     # Options : 
     #     :glob : The glob to use to find files
@@ -44,28 +46,45 @@ module DataShift
     
     # Note the paperclip attachment model defines the storage path via something like :
     # => :path => ":rails_root/public/blah/blahs/:id/:style/:basename.:extension"
+    # 
     # Options 
-    #   has_attached_file_name : Paperclip attachment name defined with macro 'has_attached_file :name'  
+    # 
+    #   :attributes
+    #     
+    #     Pass through hash of attributes to klass initializer
+    # 
+    #   :has_attached_file_attribute 
+    #   
+    #     Paperclip attachment name defined with macro 'has_attached_file :name'  
+    #   
     #     e.g 
-    #     has_attached_file :avatar =>  options[:has_attached_file_name] = :avatar
-    #     has_attached_file :icon   =>  options[:has_attached_file_name] = :icon
+    #       When : has_attached_file :avatar 
+    #      
+    #       Give : {:has_attached_file_attribute => :avatar}
+    #       
+    #       When :  has_attached_file :icon 
     #
-    #   alt : Alternatice text for images
-    
+    #       Give : { :has_attached_file_attribute => :icon }
+    #     
     def create_attachment(klass, attachment_path, record = nil, attach_to_record_field = nil, options = {})
        
-      has_attached_file = options[:has_attached_file_name] ? options[:has_attached_file_name].to_sym : :attachment
-      
-      file = get_file(attachment_path)
+      has_attached_file_attribute = options[has_attached_file_attribute] ? options[:has_attached_file_attribute].to_sym : :attachment
+  
+      attributes = { has_attached_file_attribute => get_file(attachment_path) }
 
+      attributes.merge!(options[:attributes]) if(options[:attributes])
+      
+      # e.g  (:viewable => some_product) =  Icon
+      
+      attributes.merge!(attach_to_record_field.to_sym => record) if(record && attach_to_record_field)
+       
       begin
         
-        attachment = if(record && attach_to_record_field)
-          klass.new( {has_attached_file => file}, :without_protection => true)  
-        else
-          klass.new( {has_attached_file => file, attach_to_record_field.to_sym => record}, :without_protection => true)  
-        end
-        puts attachment.save ? "Success: Created #{attachment.id} : #{attachment.attachment_file_name}" : "ERROR : Problem saving to DB : #{attachment.inspect}"
+        @attachment = klass.new(attributes, :without_protection => true) 
+      
+        puts @attachment.save ? "Success: Created Attachment #{@attachment.id} : #{@attachment.attachment_file_name}" : "ERROR : Problem saving to DB : #{@attachment.inspect}"
+        
+        @attachment
       rescue => e
         puts "PaperClip error - Problem creating Attachment from : #{attachment_path}"
         puts e.inspect, e.backtrace
