@@ -44,11 +44,26 @@ if(DataShift::Guards::jruby?)
       end
     end
     
-    # Return the suitable type for a HSSFCell from a Ruby data type
     
+    # Cell.CELL_TYPE_NUMERIC, Cell.CELL_TYPE_STRING, Cell.CELL_TYPE_FORMULA, 
+    # Cell.CELL_TYPE_BLANK, Cell.CELL_TYPE_BOOLEAN, Cell.CELL_TYPE_ERROR
+
+    # TODO - properly
+    def poi_cell_value(data)
+      case(data)
+      when BigDecimal
+        data.to_f
+      when Numeric, TrueClass, FalseClass
+        data     
+      else
+        data.to_s
+      end
+    end
+    
+    # Return the suitable type for a HSSFCell from a Ruby data type           
     def poi_cell_type(data)
         
-      if(data.kind_of?(Numeric))
+      if(data.is_a?(Numeric))
         HSSFCell::CELL_TYPE_NUMERIC
       elsif(data.nil?)
         HSSFCell::CELL_TYPE_BLANK
