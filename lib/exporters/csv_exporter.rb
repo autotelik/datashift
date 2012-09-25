@@ -47,7 +47,7 @@ module DataShift
       
       File.open(f, "w") do |csv|
         
-        headers = first.serializable_hash.keys.collect
+        headers = first.serializable_hash.keys
            
         [*options[:methods]].each do |c| headers << c if(first.respond_to?(c)) end if(options[:methods])
              
