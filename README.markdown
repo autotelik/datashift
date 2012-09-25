@@ -11,11 +11,11 @@ now seperate gem at [datashift_spree](https://github.com/autotelik/datashift_spr
 
 ### Features
 
-Import and Export ActiveRecord models direct to CSV or Excel/OpenOffice (.xls) (JRuby, 1.8.7, REE) (1.9.3 in pipeline)
+Import and Export ActiveRecord models direct to CSV or Excel/OpenOffice (.xls) (JRuby, 1.8.7, REE, 1.9.3)
 
 You can select which associations to include and for import, set configurable defaults or over rides.
 
-Create, parse and use Excel/OpenOffice (.xls) documents dynamically from Ruby. (JRuby, 1.8.7, REE) (1.9.3 in pipeline)
+Create, parse and use Excel/OpenOffice (.xls) documents dynamically from Ruby (JRuby, 1.8.7, REE, 1.9.3)
 
 Generate a sample template with headers only.
 
@@ -67,7 +67,7 @@ Edit the file and add the following to pull in the thor commands :
 
 To keep the availability to only development mode use
 
-```ruby DataShift::load_commands if(Rails.env.development?)```
+```ruby DataShift::load_commands if(Rails.env.development?) ```
 
 To check the available tasks run
 
@@ -79,16 +79,17 @@ To get usage information use thor help <command>, for example
 
 To use Excel OLE and MS Excel are NOT required.
 
-Currently 1.9.3 not supported, but specs pass with all other main Rubies.
+Features a common Excel interface over both our own wrapper around Apache POI (JRuby) and spreadsheet gem (all main Rubies) 
 
-Includes a wrapper around brilliant Apache POI libraries for anyone using JRuby.
+This means you can switch seamlessly between the two libraries, and if required drop down to make use of advanced
+features in the brilliant Apache POI libraries for anyone using JRuby.
 
 Guards are provided, and used internally, for mixed Ruby setups. Can be used like :
 
     if(DataShift::Guards::jruby? )
-        ..do something with Excel
+        ..do something with Apache
     else
-        ..do something with CSV
+        ..do something with speadsheet
     end
 
 ## Active Record - Import/Export
