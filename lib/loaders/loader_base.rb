@@ -73,20 +73,8 @@ module DataShift
     
     def self.set_multi_value_delim(x) @multi_value_delim = x; end
     
-    # TODO - support multi embedded object creation/update via hash (which hopefully we should be able to just forward to AR)
-    #
-    #      |Category|
-    #      name:new{ :a => 1, :b => 2}|name:medium{ :a => 6, :b => 34}|name:old{ :a => 12, :b => 67}
-    #
-    def self.multi_assoc_delim
-      @multi_assoc_delim ||= '|'
-      @multi_assoc_delim
-    end
 
 
-    def self.set_multi_assoc_delim(x) @multi_assoc_delim = x; end
-
-    
     # Setup loading
     # 
     # Options to drive building the method dictionary for a class, enabling headers to be mapped to operators on that class.
@@ -415,7 +403,7 @@ module DataShift
 
           # A single column can contain multiple associations delimited by special char
           # Size:large|Colour:red,green,blue => ['Size:large', 'Colour:red,green,blue']
-          columns = @current_value.to_s.split( LoaderBase::multi_assoc_delim)
+          columns = @current_value.to_s.split( Delimiters::multi_assoc_delim)
 
           # Size:large|Colour:red,green,blue   => generates find_by_size( 'large' ) and find_all_by_colour( ['red','green','blue'] )
 
@@ -582,7 +570,7 @@ module DataShift
     # Supported Syntax :
     #  assoc_find_name:value | assoc2_find_name:value | etc
     def get_each_assoc
-      current_value.to_s.split( LoaderBase::multi_assoc_delim )
+      current_value.to_s.split( Delimiters::multi_assoc_delim )
     end
       
     private

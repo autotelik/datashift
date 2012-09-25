@@ -25,11 +25,15 @@ module DataShift
       @attach_to_klass  = options[:attach_to_klass]
            
       puts "Attachment Class is #{@attachment_klazz}" if(@verbose)
-          
+       
+      @attachment = nil
+      
       raise "Failed to create Attachment for loading" unless @load_object
     end
       
+    # :attach_to_klazz
     # :split_file_name_on
+    
       
     def process_from_filesystem(path, options )
        
