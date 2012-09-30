@@ -35,13 +35,17 @@ module DataShift
     @@insistent_find_by_list ||= [:name, :title, :id]
 
     # Name is the raw, client supplied name
-    attr_reader :name, :col_type, :current_value
+    attr_accessor :name
+    attr_accessor :column_index
+  
+    # The rel col type from the DB
+    attr_reader :col_type, :current_value
 
     attr_reader :operator, :operator_type
 
     # TODO make it a list/primary keys
     attr_accessor :find_by_operator, :find_by_value
-    
+        
     # Store the raw (client supplied) name against the active record  klass(model).
     # Operator is the associated method call on klass,
     # so client name maybe Price but true operator is price
@@ -68,6 +72,8 @@ module DataShift
       else
         @col_type = col_types[operator]
       end
+      
+      @column_index = -1
     end
 
 

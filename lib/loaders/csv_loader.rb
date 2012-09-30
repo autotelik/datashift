@@ -30,7 +30,7 @@ module DataShift
 
       # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
       # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
-      map_headers_to_operators( @parsed_file.shift, options)
+      populate_method_mapper_from_headers( @parsed_file.shift, options)
 
       puts "\n\n\nLoading from CSV file: #{file_name}"
       puts "Processing #{@parsed_file.size} rows"

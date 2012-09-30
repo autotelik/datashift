@@ -18,7 +18,8 @@ end
        
 # DEFINE WHICH VERSIONS WE WANT TO TEST WITH
 
-gem 'spreadsheet'
-
 gem 'rails', '3.2.8'
 
+
+gem 'spreadsheet'
+gem 'paperclip'

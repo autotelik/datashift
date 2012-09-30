@@ -7,19 +7,12 @@
 #             MethodMapper provides the bridge between 'strings' e.g column headings
 #             and a classes different types of assignment operators
 #
-require File.dirname(__FILE__) + '/spec_helper'
+require File.join(File.dirname(__FILE__), 'spec_helper')
     
-describe 'Method Mapping' do
+describe 'Method Dictionary' do
 
-  before(:all) do
-    
-    # load our test model definitions - Project etc  
-    require ifixture_file('test_model_defs')  
+  include_context "ActiveRecordTestModelsConnected"
   
-    db_connect( 'test_file' )    # , test_memory, test_mysql
-
-    migrate_up
-  end
   
   before(:each) do
     MethodDictionary.clear

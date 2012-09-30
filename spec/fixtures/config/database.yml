@@ -2,7 +2,7 @@
 # These entires can be used in call to db_connect ( see spec_helper )
 
 <% adapter = 'sqlite3' %>
-<% adapter = 'jdbcsqlite3' if(Guards::jruby? ) %>
+<% adapter = 'jdbcsqlite3' if(DataShift::Guards::jruby? ) %>
 
 test_mysql:
   adapter: jdbcmysql

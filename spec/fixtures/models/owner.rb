@@ -1,6 +1,9 @@
-
+require 'paperclip'
 
 class Owner < ActiveRecord::Base
+  
+  include Paperclip::Glue
+  
   belongs_to :project
   
   attr_accessible :avatar
