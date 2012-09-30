@@ -120,6 +120,7 @@ module DataShift
             #puts "DEBUG: Method Detail #{md.name};#{md.operator} : find_by_operator #{md.find_by_operator}"
           end
         else
+          # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
           @missing_methods << raw_col_name
         end
         
@@ -130,16 +131,20 @@ module DataShift
       @method_details
     end
 
+    
+    # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
+    # 
     # The raw client supplied names
     def method_names()
-      @method_details.collect( &:name )
+      @method_details.compact.collect( &:name )
     end
 
     # The true operator names discovered from model
     def operator_names()
-      @method_details.collect( &:operator )
+      @method_details.compact.collect( &:operator )
     end
 
+    
     # Returns true if discovered methods contain every operator in mandatory_list
     def contains_mandatory?( mandatory_list )
       [ [*mandatory_list] - operator_names].flatten.empty?

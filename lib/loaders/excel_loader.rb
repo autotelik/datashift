@@ -101,6 +101,9 @@ module DataShift
          
           # Iterate over method_details, working on data out of associated Excel column
           @method_mapper.method_details.each do |method_detail|
+            
+            
+            next unless method_detail # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
 
             value = row[method_detail.column_index]
 

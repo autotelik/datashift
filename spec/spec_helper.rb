@@ -39,6 +39,24 @@ RSpec.configure do |config|
     end
   end
   
+  
+  shared_context "ClearAndPopulateProject" do
+  
+    before(:each) do
+      
+      Project.delete_all
+      
+      DataShift::MethodDictionary.clear
+    
+      DataShift::MethodDictionary.find_operators( Project )
+    
+      DataShift::MethodDictionary.build_method_details( Project )
+    
+      DataShift::MethodDictionary.for?(Project).should == true
+    end
+  end
+  
+  
   def run_in(dir )
     puts "RSpec .. running test in path [#{dir}]"
     original_dir = Dir.pwd
@@ -95,7 +113,7 @@ RSpec.configure do |config|
   def set_logger( name = 'datashift_spec.log')
     
     require 'logger'
-    logdir = File.dirname(__FILE__) + '/logs'
+    logdir = File.join(File.dirname(__FILE__), 'log')
     FileUtils.mkdir_p(logdir) unless File.exists?(logdir)
     ActiveRecord::Base.logger = Logger.new( File.join(logdir, name) )
 

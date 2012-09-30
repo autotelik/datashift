@@ -14,32 +14,27 @@ include DataShift
 
 describe 'Excel Loader' do
 
-  before(:all) do
+  include_context "ActiveRecordTestModelsConnected"
   
-    # load our test model definitions - Project etc  
-    require ifixture_file('test_model_defs')  
-  
-    db_connect( 'test_file' )    # , test_memory, test_mysql
+  before(:each) do
+    DataShift::MethodDictionary.clear   
     
-    # handle migration changes or reset of test DB
-    migrate_up
-     
-    db_clear()    # todo read up about proper transactional fixtures
-
-    @assoc_klazz = Category
+    @method_mapper = DataShift::MethodMapper.new
   end
+  
+  
+  include_context "ClearAndPopulateProject"
   
   before(:each) do
 
-    Project.delete_all
-    
     %w{category_001 category_002 category_003 category_004 category_005}.each do |cat|
-      @assoc_klazz.find_or_create_by_reference(cat)
+      Category.find_or_create_by_reference(cat)
     end
 
-    MethodDictionary.clear
-    MethodDictionary.find_operators( Project )
-    MethodDictionary.find_operators( @assoc_klazz )
+    DataShift::MethodDictionary.find_operators( Category )
+    
+    DataShift::MethodDictionary.build_method_details( Category )
+    
   end
   
   it "should be able to create a new excel loader and load object" do

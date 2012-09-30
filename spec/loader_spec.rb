@@ -13,14 +13,9 @@ describe 'Basic Loader' do
 
   include_context "ActiveRecordTestModelsConnected"
   
-  before(:all) do
-    @klazz = Project
-  end
+  include_context "ClearAndPopulateProject"
   
-  before(:each) do
-    DataShift::MethodDictionary.clear
-    DataShift::MethodDictionary.find_operators( Project )
-    
+  before(:each) do    
     @loader = DataShift::LoaderBase.new(Project)
   end
   
@@ -30,6 +25,17 @@ describe 'Basic Loader' do
     @loader.load_object.new_record?.should be_true
   end
 
+
+  it "should process a string field against an assigment method detail" do
+
+    column = 'Value As String'
+    row = 'Another Lazy fox '
+
+    @loader.find_and_process(column, row)
+
+    @loader.load_object.errors.should have_exactly(0).items
+  end
+  
   it "should process a string field against an assigment method detail" do
 
     column = 'Value As String'
@@ -90,7 +96,7 @@ describe 'Basic Loader' do
     @loader.find_and_process(column,  "Jul 23 2011 23:02:59")
     @loader.load_object.value_as_datetime.should_not be_nil
 
-    if(Guards.jruby?)
+    if(DataShift::Guards.jruby?)
       @loader.find_and_process(column,  "07/23/2011")    # dd/mm/YYYY
       @loader.load_object.value_as_datetime.should_not be_nil
     end
