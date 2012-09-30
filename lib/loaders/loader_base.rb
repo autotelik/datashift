@@ -170,8 +170,12 @@ module DataShift
     # 
     # If suitable association found, process row data and then assign to current load_object
     def find_and_process(column_name, data)
+      
+      puts "WARNING: MethodDictionary empty for class #{load_object_class}" unless(MethodDictionary.for?(load_object_class))
+        
       method_detail = MethodDictionary.find_method_detail( load_object_class, column_name )
 
+      puts method_detail.inspect
       if(method_detail)
         prepare_data(method_detail, data)
         process()
