@@ -32,48 +32,6 @@ module DataShift
 
     def options() return @config; end
     
-    # Support multiple associations being added to a base object to be specified in a single column.
-    # 
-    # Entry represents the association to find via supplied name, value to use in the lookup.
-    # Can contain multiple lookup name/value pairs, separated by multi_assoc_delim ( | )
-    # 
-    # Default syntax :
-    #
-    #   Name1:value1, value2|Name2:value1, value2, value3|Name3:value1, value2
-    #
-    # E.G.
-    #   Association Properties, has a column named Size, and another called Colour,
-    #   and this combination could be used to lookup multiple associations to add to the main model Jumper
-    #
-    #       Size:small            # => generates find_by_size( 'small' )
-    #       Size:large            # => generates find_by_size( 'large' )
-    #       Colour:red,green,blue # => generates find_all_by_colour( ['red','green','blue'] )
-    #
-    #       Size:large|Size:medium|Size:large
-    #         => Find 3 different associations, perform lookup via column called Size
-    #         => Jumper.properties << [ small, medium, large ]
-    #
-    def self.name_value_delim
-      @name_value_delim ||= ':'
-      @name_value_delim
-    end
-
-    def self.set_name_value_delim(x)  @name_value_delim = x; end
-    # TODO - support embedded object creation/update via hash (which hopefully we should be able to just forward to AR)
-    #
-    #      |Category|
-    #      name:new{ :date => '20110102', :owner = > 'blah'}
-    #
-    
-    
-    def self.multi_value_delim
-      @multi_value_delim ||= ','
-      @multi_value_delim
-    end
-    
-    def self.set_multi_value_delim(x) @multi_value_delim = x; end
-    
-
 
     # Setup loading
     # 
@@ -97,7 +55,7 @@ module DataShift
         # Create dictionary of data on all possible 'setter' methods which can be used to
         # populate or integrate an object of type @load_object_class
         DataShift::MethodDictionary.build_method_details(@load_object_class)
-      end unless(options[:load] == false)
+      end if(options[:load] || options[:reload])
       
       @method_mapper = DataShift::MethodMapper.new
       @config = options.dup    # clone can cause issues like 'can't modify frozen hash'
@@ -151,10 +109,12 @@ module DataShift
 
     
     
-    # Core API - Given a list of free text column names from a file, 
-    # map all headers to a method detail containing operator details.
+    # Core API
     # 
-    # This is then available through @method_mapper.method_details.each
+    # Given a list of free text column names from a file, 
+    # map all headers to a MethodDetail instance containing details on operator, look ups etc.
+    # 
+    # These are available through @method_mapper.method_details
     # 
     # Options:
     #  strict           : Raise an exception of any headers can't be mapped to an attribute/association
@@ -162,10 +122,11 @@ module DataShift
     #  mandatory        : List of columns that must be present in headers
     #  
     #  force_inclusion  : List of columns that do not map to any operator but should be includeed in processing.
-    #                       This provides the opportunity for loaders to provide specific methods to handle these fields
-    #                       when no direct operator is available on the modle or it's associations
+    #                     
+    #                     This provides the opportunity for loaders to provide specific methods to handle these fields
+    #                     when no direct operator is available on the modle or it's associations
     #
-    def map_headers_to_operators( headers, options = {} )
+    def populate_method_mapper_from_headers( headers, options = {} )
       @headers = headers
       
       mandatory = options[:mandatory] || []
@@ -174,7 +135,7 @@ module DataShift
       strict = (options[:strict] == true)
       
       begin 
-        @method_mapper.map_inbound_to_methods( load_object_class, @headers, options )
+        @method_mapper.map_inbound_headers_to_methods( load_object_class, @headers, options )
       rescue => e
         puts e.inspect, e.backtrace
         logger.error("Failed to map header row to set of database operators : #{e.inspect}")
@@ -182,7 +143,7 @@ module DataShift
       end
       
       unless(@method_mapper.missing_methods.empty?)
-        puts "WARNING: These headings couldn't be mapped to class #{load_object_class} : #{@method_mapper.missing_methods.inspect}"
+        puts "WARNING: These headings couldn't be mapped to class #{load_object_class} :\n#{@method_mapper.missing_methods.inspect}"
         raise MappingDefinitionError, "Missing mappings for columns : #{@method_mapper.missing_methods.join(",")}" if(strict)
       end
 
@@ -190,6 +151,8 @@ module DataShift
         @method_mapper.missing_mandatory(mandatory).each { |e| puts "ERROR: Mandatory column missing - expected column '#{e}'" }
         raise MissingMandatoryError, "Mandatory columns missing  - please fix and retry."
       end unless(mandatory.empty?)
+      
+      @method_mapper
     end
 
 
@@ -213,7 +176,7 @@ module DataShift
         prepare_data(method_detail, data)
         process()
       else
-        @load_object.errors.add_base( "No matching method found for column #{column_name}")
+        @load_object.errors.add(:base, "No matching method found for column #{column_name}")
       end
     end
     
@@ -365,7 +328,7 @@ module DataShift
     #
     def get_find_operator_and_rest(inbound_data)
         
-      operator, rest = inbound_data.split(LoaderBase::name_value_delim) 
+      operator, rest = inbound_data.split(Delimiters::name_value_delim) 
      
       #puts "DEBUG inbound_data: #{inbound_data} => #{operator} , #{rest}"
        
@@ -410,16 +373,10 @@ module DataShift
           columns.each do |col_str|
             
             find_operator, col_values = get_find_operator_and_rest( col_str )
-            
-            #if(@current_method_detail.find_by_operator)
-            #   find_operator, col_values = @current_method_detail.find_by_operator, col_str
-            #  else
-            #    find_operator, col_values = col_str.split(LoaderBase::name_value_delim) 
-            #  end
-          
+                      
             raise "Cannot perform DB find by #{find_operator}. Expected format key:value" unless(find_operator && col_values)
              
-            find_by_values = col_values.split(LoaderBase::multi_value_delim)
+            find_by_values = col_values.split(Delimiters::multi_value_delim)
             
             find_by_values << @current_method_detail.find_by_value if(@current_method_detail.find_by_value)
                      

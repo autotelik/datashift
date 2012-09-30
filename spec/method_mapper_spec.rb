@@ -7,37 +7,96 @@
 #             MethodMapper provides the bridge between 'strings' e.g column headings
 #             and a classes different types of assignment operators
 #
-require File.dirname(__FILE__) + '/spec_helper'
+require File.join(File.dirname(__FILE__), 'spec_helper')
     
-describe 'Method Mapping' do
+require 'method_mapper'
 
-  before(:all) do
-    
-    # load our test model definitions - Project etc  
-    require ifixture_file('test_model_defs')  
-  
-    db_connect( 'test_file' )    # , test_memory, test_mysql
+describe 'Method Mapper' do
 
-    migrate_up
-  end
-  
+  include_context "ActiveRecordTestModelsConnected"
+   
   before(:each) do
-    MethodDictionary.clear
+    DataShift::MethodDictionary.clear   
     
-    MethodDictionary.find_operators( Project )
-    MethodDictionary.find_operators( Milestone )
-    
-    
-    MethodDictionary.build_method_details( Project )
-    MethodDictionary.build_method_details( Milestone )
-    
+    @method_mapper = DataShift::MethodMapper.new
   end
  
-  it "should find a set of methods based on a list of column names" do
-     pending("key API - map column headers to set of methods")
+  it "should find a set of methods based on a list of column symbols" do
      
-    @method_mapper.map_inbound_to_methods( load_object_class, @headers )
+    headers = [:value_as_string, :owner, :value_as_boolean, :value_as_double]
+    
+    method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
+    
+    method_details.should have_exactly(4).items
   end
 
-
+  it "should leave nil in set of methods when no such operator" do
+     
+    headers = [:value_as_string, :owner, :bad_no_such_column, :value_as_boolean, :value_as_double, :more_rubbish_as_nil]
+    
+    method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
+    
+    method_details.should have_exactly(6).items
+    
+    method_details[2].should be_nil
+    method_details[5].should be_nil
+    
+    method_details[0].should be_a DataShift::MethodDetail
+    
+  end
+  
+  it "should map a list of column names to a set of method details" do
+   
+    headers = %w{ value_as_double value_as_string bad_no_such_column value_as_boolean  }
+    
+    @method_mapper.map_inbound_headers_to_methods( Project, headers )
+    
+    method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
+    
+    method_details.should have_exactly(4).items
+    
+    method_details[2].should be_nil
+   
+    method_details[0].should be_a DataShift::MethodDetail 
+    method_details.last.should be_a DataShift::MethodDetail
+  end
+  
+  it "should populate a method detail instance based on column and database info" do
+     
+    headers = [:value_as_string, :owner, :value_as_boolean, :value_as_double]
+    
+    method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
+    
+    method_details.should have_exactly(4).items
+    
+    method_details[0].should be_a DataShift::MethodDetail
+    
+    headers.each_with_index do |c, i|
+      method_details[i].column_index.should == i
+    end
+      
+  end
+  
+  it "should map between user name and real class operator and store in method detail instance" do
+     
+    headers = [ "Value as string", 'owner', "value_as boolean", 'Value_As_Double']
+    
+    operators = %w{ value_as_string owner value_as_boolean value_as_double }
+    
+    method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
+    
+    method_details.should have_exactly(4).items
+    
+    method_details.should_not include nil
+    
+    headers.each_with_index do |c, i|
+      method_details[i].column_index.should == i
+      method_details[i].name.should == c
+      method_details[i].operator.should == operators[i]  
+    end
+    
+  end
+  
+  
+  
 end

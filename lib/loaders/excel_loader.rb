@@ -66,7 +66,9 @@ module DataShift
       
       # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
       # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
-      map_headers_to_operators( @headers, options )
+      populate_method_mapper_from_headers( @headers, options )
+      
+      @method_mapper
 
       logger.info "Excel Loader processing #{@sheet.num_rows} rows"
       
@@ -97,11 +99,10 @@ module DataShift
           # as part of this we also attempt to save early, for example before assigning to
           # has_and_belongs_to associations which require the load_object has an id for the join table
          
-          # Iterate over the columns method_mapper found in Excel,
-          # pulling data out of associated column
-          @method_mapper.method_details.each_with_index do |method_detail, col|
+          # Iterate over method_details, working on data out of associated Excel column
+          @method_mapper.method_details.each do |method_detail|
 
-            value = row[col]
+            value = row[method_detail.column_index]
 
             contains_data = true unless(value.nil? || value.to_s.empty?)
               

@@ -14,15 +14,31 @@ require 'thor/actions'
 require 'bundler'
 require 'stringio'
 
-require File.dirname(__FILE__) + '/../lib/datashift'
+
+datashift_spec_base = File.expand_path( File.join(File.dirname(__FILE__), '..') )
+
+require File.join(datashift_spec_base, 'lib/datashift')
+
 
 RSpec.configure do |config|
   config.before do
     ARGV.replace []
   end
 
-
+  shared_context "ActiveRecordTestModelsConnected" do
     
+    before(:all) do
+      bundler_setup()
+    
+      # load all test model definitions - Project etc  
+      require ifixture_file('test_model_defs')  
+  
+      db_connect( 'test_file' )    # , test_memory, test_mysql
+
+      migrate_up
+    end
+  end
+  
   def run_in(dir )
     puts "RSpec .. running test in path [#{dir}]"
     original_dir = Dir.pwd
@@ -45,8 +61,8 @@ RSpec.configure do |config|
     end
 
     result
-  end
-
+  end  
+  
   alias :silence :capture
   
   def fixtures_path()
@@ -88,7 +104,8 @@ RSpec.configure do |config|
     @dslog = ActiveRecord::Base.logger
   end
   
-  def bundler_setup(gemfile)
+  def bundler_setup(gemfile = File.join(DataShift::root_path, 'spec', 'Gemfile') )
+    
     $stderr.puts "No Such Gemfile #{gemfile}" unless File.exists?(gemfile)
     
     ENV['BUNDLE_GEMFILE'] = gemfile
@@ -112,9 +129,7 @@ RSpec.configure do |config|
   end
   
   def db_connect( env = 'test_file')
-
-    bundler_setup( File.join(DataShift::root_path, 'spec', 'Gemfile') )
-    
+ 
     # Some active record stuff seems to rely on the RAILS_ENV being set ?
 
     ENV['RAILS_ENV'] = env
