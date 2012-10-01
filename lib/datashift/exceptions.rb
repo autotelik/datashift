@@ -10,4 +10,6 @@ module DataShift
   class MissingHeadersError < StandardError; end
   class MissingMandatoryError < StandardError; end
 
+  class RecordNotFound < StandardError; end
+  
 end

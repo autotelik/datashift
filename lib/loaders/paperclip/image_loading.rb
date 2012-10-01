@@ -38,7 +38,7 @@ module DataShift
       
       attributes = {:alt => (options[:alt] || "") }
       
-      attributes[:position] = (record and record.respond_to?(:images)) ? record.images.length : 0
+      attributes[:position] = (!options[:position] && record and record.respond_to?(:images)) ? record.images.length : 0
 
       attachment_options.merge!( attributes )
     

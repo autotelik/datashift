@@ -16,8 +16,14 @@ module DataShift
     
     include DataShift::Logging
     
-    # Options :
-    #   strict : Raise exception if any column cannot be mapped
+    #   Assumes header_row is first row i.e row 0
+    #   
+    #  Options passed through  to :  populate_method_mapper_from_headers
+    #  
+    #   [:mandatory]       : Array of mandatory column names
+    #   [:force_inclusion] : Array of inbound column names to force into mapping
+    #   [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
+    #   [:strict]          : Raise exception when no mapping found for a column heading (non mandatory)
     
     def perform_csv_load(file_name, options = {})
        

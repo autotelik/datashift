@@ -16,7 +16,6 @@ module DataShift
     def initialize
     end
 
-
     # Has the dictionary been populated for  klass
     def self.for?(klass)
       return !(has_many[klass] || belongs_to[klass] || has_one[klass] || assignments[klass]).nil?
@@ -122,7 +121,24 @@ module DataShift
       method_details_mgrs[klass] = method_details_mgr
       
     end
-        
+   
+    # TODO - check out regexp to do this work better plus Inflections ??
+    # Want to be able to handle any of ["Count On hand", 'count_on_hand', "Count OnHand", "COUNT ONHand" etc]
+    def self.substitutions(external_name)
+      name = external_name.to_s
+      
+      [
+        name,
+        name.tableize,
+        name.gsub(' ', '_'),
+        name.gsub(' ', '_').downcase,
+        name.gsub(/(\s+)/, '_').downcase,
+        name.gsub(' ', ''),
+        name.gsub(' ', '').downcase,
+        name.gsub(' ', '_').underscore
+      ]
+    end
+    
     # Find the proper format of name, appropriate call + column type for a given name.
     # e.g Given users entry in spread sheet check for pluralization, missing underscores etc
     #
@@ -132,34 +148,33 @@ module DataShift
 
       method_details_mgr = get_method_details_mgr( klass )
          
-      # md_mgr.all_available_operators.each { |l| puts "DEBUG: Mapped Method : #{l.inspect}" }
-        
-      name = external_name.to_s
-     
-      # TODO - check out regexp to do this work better plus Inflections ??
-      # Want to be able to handle any of ["Count On hand", 'count_on_hand', "Count OnHand", "COUNT ONHand" etc]
-      [
-        name,
-        name.tableize,
-        name.gsub(' ', '_'),
-        name.gsub(' ', '_').downcase,
-        name.gsub(/(\s+)/, '_').downcase,
-        name.gsub(' ', ''),
-        name.gsub(' ', '').downcase,
-        name.gsub(' ', '_').underscore].each do |n|
+      # md_mgr.all_available_operators.each { |l| puts "DEBUG: Mapped Method : #{l.inspect}" }      
+      substitutions(external_name).each do |n|
       
-        # Try each association type, returning first that contains matching operator with name n
-      
+        # Try each association type, returning first that contains matching operator with name n    
         MethodDetail::supported_types_enum.each do |t|
           method_detail = method_details_mgr.find(n, t)
           return method_detail.clone if(method_detail)
-        end
-        
+        end  
       end
 
       nil
     end
+    
+    # Assignments can contain things like delegated methods, this returns a matching 
+    # method details only when a true database column   
+    def self.find_method_detail_if_column( klass, external_name )
 
+      method_details_mgr = get_method_details_mgr( klass )
+      
+      substitutions(external_name).each do |n|
+        method_detail = method_details_mgr.find(n, :assignment)
+        return method_detail if(method_detail && method_detail.col_type) 
+      end
+      
+      nil
+    end
+    
     def self.clear
       belongs_to.clear
       has_many.clear

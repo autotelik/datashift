@@ -24,8 +24,12 @@ module DataShift
     #  Options:
     #   [:sheet_number]    : Default is 0. The index of the Excel Worksheet to use.
     #   [:header_row]      : Default is 0. Use alternative row as header definition.
+    #   
+    #  Options passed through  to :  populate_method_mapper_from_headers
+    #  
     #   [:mandatory]       : Array of mandatory column names
     #   [:force_inclusion] : Array of inbound column names to force into mapping
+    #   [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
     #   [:strict]          : Raise exception when no mapping found for a column heading (non mandatory)
 
     def perform_excel_load( file_name, options = {} )
@@ -122,7 +126,7 @@ module DataShift
           unless(save)
             failure
             logger.error "Failed to save row [#{row}]"
-            logger.error load_object.errors.inspect
+            logger.error load_object.errors.inspect if(load_object)
           else
             logger.info "Row #{row} succesfully SAVED : ID #{load_object.id}"
           end
