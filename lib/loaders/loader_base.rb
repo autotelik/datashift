@@ -117,21 +117,22 @@ module DataShift
     # These are available through @method_mapper.method_details
     # 
     # Options:
-    #  strict           : Raise an exception of any headers can't be mapped to an attribute/association
-    #  ignore           : List of column headers to ignore when building operator map
-    #  mandatory        : List of columns that must be present in headers
+    #    [:strict]          : Raise an exception of any headers can't be mapped to an attribute/association
+    #    [:ignore]          : List of column headers to ignore when building operator map
+    #    [:mandatory]       : List of columns that must be present in headers
     #  
-    #  force_inclusion  : List of columns that do not map to any operator but should be includeed in processing.
+    #    [:force_inclusion] : List of columns that do not map to any operator but should be includeed in processing.
     #                     
-    #                     This provides the opportunity for loaders to provide specific methods to handle these fields
-    #                     when no direct operator is available on the modle or it's associations
+    #       This provides the opportunity for loaders to provide specific methods to handle these fields
+    #       when no direct operator is available on the modle or it's associations
+    #
+    #    [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
     #
     def populate_method_mapper_from_headers( headers, options = {} )
       @headers = headers
       
       mandatory = options[:mandatory] || []
-            
-      
+               
       strict = (options[:strict] == true)
       
       begin 
@@ -175,7 +176,6 @@ module DataShift
         
       method_detail = MethodDictionary.find_method_detail( load_object_class, column_name )
 
-      puts method_detail.inspect
       if(method_detail)
         prepare_data(method_detail, data)
         process()
@@ -189,7 +189,8 @@ module DataShift
     # Responds to global Options :
     #   :case_sensitive : Default is a case insensitive lookup.
     #   :use_like : Attempts a lookup using ike and x% ratehr than equality 
-    
+    #
+    # Returns nil if no record found
     def get_record_by(klazz, field, search_terms, split_on = ' ', split_on_prefix = nil)
     
       begin
@@ -226,7 +227,15 @@ module DataShift
         return nil
       end
     end
+    
+    def get_record_by!(klazz, field, search_terms, split_on = ' ', split_on_prefix = nil)
+      x = get_record_by(klazz, field, search_terms, split_on, split_on_prefix)
       
+      raise RecordNotFound, "No #{klazz} record found for [#{search_terms}] on #{field}" unless(x)
+      
+      x
+    end
+    
     # Default values and over rides can be provided in YAML config file.
     # 
     # Any Config under key 'LoaderBase' is merged over existing options - taking precedence.
@@ -420,11 +429,13 @@ module DataShift
     end
     
     def failure
-      @failed_objects << @load_object unless( !load_object.new_record? || @failed_objects.include?(@load_object))
+      @failed_objects << @load_object unless( @load_object.nil? || @load_object.new_record? || @failed_objects.include?(@load_object))
     end
 
     def save
-      puts "DEBUG: SAVING #{load_object.class} : #{load_object.inspect}" if(@verbose)
+      return unless( @load_object )
+      
+      puts "DEBUG: SAVING #{@load_object.class} : #{@load_object.inspect}" if(@verbose)
       begin
         result = @load_object.save
         

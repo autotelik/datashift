@@ -39,7 +39,7 @@ module DataShift
        
       @attach_to_klass  = options[:attach_to_klazz] if(options[:attach_to_klazz])
        
-      raise "The class that attachments belong to has not set" unless(@attach_to_klass)
+      raise "The class that attachments belong to has not been set" unless(@attach_to_klass)
         
       @attachment_path = path
         

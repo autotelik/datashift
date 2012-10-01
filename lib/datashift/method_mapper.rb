@@ -67,10 +67,12 @@ module DataShift
     # 
     # Options:
     # 
-    #  force_inclusion  : List of columns that do not map to any operator but should be includeed in processing.
+    #   [:force_inclusion]  : List of columns that do not map to any operator but should be includeed in processing.
     #                     
-    #                     This provides the opportunity for loaders to provide specific methods to handle these fields
-    #                     when no direct operator is available on the modle or it's associations
+    #       This provides the opportunity for loaders to provide specific methods to handle these fields
+    #       when no direct operator is available on the modle or it's associations
+    #       
+    #   [:include_all]      : Include all headers in processing - takes precedence of :force_inclusion
     #
     def map_inbound_headers_to_methods( klass, columns, options = {} )
       
@@ -104,7 +106,7 @@ module DataShift
         # TODO be nice if we could cheeck that the assoc on klass responds to the specified
         # lookup key now (nice n early)
         # active_record_helper = "find_by_#{lookup}"
-        if(md.nil? && forced.include?(raw_col_name.downcase))
+        if(md.nil? && options[:include_all] || forced.include?(raw_col_name.downcase))
           md = MethodDictionary::add(klass, raw_col_name)
         end
         
