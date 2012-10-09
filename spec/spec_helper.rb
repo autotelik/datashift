@@ -13,6 +13,7 @@ require 'active_record'
 require 'thor/actions'
 require 'bundler'
 require 'stringio'
+require 'paperclip'
 
 
 datashift_spec_base = File.expand_path( File.join(File.dirname(__FILE__), '..') )
@@ -45,6 +46,7 @@ RSpec.configure do |config|
     before(:each) do
       
       Project.delete_all
+      Owner.delete_all
       
       DataShift::MethodDictionary.clear
     
