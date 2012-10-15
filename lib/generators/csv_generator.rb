@@ -12,11 +12,8 @@ module DataShift
 
   class CsvGenerator < GeneratorBase
 
-    attr_accessor :excel, :filename
-  
     def initialize(filename)
-      @excel = nil
-      @filename = filename
+      super(filename)
     end
 
     # Create CSV file representing supplied Model

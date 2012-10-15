@@ -13,11 +13,13 @@
 module DataShift
 
   require 'datashift/method_mapper'
+  require 'datashift/querying'
 
   class LoaderBase
 
     include DataShift::Logging
     include DataShift::Populator
+    include DataShift::Querying
       
     attr_reader :headers
 
@@ -71,7 +73,9 @@ module DataShift
       @prefixes       = {}
       @postfixes      = {}
       
+      # TODO - move to own LoadStats or LoadReport class
       @loaded_objects = []
+      @failed_objects = []
       
       reset(object)
     end
@@ -184,72 +188,6 @@ module DataShift
       end
     end
     
-    
-    def search_for_record(klazz, field, search_term)
-    
-      begin
-        
-        if(@config[:case_sensitive]) 
-          return klazz.send("find_by_#{field}", search_term)
-        elsif(@config[:use_like])
-          return klazz.where("#{field} like ?", "#{search_term}%").first
-        else
-          return klazz.where("lower(#{field}) = ?", search_term.downcase).first
-        end
-     
-      rescue => e
-        puts e.inspect
-        logger.error("Exception attempting to find a record for [#{search_term}] on #{klazz}.#{field}")
-        logger.error e.backtrace
-        logger.error e.inspect
-      end
-      
-      nil
-    end
-    
-    # Find a record for model klazz, looking up on field containing search_terms
-    # Responds to global Options :
-    #   :case_sensitive : Default is a case insensitive lookup.
-    #   :use_like : Attempts a lookup using ike and x% rather than equality 
-    #
-    # Returns nil if no record found
-    def get_record_by(klazz, field, search_term, split_on = ' ', split_on_prefix = nil)
-    
-      begin
-              
-        record = search_for_record(klazz, field, search_term)
-        
-        # try individual portions of search_term, front -> back i.e "A_B_C_D" => A, B, C etc
-        search_term.split(split_on).each do |str|
-          z = (split_on_prefix) ? "#{split_on_prefix}#{str}": str
-          record = search_for_record(klazz, field, z)
-          break if record
-        end unless(record)
-        
-        # this time try incrementally scanning i.e "A_B_C_D" => A, A_B, A_B_C etc
-        search_term.split(split_on).inject("") do |str, term|
-          z = (split_on_prefix) ? "#{split_on_prefix}#{str}#{split_on}#{term}": "#{str}#{split_on}#{term}"
-          record = search_for_record(klazz, field, z)
-          break if record
-          term
-        end unless(record)
-        
-        return record
-      rescue => e
-        logger.error("Exception attempting to find a record for [#{search_term}] on #{klazz}.#{field}")
-        logger.error e.backtrace
-        logger.error e.inspect
-        return nil
-      end
-    end
-    
-    def get_record_by!(klazz, field, search_terms, split_on = ' ', split_on_prefix = nil)
-      x = get_record_by(klazz, field, search_terms, split_on, split_on_prefix)
-      
-      raise RecordNotFound, "No #{klazz} record found for [#{search_terms}] on #{field}" unless(x)
-      
-      x
-    end
     
     # Default values and over rides can be provided in YAML config file.
     # 

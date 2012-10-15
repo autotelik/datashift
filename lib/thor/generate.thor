@@ -17,20 +17,24 @@
 #    bundle exec thor help  datashift:generate:excel
 #
 require 'datashift'
-  
+require 'excel_generator'
+
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
 module Datashift
 
           
   class Generate < Thor     
-  
+         
     include DataShift::Logging
       
     desc "excel", "generate a template from an active record model (with optional associations)" 
     method_option :model, :aliases => '-m', :required => true, :desc => "The active record model to export"
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
     method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
-    method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
+    method_option :exclude, :aliases => '-x',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
+    method_option :remove, :aliases => '-e',  :type => :array, :desc => "Don't generate in template the supplied fields"
+    method_option :remove_rails, :type => :boolean, :desc => "Don't generate in template the standard Rails fields: #{DataShift::GeneratorBase::rails_columns.inspect}"
+    
     
     def excel()
      
@@ -38,7 +42,7 @@ module Datashift
       # ...can we make this more robust ? e.g what about when using active record but not in Rails app, 
       require File.expand_path('config/environment.rb')
    
-      require 'excel_generator'
+
 
       model = options[:model]
       result = options[:result]
@@ -58,12 +62,18 @@ module Datashift
       begin
         gen = DataShift::ExcelGenerator.new(result)
 
+        opts =  { :remove => options[:remove],
+                  :remove_rails => options[:remove_rails]
+        }
+          
         if(options[:assoc])
-          opts = (options[:exclude]) ? {:exclude => options[:exclude]} : {}
+          
+          opts[:exclude] = options[:exclude]
+          
           logger.info("Datashift: Generating with associations")
           gen.generate_with_associations(klass, opts)
         else
-          gen.generate(klass)
+          gen.generate(klass, opts)
         end
       rescue => e
         puts e

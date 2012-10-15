@@ -1,6 +1,8 @@
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
 
+require 'paperclip'
+
 class Digital < ActiveRecord::Base
   
   include Paperclip::Glue

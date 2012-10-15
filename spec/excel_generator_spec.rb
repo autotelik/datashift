@@ -164,6 +164,34 @@ describe 'Excel Generator' do
   end
     
     
+   it "should enable us to remove standard rails feilds from template .xls file ", :fail => true do
+
+    expect= result_file('project_plus_some_assoc_template_spec.xls')
+
+    gen = ExcelGenerator.new(expect)
+
+    options = {:remove_rails => true}
+      
+    gen.generate_with_associations(Project, options)
+
+    File.exists?(expect).should be_true, "Failed to find expected result file #{expect}"
+      
+    excel = Excel.new
+    excel.open(expect)
+    
+    excel.worksheets.should have(1).items
+    
+    excel.worksheet(0).name.should == 'Project'
+      
+    headers = excel.worksheets[0].row(0)
+
+    ["id", "updated_at", "created_at"].each do |check|
+      headers.should_not include check
+    end
+    
+    
+  end
+  
   it "should enable us to autosize columns in the .xls file" do
 
     expect= result_file('project_autosized_template_spec.xls')

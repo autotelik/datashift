@@ -8,20 +8,19 @@
 # TOD : Can we switch between .xls and XSSF (POI implementation of Excel 2007 OOXML (.xlsx) file format.)
 #
 #
+require 'generator_base'
+require 'excel'
+  
 module DataShift
-
-  require 'generator_base'
       
-  require 'excel'
-
   class ExcelGenerator < GeneratorBase
 
     include DataShift::Logging
       
-    attr_accessor :excel, :filename
+    attr_accessor :excel
   
     def initialize(filename)
-      @filename = filename
+      super(filename)
     end
 
     # Create an Excel file template (header row) representing supplied Model
@@ -31,8 +30,14 @@ module DataShift
     def generate(klass, options = {})
      
       prepare_excel(klass, options)
-        
-      @excel.set_headers(MethodDictionary.assignments[klass])
+
+      prep_remove_list(options)  
+            
+      @headers = MethodDictionary.assignments[klass]
+      
+      @headers.delete_if{|h| @remove_list.include?( h.to_sym ) }
+      
+      @excel.set_headers( @headers )
 
       logger.info("ExcelGenerator saving generated template #{@filename}")
         
@@ -57,6 +62,9 @@ module DataShift
     #       
     # * <tt>:remove</tt> - Association NAME(s) to remove .. :title, :id, :name
     # .
+    # * <tt>:remove_rails</tt> - Remove Rails DB columns :
+    #           :id, :created_at, :created_on, :updated_at, :updated_on
+    #   
     def generate_with_associations(klass, options = {})
 
       prepare_excel(klass, options)
@@ -65,9 +73,9 @@ module DataShift
            
       work_list = MethodDetail::supported_types_enum.to_a - [ *options[:exclude] ]
         
-      remove_list = [ *options[:remove] ].compact.collect{|x| x.to_s.downcase.to_sym }
-         
-      headers = []
+      prep_remove_list(options)    
+      
+      @headers = []
       
       details_mgr = MethodDictionary.method_details_mgrs[klass]
                   
@@ -94,6 +102,15 @@ module DataShift
       
     private
       
+    # Take options and create a list of symbols to remove from headers
+    # 
+    def prep_remove_list( options )
+      @remove_list = [ *options[:remove] ].compact.collect{|x| x.to_s.downcase.to_sym }
+         
+      @remove_list += GeneratorBase::rails_columns if(options[:remove_rails])
+    end
+    
+    
     def prepare_excel(klass, options = {})
       @filename = options[:filename] if  options[:filename]
         
