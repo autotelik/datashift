@@ -22,7 +22,12 @@ require 'rubygems'
 
 require 'rake'
 
-require 'lib/datashift'
+lib = File.expand_path('../lib/', __FILE__)
+
+$:.unshift '.' 
+$:.unshift lib unless $:.include?(lib)
+
+require 'datashift'
 
 require 'jeweler'
 Jeweler::Tasks.new do |gem|

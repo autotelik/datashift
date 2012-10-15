@@ -22,8 +22,12 @@ module Datashift
   
     include DataShift::Logging   
 
-    desc "attach", "Attach files from a directory\nwhere file names contain somewhere the lookup info"
-    
+    desc "attach", "Attach files from a directory\nThe attachment file names must contain the lookup info within them.
+    The instance of :attach_to_klass can be searched for and the new attachment assigned.
+      Examples     
+        Owner has_many pdfs and mp3 files as Digitals .... :attach_to_klass = Owner
+        User has a single image used as an avatar ... :attach_to_klass = User"
+
     # :dummy => dummy run without actual saving to DB
     method_option :input, :aliases => '-i', :required => true, :desc => "The input path containing images "
     
@@ -31,11 +35,27 @@ module Datashift
     method_option :recursive, :aliases => '-r', :type => :boolean, :desc => "Scan sub directories of input for images"
      
     method_option :attachment_klass, :required => true, :aliases => '-a', :desc => "Ruby Class name of the Attachment e.g Image, Icon"
-    method_option :attach_to_klass, :required => true, :aliases => '-k', :desc => "Ruby Class name attachment belongs to e.g Product, Blog"
-    method_option :attach_to_klass_field, :required => true, :aliases => '-f', :desc => "Attachment belongs to field e.g Product.image, Blog.digital"
+    method_option :attach_to_klass, :required => true, :aliases => '-k', :desc => "A class that has a relationship with the attachment (has_many, has_one, belongs_to)"
+
     
-    method_option :attach_to_lookup_field, :required => true, :aliases => '-l', :desc => "The field to use to find the :attach_to_klass record"
+    method_option :attach_to_field, :required => true, :aliases => '-f', :desc => "Attachment belongs to field e.g Product.image, Blog.digital"
     
+    method_option :attach_to_find_by_field, :required => true, :aliases => '-l', :desc => "The field to use to find the :attach_to_klass record"
+    
+    
+      # => :attach_to_find_by_field    
+      #       For the :attach_to_klass, this is the field used to search for the parent
+      #       object to assign the new attachment to.
+      #     Examples     
+      #       Owner has a unique 'name' field ... :attach_to_find_by_field = :name
+      #       User has a unique  'login' field  ... :attach_to_klass = :login
+      #
+      # => :attach_to_field    
+      #       Attribute/association to assign attachment to on :attach_to_klass.
+      #      Examples
+      #         :attach_to_field => digitals  : Owner.digitals = attachment
+      #         :attach_to_field => avatar    : User.avatar = attachment
+      
     method_option :split_file_name_on,  :type => :string, :desc => "delimiter to progressivley split filename for lookup", :default => ' '
     method_option :case_sensitive, :type => :boolean, :desc => "Use case sensitive where clause to find :attach_to_klass"
     method_option :use_like, :type => :boolean, :desc => "Use :lookup_field LIKE 'string%' instead of :lookup_field = 'string' in where clauses to find :attach_to_klass"
