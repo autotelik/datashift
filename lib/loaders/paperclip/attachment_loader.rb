@@ -129,7 +129,7 @@ module DataShift
           record = get_record_by(attach_to_klass, attach_to_find_by_field, base_name, split_on)
              
           if(record)
-            puts "Found record for attachment : #{record.inspect}"
+            puts "Found record for attachment :\n#{record.inspect}"
             logger.info "Found record for attachment : #{record.inspect}"
           else
             missing_records << file_name
@@ -159,7 +159,7 @@ module DataShift
             FileUtils.cp( i, 'MissingAttachmentRecords')  unless(options[:dummy] == 'true')
           end
         else
-          puts "All files (#{loading_files_cache.size}) were succesfully attached to a #{@load_object_class}"
+          puts "Created #{loading_files_cache.size} #{@load_object_class} attachments and succesfully attached to a #{@attach_to_klass}"
         end
 
         puts "Dummy Run Complete- if happy run without -d" if(options[:dummy])

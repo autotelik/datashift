@@ -15,7 +15,8 @@ require 'bundler'
 require 'stringio'
 require 'paperclip'
 
-
+$:.unshift '.'  # 1.9.3 quite strict, '.' must be in load path for relative paths to work from here
+    
 datashift_spec_base = File.expand_path( File.join(File.dirname(__FILE__), '..') )
 
 require File.join(datashift_spec_base, 'lib/datashift')
