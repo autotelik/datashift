@@ -6,12 +6,15 @@
 # Details::   Module containing common functionality for working with Paperclip attachments
 # 
 require 'logging'
+require 'paperclip'
 
 module DataShift
 
   module Paperclip
     
     include DataShift::Logging
+    include DataShift::Logging
+    require 'paperclip/attachment_loader'
     
     attr_accessor :attachment
     
@@ -76,13 +79,25 @@ module DataShift
       
       # e.g  (:viewable => some_product) =  Icon
       
-      attributes.merge!(attach_to_record_field.to_sym => record) if(record && attach_to_record_field)
+      #attributes.merge!(attach_to_record_field.to_sym => record) if(record && attach_to_record_field)
        
       begin
         
         @attachment = klass.new(attributes, :without_protection => true) 
       
-        puts @attachment.save ? "Success: Created Attachment #{@attachment.id} : #{@attachment.attachment_file_name}" : "ERROR : Problem saving to DB : #{@attachment.inspect}"
+        if(@attachment.save)
+          puts "Success: Created Attachment #{@attachment.id} : #{@attachment.attachment_file_name}"
+                
+          if(attach_to_record_field.is_a? MethodDetail)
+            attach_to_record_field.assign(record, @attachment)
+          else
+            # assume its not a has_many and try basic send 
+            record.send(attach_to_record_field + '=', @attachment)
+          end if(record && attach_to_record_field)
+          
+        else
+          puts "ERROR : Problem saving to DB : #{@attachment.inspect}"
+        end
         
         @attachment
       rescue => e

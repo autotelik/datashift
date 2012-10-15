@@ -12,6 +12,7 @@
 #
 require 'to_b'
 require 'logging'
+require 'populator'
 require 'set'
 
 module DataShift
@@ -19,6 +20,9 @@ module DataShift
   class MethodDetail
 
     include DataShift::Logging
+    
+    include DataShift::Populator
+    extend DataShift::Populator
     
     def self.supported_types_enum
       @type_enum ||= Set[:assignment, :belongs_to, :has_one, :has_many]
@@ -167,12 +171,6 @@ module DataShift
 
     def pp
       "#{@name} => #{operator}"
-    end
-
-
-    def self.insistent_method_list
-      @insistent_method_list ||= [:to_s, :to_i, :to_f, :to_b]
-      @insistent_method_list
     end
 
     private

@@ -18,32 +18,72 @@ module DataShift
       
       attr_accessor :attach_to_klass, :attach_to_find_by_field
       
+      attr_writer :attach_to_field
       attr_reader :attachment_path, :loading_files_cache
+      
+      
+      # If we have instantiated a method detail based on the attch to class and fields
+      # return that otherwise return the raw format of :attach_to_find_by_field
+      
+      def attach_to_field
+        @attach_to_method_detail || @attach_to_field
+      end
       
       # Options 
     
       # => :attach_to_klass    
       #       A class that has a relationship with - has_many, has_one or belongs_to - the attachment 
       #       The instance of :attach_to_klass can be searched for and the new attachment assigned.
+      #     Examples     
+      #       Owner has_many pdfs and mp3 files as Digitals .... :attach_to_klass = Owner
+      #       User has a single image used as an avatar ... :attach_to_klass = User
       #
       # => :attach_to_find_by_field    
-      #       For the :attach_to_klass, this is the field to use to searched for object to assign the new attachment to.
-      
+      #       For the :attach_to_klass, this is the field used to search for the parent
+      #       object to assign the new attachment to.
+      #     Examples     
+      #       Owner has a unique 'name' field ... :attach_to_find_by_field = :name
+      #       User has a unique  'login' field  ... :attach_to_klass = :login
+      #
+      # => :attach_to_field    
+      #       Attribute/association to assign attachment to on :attach_to_klass.
+      #      Examples
+      #         :attach_to_field => digitals  : Owner.digitals = attachment
+      #         :attach_to_field => avatar    : User.avatar = attachment
+      #         
+      #       
       def initialize(attachment_klazz, attachment = nil, options = {})
         
-        @attach_to_klass  = options[:attach_to_klass] || NilClass
-        @attach_to_find_by_field  = options[:attach_to_find_by_field] || nil
-                
-        @attachment = attachment
-
+        init_from_options( options )
+  
         opts = options.merge(:load => false) 
 
         super( attachment_klazz, attachment, opts )
          
         puts "Attachment Class is #{load_object_class}" if(@verbose)
- 
-      
+       
         raise "Failed to create Attachment for loading" unless @load_object
+      end
+      
+      def init_from_options( options )
+      
+        @attach_to_klass  = options[:attach_to_klass] || @attach_to_klass || nil
+        
+        unless(@attach_to_klass.nil? || (MethodDictionary::for?(@attach_to_klass) && options[:reload] == false))
+          #puts "Building Method Dictionary for class #{object_class}"
+          DataShift::MethodDictionary.find_operators( @attach_to_klass, :reload => options[:reload], :instance_methods => true )
+        
+          # Create dictionary of data on all possible 'setter' methods which can be used to
+          # populate or integrate an object of type @load_object_class
+          DataShift::MethodDictionary.build_method_details(@attach_to_klass)
+        end
+      
+        @attach_to_find_by_field  = options[:attach_to_find_by_field] || @attach_to_find_by_field || nil
+        @attach_to_field  = options[:attach_to_field] || @attach_to_field || nil
+        
+        unless(@attach_to_klass.nil? && @attach_to_field.nil? )
+          @attach_to_method_detail = MethodDictionary.find_method_detail(@attach_to_klass, @attach_to_field)
+        end
       end
       
       # This version creates attachments and also attaches them to instances of :attach_to_klazz
@@ -53,18 +93,16 @@ module DataShift
       #                         :attach_to_klass with matching :attach_to_find_by_field
       #
       #
-      def process_from_filesystem(path, options )
+      def process_from_filesystem(path, options = {} )
      
-        @attachment = options[:attachment] if(options[:attachment])
+        init_from_options( options )
         
-        @attach_to_klass  = options[:attach_to_klazz] if(options[:attach_to_klazz])
-       
-        raise "The class that attachments belong to has not been set" unless(@attach_to_klass || @attachment) 
+        raise "The class that attachments belongs to has not been set (:attach_to_klass)" unless(@attach_to_klass) 
+                
+        raise "The field to search for attachment's owner has not been set (:attach_to_find_by_field)" unless(@attach_to_find_by_field)
                
-        @attach_to_find_by_field = options[:attach_to_find_by_field] if(options[:attach_to_find_by_field])
-        
-        raise "The field to search for attachment's owner has not been set (:attach_to_find_by_field)" unless(@attach_to_find_by_field || @attachment)
-        
+        @load_object = options[:attachment] if(options[:attachment])
+  
         @attachment_path = path
         
         missing_records = []

@@ -9,6 +9,18 @@ module DataShift
 
   class GeneratorBase
 
+    attr_accessor :filename, :headers, :remove_list
+  
+    def initialize(filename)
+      @filename = filename
+      @headers = []
+      @remove_list =[]
+    end
+    
+    
+    def self.rails_columns
+      @rails_standard_columns ||= [:id, :created_at, :created_on, :updated_at, :updated_on]
+    end
   end
 
 end
