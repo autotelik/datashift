@@ -24,6 +24,7 @@ public
 public/**
 spec/logs
 spec/fixtures/results
+spec/private
 
 nbproject
 Thumbs.db
