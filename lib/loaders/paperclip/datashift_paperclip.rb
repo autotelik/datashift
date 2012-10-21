@@ -92,7 +92,7 @@ module DataShift
             attach_to_record_field.assign(record, @attachment)
           else
             # assume its not a has_many and try basic send 
-            record.send(attach_to_record_field + '=', @attachment)
+            record.send("#{attach_to_record_field}=", @attachment)
           end if(record && attach_to_record_field)
           
         else
