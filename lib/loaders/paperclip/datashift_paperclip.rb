@@ -81,6 +81,7 @@ module DataShift
       
       #attributes.merge!(attach_to_record_field.to_sym => record) if(record && attach_to_record_field)
        
+      puts attributes.inspect
       begin
         
         @attachment = klass.new(attributes, :without_protection => true) 
@@ -97,6 +98,7 @@ module DataShift
           
         else
           puts "ERROR : Problem saving to DB : #{@attachment.inspect}"
+          puts @attachment.errors.messages.inspect
         end
         
         @attachment
