@@ -136,7 +136,7 @@ module DataShift
           record = nil
             
           puts "Attempting to find matching record where #{attach_to_find_by_field} ~=  #{base_name}"
-          record = get_record_by(attach_to_klass, attach_to_find_by_field, base_name, split_on)
+          record = get_record_by(attach_to_klass, attach_to_find_by_field, base_name, split_on, options)
              
           if(record)
             puts "Found record for attachment :\n#{record.inspect}"

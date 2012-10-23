@@ -16,6 +16,13 @@ module DataShift
 
   module  Querying
  
+    # Options:
+    # 
+    #   :split_on_prefix  : Add a prefix to each search term
+    #   :case_sensitive   : Default is a case insensitive lookup.
+    #   :use_like         : Attempts a lookup using ike and x% rather than equality 
+    #
+    
     def search_for_record(klazz, field, search_term, options = {})
     
       begin
@@ -40,27 +47,31 @@ module DataShift
     
     # Find a record for model klazz, looking up on field containing search_terms
     # Responds to global Options :
+    # 
+    #   :add_prefix     : Add a prefix to each search term
     #   :case_sensitive : Default is a case insensitive lookup.
-    #   :use_like : Attempts a lookup using ike and x% rather than equality 
+    #   :use_like       : Attempts a lookup using ike and x% rather than equality 
     #
     # Returns nil if no record found
-    def get_record_by(klazz, field, search_term, split_on = ' ', split_on_prefix = nil)
+    def get_record_by(klazz, field, search_term, split_on = ' ', options = {})
     
       begin
-              
+         
+        split_on_prefix = options[:add_prefix]
+        
         record = search_for_record(klazz, field, search_term)
         
         # try individual portions of search_term, front -> back i.e "A_B_C_D" => A, B, C etc
         search_term.split(split_on).each do |str|
           z = (split_on_prefix) ? "#{split_on_prefix}#{str}": str
-          record = search_for_record(klazz, field, z)
+          record = search_for_record(klazz, field, z, options)
           break if record
         end unless(record)
         
         # this time try incrementally scanning i.e "A_B_C_D" => A, A_B, A_B_C etc
         search_term.split(split_on).inject("") do |str, term|
           z = (split_on_prefix) ? "#{split_on_prefix}#{str}#{split_on}#{term}": "#{str}#{split_on}#{term}"
-          record = search_for_record(klazz, field, z)
+          record = search_for_record(klazz, field, z, options)
           break if record
           term
         end unless(record)
@@ -74,8 +85,8 @@ module DataShift
       end
     end
     
-    def get_record_by!(klazz, field, search_terms, split_on = ' ', split_on_prefix = nil)
-      x = get_record_by(klazz, field, search_terms, split_on, split_on_prefix)
+    def get_record_by!(klazz, field, search_terms, split_on = ' ', options = {} )
+      x = get_record_by(klazz, field, search_terms, split_on, options)
       
       raise RecordNotFound, "No #{klazz} record found for [#{search_terms}] on #{field}" unless(x)
       
