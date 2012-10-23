@@ -39,25 +39,25 @@ module DataShift
     # 
     # Options to drive building the method dictionary for a class, enabling headers to be mapped to operators on that class.
     #  
+    # find_operators [default = true] : Populate method dictionary with operators and method details
+    #      
     # Options
-    #  :load [default = true] : Load the method dictionary for object_class
     #  
     #  :reload           : Force load of the method dictionary for object_class even if already loaded
-    #  :instance_methods : Include setter type instance methods for assignment as well as AR columns
-
-    
-    def initialize(object_class, object = nil, options = {})
+    #  :instance_methods : Include setter/delegate style instance methods for assignment, as well as AR columns
+    #
+    def initialize(object_class, find_operators = true, object = nil, options = {})
       @load_object_class = object_class
-
+      
       # Gather names of all possible 'setter' methods on AR class (instance variables and associations)
-      unless(MethodDictionary::for?(object_class) && options[:reload] == false)
-        #puts "Building Method Dictionary for class #{object_class}"
+      if((find_operators && !MethodDictionary::for?(object_class)) || options[:reload])
+        puts "Building Method Dictionary for class #{object_class}"
         DataShift::MethodDictionary.find_operators( @load_object_class, :reload => options[:reload], :instance_methods => options[:instance_methods] )
         
         # Create dictionary of data on all possible 'setter' methods which can be used to
         # populate or integrate an object of type @load_object_class
         DataShift::MethodDictionary.build_method_details(@load_object_class)
-      end if(options[:load] || options[:reload])
+      end
       
       @method_mapper = DataShift::MethodMapper.new
       @config = options.dup    # clone can cause issues like 'can't modify frozen hash'
@@ -152,10 +152,10 @@ module DataShift
         raise MappingDefinitionError, "Missing mappings for columns : #{@method_mapper.missing_methods.join(",")}" if(strict)
       end
 
-      unless(@method_mapper.contains_mandatory?(mandatory) )
-        @method_mapper.missing_mandatory(mandatory).each { |e| puts "ERROR: Mandatory column missing - expected column '#{e}'" }
+      unless(mandatory.empty? || @method_mapper.contains_mandatory?(mandatory) )
+        @method_mapper.missing_mandatory(mandatory).each { |er| puts "ERROR: Mandatory column missing - expected column '#{er}'" }
         raise MissingMandatoryError, "Mandatory columns missing  - please fix and retry."
-      end unless(mandatory.empty?)
+      end
       
       @method_mapper
     end
@@ -184,6 +184,7 @@ module DataShift
         prepare_data(method_detail, data)
         process()
       else
+        puts "No matching method found for column #{column_name}"
         @load_object.errors.add(:base, "No matching method found for column #{column_name}")
       end
     end

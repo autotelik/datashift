@@ -63,11 +63,11 @@ module Datashift
           logger.info("INFO: Using loader : #{loader.class}")
         rescue
           logger.error("INFO: No specific #{model}Loader found  - using generic ExcelLoader")
-          loader = DataShift::ExcelLoader.new(klass)
+          loader = DataShift::ExcelLoader.new(klass, true)
         end
       else
         logger.info("No Loader specified - using generic ExcelLoader")
-        loader = DataShift::ExcelLoader.new(klass)
+        loader = DataShift::ExcelLoader.new(klass, true)
       end
 
       logger.info("ARGS #{options.inspect}")

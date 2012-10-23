@@ -84,8 +84,7 @@ module DataShift
         DataShift::MethodDictionary.build_method_details(klass)
       end 
       
-      forced = [*options[:force_inclusion]].compact
-      forced.collect! { |f| f.downcase }
+      forced = [*options[:force_inclusion]].compact.collect { |f| f.to_s.downcase }
       
       @method_details, @missing_methods = [], []
     
@@ -94,7 +93,7 @@ module DataShift
         raw_col_data = col_data.to_s
         
         if(raw_col_data.nil? or raw_col_data.empty?)
-          logger.warn("Column list contains empty or null columns") 
+          logger.warn("Column list contains empty or null column at index #{col_index}") 
           @method_details << nil
           next
         end
@@ -103,10 +102,10 @@ module DataShift
        
         md = MethodDictionary::find_method_detail( klass, raw_col_name )
         
-        # TODO be nice if we could cheeck that the assoc on klass responds to the specified
+        # TODO be nice if we could check that the assoc on klass responds to the specified
         # lookup key now (nice n early)
         # active_record_helper = "find_by_#{lookup}"
-        if(md.nil? && options[:include_all] || forced.include?(raw_col_name.downcase))
+        if(md.nil? && (options[:include_all] || forced.include?(raw_col_name.downcase)) )
           md = MethodDictionary::add(klass, raw_col_name)
         end
         
@@ -149,7 +148,9 @@ module DataShift
     
     # Returns true if discovered methods contain every operator in mandatory_list
     def contains_mandatory?( mandatory_list )
-      [ [*mandatory_list] - operator_names].flatten.empty?
+      a = [*mandatory_list].collect { |f| f.downcase }
+      b = operator_names.collect { |f| f.downcase }
+      (a - b).empty?
     end
 
     def missing_mandatory( mandatory_list )

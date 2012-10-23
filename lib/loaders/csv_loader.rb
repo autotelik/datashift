@@ -86,8 +86,8 @@ module DataShift
 
     include DataShift::CsvLoading
 
-    def initialize(klass, object = nil, options = {})
-      super( klass, object, options )
+    def initialize(klass, find_operators = true, object = nil, options = {})
+      super( klass, find_operators, object, options )
       raise "Cannot load - failed to create a #{klass}" unless @load_object
     end
 

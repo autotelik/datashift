@@ -12,13 +12,11 @@ module DataShift
   class MethodDictionary
 
     include DataShift::Logging
-    
-    def initialize
-    end
-
-    # Has the dictionary been populated for  klass
+   
+    # Return true if dictionary has  been populated for  klass
     def self.for?(klass)
-      return !(has_many[klass] || belongs_to[klass] || has_one[klass] || assignments[klass]).nil?
+      any = has_many[klass] || belongs_to[klass] || has_one[klass] || assignments[klass]
+      return any != nil
     end
     
     # Create simple picture of all the operator names for assignment available on an AR model,

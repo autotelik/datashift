@@ -20,20 +20,16 @@ module DataShift
       
       attr_writer :attach_to_field
       attr_reader :attachment_path, :loading_files_cache
+
       
-      
-      # If we have instantiated a method detail based on the attch to class and fields
-      # return that otherwise return the raw format of :attach_to_find_by_field
-      
-      def attach_to_field
-        @attach_to_method_detail || @attach_to_field
-      end
-      
+      # Constructor
+      # 
       # Options 
-    
+      #
       # => :attach_to_klass    
-      #       A class that has a relationship with - has_many, has_one or belongs_to - the attachment 
+      #       A class that has a relationship with the attachment (has_many, has_one or belongs_to etc)  
       #       The instance of :attach_to_klass can be searched for and the new attachment assigned.
+      #       
       #     Examples     
       #       Owner has_many pdfs and mp3 files as Digitals .... :attach_to_klass = Owner
       #       User has a single image used as an avatar ... :attach_to_klass = User
@@ -41,6 +37,7 @@ module DataShift
       # => :attach_to_find_by_field    
       #       For the :attach_to_klass, this is the field used to search for the parent
       #       object to assign the new attachment to.
+      #       
       #     Examples     
       #       Owner has a unique 'name' field ... :attach_to_find_by_field = :name
       #       User has a unique  'login' field  ... :attach_to_klass = :login
@@ -48,27 +45,31 @@ module DataShift
       # => :attach_to_field    
       #       Attribute/association to assign attachment to on :attach_to_klass.
       #      Examples
+      #      
       #         :attach_to_field => digitals  : Owner.digitals = attachment
       #         :attach_to_field => avatar    : User.avatar = attachment
       #         
       #       
-      def initialize(attachment_klazz, attachment = nil, options = {})
+      def initialize(attachment_klazz, find_operators = true, attachment = nil, options = {})
         
         init_from_options( options )
-  
-        opts = options.merge(:load => false) 
-
-        super( attachment_klazz, attachment, opts )
+ 
+        super( attachment_klazz, find_operators, attachment, options.dup )
          
         puts "Attachment Class is #{load_object_class}" if(@verbose)
        
         raise "Failed to create Attachment for loading" unless @load_object
       end
+            
       
+      # Options
+      # :reload
+      # :attach_to_klass, :attach_to_field, :attach_to_find_by_field
+      #
       def init_from_options( options )
-      
-        @attach_to_klass  = options[:attach_to_klass] || @attach_to_klass || nil
         
+        @attach_to_klass  = options[:attach_to_klass] || @attach_to_klass || nil
+            
         unless(@attach_to_klass.nil? || (MethodDictionary::for?(@attach_to_klass) && options[:reload] == false))
           #puts "Building Method Dictionary for class #{object_class}"
           DataShift::MethodDictionary.find_operators( @attach_to_klass, :reload => options[:reload], :instance_methods => true )
@@ -85,6 +86,15 @@ module DataShift
           @attach_to_method_detail = MethodDictionary.find_method_detail(@attach_to_klass, @attach_to_field)
         end
       end
+      
+            
+      # If we have instantiated a method detail based on the attach to class and fields
+      # return that otherwise return the raw format of :attach_to_find_by_field
+      
+      def attach_to_field
+        @attach_to_method_detail || @attach_to_field
+      end
+      
       
       # This version creates attachments and also attaches them to instances of :attach_to_klazz
       # 
@@ -125,7 +135,7 @@ module DataShift
             
           record = nil
             
-          puts "try to find record where #{attach_to_find_by_field} ==  #{base_name}"
+          puts "Attempting to find matching record where #{attach_to_find_by_field} ~=  #{base_name}"
           record = get_record_by(attach_to_klass, attach_to_find_by_field, base_name, split_on)
              
           if(record)
@@ -139,12 +149,11 @@ module DataShift
 
           # Check if attachment must have an associated record
           if(record)
-            puts "now create attachment"
             reset()
           
             create_attachment(@load_object_class, file_name, record, attach_to_field, options)
    
-            puts "Added Attachment #{File.basename(file_name)} to #{record.send(attach_to_find_by_field)} : #{record.id}" if(@verbose)
+            puts "Added Attachment #{File.basename(file_name)} to #{record.send(attach_to_find_by_field)}(id : #{record.id})" if(@verbose)
           end
 
         end
@@ -153,7 +162,7 @@ module DataShift
           FileUtils.mkdir_p('MissingAttachmentRecords') unless File.directory?('MissingAttachmentRecords')
         
           puts "WARNING : #{missing_records.size} of #{loading_files_cache.size} files could not be attached to a #{@load_object_class}"
-          puts "For your convenience a copy of files with MISSING #{@load_object_class} :  ./MissingAttachmentRecords"
+          puts "For your convenience files with MISSING #{attach_to_klass} have been copied to : MissingAttachmentRecords"
           missing_records.each do |i|
             puts "Copying #{i} to MissingAttachmentRecords folder" if(options[:verbose])
             FileUtils.cp( i, 'MissingAttachmentRecords')  unless(options[:dummy] == 'true')

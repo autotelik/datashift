@@ -44,7 +44,6 @@ module DataShift
       puts "\n\n\nLoading from Excel file: #{file_name}"
 
       sheet_number = options[:sheet_number] || 0
-
       
       @sheet = @excel.worksheet( sheet_number )
 
@@ -66,14 +65,11 @@ module DataShift
       end
 
       raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{header_row_index} contains headers" if(@headers.empty?)
-
       
       # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
       # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
       populate_method_mapper_from_headers( @headers, options )
       
-      @method_mapper
-
       logger.info "Excel Loader processing #{@sheet.num_rows} rows"
       
       loaded_objects.clear
@@ -105,10 +101,9 @@ module DataShift
          
           # Iterate over method_details, working on data out of associated Excel column
           @method_mapper.method_details.each do |method_detail|
-            
-            
+                
             next unless method_detail # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
-
+            
             value = row[method_detail.column_index]
 
             contains_data = true unless(value.nil? || value.to_s.empty?)
@@ -155,8 +150,8 @@ module DataShift
 
     include ExcelLoading
   
-    def initialize(klass, object = nil, options = {})
-      super( klass, object, options )
+    def initialize(klass, find_operators = true, object = nil, options = {})
+      super( klass, find_operators, object, options )
       raise "Cannot load - failed to create a #{klass}" unless @load_object
     end
 

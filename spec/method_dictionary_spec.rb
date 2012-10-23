@@ -8,25 +8,34 @@
 #             and a classes different types of assignment operators
 #
 require File.join(File.dirname(__FILE__), 'spec_helper')
-    
+  
+require 'method_dictionary'
+
 describe 'Method Dictionary' do
+
 
   include_context "ActiveRecordTestModelsConnected"
   
+  include DataShift
   
   before(:each) do
     MethodDictionary.clear
-    MethodDictionary.find_operators( Project )
-    MethodDictionary.find_operators( Milestone )
   end
   
   it "should store dictionary for multiple AR models" do
+    
+    MethodDictionary.find_operators( Project )
+    MethodDictionary.find_operators( Milestone )
+    
     MethodDictionary.assignments.size.should == 2 
     MethodDictionary.has_many.size.should == 2
   end
   
   it "should populate method dictionary for a given AR model" do
 
+    MethodDictionary.find_operators( Project )
+    MethodDictionary.find_operators( Milestone )
+    
     MethodDictionary.has_many.should_not be_empty
     MethodDictionary.has_many[Project].should include('milestones')
 
@@ -48,6 +57,8 @@ describe 'Method Dictionary' do
 
   it "should populate assigment members without the equivalent association names" do
 
+    MethodDictionary.find_operators( Project )
+    
     # we should remove has-many & belongs_to from basic assignment set as they require a DB lookup
     # or a Model.create call, not a simple assignment
 
@@ -58,6 +69,9 @@ describe 'Method Dictionary' do
 
   it "should populate assignment operators for method details for different forms of a column name" do
 
+    MethodDictionary.find_operators( Project )
+    MethodDictionary.find_operators( Milestone )
+    
     MethodDictionary.build_method_details( Project )
     
     [:value_as_string, 'value_as_string', "VALUE as_STRING", "value as string"].each do |format|
@@ -83,6 +97,8 @@ describe 'Method Dictionary' do
 
   it "should populate column types for assignment operators in method details" do
 
+    MethodDictionary.find_operators( Project )
+    
     MethodDictionary.build_method_details( Project )
         
     [:value_as_string, 'value_as_string', "VALUE as_STRING", "value as string"].each do |format|
@@ -101,6 +117,8 @@ describe 'Method Dictionary' do
 
   it "should populate required Class for assignment operators based on column type" do
 
+    MethodDictionary.find_operators( Project )
+    
     MethodDictionary.build_method_details( Project )
         
     [:value_as_string, 'value_as_string', "VALUE as_STRING", "value as string"].each do |format|
@@ -116,6 +134,9 @@ describe 'Method Dictionary' do
 
   it "should populate belongs_to operator for method details for different forms of a column name" do
 
+    MethodDictionary.find_operators( Project )
+    MethodDictionary.find_operators( Milestone )
+    
     MethodDictionary.build_method_details( Project )
     MethodDictionary.build_method_details( Milestone )
             
@@ -184,10 +205,24 @@ describe 'Method Dictionary' do
       method_details.operator_class.should == LongAndComplexTableLinkedToVersion
     end
   end
+  
+  it "should return false on for?(klass) if find_operators hasn't been called for klass" do
+    MethodDictionary.clear
+    MethodDictionary::for?(Project).should == false
+    MethodDictionary::find_operators(Project)
+    MethodDictionary::for?(Project).should == true
+     
+  end
 
-
+  it "should return false on for?(klass) if find_operators hasn't been called for klass" do
+    MethodDictionary.clear
+    MethodDictionary::for?(Project).should == false
+  end
+  
   it "should find has_many operator for method details" do
-
+    
+    MethodDictionary.find_operators( Project )
+    
     MethodDictionary.build_method_details( Project )
      
     [:milestones, "Mile Stones", 'mileSTONES', 'MileStones'].each do |format|
@@ -208,6 +243,9 @@ describe 'Method Dictionary' do
 
  
   it "should return nil when non existent column name" do
+    
+    MethodDictionary.find_operators( Project )
+    
     ["On sale", 'on_sale'].each do |format|
       detail = MethodDictionary.find_method_detail( Project, format )
 
@@ -221,11 +259,16 @@ describe 'Method Dictionary' do
   end
 
   it "should not by default map setter methods" do
+    MethodDictionary.find_operators( Milestone )
+    
     MethodDictionary.assignments[Milestone].should_not include('title')
   end
   
   it "should support reload and  inclusion of setter methods" do
 
+    MethodDictionary.find_operators( Project )
+    MethodDictionary.find_operators( Milestone )
+    
     MethodDictionary.assignments[Milestone].should_not include('title')
         
     MethodDictionary.find_operators( Milestone, :reload => true, :instance_methods => true )
