@@ -31,7 +31,7 @@ module DataShift
             record.send(op, value.send( f) )
             break
           rescue => e
-            #puts "DEBUG: insistent_assignment: #{e.inspect}"
+            puts "DEBUG: insistent_assignment: #{e.inspect}"
             if f == Populator::insistent_method_list.last
               puts  "I'm sorry I have failed to assign [#{value}] to #{operator}"
               raise "I'm sorry I have failed to assign [#{value}] to #{operator}" unless value.nil?

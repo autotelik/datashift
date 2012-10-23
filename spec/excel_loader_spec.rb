@@ -31,9 +31,6 @@ describe 'Excel Loader' do
       Category.find_or_create_by_reference(cat)
     end
 
-    DataShift::MethodDictionary.find_operators( Category )
-    
-    DataShift::MethodDictionary.build_method_details( Category )
     
   end
   
@@ -57,6 +54,11 @@ describe 'Excel Loader' do
 
   it "should process multiple associationss from single column" do
 
+    
+    DataShift::MethodDictionary.find_operators( Category )
+    
+    DataShift::MethodDictionary.build_method_details( Category )
+    
     Project.find_by_title('001').should be_nil
     count = Project.count
 

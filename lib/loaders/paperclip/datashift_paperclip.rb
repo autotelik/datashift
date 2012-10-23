@@ -56,7 +56,7 @@ module DataShift
     #     
     #     Pass through hash of attributes to klass initializer
     # 
-    #   :has_attached_file_attribute 
+    #   :has_attached_file_name
     #   
     #     Paperclip attachment name defined with macro 'has_attached_file :name'  
     #   
@@ -71,7 +71,7 @@ module DataShift
     #     
     def create_attachment(klass, attachment_path, record = nil, attach_to_record_field = nil, options = {})
        
-      has_attached_file_attribute = options[has_attached_file_attribute] ? options[:has_attached_file_attribute].to_sym : :attachment
+      has_attached_file_attribute = options[:has_attached_file_name] ? options[:has_attached_file_name].to_sym : :attachment
   
       attributes = { has_attached_file_attribute => get_file(attachment_path) }
 

@@ -14,9 +14,6 @@ module DataShift
  
     include DataShift::Paperclip 
 
-    def initialize(attachment_klazz, attachment = nil, options = {})
-      super( attachment_klazz, attachment, options )
-    end
     
     # Note the paperclip attachment model defines the storage path via something like :
     # 
@@ -33,15 +30,17 @@ module DataShift
     #   :viewable_record 
     #   
     def create_attachment(klass, attachment_path, record = nil, attach_to_record_field = nil, options = {})
-            
-      attachment_options = options.dup
-      
-      attributes = {:alt => (options[:alt] || "") }
-      
-      attributes[:position] = (!options[:position] && record and record.respond_to?(:images)) ? record.images.length : 0
+        
+      image_attributes = { :attributes => 
+                            { :alt => (options[:alt] || ""),
+                              :position => (!options[:position] && record and record.respond_to?(:images)) ? record.images.length : 0
+                            }
+      }
 
-      attachment_options.merge!( attributes )
-    
+      attachment_options = options.dup.merge(image_attributes)
+      
+      #puts "DEBUG : create_attachment options : #{attachment_options.inspect}"
+       
       super(klass, attachment_path, record, attach_to_record_field, attachment_options)
     end
     
