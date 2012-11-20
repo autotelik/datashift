@@ -22,6 +22,8 @@ module DataShift
   module ExcelLoading
 
     #  Options:
+    #   [:dummy]           : Perform a dummy run - attempt to load everything but then roll back
+    #  
     #   [:sheet_number]    : Default is 0. The index of the Excel Worksheet to use.
     #   [:header_row]      : Default is 0. Use alternative row as header definition.
     #   
@@ -73,76 +75,88 @@ module DataShift
       logger.info "Excel Loader processing #{@sheet.num_rows} rows"
       
       loaded_objects.clear
-            
-      load_object_class.transaction do
-       
-        @sheet.each_with_index do |row, i|
-                 
-          next if(i == header_row_index)
+      
+      begin
+            puts "Dummy Check", options.inspect
+        puts "Dummy Run - Changes will be rolled back" if options[:dummy]
           
-          # Excel num_rows seems to return all 'visible' rows, which appears to be greater than the actual data rows
-          # (TODO - write spec to process .xls with a huge number of rows)
-          #
-          # This is rubbish but currently manually detect when actual data ends, this isn't very smart but
-          # got no better idea than ending once we hit the first completely empty row
-          break if row.nil?
+        load_object_class.transaction do
+       
+          @sheet.each_with_index do |row, i|
+                 
+            next if(i == header_row_index)
+          
+            # Excel num_rows seems to return all 'visible' rows, which appears to be greater than the actual data rows
+            # (TODO - write spec to process .xls with a huge number of rows)
+            #
+            # This is rubbish but currently manually detect when actual data ends, this isn't very smart but
+            # got no better idea than ending once we hit the first completely empty row
+            break if row.nil?
 
-          contains_data = false
+            contains_data = false
             
-          # First assign any default values for columns not included in parsed_file
-          process_missing_columns_with_defaults
+            # First assign any default values for columns not included in parsed_file
+            process_missing_columns_with_defaults
 
-          # TODO - Smart sorting of column processing order ....
-          # Does not currently ensure mandatory columns (for valid?) processed first but model needs saving
-          # before associations can be processed so user should ensure mandatory columns are prior to associations
+            # TODO - Smart sorting of column processing order ....
+            # Does not currently ensure mandatory columns (for valid?) processed first but model needs saving
+            # before associations can be processed so user should ensure mandatory columns are prior to associations
 
-          # as part of this we also attempt to save early, for example before assigning to
-          # has_and_belongs_to associations which require the load_object has an id for the join table
+            # as part of this we also attempt to save early, for example before assigning to
+            # has_and_belongs_to associations which require the load_object has an id for the join table
          
-          # Iterate over method_details, working on data out of associated Excel column
-          @method_mapper.method_details.each do |method_detail|
+            # Iterate over method_details, working on data out of associated Excel column
+            @method_mapper.method_details.each do |method_detail|
                 
-            next unless method_detail # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
+              next unless method_detail # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
             
-            value = row[method_detail.column_index]
+              value = row[method_detail.column_index]
 
-            contains_data = true unless(value.nil? || value.to_s.empty?)
+              contains_data = true unless(value.nil? || value.to_s.empty?)
               
-            prepare_data(method_detail, value)
+              prepare_data(method_detail, value)
               
-            process()
-          end
+              process()
+            end
                           
-          break unless(contains_data == true)
+            break unless(contains_data == true)
 
-          # TODO - requirements to handle not valid ?
-          # all or nothing or carry on and dump out the exception list at end
-          #puts "DEBUG: FINAL SAVE #{load_object.inspect}"
-          unless(save)
-            failure
-            logger.error "Failed to save row [#{row}]"
-            logger.error load_object.errors.inspect if(load_object)
-          else
-            logger.info "Row #{row} succesfully SAVED : ID #{load_object.id}"
-          end
+            # TODO - requirements to handle not valid ?
+            # all or nothing or carry on and dump out the exception list at end
+            #puts "DEBUG: FINAL SAVE #{load_object.inspect}"
+            unless(save)
+              failure
+              logger.error "Failed to save row [#{row}]"
+              logger.error load_object.errors.inspect if(load_object)
+            else
+              logger.info "Row #{row} succesfully SAVED : ID #{load_object.id}"
+            end
             
-          # don't forget to reset the object or we'll update rather than create
-          new_load_object
+            # don't forget to reset the object or we'll update rather than create
+            new_load_object
 
-        end
-      end
-      
-      loaded_objects.compact! if(loaded_objects)
-      
-      puts "Excel loading stage complete - #{loaded_objects.size} rows added."
-      puts "There were NO failures." if failed_objects.empty?
+          end
         
-      puts "WARNING : Check logs : #{failed_objects.size} rows contained errors and #{failed_objects.size} records NOT created." unless failed_objects.empty?
+          raise ActiveRecord::Rollback if(options[:dummy]) # Don't actually create/upload to DB if we are doing dummy run
+        end
+      
+      rescue => e
+        puts "CAUGHT ", e.inspect
+        if e.is_a?ActiveRecord::Rollback && options[:dummy]
+          puts "Excel loading stage complete - Dummy run so Rolling Back."
+        else
+          raise e
+        end
+      ensure
+        report
+      end
+     
     end
-
+    
     def value_at(row, column)
       @excel[row, column]
     end
+    
   end
 
 

@@ -18,11 +18,9 @@ module DataShift
  
     # Options:
     # 
-    #   :split_on_prefix  : Add a prefix to each search term
     #   :case_sensitive   : Default is a case insensitive lookup.
     #   :use_like         : Attempts a lookup using ike and x% rather than equality 
     #
-    
     def search_for_record(klazz, field, search_term, options = {})
     
       begin
@@ -50,7 +48,7 @@ module DataShift
     # 
     #   :add_prefix     : Add a prefix to each search term
     #   :case_sensitive : Default is a case insensitive lookup.
-    #   :use_like       : Attempts a lookup using ike and x% rather than equality 
+    #   :use_like       : Attempts a lookup using like and x% rather than equality 
     #
     # Returns nil if no record found
     def get_record_by(klazz, field, search_term, split_on = ' ', options = {})
@@ -59,7 +57,11 @@ module DataShift
          
         split_on_prefix = options[:add_prefix]
         
-        record = search_for_record(klazz, field, search_term)
+        z = (split_on_prefix) ? "#{split_on_prefix}#{search_term}": search_term
+        
+        logger.info("Scanning for record where #{klazz}.#{field} ~=  #{z}")
+        
+        record = search_for_record(klazz, field, z)
         
         # try individual portions of search_term, front -> back i.e "A_B_C_D" => A, B, C etc
         search_term.split(split_on).each do |str|
@@ -75,6 +77,10 @@ module DataShift
           break if record
           term
         end unless(record)
+        
+        if(record && record.respond_to?(field)) 
+          logger.info("Record found for #{klazz}.#{field} : #{record.send(field)}" )  
+        end
         
         return record
       rescue => e

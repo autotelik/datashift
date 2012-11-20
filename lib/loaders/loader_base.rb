@@ -88,6 +88,8 @@ module DataShift
     # 
     # OPTIONS :
     #  
+    #  [:dummy]         : Perform a dummy run - attempt to load everything but then roll back
+    #  
     #  strict           : Raise an exception of any headers can't be mapped to an attribute/association
     #  ignore           : List of column headers to ignore when building operator map
     #  mandatory        : List of columns that must be present in headers
@@ -100,6 +102,8 @@ module DataShift
 
       raise DataShift::BadFile, "Cannot load #{file_name} file not found." unless(File.exists?(file_name))
         
+      logger.info("Perform Load Options:\n#{options.inspect}")
+      
       ext = File.extname(file_name)
           
       if(ext.casecmp('.xls') == 0)
@@ -111,7 +115,14 @@ module DataShift
       end
     end
 
-    
+    def report
+      loaded_objects.compact! if(loaded_objects)
+      
+      puts "Loading stage complete - #{loaded_objects.size} rows added."
+      puts "There were NO failures." if failed_objects.empty?
+        
+      puts "WARNING : Check logs : #{failed_objects.size} rows contained errors and #{failed_objects.size} records NOT created." unless failed_objects.empty?
+    end
     
     # Core API
     # 
