@@ -15,9 +15,16 @@ module DataShift
   module CsvLoading
     
     include DataShift::Logging
-    
-    #   Assumes header_row is first row i.e row 0
+
+    # Load data through active Record models into DB from a CSV file
+    #  
+    # Assumes header_row is first row i.e row 0
     #   
+    #   
+    # OPTIONS :
+    #  
+    #  [:dummy]           : Perform a dummy run - attempt to load everything but then roll back
+    #
     #  Options passed through  to :  populate_method_mapper_from_headers
     #  
     #   [:mandatory]       : Array of mandatory column names
@@ -40,45 +47,58 @@ module DataShift
 
       puts "\n\n\nLoading from CSV file: #{file_name}"
       puts "Processing #{@parsed_file.size} rows"
+      begin
+  
+        load_object_class.transaction do
+          @loaded_objects =  []
 
-      load_object_class.transaction do
-        @loaded_objects =  []
-
-        @parsed_file.each do |row|
+          @parsed_file.each do |row|
           
-          # First assign any default values for columns not included in parsed_file
-          process_missing_columns_with_defaults
+            # First assign any default values for columns not included in parsed_file
+            process_missing_columns_with_defaults
 
-          # TODO - Smart sorting of column processing order ....
-          # Does not currently ensure mandatory columns (for valid?) processed first but model needs saving
-          # before associations can be processed so user should ensure mandatory columns are prior to associations
+            # TODO - Smart sorting of column processing order ....
+            # Does not currently ensure mandatory columns (for valid?) processed first but model needs saving
+            # before associations can be processed so user should ensure mandatory columns are prior to associations
 
-          # as part of this we also attempt to save early, for example before assigning to
-          # has_and_belongs_to associations which require the load_object has an id for the join table
+            # as part of this we also attempt to save early, for example before assigning to
+            # has_and_belongs_to associations which require the load_object has an id for the join table
 
-          # Iterate over the columns method_mapper found in Excel,
-          # pulling data out of associated column
-          @method_mapper.method_details.each_with_index do |method_detail, col|
+            # Iterate over the columns method_mapper found in Excel,
+            # pulling data out of associated column
+            @method_mapper.method_details.each_with_index do |method_detail, col|
 
-            value = row[col]
+              value = row[col]
 
-            prepare_data(method_detail, value)
+              prepare_data(method_detail, value)
             
-            process()
+              process()
+            end
+
+            # TODO - handle when it's not valid ?
+            # Process rest and dump out an exception list of Products ??
+
+            logger.info "Saving csv row #{row} to table object : #{load_object.inspect}"
+
+            save
+
+            # don't forget to reset the object or we'll update rather than create
+            new_load_object
+
           end
-
-          # TODO - handle when it's not valid ?
-          # Process rest and dump out an exception list of Products ??
-
-          logger.info "Saving csv row #{row} to table object : #{load_object.inspect}"
-
-          save
-
-          # don't forget to reset the object or we'll update rather than create
-          new_load_object
-
+        
+          raise ActiveRecord::Rollback if(options[:dummy]) # Don't actually create/upload to DB if we are doing dummy run
         end
+      rescue => e
+        if e.is_a?ActiveRecord::Rollback && options[:dummy]
+          puts "Excel loading stage complete - Dummy run so Rolling Back."
+        else
+          raise e
+        end
+      ensure
+        report
       end
+    
     end
   end
   

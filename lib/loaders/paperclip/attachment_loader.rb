@@ -98,10 +98,14 @@ module DataShift
       
       # This version creates attachments and also attaches them to instances of :attach_to_klazz
       # 
+      # Each file found in PATH will be processed - it's filename being used to scan for
+      # a matching record to attach the file to.
+      # 
       # Options
       #   :split_file_name_on   Used in scan process to progresivly split filename to find   
       #                         :attach_to_klass with matching :attach_to_find_by_field
       #
+      #   :add_prefix
       #
       def process_from_filesystem(path, options = {} )
      
@@ -135,12 +139,11 @@ module DataShift
             
           record = nil
             
-          puts "Attempting to find matching record where #{attach_to_find_by_field} ~=  #{base_name}"
+          puts "Attempting fo find Record for file name : #{base_name}"
           record = get_record_by(attach_to_klass, attach_to_find_by_field, base_name, split_on, options)
              
           if(record)
-            puts "Found record for attachment :\n#{record.inspect}"
-            logger.info "Found record for attachment : #{record.inspect}"
+            puts "Found #{record.class} where : #{attach_to_find_by_field} = #{record.send(attach_to_find_by_field)}(id : #{record.id})"
           else
             missing_records << file_name
           end
@@ -162,15 +165,15 @@ module DataShift
           FileUtils.mkdir_p('MissingAttachmentRecords') unless File.directory?('MissingAttachmentRecords')
         
           puts "WARNING : #{missing_records.size} of #{loading_files_cache.size} files could not be attached to a #{@load_object_class}"
-          puts "For your convenience files with MISSING #{attach_to_klass} have been copied to : MissingAttachmentRecords"
-          missing_records.each do |i|
-            puts "Copying #{i} to MissingAttachmentRecords folder" if(options[:verbose])
+          puts "For your convenience copying files with MISSING #{attach_to_klass} to : MissingAttachmentRecords"
+          missing_records.each do |i| 
             FileUtils.cp( i, 'MissingAttachmentRecords')  unless(options[:dummy] == 'true')
+            puts "Copyied #{i} to MissingAttachmentRecords folder" if(options[:verbose])
           end
-        else
-          puts "Created #{loading_files_cache.size} #{@load_object_class} attachments and succesfully attached to a #{@attach_to_klass}"
         end
 
+        puts "Created #{loading_files_cache.size - missing_records.size} of #{loading_files_cache.size} #{@load_object_class} attachments and succesfully attached to a #{@attach_to_klass}"
+         
         puts "Dummy Run Complete- if happy run without -d" if(options[:dummy])
    
       end
