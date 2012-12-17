@@ -105,7 +105,9 @@ module DataShift
       logger.info("Perform Load Options:\n#{options.inspect}")
       
       ext = File.extname(file_name)
-          
+      
+      # TODO - make more modular - these methods doing too much, for example move the object creation/reset
+      # out of these perform... methods to make it easier to over ride that behaviour
       if(ext.casecmp('.xls') == 0)
         perform_excel_load(file_name, options)
       elsif(ext.casecmp('.csv') == 0)

@@ -77,7 +77,6 @@ module DataShift
       loaded_objects.clear
       
       begin
-            puts "Dummy Check", options.inspect
         puts "Dummy Run - Changes will be rolled back" if options[:dummy]
           
         load_object_class.transaction do
@@ -141,8 +140,8 @@ module DataShift
         end
       
       rescue => e
-        puts "CAUGHT ", e.inspect
-        if e.is_a?ActiveRecord::Rollback && options[:dummy]
+        puts "CAUGHT ", e.backtrace, e.inspect
+        if e.is_a?(ActiveRecord::Rollback) && options[:dummy]
           puts "Excel loading stage complete - Dummy run so Rolling Back."
         else
           raise e

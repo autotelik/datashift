@@ -59,7 +59,7 @@ describe 'CSV Exporter' do
 
   it "should export a model and result of method calls on it to csv file" do
 
-    expect = result_file('project__with_methods_export_spec.csv')
+    expect = result_file('project_with_methods_export_spec.csv')
 
     exporter = CsvExporter.new( expect )
      
