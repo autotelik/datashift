@@ -73,15 +73,13 @@ module DataShift
        
       has_attached_file_attribute = options[:has_attached_file_name] ? options[:has_attached_file_name].to_sym : :attachment
   
+      # e.g  (:attachment => File.read) - TODO investigate this File handle .. does it need closing ?
       attributes = { has_attached_file_attribute => get_file(attachment_path) }
-
+     
       attributes.merge!(options[:attributes]) if(options[:attributes])
+
+      # DEBUG puts attributes.inspect
       
-      # e.g  (:viewable => some_product) =  Icon
-      
-      #attributes.merge!(attach_to_record_field.to_sym => record) if(record && attach_to_record_field)
-       
-      puts attributes.inspect
       begin
         
         @attachment = klass.new(attributes, :without_protection => true) 

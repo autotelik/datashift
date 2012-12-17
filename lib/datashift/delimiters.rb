@@ -67,15 +67,31 @@ module DataShift
       @multi_assoc_delim
     end
 
-
     def self.set_multi_assoc_delim(x) @multi_assoc_delim = x; end
     
     
+    # Delimiters for {:abc => 2, :efg => 'some text}
+    
+    def self.attribute_list_start 
+      @attribute_list_start ||= '{';
+    end
+
+    def self.attribute_list_start=(x) @attribute_list_start = x; end
+    
+    def self.attribute_list_end
+      @attribute_list_end ||= '}'
+    end
+    
+    def self.attribute_list_end=(x) 
+      @attribute_list_end = x; 
+    end
+  
     def self.csv_delim
       @csv_delim ||= ','
       @csv_delim
     end
     
+    def self.csv_delim=(x) set_csv_delim(x); end
     def self.set_csv_delim(x) @csv_delim = x; end
     
     def self.eol
