@@ -92,6 +92,8 @@ module DataShift
             # got no better idea than ending once we hit the first completely empty row
             break if row.nil?
 
+            logger.info "Processing Row #{i} : #{row}"
+            
             contains_data = false
             
             # First assign any default values for columns not included in parsed_file
@@ -112,6 +114,8 @@ module DataShift
               value = row[method_detail.column_index]
 
               contains_data = true unless(value.nil? || value.to_s.empty?)
+              
+              logger.info "Processing Column #{method_detail.column_index}"
               
               prepare_data(method_detail, value)
               
