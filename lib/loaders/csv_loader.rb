@@ -90,8 +90,9 @@ module DataShift
           raise ActiveRecord::Rollback if(options[:dummy]) # Don't actually create/upload to DB if we are doing dummy run
         end
       rescue => e
-        if e.is_a?ActiveRecord::Rollback && options[:dummy]
-          puts "Excel loading stage complete - Dummy run so Rolling Back."
+        puts "CAUGHT ", e.backtrace, e.inspect
+        if e.is_a?(ActiveRecord::Rollback) && options[:dummy]
+          puts "CSV loading stage complete - Dummy run so Rolling Back."
         else
           raise e
         end

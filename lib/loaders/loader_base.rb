@@ -179,6 +179,7 @@ module DataShift
     def process_missing_columns_with_defaults()
       inbound_ops = @method_mapper.operator_names
       @default_values.each do |dn, dv|     
+        logger.debug "Processing default value #{dn} : #{dv}"
         assignment(dn, @load_object, dv) unless(inbound_ops.include?(dn))
       end
     end
