@@ -82,7 +82,9 @@ module DataShift
         load_object_class.transaction do
        
           @sheet.each_with_index do |row, i|
-                 
+            
+            @current_row = row 
+            
             next if(i == header_row_index)
           
             # Excel num_rows seems to return all 'visible' rows, which appears to be greater than the actual data rows
@@ -90,49 +92,57 @@ module DataShift
             #
             # This is rubbish but currently manually detect when actual data ends, this isn't very smart but
             # got no better idea than ending once we hit the first completely empty row
-            break if row.nil?
+            break if @current_row.nil?
 
-            logger.info "Processing Row #{i} : #{row}"
+            logger.info "Processing Row #{i} : #{@current_row}"
             
             contains_data = false
             
-            # First assign any default values for columns not included in parsed_file
-            process_missing_columns_with_defaults
+            begin
+              # First assign any default values for columns not included in parsed_file
+              process_missing_columns_with_defaults
 
-            # TODO - Smart sorting of column processing order ....
-            # Does not currently ensure mandatory columns (for valid?) processed first but model needs saving
-            # before associations can be processed so user should ensure mandatory columns are prior to associations
+              # TODO - Smart sorting of column processing order ....
+              # Does not currently ensure mandatory columns (for valid?) processed first but model needs saving
+              # before associations can be processed so user should ensure mandatory columns are prior to associations
 
-            # as part of this we also attempt to save early, for example before assigning to
-            # has_and_belongs_to associations which require the load_object has an id for the join table
+              # as part of this we also attempt to save early, for example before assigning to
+              # has_and_belongs_to associations which require the load_object has an id for the join table
          
-            # Iterate over method_details, working on data out of associated Excel column
-            @method_mapper.method_details.each do |method_detail|
-                
-              next unless method_detail # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
+              # Iterate over method_details, working on data out of associated Excel column
+              @method_mapper.method_details.each do |method_detail|
+                       
+                next unless method_detail # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
             
-              value = row[method_detail.column_index]
+                logger.info "Processing Column #{method_detail.column_index}"
+                
+                value = @current_row[method_detail.column_index]
 
-              contains_data = true unless(value.nil? || value.to_s.empty?)
+                contains_data = true unless(value.nil? || value.to_s.empty?)
               
-              logger.info "Processing Column #{method_detail.column_index}"
+                prepare_data(method_detail, value)
               
-              prepare_data(method_detail, value)
-              
-              process()
+                process()           
+              end
+                     
+            rescue => e
+              failure
+              logger.error "Failed to process row [#{i}] (#{@current_row})"
+              # don't forget to reset the load object 
+              new_load_object
+              next
             end
-                          
+            
             break unless(contains_data == true)
 
-            # TODO - requirements to handle not valid ?
-            # all or nothing or carry on and dump out the exception list at end
-            #puts "DEBUG: FINAL SAVE #{load_object.inspect}"
+            # TODO - make optional -  all or nothing or carry on and dump out the exception list at end
+            
             unless(save)
               failure
-              logger.error "Failed to save row [#{row}]"
+              logger.error "Failed to save row [#{@current_row}]"
               logger.error load_object.errors.inspect if(load_object)
             else
-              logger.info "Row #{row} succesfully SAVED : ID #{load_object.id}"
+              logger.info "Row #{@current_row} succesfully SAVED : ID #{load_object.id}"
             end
             
             # don't forget to reset the object or we'll update rather than create
@@ -144,7 +154,7 @@ module DataShift
         end
       
       rescue => e
-        puts "CAUGHT ", e.backtrace, e.inspect
+        
         if e.is_a?(ActiveRecord::Rollback) && options[:dummy]
           puts "Excel loading stage complete - Dummy run so Rolling Back."
         else

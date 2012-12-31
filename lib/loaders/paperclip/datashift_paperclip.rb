@@ -34,14 +34,14 @@ module DataShift
       
       unless File.exists?(attachment_path) && File.readable?(attachment_path)
         logger.error("Cannot process Image from #{Dir.pwd}: Invalid Path #{attachment_path}")
-        raise "Cannot process Image : Invalid Path #{attachment_path}"
+        raise PathError.new("Cannot process Image : Invalid Path #{attachment_path}")
       end
      
       file = begin
         File.new(attachment_path, "rb")
       rescue => e
         puts e.inspect
-        raise "ERROR : Failed to read image #{attachment_path}"
+        raise PathError.new("ERROR : Failed to read image from #{attachment_path}")
       end
       
       file

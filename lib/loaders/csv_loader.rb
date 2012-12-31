@@ -52,35 +52,49 @@ module DataShift
         load_object_class.transaction do
           @loaded_objects =  []
 
-          @parsed_file.each do |row|
-          
-            # First assign any default values for columns not included in parsed_file
-            process_missing_columns_with_defaults
-
-            # TODO - Smart sorting of column processing order ....
-            # Does not currently ensure mandatory columns (for valid?) processed first but model needs saving
-            # before associations can be processed so user should ensure mandatory columns are prior to associations
-
-            # as part of this we also attempt to save early, for example before assigning to
-            # has_and_belongs_to associations which require the load_object has an id for the join table
-
-            # Iterate over the columns method_mapper found in Excel,
-            # pulling data out of associated column
-            @method_mapper.method_details.each_with_index do |method_detail, col|
-
-              value = row[col]
-
-              prepare_data(method_detail, value)
+          @parsed_file.each_with_index do |row, i|
             
-              process()
+            @current_row = row 
+            
+            begin
+              # First assign any default values for columns not included in parsed_file
+              process_missing_columns_with_defaults
+
+              # TODO - Smart sorting of column processing order ....
+              # Does not currently ensure mandatory columns (for valid?) processed first but model needs saving
+              # before associations can be processed so user should ensure mandatory columns are prior to associations
+
+              # as part of this we also attempt to save early, for example before assigning to
+              # has_and_belongs_to associations which require the load_object has an id for the join table
+
+              # Iterate over the columns method_mapper found in Excel,
+              # pulling data out of associated column
+              @method_mapper.method_details.each_with_index do |method_detail, col|
+
+                value = row[col]
+
+                prepare_data(method_detail, value)
+            
+                process()
+              end
+
+            rescue => e
+              failure
+              logger.error "Failed to process row [#{i}] (#{@current_row})"
+              # don't forget to reset the load object 
+              new_load_object
+              next
             end
-
-            # TODO - handle when it's not valid ?
-            # Process rest and dump out an exception list of Products ??
-
-            logger.info "Saving csv row #{row} to table object : #{load_object.inspect}"
-
-            save
+            
+            # TODO - make optional -  all or nothing or carry on and dump out the exception list at end
+            
+            unless(save)
+              failure
+              logger.error "Failed to save row [#{@current_row}] (#{load_object.inspect})"
+              logger.error load_object.errors.inspect if(load_object)
+            else
+              logger.info "Row #{@current_row} succesfully SAVED : ID #{load_object.id}"
+            end
 
             # don't forget to reset the object or we'll update rather than create
             new_load_object
