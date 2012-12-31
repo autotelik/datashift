@@ -12,4 +12,6 @@ module DataShift
 
   class RecordNotFound < StandardError; end
   
+  class PathError < StandardError; end
+  
 end

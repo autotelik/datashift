@@ -28,7 +28,7 @@ module DataShift
     attr_accessor :load_object_class, :load_object
     attr_accessor :current_value, :current_method_detail
 
-    attr_accessor :loaded_objects, :failed_objects
+    attr_accessor :processed_objects, :loaded_objects, :failed_objects
 
     attr_accessor :config, :verbose
 
