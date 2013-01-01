@@ -25,8 +25,7 @@ module DataShift
     end
 
     def add_loaded_object(object)
-      puts "DEBUG: Add loaded #{object} "
-      @loaded_objects << object unless(@loaded_objects.include?(object))
+      @loaded_objects << object unless(object.nil? || @loaded_objects.include?(object))
     end
     
     def add_failed_object(object)

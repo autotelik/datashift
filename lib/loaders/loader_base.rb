@@ -51,7 +51,7 @@ module DataShift
       
       # Gather names of all possible 'setter' methods on AR class (instance variables and associations)
       if((find_operators && !MethodDictionary::for?(object_class)) || options[:reload])
-        puts "Building Method Dictionary for class #{object_class}"
+        #puts "DEBUG Building Method Dictionary for class #{object_class}"
         DataShift::MethodDictionary.find_operators( @load_object_class, :reload => options[:reload], :instance_methods => options[:instance_methods] )
         
         # Create dictionary of data on all possible 'setter' methods which can be used to
@@ -407,7 +407,7 @@ module DataShift
     def save
       return unless( @load_object )
       
-      puts "DEBUG: SAVING #{@load_object.class} : #{@load_object.inspect}" if(@verbose)
+      #puts "DEBUG: SAVING #{@load_object.class} : #{@load_object.inspect}" if(@verbose)
       begin
         return @load_object.save
       rescue => e

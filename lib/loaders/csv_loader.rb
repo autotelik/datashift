@@ -88,9 +88,7 @@ module DataShift
               next
             end
             
-            # TODO - make optional -  all or nothing or carry on and dump out the exception list at end
-            puts "DEBUG: Calling save"
-            
+            # TODO - make optional -  all or nothing or carry on and dump out the exception list at end        
             unless(save)
               failure
               logger.error "Failed to save row [#{@current_row}] (#{load_object.inspect})"
