@@ -74,7 +74,7 @@ module DataShift
       
       logger.info "Excel Loader processing #{@sheet.num_rows} rows"
       
-      loaded_objects.clear
+      @reporter.reset
       
       begin
         puts "Dummy Run - Changes will be rolled back" if options[:dummy]
@@ -93,7 +93,7 @@ module DataShift
             # This is rubbish but currently manually detect when actual data ends, this isn't very smart but
             # got no better idea than ending once we hit the first completely empty row
             break if @current_row.nil?
-
+            
             logger.info "Processing Row #{i} : #{@current_row}"
             
             contains_data = false
@@ -126,7 +126,9 @@ module DataShift
               end
                      
             rescue => e
-              failure
+              @reporter.processed_object_count += 1
+              
+              failure(@current_row, true)
               logger.error "Failed to process row [#{i}] (#{@current_row})"
               # don't forget to reset the load object 
               new_load_object
@@ -135,6 +137,9 @@ module DataShift
             
             break unless(contains_data == true)
 
+            # currently here as we can only identify the end of a speadsheet by first empty row
+            @reporter.processed_object_count += 1
+                        
             # TODO - make optional -  all or nothing or carry on and dump out the exception list at end
             
             unless(save)
@@ -143,6 +148,7 @@ module DataShift
               logger.error load_object.errors.inspect if(load_object)
             else
               logger.info "Row #{@current_row} succesfully SAVED : ID #{load_object.id}"
+               @reporter.add_loaded_object(@load_object)
             end
             
             # don't forget to reset the object or we'll update rather than create
@@ -186,7 +192,7 @@ module DataShift
     def perform_load( file_name, options = {} )
       perform_excel_load( file_name, options )
 
-      puts "Excel loading stage complete - #{loaded_objects.size} rows added."  
+      puts "Excel loading stage complete - #{loaded_count} rows added."  
     end
 
   end
