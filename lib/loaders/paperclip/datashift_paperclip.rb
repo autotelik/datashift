@@ -13,7 +13,7 @@ module DataShift
   module Paperclip
     
     include DataShift::Logging
-    include DataShift::Logging
+  
     require 'paperclip/attachment_loader'
     
     attr_accessor :attachment
@@ -54,11 +54,13 @@ module DataShift
     # 
     #   :attributes
     #     
-    #     Pass through hash of attributes to klass initializer
+    #     Pass through a hash of attributes to the Paperclip klass's initializer
     # 
     #   :has_attached_file_name
     #   
     #     Paperclip attachment name defined with macro 'has_attached_file :name'  
+    #     
+    #     This is usually called/defaults  :attachment
     #   
     #     e.g 
     #       When : has_attached_file :avatar 
@@ -73,17 +75,21 @@ module DataShift
        
       has_attached_file_attribute = options[:has_attached_file_name] ? options[:has_attached_file_name].to_sym : :attachment
   
-      # e.g  (:attachment => File.read) - TODO investigate this File handle .. does it need closing ?
-      attributes = { has_attached_file_attribute => get_file(attachment_path) }
-     
-      attributes.merge!(options[:attributes]) if(options[:attributes])
-
-      # DEBUG puts attributes.inspect
+      # e.g  (:attachment => File.read)
+      paperclip_attributes = { has_attached_file_attribute => get_file(attachment_path) }
+        
+      paperclip_attributes.merge!(options[:attributes]) if(options[:attributes])
+      
+      begin     
+        @attachment = klass.new(paperclip_attributes, :without_protection => true) 
+      rescue => e
+        puts e.inspect
+        logger.error("Failed to create PaperClip Attachment : #{e.inspect}")
+        raise CreateAttachmentFailed.new("Failed to create PaperClip Attachment from : #{attachment_path}")
+      end
       
       begin
         
-        @attachment = klass.new(attributes, :without_protection => true) 
-      
         if(@attachment.save)
           puts "Success: Created Attachment #{@attachment.id} : #{@attachment.attachment_file_name}"
                 
@@ -101,12 +107,11 @@ module DataShift
         
         @attachment
       rescue => e
-        puts "PaperClip error - Problem creating Attachment from : #{attachment_path}"
-        puts e.inspect, e.backtrace
+        logger.error("Problem saving Paperclip Attachment: #{e.inspect}")
+        puts e.inspect
+        raise CreateAttachmentFailed.new("PaperClip error - Problem saving Attachment")
       end
-    end
-    
+    end   
   end
-  
   
 end
