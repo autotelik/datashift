@@ -50,11 +50,13 @@ module DataShift
       begin
   
         load_object_class.transaction do
-          @loaded_objects =  []
+          @reporter.reset
 
           @parsed_file.each_with_index do |row, i|
             
             @current_row = row 
+            
+            @reporter.processed_object_count += 1
             
             begin
               # First assign any default values for columns not included in parsed_file
@@ -79,7 +81,7 @@ module DataShift
               end
 
             rescue => e
-              failure
+              failure( row, true )
               logger.error "Failed to process row [#{i}] (#{@current_row})"
               # don't forget to reset the load object 
               new_load_object
@@ -87,6 +89,7 @@ module DataShift
             end
             
             # TODO - make optional -  all or nothing or carry on and dump out the exception list at end
+            puts "DEBUG: Calling save"
             
             unless(save)
               failure
@@ -94,6 +97,7 @@ module DataShift
               logger.error load_object.errors.inspect if(load_object)
             else
               logger.info "Row #{@current_row} succesfully SAVED : ID #{load_object.id}"
+              @reporter.add_loaded_object(@load_object)
             end
 
             # don't forget to reset the object or we'll update rather than create
@@ -129,7 +133,7 @@ module DataShift
     def perform_load( file_name, options = {} )
       perform_csv_load( file_name, options )
 
-      puts "CSV loading stage complete - #{loaded_objects.size} rows added."
+      puts "CSV loading stage complete - #{loaded_count} rows added."
     end
 
   end

@@ -28,7 +28,7 @@ module DataShift
     attr_accessor :load_object_class, :load_object
     attr_accessor :current_value, :current_method_detail
 
-    attr_accessor :processed_objects, :loaded_objects, :failed_objects
+    attr_accessor :reporter
 
     attr_accessor :config, :verbose
 
@@ -73,9 +73,7 @@ module DataShift
       @prefixes       = {}
       @postfixes      = {}
       
-      # TODO - move to own LoadStats or LoadReport class
-      @loaded_objects = []
-      @failed_objects = []
+      @reporter = DataShift::Reporter.new
       
       reset(object)
     end
@@ -118,12 +116,7 @@ module DataShift
     end
 
     def report
-      loaded_objects.compact! if(loaded_objects)
-      
-      puts "Loading stage complete - #{loaded_objects.size} rows added."
-      puts "There were NO failures." if failed_objects.empty?
-        
-      puts "WARNING : Check logs : #{failed_objects.size} rows contained errors and #{failed_objects.size} records NOT created." unless failed_objects.empty?
+      @reporter.report 
     end
     
     # Core API
@@ -396,8 +389,19 @@ module DataShift
       end
     end
     
-    def failure
-      @failed_objects << @load_object unless( @load_object.nil? || @load_object.new_record? || @failed_objects.include?(@load_object))
+    
+    # Loading failed. Store a failed object and if requested roll back (destroy) the current load object
+    # For use case where object saved early but subsequent required columns fail to process
+    # so the load object is invalid
+    
+    def failure( object = @load_object, rollback = false)
+      if(object)
+        @reporter.add_failed_object(object)
+      
+        @load_object.destroy if(rollback && ! @load_object.new_record?)
+        
+        new_load_object # don't forget to reset the load object 
+      end
     end
 
     def save
@@ -405,11 +409,7 @@ module DataShift
       
       puts "DEBUG: SAVING #{@load_object.class} : #{@load_object.inspect}" if(@verbose)
       begin
-        result = @load_object.save
-        
-        @loaded_objects << @load_object unless(@loaded_objects.include?(@load_object))
-
-        return result
+        return @load_object.save
       rescue => e
         failure
         puts "Error saving #{@load_object.class} : #{e.inspect}"
@@ -461,7 +461,7 @@ module DataShift
     #
     def reset(object = nil)
       @load_object = object || new_load_object
-      @loaded_objects, @failed_objects = [],[]
+      @reporter.reset
       @current_value = nil
     end
 
@@ -476,11 +476,11 @@ module DataShift
     end
 
     def loaded_count
-      @loaded_objects.size
+      reporter.loaded_objects.size
     end
 
     def failed_count
-      @failed_objects.size
+      reporter.failed_objects.size
     end
 
 
