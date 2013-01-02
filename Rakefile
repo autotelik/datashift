@@ -29,25 +29,6 @@ $:.unshift lib unless $:.include?(lib)
 
 require 'datashift'
 
-require 'jeweler'
-Jeweler::Tasks.new do |gem|
-  # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = DataShift.gem_name
-  gem.homepage = "http://github.com/autotelik/datashift"
-  gem.license = "MIT"
-  gem.summary = %Q{ Shift data betwen Excel/CSV and any Ruby app}
-  gem.description = %Q{Comprehensive tools to import/export between Excel/CSV and ActiveRecord databases, Rails apps, and any Ruby project.}
-  gem.email = "rubygems@autotelik.co.uk"
-  gem.authors = ["Thomas Statter"]
-  # dependencies defined in Gemfile
-  gem.files.exclude ['sandbox']
-  
-  gem.add_dependency 'spreadsheet'
-  gem.add_dependency 'rubyzip'
-  
-end
-Jeweler::RubygemsDotOrgTasks.new
-
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
   test.libs << 'lib' << 'test'
@@ -86,7 +67,7 @@ task :build, :version do |t, args|
   puts "Installing version #{version}"
   
   gem = "#{DataShift.gem_name}-#{version}.gem"
-  cmd = "jruby -S gem install --no-ri --no-rdoc #{gem}"
+  cmd = "gem install --no-ri --no-rdoc #{gem}"
   system(cmd)
 end
   
