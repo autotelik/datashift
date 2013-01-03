@@ -45,6 +45,7 @@ module DataShift
     #  
     #  :reload           : Force load of the method dictionary for object_class even if already loaded
     #  :instance_methods : Include setter/delegate style instance methods for assignment, as well as AR columns
+    #  :verbose          : Verboise logging and to STDOUT
     #
     def initialize(object_class, find_operators = true, object = nil, options = {})
       @load_object_class = object_class
@@ -63,6 +64,8 @@ module DataShift
       @config = options.dup    # clone can cause issues like 'can't modify frozen hash'
 
       @verbose = @config[:verbose]
+      
+      puts "Verbose Mode" if(verbose)
       @headers = []
 
       @default_data_objects ||= {}
@@ -407,7 +410,7 @@ module DataShift
     def save
       return unless( @load_object )
       
-      #puts "DEBUG: SAVING #{@load_object.class} : #{@load_object.inspect}" if(@verbose)
+      puts "DEBUG: SAVING #{@load_object.class} : #{@load_object.inspect}" if(verbose)
       begin
         return @load_object.save
       rescue => e
@@ -515,9 +518,19 @@ module DataShift
       
     private
 
+    # This method usually called during processing to avoid errors with associations like
+    #   <ActiveRecord::RecordNotSaved: You cannot call create unless the parent is saved>
+    # If the object is still invalid at this point probably indicates compulsory 
+    # columns on model have not been processed before associations on that model
+    # TODO smart ordering of columns dynamically ourselves rather than relying on incoming data order
     def save_if_new
-      #puts "SAVE", load_object.inspect
-      save if(load_object.valid? && load_object.new_record?)
+      return unless(load_object.new_record?)
+      
+      if(load_object.valid?)  
+        save
+      else
+        puts "Cannot Save - Invalid #{load_object.class} - #{load_object.errors.full_messages}" if(verbose)
+      end
     end
   
   end
