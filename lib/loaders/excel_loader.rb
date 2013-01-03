@@ -42,7 +42,6 @@ module DataShift
 
       @excel.open(file_name)
         
-      #if(options[:verbose])
       puts "\n\n\nLoading from Excel file: #{file_name}"
 
       sheet_number = options[:sheet_number] || 0
@@ -72,7 +71,8 @@ module DataShift
       # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
       populate_method_mapper_from_headers( @headers, options )
       
-      logger.info "Excel Loader processing #{@sheet.num_rows} rows"
+      # currently pointless num_rows rubbish i.e inaccurate!
+      #logger.info "Excel Loader processing #{@sheet.num_rows} rows"
       
       @reporter.reset
       
@@ -129,7 +129,14 @@ module DataShift
               @reporter.processed_object_count += 1
               
               failure(@current_row, true)
+              
+              if(verbose)
+                puts "Failed to process row [#{i}] (#{@current_row})" 
+                puts e.inspect 
+              end
+              
               logger.error "Failed to process row [#{i}] (#{@current_row})"
+              
               # don't forget to reset the load object 
               new_load_object
               next
@@ -148,25 +155,25 @@ module DataShift
               logger.error load_object.errors.inspect if(load_object)
             else
               logger.info "Row #{@current_row} succesfully SAVED : ID #{load_object.id}"
-               @reporter.add_loaded_object(@load_object)
+              @reporter.add_loaded_object(@load_object)
             end
             
             # don't forget to reset the object or we'll update rather than create
             new_load_object
 
           end
-        
-          raise ActiveRecord::Rollback if(options[:dummy]) # Don't actually create/upload to DB if we are doing dummy run
-        end
+          
+          if(options[:dummy])
+            puts "Excel loading stage complete - Dummy run so Rolling Back."
+            raise ActiveRecord::Rollback # Don't actually create/upload to DB if we are doing dummy run
+          end
+          
+        end   # TRANSACTION N.B ActiveRecord::Rollback does not propagate outside of the containing transaction block
       
-      rescue => e
-        
-        if e.is_a?(ActiveRecord::Rollback) && options[:dummy]
-          puts "Excel loading stage complete - Dummy run so Rolling Back."
-        else
-          raise e
-        end
-      ensure
+      rescue => e  
+        puts "ERROR: Excel loading failed : #{e.inspect}"
+        raise e
+      ensure     
         report
       end
      

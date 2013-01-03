@@ -35,8 +35,9 @@ module DataShift
     def report
       loaded_objects.compact! if(loaded_objects)
       
-      puts "Processing complete:"
-      puts "Processed total of #{processed_object_count} entries"
+      puts "\nProcessing Summary Report"
+      puts ">>>>>>>>>>>>>>>>>>>>>>>>>\n"
+      puts "Processed total of #{processed_object_count} #{processed_object_count > 1 ? 'entries' : 'entry'}"
       puts "#{loaded_objects.size} objects were succesfully processed."
        
       puts "There were NO failures." if failed_objects.empty?

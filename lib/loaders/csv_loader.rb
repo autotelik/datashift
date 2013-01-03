@@ -83,6 +83,12 @@ module DataShift
             rescue => e
               failure( row, true )
               logger.error "Failed to process row [#{i}] (#{@current_row})"
+              
+              if(verbose)
+                puts "Failed to process row [#{i}] (#{@current_row})" 
+                puts e.inspect 
+              end
+              
               # don't forget to reset the load object 
               new_load_object
               next
