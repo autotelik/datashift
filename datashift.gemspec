@@ -1,8 +1,14 @@
 require 'rake'
+
+lib = File.expand_path('../lib/', __FILE__)
+
+$:.unshift lib unless $:.include?(lib)
+
+require 'datashift'
   
 Gem::Specification.new do |s|
   s.name = "datashift"
-  s.version = "0.12.0"
+  s.version = DataShift::gem_version
   s.date = Date.today.to_s
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
