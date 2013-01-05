@@ -24,7 +24,7 @@
 #++
 
 
-# Details::   Active Record Loader
+# Details::   Active Record Import/Export for .xls or CSV
 # 
 # To pull DataShift commands into your main application :
 #
