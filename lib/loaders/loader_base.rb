@@ -53,7 +53,9 @@ module DataShift
       # Gather names of all possible 'setter' methods on AR class (instance variables and associations)
       if((find_operators && !MethodDictionary::for?(object_class)) || options[:reload])
         #puts "DEBUG Building Method Dictionary for class #{object_class}"
-        DataShift::MethodDictionary.find_operators( @load_object_class, :reload => options[:reload], :instance_methods => options[:instance_methods] )
+        
+        meth_dict_opts = options.extract!(:reload, :instance_methods)
+        DataShift::MethodDictionary.find_operators( @load_object_class, meth_dict_opts)
         
         # Create dictionary of data on all possible 'setter' methods which can be used to
         # populate or integrate an object of type @load_object_class
@@ -136,9 +138,13 @@ module DataShift
     #  
     #    [:force_inclusion] : List of columns that do not map to any operator but should be includeed in processing.
     #                     
-    #       This provides the opportunity for loaders to provide specific methods to handle these fields
-    #       when no direct operator is available on the modle or it's associations
+    #       This provides the opportunity for :
+    #       
+    #       1) loaders to provide specific methods to handle these fields, when no direct operator
+    #        is available on the model or it's associations
     #
+    #       2) Handle delegated methods i.e no direct association but method is on a model throuygh it's delegate
+    #           
     #    [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
     #
     def populate_method_mapper_from_headers( headers, options = {} )
@@ -278,7 +284,14 @@ module DataShift
     #   prepend or append with any provided extensions
     def prepare_data(method_detail, value)
       
-      @current_value = value
+      @current_value, @current_attribute_hash = value.to_s.split(Delimiters::attribute_list_start)
+      
+      if(@current_attribute_hash)
+        # @current_attribute_hash
+        @current_attribute_hash = nil unless @current_attribute_hash.include?('}')
+      end
+      
+      @current_attribute_hash ||= {}
       
       @current_method_detail = method_detail
       
@@ -293,7 +306,7 @@ module DataShift
       @current_value = "#{prefixes(operator)}#{@current_value}" if(prefixes(operator))
       @current_value = "#{@current_value}#{postfixes(operator)}" if(postfixes(operator))
 
-      @current_value
+      return @current_value, @current_attribute_hash
     end
     
     # Return the find_by operator and the rest of the (row,columns) data

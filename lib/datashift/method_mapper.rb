@@ -84,6 +84,8 @@ module DataShift
         DataShift::MethodDictionary.build_method_details(klass)
       end 
       
+      mgr = DataShift::MethodDictionary.method_details_mgrs[klass]
+       
       forced = [*options[:force_inclusion]].compact.collect { |f| f.to_s.downcase }
       
       @method_details, @missing_methods = [], []
@@ -99,26 +101,29 @@ module DataShift
         end
         
         raw_col_name, lookup = raw_col_data.split(MethodMapper::column_delim) 
-       
-        md = MethodDictionary::find_method_detail( klass, raw_col_name )
-        
-        # TODO be nice if we could check that the assoc on klass responds to the specified
-        # lookup key now (nice n early)
-        # active_record_helper = "find_by_#{lookup}"
-        if(md.nil? && (options[:include_all] || forced.include?(raw_col_name.downcase)) )
-          md = MethodDictionary::add(klass, raw_col_name)
+         
+        md = MethodDictionary::find_method_detail(klass, raw_col_name)
+               
+        if(md.nil?)          
+          #puts "DEBUG: Check Forced\n #{forced}.include?(#{raw_col_name}) #{forced.include?(raw_col_name.downcase)}"
+         
+          if(options[:include_all] || forced.include?(raw_col_name.downcase))
+            md = MethodDictionary::add(klass, raw_col_name)
+          end
         end
         
-        if(md)
-          
+        if(md)       
           md.name = raw_col_name
           md.column_index = col_index
           
+          # TODO we should check that the assoc on klass responds to the specified
+          # lookup key now (nice n early)
+          # active_record_helper = "find_by_#{lookup}"
           if(lookup)
             find_by, find_value = lookup.split(MethodMapper::column_delim) 
             md.find_by_value    = find_value 
             md.find_by_operator = find_by # TODO and klass.x.respond_to?(active_record_helper))
-            #puts "DEBUG: Method Detail #{md.name};#{md.operator} : find_by_operator #{md.find_by_operator}"
+            puts "DEBUG: Method Detail #{md.name};#{md.operator} : find_by_operator #{md.find_by_operator}"
           end
         else
           # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
@@ -149,7 +154,9 @@ module DataShift
     # Returns true if discovered methods contain every operator in mandatory_list
     def contains_mandatory?( mandatory_list )
       a = [*mandatory_list].collect { |f| f.downcase }
+      puts a.inspect
       b = operator_names.collect { |f| f.downcase }
+      puts b.inspect
       (a - b).empty?
     end
 

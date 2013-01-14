@@ -34,50 +34,51 @@ module DataShift
         has_many[klass] = klass.reflect_on_all_associations(:has_many).map { |i| i.name.to_s }
         klass.reflect_on_all_associations(:has_and_belongs_to_many).inject(has_many[klass]) { |x,i| x << i.name.to_s }
       end
-      
-      # puts "DEBUG: Has Many Associations:", has_many[klass].inspect
 
       # Find the belongs_to associations which can be populated via  Model.belongs_to_name = OtherArModelObject
       if( options[:reload] || belongs_to[klass].nil? )
         belongs_to[klass] = klass.reflect_on_all_associations(:belongs_to).map { |i| i.name.to_s }
       end
 
-      #puts "Belongs To Associations:", belongs_to[klass].inspect
-
       # Find the has_one associations which can be populated via  Model.has_one_name = OtherArModelObject
       if( options[:reload] || has_one[klass].nil? )
         has_one[klass] = klass.reflect_on_all_associations(:has_one).map { |i| i.name.to_s }
       end
-
-      #puts "has_one Associations:", self.has_one[klass].inspect
 
       # Find the model's column associations which can be populated via xxxxxx= value
       # Note, not all reflections return method names in same style so we convert all to
       # the raw form i.e without the '='  for consistency 
       if( options[:reload] || assignments[klass].nil? )
  
-        # TODO investigate difference with attribute_names - maybe column names can be assigned to an attribute
-        # so in terms of method calls on klass attribute_names might be safer
         assignments[klass] = klass.column_names  
            
-        if(options[:instance_methods] == true)
-          setters = klass.instance_methods.grep(/\w+=/).collect {|x| x.to_s }
-
-          # TODO - Since 3.2 this seems to return lots more stuff including validations which might not be appropriate
-          if(klass.respond_to? :defined_activerecord_methods)
-            setters = setters - klass.defined_activerecord_methods.to_a
+        if(options[:instance_methods])
+          
+          #puts "\nDEBUG: #{klass}.methods\n#{klass.methods.sort.collect.inspect}\n"             
+          setters = klass.accessible_attributes.sort
+          
+          # Since 3.2 :instance_methods returns lots more stuff  like validations, 
+          # which since not appropriate we remove with defined_activerecord_methods
+          if(klass.respond_to? :defined_activerecord_methods) 
+            setters += klass.instance_methods.grep(/\w+=/).sort - klass.defined_activerecord_methods
           end
-
+           
           # get into same format as other names 
           assignments[klass] += setters.map{|i| i.gsub(/=/, '')}
         end
         
         assignments[klass] -= has_many[klass] if(has_many[klass])
+        
+        # TODO remove assignments with id
+        # assignments => tax_id  but already in belongs_to => tax
         assignments[klass] -= belongs_to[klass] if(belongs_to[klass])
+        
         assignments[klass] -= self.has_one[klass] if(self.has_one[klass])
  
         assignments[klass].uniq!
 
+        #puts "\nDEBUG: DICT Setters\n#{assignments[klass]}\n"
+        
         assignments[klass].each do |assign|
           column_types[klass] ||= {}
           column_def = klass.columns.find{ |col| col.name == assign }
@@ -119,14 +120,14 @@ module DataShift
       method_details_mgrs[klass] = method_details_mgr
       
     end
-   
+    
     # TODO - check out regexp to do this work better plus Inflections ??
     # Want to be able to handle any of ["Count On hand", 'count_on_hand', "Count OnHand", "COUNT ONHand" etc]
     def self.substitutions(external_name)
       name = external_name.to_s
       
       [
-        name,
+        name.downcase,
         name.tableize,
         name.gsub(' ', '_'),
         name.gsub(' ', '_').downcase,
@@ -137,18 +138,24 @@ module DataShift
       ]
     end
     
+ 
     # Find the proper format of name, appropriate call + column type for a given name.
     # e.g Given users entry in spread sheet check for pluralization, missing underscores etc
     #
     # If not nil, returned method can be used directly in for example klass.new.send( call, .... )
     #
-    def self.find_method_detail( klass, external_name )
+    def self.find_method_detail( klass, external_name, conditions = nil )
 
       method_details_mgr = get_method_details_mgr( klass )
-         
-      # md_mgr.all_available_operators.each { |l| puts "DEBUG: Mapped Method : #{l.inspect}" }      
-      substitutions(external_name).each do |n|
-      
+   
+      # first try for an exact match across all association types
+      MethodDetail::supported_types_enum.each do |t|
+        method_detail = method_details_mgr.find(external_name, t)
+        return method_detail.clone if(method_detail)
+      end  
+              
+      # Now try various alternatives of the name
+      substitutions(external_name).each do |n|    
         # Try each association type, returning first that contains matching operator with name n    
         MethodDetail::supported_types_enum.each do |t|
           method_detail = method_details_mgr.find(n, t)
@@ -165,13 +172,24 @@ module DataShift
 
       method_details_mgr = get_method_details_mgr( klass )
       
-      substitutions(external_name).each do |n|
-        method_detail = method_details_mgr.find(n, :assignment)
-        return method_detail if(method_detail && method_detail.col_type) 
+       # first try for an exact match across all association types
+      MethodDetail::supported_types_enum.each do |t|
+        method_detail = method_details_mgr.find(external_name, t)
+        return method_detail.clone if(method_detail && method_detail.col_type) 
+      end  
+              
+      # Now try various alternatives
+      substitutions(external_name).each do |n|    
+        # Try each association type, returning first that contains matching operator with name n    
+        MethodDetail::supported_types_enum.each do |t|
+          method_detail = method_details_mgr.find(n, t)
+          return method_detail.clone if(method_detail && method_detail.col_type) 
+        end  
       end
-      
+
       nil
     end
+    
     
     def self.clear
       belongs_to.clear
@@ -190,7 +208,8 @@ module DataShift
       method_details_mgrs[klass] || MethodDetailsManager.new( klass )
     end
     
-        
+    
+    # Store a Mgr per mapped klass
     def self.method_details_mgrs
       @method_details_mgrs ||= {}
       @method_details_mgrs
