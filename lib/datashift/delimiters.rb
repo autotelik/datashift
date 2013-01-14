@@ -17,7 +17,6 @@ module DataShift
     # Support multiple associations being added to a base object to be specified in a single column.
     # 
     # Entry represents the association to find via supplied name, value to use in the lookup.
-    # Can contain multiple lookup name/value pairs, separated by multi_assoc_delim ( | )
     # 
     # Default syntax :
     #
