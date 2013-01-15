@@ -20,10 +20,7 @@ module DataShift
   class MethodDetail
 
     include DataShift::Logging
-    
-    include DataShift::Populator
-    extend DataShift::Populator
-    
+      
     def self.supported_types_enum
       @type_enum ||= Set[:assignment, :belongs_to, :has_one, :has_many]
       @type_enum
@@ -33,10 +30,7 @@ module DataShift
       @assoc_type_enum ||= Set[:belongs_to, :has_one, :has_many]
       @assoc_type_enum
     end
-    
-    # When looking up an association, try each of these in turn till a match
-    #  i.e find_by_name .. find_by_title and so on, lastly try the raw id
-    @@insistent_find_by_list ||= [:name, :title, :id]
+
 
     # Name is the raw, client supplied name
     attr_accessor :name
@@ -115,60 +109,6 @@ module DataShift
       @operator_class
     end
 
-    def assign(record, value )
-      
-      @current_value = value
-
-      # logger.info("WARNING nil value supplied for Column [#{@name}]") if(@current_value.nil?)
-    
-      if( operator_for(:belongs_to) )
-      
-        #puts "DEBUG : BELONGS_TO : #{@name} : #{operator} - Lookup #{@current_value} in DB"
-        insistent_belongs_to(record, @current_value)
-
-      elsif( operator_for(:has_many) )
-        
-        #puts "DEBUG : VALUE TYPE [#{value.class.name.include?(operator.classify)}] [#{ModelMapper.class_from_string(value.class.name)}]" unless(value.is_a?(Array))
-     
-        # The include? check is best I can come up with right now .. to handle module/namespaces
-        # TODO - can we determine the real class type of an association
-        # e.g given a association taxons, which operator.classify gives us Taxon, but actually it's Spree::Taxon
-        # so how do we get from 'taxons' to Spree::Taxons ? .. check if further info in reflect_on_all_associations
-
-        if(value.is_a?(Array) || value.class.name.include?(operator.classify))
-          record.send(operator) << value
-        else
-          puts "ERROR #{value.class} - Not expected type for has_many #{operator} - cannot assign"
-        end
-
-      elsif( operator_for(:has_one) )
-
-        #puts "DEBUG : HAS_MANY :  #{@name} : #{operator}(#{operator_class}) - Lookup #{@current_value} in DB"
-        if(value.is_a?(operator_class))
-          record.send(operator + '=', value)
-        else
-          logger.error("ERROR #{value.class} - Not expected type for has_one #{operator} - cannot assign")
-          # TODO -  Not expected type - maybe try to look it up somehow ?"
-          #insistent_has_many(record, @current_value)
-        end
-
-      elsif( operator_for(:assignment) && @col_type )
-        #puts "DEBUG : COl TYPE defined for #{@name} : #{@assignment} => #{@current_value} #{@col_type.type}"
-       # puts "DEBUG : Column [#{@name}] : COl TYPE CAST: #{@current_value} => #{@col_type.type_cast( @current_value ).inspect}"
-        record.send( operator + '=' , @col_type.type_cast( @current_value ) )
-
-        #puts "DEBUG : MethodDetails Assignment RESULT: #{record.send(operator)}"
-
-      elsif( operator_for(:assignment) )
-        #puts "DEBUG : Column [#{@name}] : Brute force assignment of value  #{@current_value}"
-        # brute force case for assignments without a column type (which enables us to do correct type_cast)
-        # so in this case, attempt straightforward assignment then if that fails, basic ops such as to_s, to_i, to_f etc
-        insistent_assignment(record, @current_value)
-      else
-        puts "WARNING: No operator found for assignment on #{self.inspect} for Column [#{@name}]"
-      end
-    end
-
     def pp
       "#{@name} => #{operator}"
     end
@@ -222,12 +162,9 @@ module DataShift
         end
       end
     end
-
-    def insistent_assignment( record, value )
-      Populator::insistent_assignment( record, value, operator)
-    end
     
-    private
+  private
+  
     # Return the operator's expected class, if can be derived, else nil
     def get_operator_class()
       if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))  

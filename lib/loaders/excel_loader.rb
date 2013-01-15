@@ -132,10 +132,11 @@ module DataShift
               
               if(verbose)
                 puts "Failed to process row [#{i}] (#{@current_row})" 
-                puts e.inspect 
+                puts e.inspect, e.backtrace
               end
               
               logger.error "Failed to process row [#{i}] (#{@current_row})"
+              logger.error e.backtrace
               
               # don't forget to reset the load object 
               new_load_object

@@ -23,7 +23,7 @@ module DataShift
     # grouped by type of association (includes belongs_to and has_many which provides both << and = )
     # Options:
     #   :reload => clear caches and re-perform  lookup
-    #   :instance_methods => if true include instance method type assignment operators as well as model's pure columns
+    #   :instance_methods => if true include instance method type 'setters' as well as model's pure columns
     #
     def self.find_operators(klass, options = {} )
       
@@ -51,30 +51,18 @@ module DataShift
       if( options[:reload] || assignments[klass].nil? )
  
         assignments[klass] = klass.column_names  
+         
+        # get into consistent format with other assignments names i.e remove the = for now
+        assignments[klass] += setters(klass).map{|i| i.gsub(/=/, '')} if(options[:instance_methods])
            
-        if(options[:instance_methods])
-          
-          #puts "\nDEBUG: #{klass}.methods\n#{klass.methods.sort.collect.inspect}\n"             
-          setters = klass.accessible_attributes.sort
-          
-          # Since 3.2 :instance_methods returns lots more stuff  like validations, 
-          # which since not appropriate we remove with defined_activerecord_methods
-          if(klass.respond_to? :defined_activerecord_methods) 
-            setters += klass.instance_methods.grep(/\w+=/).sort - klass.defined_activerecord_methods
-          end
-           
-          # get into same format as other names 
-          assignments[klass] += setters.map{|i| i.gsub(/=/, '')}
-        end
-        
-        assignments[klass] -= has_many[klass] if(has_many[klass])
-        
+        # Now remove all the associations
+        assignments[klass] -= has_many[klass]   if(has_many[klass])
+        assignments[klass] -= belongs_to[klass] if(belongs_to[klass])
+        assignments[klass] -= has_one[klass]    if(has_one[klass])
+         
         # TODO remove assignments with id
         # assignments => tax_id  but already in belongs_to => tax
-        assignments[klass] -= belongs_to[klass] if(belongs_to[klass])
         
-        assignments[klass] -= self.has_one[klass] if(self.has_one[klass])
- 
         assignments[klass].uniq!
 
         #puts "\nDEBUG: DICT Setters\n#{assignments[klass]}\n"
@@ -87,6 +75,18 @@ module DataShift
       end
     end
     
+    def self.setters( klass )
+          
+      # N.B In 1.8 these return strings, in 1.9 symbols.
+      # map everything to strings a
+      #setters = klass.accessible_attributes.sort.collect( &:to_s )
+      
+      # remove methodsa that start with '_'
+      @keep_only_pure_setters ||= Regexp.new(/^[a-zA-Z]\w+=/)
+      
+      setters = klass.instance_methods.grep(@keep_only_pure_setters).sort.collect( &:to_s )
+      setters.uniq
+    end
 
     def self.add( klass, operator, type = :assignment)
       method_details_mgr = get_method_details_mgr( klass )
@@ -172,7 +172,7 @@ module DataShift
 
       method_details_mgr = get_method_details_mgr( klass )
       
-       # first try for an exact match across all association types
+      # first try for an exact match across all association types
       MethodDetail::supported_types_enum.each do |t|
         method_detail = method_details_mgr.find(external_name, t)
         return method_detail.clone if(method_detail && method_detail.col_type) 
