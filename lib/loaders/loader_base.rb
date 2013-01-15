@@ -18,7 +18,6 @@ module DataShift
   class LoaderBase
 
     include DataShift::Logging
-    include DataShift::Populator
     include DataShift::Querying
       
     attr_reader :headers
@@ -26,10 +25,10 @@ module DataShift
     attr_accessor :method_mapper
 
     attr_accessor :load_object_class, :load_object
-    attr_accessor :current_value, :current_method_detail
 
     attr_accessor :reporter
-
+    attr_accessor :populator
+    
     attr_accessor :config, :verbose
 
     def options() return @config; end
@@ -50,6 +49,14 @@ module DataShift
     def initialize(object_class, find_operators = true, object = nil, options = {})
       @load_object_class = object_class
       
+      @populator = if(options[:populator].is_a?(String))
+        ::Object.const_get(options[:populator]).new
+      elsif(options[:populator].is_a?(Class))
+        options[:populator].new
+      else
+        DataShift::Populator.new
+      end
+          
       # Gather names of all possible 'setter' methods on AR class (instance variables and associations)
       if((find_operators && !MethodDictionary::for?(object_class)) || options[:reload])
         #puts "DEBUG Building Method Dictionary for class #{object_class}"
@@ -69,15 +76,7 @@ module DataShift
       
       puts "Verbose Mode" if(verbose)
       @headers = []
-
-      @default_data_objects ||= {}
-      
-      @default_values  = {}
-      @override_values = {}
-      
-      @prefixes       = {}
-      @postfixes      = {}
-      
+     
       @reporter = DataShift::Reporter.new
       
       reset(object)
@@ -180,9 +179,9 @@ module DataShift
     # the incoming import format
     def process_missing_columns_with_defaults()
       inbound_ops = @method_mapper.operator_names
-      @default_values.each do |dn, dv|     
+      @populator.default_values.each do |dn, dv|     
         logger.debug "Processing default value #{dn} : #{dv}"
-        assignment(dn, @load_object, dv) unless(inbound_ops.include?(dn))
+        @populator.assignment(dn, @load_object, dv) unless(inbound_ops.include?(dn))
       end
     end
     
@@ -206,8 +205,6 @@ module DataShift
     end
     
     
-    # Default values and over rides can be provided in YAML config file.
-    # 
     # Any Config under key 'LoaderBase' is merged over existing options - taking precedence.
     #  
     # Any Config under a key equal to the full name of the Loader class (e.g DataShift::SpreeHelper::ImageLoader)
@@ -217,55 +214,13 @@ module DataShift
     #  
     #    LoaderClass:
     #     option: value
-    #     
-    #    Load Class:    (e.g Spree:Product)
-    #     datashift_defaults:     
-    #       value_as_string: "Default Project Value"  
-    #       category: reference:category_002    
-    #     
-    #     datashift_overrides:    
-    #       value_as_double: 99.23546
     #
-    def configure_from( yaml_file )
+    def configure_from(yaml_file)
 
       data = YAML::load( File.open(yaml_file) )
       
-      # TODO - MOVE DEFAULTS TO OWN MODULE 
-      # decorate the loading class with the defaults/ove rides to manage itself
-      #   IDEAS .....
-      #
-      #unless(@default_data_objects[load_object_class])
-      #
-      #   @default_data_objects[load_object_class] = load_object_class.new
-      
-      #  default_data_object = @default_data_objects[load_object_class]
-      
-      
-      # default_data_object.instance_eval do
-      #  def datashift_defaults=(hash)
-      #   @datashift_defaults = hash
-      #  end
-      #  def datashift_defaults
-      #    @datashift_defaults
-      #  end
-      #end unless load_object_class.respond_to?(:datashift_defaults)
-      #end
-      
-      #puts load_object_class.new.to_yaml
-      
       logger.info("Read Datashift loading config: #{data.inspect}")
-      
-      if(data[load_object_class.name])
         
-        logger.info("Assigning defaults and over rides from config")
-        
-        deflts = data[load_object_class.name]['datashift_defaults']
-        @default_values.merge!(deflts) if deflts
-        
-        ovrides = data[load_object_class.name]['datashift_overrides']
-        @override_values.merge!(ovrides) if ovrides
-      end
-      
       if(data['LoaderBase'])
         @config.merge!(data['LoaderBase'])
       end
@@ -274,39 +229,18 @@ module DataShift
         @config.merge!(data[self.class.name])
       end
       
+      @populator.configure_from(load_object_class, yaml_file)
       logger.info("Loader Options : #{@config.inspect}")
     end
     
     # Set member variables to hold details and value.
     # 
     # Check supplied value, validate it, and if required :
-    #   set to any provided default value
-    #   prepend or append with any provided extensions
+    #   set to provided default value
+    #   prepend any provided prefixes 
+    #   add any provided postfixes
     def prepare_data(method_detail, value)
-      
-      @current_value, @current_attribute_hash = value.to_s.split(Delimiters::attribute_list_start)
-      
-      if(@current_attribute_hash)
-        # @current_attribute_hash
-        @current_attribute_hash = nil unless @current_attribute_hash.include?('}')
-      end
-      
-      @current_attribute_hash ||= {}
-      
-      @current_method_detail = method_detail
-      
-      operator = method_detail.operator
-      
-      override_value(operator)
-        
-      if((value.nil? || value.to_s.empty?) && default_value(operator))
-        @current_value = default_value(operator)
-      end
-      
-      @current_value = "#{prefixes(operator)}#{@current_value}" if(prefixes(operator))
-      @current_value = "#{@current_value}#{postfixes(operator)}" if(postfixes(operator))
-
-      return @current_value, @current_attribute_hash
+      return @populator.prepare_data(method_detail, value)
     end
     
     # Return the find_by operator and the rest of the (row,columns) data
@@ -323,11 +257,11 @@ module DataShift
       #puts "DEBUG inbound_data: #{inbound_data} => #{operator} , #{rest}"
        
       # Find by operator embedded in row takes precedence over operator in column heading
-      if(@current_method_detail.find_by_operator)
+      if(@populator.current_method_detail.find_by_operator)
         # row contains 0.99 so rest is effectively operator, and operator is in method details
         if(rest.nil?)
           rest = operator
-          operator = @current_method_detail.find_by_operator
+          operator = @populator.current_method_detail.find_by_operator
         end
       end
        
@@ -343,11 +277,14 @@ module DataShift
     #
     def process()  
       
-      logger.info("Current value to assign : #{@current_value}") #if @config['verboose_logging']
+      current_method_detail = @populator.current_method_detail
+      current_value         = @populator.current_value
+        
+      logger.info("Current value to assign : #{current_value}")
       
-      if(@current_method_detail.operator_for(:has_many))
+      if(current_method_detail.operator_for(:has_many))
 
-        if(@current_method_detail.operator_class && @current_value)
+        if(current_method_detail.operator_class && current_value)
 
           # there are times when we need to save early, for example before assigning to
           # has_and_belongs_to associations which require the load_object has an id for the join table
@@ -356,7 +293,7 @@ module DataShift
 
           # A single column can contain multiple associations delimited by special char
           # Size:large|Colour:red,green,blue => ['Size:large', 'Colour:red,green,blue']
-          columns = @current_value.to_s.split( Delimiters::multi_assoc_delim)
+          columns = current_value.to_s.split( Delimiters::multi_assoc_delim )
 
           # Size:large|Colour:red,green,blue   => generates find_by_size( 'large' ) and find_all_by_colour( ['red','green','blue'] )
 
@@ -368,25 +305,25 @@ module DataShift
              
             find_by_values = col_values.split(Delimiters::multi_value_delim)
             
-            find_by_values << @current_method_detail.find_by_value if(@current_method_detail.find_by_value)
+            find_by_values << current_method_detail.find_by_value if(current_method_detail.find_by_value)
                      
             if(find_by_values.size > 1)
 
-              @current_value = @current_method_detail.operator_class.send("find_all_by_#{find_operator}", find_by_values )
+              current_value = current_method_detail.operator_class.send("find_all_by_#{find_operator}", find_by_values )
 
-              unless(find_by_values.size == @current_value.size)
-                found = @current_value.collect {|f| f.send(find_operator) }
-                @load_object.errors.add( @current_method_detail.operator, "Association with key(s) #{(find_by_values - found).inspect} NOT found")
-                puts "WARNING: Association #{@current_method_detail.operator} with key(s) #{(find_by_values - found).inspect} NOT found - Not added."
+              unless(find_by_values.size == current_value.size)
+                found = current_value.collect {|f| f.send(find_operator) }
+                @load_object.errors.add( current_method_detail.operator, "Association with key(s) #{(find_by_values - found).inspect} NOT found")
+                puts "WARNING: Association #{current_method_detail.operator} with key(s) #{(find_by_values - found).inspect} NOT found - Not added."
                 next if(@current_value.empty?)
               end
 
             else
 
-              @current_value = @current_method_detail.operator_class.send("find_by_#{find_operator}", find_by_values )
+              current_value = current_method_detail.operator_class.send("find_by_#{find_operator}", find_by_values )
 
-              unless(@current_value)
-                @load_object.errors.add( @current_method_detail.operator, "Association with key #{find_by_values} NOT found")
+              unless(current_value)
+                @load_object.errors.add( current_method_detail.operator, "Association with key #{find_by_values} NOT found")
                 puts "WARNING: Association with key #{find_by_values} NOT found - Not added."
                 next
               end
@@ -394,14 +331,14 @@ module DataShift
             end
 
             # Lookup Assoc's Model done, now add the found value(s) to load model's collection
-            @current_method_detail.assign(@load_object, @current_value)
+            @populator.assign(current_method_detail, @load_object, current_value)
           end
         end
         # END HAS_MANY
       else
         # Nice n simple straight assignment to a column variable
         #puts "INFO: LOADER BASE processing #{method_detail.name}"
-        @current_method_detail.assign(@load_object, @current_value)
+        @populator.assign(current_method_detail, @load_object, current_value)
       end
     end
     
@@ -414,7 +351,7 @@ module DataShift
       if(object)
         @reporter.add_failed_object(object)
       
-        @load_object.destroy if(rollback && ! @load_object.new_record?)
+        object.destroy if(rollback && object.respond_to?('destroy') && !object.new_record?)
         
         new_load_object # don't forget to reset the load object 
       end
@@ -432,53 +369,13 @@ module DataShift
         logger.error e.backtrace
         raise "Error in save whilst processing column #{@current_method_detail.name}" if(@config[:strict])
       end
-    end
-
-    def self.default_object_for( klass )
-      @default_data_objects ||= {}
-      @default_data_objects[klass]
-    end
-    
-    def set_default_value( name, value )
-      @default_values[name] = value
-    end
-
-    def set_override_value( operator, value )
-      @override_values[operator] = value
-    end
-    
-    def default_value(name)
-      @default_values[name]
-    end
-    
-    def override_value( operator )
-      @current_value = @override_values[operator] if(@override_values[operator])
-    end
-    
-    
-    def set_prefix( name, value )
-      @prefixes[name] = value
-    end
-
-    def prefixes(name)
-      @prefixes[name]
-    end
-
-    def set_postfix( name, value )
-      @postfixes[name] = value
-    end
-
-    def postfixes(name)
-      @postfixes[name]
-    end
-    
+    end 
     
     # Reset the loader, including database object to be populated, and load counts
     #
     def reset(object = nil)
       @load_object = object || new_load_object
       @reporter.reset
-      @current_value = nil
     end
 
     
@@ -488,7 +385,7 @@ module DataShift
     end
 
     def abort_on_failure?
-      @config[:abort_on_failure] == 'true'
+      @config[:abort_on_failure].to_s == 'true'
     end
 
     def loaded_count
@@ -526,7 +423,7 @@ module DataShift
     # Supported Syntax :
     #  assoc_find_name:value | assoc2_find_name:value | etc
     def get_each_assoc
-      current_value.to_s.split( Delimiters::multi_assoc_delim )
+      @populator.current_value.to_s.split( Delimiters::multi_assoc_delim )
     end
       
     private

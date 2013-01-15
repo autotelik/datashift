@@ -136,13 +136,15 @@ describe 'Excel Loader' do
   it "should provide facility to set default values", :focus => true do
     loader = ExcelLoader.new(Project)
       
-    loader.set_default_value('value_as_string', 'some default text' )
-    loader.set_default_value('value_as_double', 45.467 )
-    loader.set_default_value('value_as_boolean', true )
+    populator = loader.populator
+    
+    populator.set_default_value('value_as_string', 'some default text' )
+    populator.set_default_value('value_as_double', 45.467 )
+    populator.set_default_value('value_as_boolean', true )
       
     texpected = Time.now.to_s(:db)
       
-    loader.set_default_value('value_as_datetime', texpected )
+    populator.set_default_value('value_as_datetime', texpected )
       
     #value_as_string	Value as Text	value as datetime	value_as_boolean	value_as_double	category
 
@@ -171,8 +173,8 @@ describe 'Excel Loader' do
   it "should provide facility to set pre and post fix values" do
     loader = ExcelLoader.new(Project)
       
-    loader.set_prefix('value_as_string', 'myprefix' )
-    loader.set_postfix('value_as_string', 'my post fix' )
+    loader.populator.set_prefix('value_as_string', 'myprefix' )
+    loader.populator.set_postfix('value_as_string', 'my post fix' )
       
     #value_as_string	Value as Text	value as datetime	value_as_boolean	value_as_double	category
 

@@ -9,7 +9,7 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 require 'erb'
 
-describe 'Basic Loader' do
+describe 'LoaderBase' do
 
   include_context "ActiveRecordTestModelsConnected"
   
@@ -111,4 +111,16 @@ describe 'Basic Loader' do
 
   end
 
+  it "should be able to mark a load attempt as a failure" do
+    
+    failed_count = @loader.failed_count
+    @loader.load_object.new_record?.should be_true
+     
+    @loader.load_object.save!
+     
+    @loader.failure 
+    
+    @loader.failed_count.should == failed_count + 1
+  end
+  
 end

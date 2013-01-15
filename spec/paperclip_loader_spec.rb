@@ -55,7 +55,7 @@ describe 'PaperClip Bulk Loader' do
     loader.attach_to_klass.should == Owner
   end
   
-  it "should bulk load from a directory file system", :fail => true do
+  it "should bulk load from a directory file system" do
    
     # these names should be included in the attachment file name somewhere
     ["DEMO_001", "DEMO_002", "DEMO_003", "DEMO_004"].each do |n|
