@@ -10,6 +10,7 @@
 #             Enables users to assign values to AR object, without knowing much about that receiving object.
 #
 require 'to_b'
+require 'logging'
 
 module DataShift
 
