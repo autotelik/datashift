@@ -25,6 +25,7 @@ module DataShift
 
     # Create an Excel file template (header row) representing supplied Model
     # Options:
+    # * <tt>:filename</tt>
     # * <tt>:autosize</tt> - Autosize all the columns
     #
     def generate(klass, options = {})
@@ -51,6 +52,7 @@ module DataShift
     # and it's associations
     # 
     # Options:
+    # * <tt>:filename</tt>
     # * <tt>:autosize</tt> - Autosize all the columns
     #
     # * <tt>:exclude</tt> - Association TYPE(s) to exclude.

@@ -16,13 +16,11 @@ module DataShift
 
   class ExcelExporter < ExporterBase
 
-    attr_accessor :filename
   
     def initialize(filename)
       @filename = filename
     end
 
-  
     # Create an Excel file from list of ActiveRecord objects
     def export(records, options = {})
         
