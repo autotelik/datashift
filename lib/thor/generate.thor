@@ -41,8 +41,6 @@ module Datashift
       # TODO - We're assuming run from a rails app/top level dir...
       # ...can we make this more robust ? e.g what about when using active record but not in Rails app, 
       require File.expand_path('config/environment.rb')
-   
-
 
       model = options[:model]
       result = options[:result]
@@ -63,7 +61,7 @@ module Datashift
         gen = DataShift::ExcelGenerator.new(result)
 
         opts =  { :remove => options[:remove],
-                  :remove_rails => options[:remove_rails]
+          :remove_rails => options[:remove_rails]
         }
           
         if(options[:assoc])
@@ -88,7 +86,7 @@ module Datashift
     method_option :model, :aliases => '-m', :required => true, :desc => "The active record model to export"
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
     method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
-    method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
+    method_option :exclude, :aliases => '-x',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
     
     def csv()
      
@@ -130,6 +128,72 @@ module Datashift
       end
 
     end
+    
+    desc "db", "Generate a template for every Active Record model" 
+
+    method_option :result, :aliases => '-r', :required => true, :desc => "Path in which to create excel files"
+    method_option :csv, :aliases => '-c', :desc => "Export to CSV instead - Excel is default."
+    method_option :prefix, :aliases => '-p', :desc => "For namespaced tables/models specify the table prefix e.g spree_"
+    method_option :module, :aliases => '-m', :desc => "For namespaced tables/models specify the Module name e.g Spree"
+    method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
+    method_option :exclude, :aliases => '-x',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
+    method_option :remove, :aliases => '-e',  :type => :array, :desc => "Don't generate the user supplied fields"
+    method_option :remove_rails, :type => :boolean, :desc => "Don't generate the standard Rails fields: #{DataShift::GeneratorBase::rails_columns.inspect}"
+     
+    def db()
+     
+      require File.expand_path('config/environment.rb')
+      
+      require 'excel_exporter'
+      require 'csv_exporter'
+        
+      exporter = options[:csv] ?  DataShift::CsvGenerator.new(nil) :  DataShift::ExcelGenerator.new(nil)
+      
+      ext = options[:csv] ? '.csv' : '.xls'
+       
+      parent = options[:module] ? Object.const_get(options[:module]) : Object
+      
+      ActiveRecord::Base.connection.tables.each do |table|
+            
+        table.sub!(options[:prefix],'') if(options[:prefix])
+
+        @result = File.join(options[:result], "#{table}#{ext}")
+        
+        begin      
+          @klass = parent.const_get(table.classify)    
+        rescue => e
+          puts e.inspect
+          puts "WARNING: Could not find an AR model for Table #{table}"
+          next
+        end
+
+        puts "Datashift: Start template generation to #{@result}" 
+        
+        raise "ERROR: No such Model [#{@klass}] found - check valid model supplied via -model <Class>" if(@klass.nil?)
+
+        begin
+          opts =  { :filename => @result,
+                    :remove => options[:remove],
+                    :remove_rails => options[:remove_rails],
+                    :sheet_name => @klass.name
+          }
+          
+          if(options[:assoc])   
+            opts[:exclude] = options[:exclude]
+            logger.info("Datashift: Generating with associations")
+            exporter.generate_with_associations(@klass, opts)
+          else
+            exporter.generate(@klass, opts)
+          end
+        rescue => e
+          puts e
+          puts e.backtrace
+          puts "Warning: Error during export, data may be incomplete"
+        end
+      end
+    end
+    
+    
   end
 
 end

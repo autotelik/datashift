@@ -20,7 +20,6 @@ module DataShift
       @text_delim = "\'"
     end
 
-    
     # Return opposite of text delim - "hello, 'barry'" => '"hello, "barry""'
     def escape_text_delim
       return '"' if @text_delim == "\'"
