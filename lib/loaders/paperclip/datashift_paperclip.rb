@@ -24,6 +24,7 @@ module DataShift
     # =>  :recursive : Descend tree looking for files rather than just supplied path
     
     def self.get_files(path, options = {})
+      return [path] if(File.file?(path))
       glob = options[:glob] ? options[:glob] : '*.*'
       glob = (options['recursive'] || options[:recursive])  ? "**/#{glob}" : glob
       
