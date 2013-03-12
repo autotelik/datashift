@@ -124,7 +124,7 @@ module DataShift
         # try splitting up filename in various ways looking for the attachment owqner
         split_on  = @config['split_file_name_on'] || options[:split_file_name_on]
              
-        @loading_files_cache = Paperclip::get_files(path, options)
+        @loading_files_cache = DataShift::Paperclip::get_files(path, options)
       
         puts "Found #{loading_files_cache.size} files - splitting names on delimiter [#{split_on}]"
 
