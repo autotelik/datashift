@@ -1,9 +1,8 @@
 ##  DataShift 
 
-- [DataShift Spree](#datashift-spree)
-	- [Features](#features)
+- [Features](#features)
 - [Installation](#installation)
-- [Testing](#testing)
+- [Active Record - Import/Export](#Active Record - Import/Export)
 - [License](#license)
 
 Provides tools to shift data between Excel/CSV files and Rails projects and Ruby applications
@@ -47,11 +46,15 @@ Many example Spreadsheets/CSV files in spec/fixtures, fully documented with comm
 
 Add gem 'datashift' to your Gemfile/bundle or use ```gem install```
 
-    ```ruby gem 'datashift' ```
+```ruby 
+gem 'datashift' 
+```
 
 For Spree support also add :
 
-    ```ruby gem 'datashift_spree' ```
+```ruby 
+gem 'datashift_spree'
+```
 
 To use :
 
@@ -113,6 +116,26 @@ Provides high level  tasks for exporting data to various sources, currently .xls
 
     bundle exec thor datashift:export:excel model=BlogPost result=BlogExport.xls 
 
+  
+Import based on column headings with *Semi-Smart Name Lookup*
+
+  On import, first a dictionary of all possible attributes and associations is created for the AR class.
+  
+  This enables lookup, of a user supplied name (column heading), managing white space, pluralisation etc .
+
+  Example usage, load from a file or spreadsheet where the column names are only
+  an approximation of the actual associations, so given 'Product Properties' heading,
+  finds real association 'product_properties' to send or call on the AR object
+
+
+Can import/export 'belongs_to, 'has_many' and 'has_one' associations, including assignment of multiple objects
+via either multiple columns, or via a DSL for creating multiple entries in a single (column). 
+
+The DSL can also be used to define which fields to lookup associations, and assign values to other fields.
+
+See Wiki for more details on DSL syntax.
+
+Supports inclusion of delegated attributes and normal instance methods as column headings.
 
 The library can be easily extended with Loaders to deal with non trivial cases,
  for example when multiple lookups required to find right association.
@@ -142,22 +165,8 @@ This data can be exported directly to CSV or Excel/OpenOffice spreadsheets.
   Column headings contain comments with full descriptions and instructions on syntax. 
 
 
-## Features
+## Excel
 
-- *Associations*
-
-  Can import/export 'belongs_to, 'has_many' and 'has_one' associations, including assignment of multiple objects
-  via either multiple columns, or via a DSL for creating multiple entries in a single (column). 
-
-  The DSL can also be used to define which fields to lookup associations, and assign values to other fields.
-
-  See Wiki for more details on DSL syntax.
-
-  Supports delegated attributes.
-
-- *High level wrappers around applications including Excel and Word
-
-  Quickly and easily access common enterprise applications through Ruby
 
   MS Excel itself does not need to be installed.
 
@@ -167,55 +176,10 @@ This data can be exported directly to CSV or Excel/OpenOffice spreadsheets.
   
   The required POI jars are already included.
 
-- *Direct Excel export*
-
   Excel/OpenOffice spreadsheets are heavily used in many sectors, so direct support makes it
-  easier and quicker to migrate your client's data into a Rails/ActiveRecord project.
+  easier and quicker to migrate your client's data into a Rails/ActiveRecord project,
+  without converting first to CSV or YAML.
 
-  No need to save to CSV or map to YAML.
-  
-- *Semi-Smart Name Lookup*
-
-  Includes helper classes that find and store details of all possible associations on an AR class.
-  Given a user supplied name, attempts to find the requested association.
-
-  Example usage, load from a file or spreadsheet where the column names are only
-  an approximation of the actual associations, so given 'Product Properties' heading,
-  finds real association 'product_properties' to send or call on the AR object
-
-
-
-- *Thor Tasks*
-
-  High level Thor CLIs are provided, only required to supply model class, and file location :
-
-    thor datashift:import:excel model=MusicTrack input=MyTrackListing.xls
-
-
-- *Spree Tasks*
-
-  Spree's product associations are non trivial so specific Rake tasks are also provided for loading Spree Producta
-  with all associations and Image loading.
-
-    thor datashift:spree:products input=C:\MyProducts.xls
-
-
-- *Seamless Spree Image loading can be achieved by ensuring SKU or class Name features in Image filename.
-
-  Lookup is performed either via the SKU being prepended to the image name, or by the image name being equal to the **name attribute** of the klass in question.
-
-  Images can be attached to any class defined with a suitable association. The class to use can be configured in rake task via
-  parameter klass=Xyz.
-
-  In the Spree tasks, this defaults to Product, so attempts to attach Image to a Product via Product SKU or Name.
-
-  A report is generated in the current working directory detailing any Images in the paths that could not be matched with a Product.
-
-    thor  datashift:spree:images input=C:\images\product_images skip_if_no_assoc=true
-
-    thor datashift:spree:images input=C:\images\taxon_icons skip_if_no_assoc=true klass=Taxon
-
-## Import to Active Record
 
 ### Associations
 
@@ -244,7 +208,6 @@ During loading, a call to find_all_by_reference will be made, picking up the 2 c
   - Look at implementing import/export API using something like https://github.com/ianwhite/orm_adapter 
     rather than active record, so we can support additional ORMs
 
-  - Create separate Spree extension to support import/export via the admin gui
     
 ## License
 
