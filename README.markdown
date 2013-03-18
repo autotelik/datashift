@@ -1,5 +1,11 @@
 ##  DataShift 
 
+- [DataShift Spree](#datashift-spree)
+	- [Features](#features)
+- [Installation](#installation)
+- [Testing](#testing)
+- [License](#license)
+
 Provides tools to shift data between Excel/CSV files and Rails projects and Ruby applications
 
 Import and export models fully with all associations.
@@ -7,7 +13,8 @@ Import and export models fully with all associations.
 Comprehensive Wiki here : **https://github.com/autotelik/datashift/wiki**
 
 Specific command line tools and full Product loading for Spree E-Commerce 
-now seperate gem at [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
+now separate gem at [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
+
 
 ### Features
 
