@@ -51,7 +51,7 @@ module DataShift
       @current_value, @current_attribute_hash = value.to_s.split(Delimiters::attribute_list_start)
       
       if(@current_attribute_hash)
-        @current_attribute_hash.trim!
+        @current_attribute_hash.strip!
         puts "DEBUG: Populator Value contains additional attributes"
         @current_attribute_hash = nil unless @current_attribute_hash.include?('}')
       end
