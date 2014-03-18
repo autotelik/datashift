@@ -5,8 +5,6 @@
 #
 # Details::   A cache type class that stores details of all possible associations on AR classes.
 #             
-require 'method_detail'
-
 module DataShift
 
   class MethodDictionary

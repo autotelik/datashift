@@ -17,7 +17,8 @@ class Project < ActiveRecord::Base
 
   has_and_belongs_to_many :categories
 
-  attr_accessible  :value_as_string, :value_as_boolean, :value_as_double
+  # Rails 4 move to Controller
+  #attr_accessible  :value_as_string, :value_as_boolean, :value_as_double
   
   def multiply
     10 * value_as_double

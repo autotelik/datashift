@@ -15,9 +15,6 @@
 #
 #             This real association can then be used to send spreadsheet row data to the AR object.
 #             
-require 'method_detail'
-require 'method_dictionary'
-
 module DataShift
 
   class MethodMapper

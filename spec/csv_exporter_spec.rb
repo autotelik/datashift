@@ -14,6 +14,8 @@ describe 'CSV Exporter' do
 
   before(:all) do
     
+    include DataShift
+      
     # load our test model definitions - Project etc  
     require ifixture_file('test_model_defs')  
   
@@ -44,8 +46,14 @@ describe 'CSV Exporter' do
 
     exporter = CsvExporter.new( expect )
      
+    count = Project.count 
+    
+    puts Project.all.class
+    
     Project.create( :value_as_string	=> 'Value as String', :value_as_boolean => true,	:value_as_double => 75.672)
      
+    Project.count.should == count + 1
+    
     exporter.export(Project.all)
  
     File.exists?(expect).should be_true
