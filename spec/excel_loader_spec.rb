@@ -28,7 +28,7 @@ describe 'Excel Loader' do
   before(:each) do
 
     %w{category_001 category_002 category_003 category_004 category_005}.each do |cat|
-      Category.find_or_create_by_reference(cat)
+      Category.find_or_create_by(reference: cat)
     end
 
     

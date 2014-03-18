@@ -1,10 +1,21 @@
 source 'https://rubygems.org'
 
+       
+# DEFINE WHICH VERSIONS ON VITAL GEMS WE WANT TO TEST WITH
+
+gem 'rails', '4.0.4'
+
+gem 'spreadsheet'
+gem 'paperclip'
+
+
 gem 'rspec'  # Behavior Driven Development (BDD) for Ruby
 gem 'rspec-core'  # RSpec runner and example groups.
 gem 'rspec-expectations'  # RSpec matchers for should and should_not.
 gem 'rspec-mocks'  # RSpec test double framework with stubbing and mocking.
 gem 'rspec-rails'  # RSpec version 2.x for Rails version 3.x.
+
+gem 'sqlite3'
 
 # we need both, for JRuby testing of Excel and non JRuby csv
 platform :jruby do
@@ -13,13 +24,6 @@ platform :jruby do
 end
 
 platform :ruby do 
-  gem 'sqlite3'
+  #gem 'activerecord-sqlite3-adapter'
 end
-       
-# DEFINE WHICH VERSIONS WE WANT TO TEST WITH
-
-gem 'rails', '3.2.8'
-
-gem 'spreadsheet'
-gem 'paperclip'
 

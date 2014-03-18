@@ -309,7 +309,8 @@ module DataShift
                      
             if(find_by_values.size > 1)
 
-              current_value = current_method_detail.operator_class.send("find_all_by_#{find_operator}", find_by_values )
+              #RAILS 4 current_value = current_method_detail.operator_class.send("find_all_by_#{find_operator}", find_by_values )
+              current_value = current_method_detail.operator_class.where(find_operator => find_by_values)
 
               unless(find_by_values.size == current_value.size)
                 found = current_value.collect {|f| f.send(find_operator) }

@@ -32,20 +32,8 @@
 #
 #     DataShift::load_commands
 #
-require 'rbconfig'
-require 'guards'
 
 module DataShift
-
-  if(Guards::jruby?)
-    require 'java'
-      
-    class Object
-      def add_to_classpath(path)
-        $CLASSPATH << File.join( DataShift.root_path, 'lib', path.gsub("\\", "/") )
-      end
-    end
-  end
 
   def self.gem_version
     unless(@gem_version)
@@ -127,3 +115,20 @@ module DataShift
 end
 
 DataShift::require_libraries
+
+require 'datashift/guards'
+require 'datashift/method_detail'
+require 'datashift/method_dictionary'
+require 'datashift/method_mapper'
+
+module DataShift
+  if(Guards::jruby?)
+    require 'java'
+      
+    class Object
+      def add_to_classpath(path)
+        $CLASSPATH << File.join( DataShift.root_path, 'lib', path.gsub("\\", "/") )
+      end
+    end
+  end
+end
