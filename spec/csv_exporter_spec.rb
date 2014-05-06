@@ -13,8 +13,6 @@ require 'csv_exporter'
 describe 'CSV Exporter' do
 
   before(:all) do
-    
-    include DataShift
       
     # load our test model definitions - Project etc  
     require ifixture_file('test_model_defs')  
@@ -28,23 +26,29 @@ describe 'CSV Exporter' do
   end
   
   before(:each) do
-    MethodDictionary.clear
-    MethodDictionary.find_operators( Project )
+    DataShift::MethodDictionary.clear
+    DataShift::MethodDictionary.find_operators( Project )
     
     db_clear()    # todo read up about proper transactional fixtures
   end
   
   it "should be able to create a new CSV exporter" do
-    generator = CsvExporter.new( 'rspec_csv_empty.csv' )
+    exporter = DataShift::CsvExporter.new( 'rspec_csv_empty.csv' )
       
-    generator.should_not be_nil
+    exporter.should_not be_nil
+  end
+
+  it "should throw if not active record objects" do
+    exporter = DataShift::CsvExporter.new( 'rspec_csv_empty.csv' )
+      
+    expect{ exporter.export([123.45]) }.to raise_error(ArgumentError)
   end
   
   it "should export a model to csv file" do
 
     expect = result_file('project_export_spec.csv')
 
-    exporter = CsvExporter.new( expect )
+    exporter = DataShift::CsvExporter.new( expect )
      
     count = Project.count 
     
@@ -69,7 +73,7 @@ describe 'CSV Exporter' do
 
     expect = result_file('project_with_methods_export_spec.csv')
 
-    exporter = CsvExporter.new( expect )
+    exporter = DataShift::CsvExporter.new( expect )
      
     Project.create( :value_as_string	=> 'Value as String', :value_as_boolean => true,	:value_as_double => 75.672)
     Project.create( :value_as_string	=> 'Another Value as String', :value_as_boolean => false,	:value_as_double => 12)
@@ -93,7 +97,7 @@ describe 'CSV Exporter' do
     
     expect= result_file('project_plus_assoc_export_spec.csv')
 
-    gen = CsvExporter.new(expect)
+    gen = DataShift::CsvExporter.new(expect)
 
     gen.export_with_associations(Project, Project.all)
 

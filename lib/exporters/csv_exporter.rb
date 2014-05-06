@@ -34,12 +34,12 @@ module DataShift
     #
     def export(records, options = {})
        
-      raise ArgumentError.new('Please supply array of records to export') unless records.is_a? Array
+      return unless(records && records.size > 0)
       
       first = records[0]
      
-      return unless(first.is_a?(ActiveRecord::Base))
-      
+      raise ArgumentError.new('Please supply set of ActiveRecord objects to export') unless(first.is_a?(ActiveRecord::Base))
+ 
       f = options[:filename] || filename()
       
       @text_delim = options[:text_delim] if(options[:text_delim])
