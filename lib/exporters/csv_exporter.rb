@@ -13,6 +13,8 @@ module DataShift
 
   class CsvExporter < ExporterBase
 
+    include DataShift::Logging
+        
     attr_accessor :text_delim
     
     def initialize(filename)
@@ -32,9 +34,14 @@ module DataShift
     # => :text_delim => Char to use to delim columns, useful when data contain embedded ','
     # => ::methods => List of methods to additionally call on each record
     #
-    def export(records, options = {})
-       
-      return unless(records && records.size > 0)
+    def export(export_records, options = {})
+      
+      records = [*export_records]
+            
+      unless(records && records.size > 0)
+        logger.warn("No objects supplied for export") 
+        return 
+      end
       
       first = records[0]
      
@@ -117,27 +124,27 @@ module DataShift
           # done records basic attributes now deal with associations
           
           #assoc_work_list.each do |op_type| 
-           # details_mgr.get_operators(op_type).each do |operator| 
+          # details_mgr.get_operators(op_type).each do |operator| 
           assoc_operators.each do |operator| 
-              assoc_object = r.send(operator) 
+            assoc_object = r.send(operator) 
               
-              if(assoc_object.is_a?ActiveRecord::Base)
-                column_text = record_to_column(assoc_object)     # belongs_to or has_one
+            if(assoc_object.is_a?ActiveRecord::Base)
+              column_text = record_to_column(assoc_object)     # belongs_to or has_one
                 
               # TODO -ColumnPacker class shared between excel/csv
               
-                csv << "#{@text_delim}#{column_text}#{@text_delim}" << Delimiters::csv_delim
-                #csv << record_to_csv(r)
+              csv << "#{@text_delim}#{column_text}#{@text_delim}" << Delimiters::csv_delim
+              #csv << record_to_csv(r)
                 
-              elsif(assoc_object.is_a? Array)
-                items_to_s = assoc_object.collect {|x| record_to_column(x) }
+            elsif(assoc_object.is_a? Array)
+              items_to_s = assoc_object.collect {|x| record_to_column(x) }
                 
-                # create a single column
-                csv << "#{@text_delim}#{items_to_s.join(Delimiters::multi_assoc_delim)}#{@text_delim}" << Delimiters::csv_delim
+              # create a single column
+              csv << "#{@text_delim}#{items_to_s.join(Delimiters::multi_assoc_delim)}#{@text_delim}" << Delimiters::csv_delim
                 
-              else
-                csv << Delimiters::csv_delim
-              end
+            else
+              csv << Delimiters::csv_delim
+            end
             #end
           end
           
