@@ -22,8 +22,20 @@ module DataShift
     end
 
     # Create an Excel file from list of ActiveRecord objects
-    def export(records, options = {})
-        
+    def export(export_records, options = {})
+       
+      records = [*export_records]
+      
+      unless(records && records.size > 0)
+        logger.warn("No objects supplied for export") 
+        return 
+      end
+      
+      first = records[0]
+     
+      raise ArgumentError.new('Please supply set of ActiveRecord objects to export') unless(first.is_a?(ActiveRecord::Base))
+ 
+      
       raise ArgumentError.new('Please supply array of records to export') unless records.is_a? Array
 
       excel = Excel.new

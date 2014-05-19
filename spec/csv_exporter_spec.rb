@@ -44,7 +44,8 @@ describe 'CSV Exporter' do
     expect{ exporter.export([123.45]) }.to raise_error(ArgumentError)
   end
   
-  it "should export a model to csv file" do
+
+  it "should export collection of model objects to .xls file" do
 
     expect = result_file('project_export_spec.csv')
 
@@ -67,6 +68,19 @@ describe 'CSV Exporter' do
     File.foreach(expect) {}
     count = $.
     count.should == Project.count + 1
+  end
+  
+  it "should export a model object to csv file" do
+
+    expect = result_file('project_first_export_spec.csv')
+
+    exporter = DataShift::CsvExporter.new( expect )
+    
+    exporter.export(Project.all.first)
+ 
+    File.exists?(expect).should be_true
+      
+    puts "Can manually check file @ #{expect}"
   end
 
   it "should export a model and result of method calls on it to csv file" do
