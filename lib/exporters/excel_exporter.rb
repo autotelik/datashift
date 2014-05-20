@@ -15,7 +15,8 @@ module DataShift
   require 'excel'
 
   class ExcelExporter < ExporterBase
-
+    
+    include DataShift::Logging
   
     def initialize(filename)
       @filename = filename
@@ -25,6 +26,8 @@ module DataShift
     def export(export_records, options = {})
        
       records = [*export_records]
+      
+      puts records, records.inspect
       
       unless(records && records.size > 0)
         logger.warn("No objects supplied for export") 

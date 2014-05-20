@@ -25,7 +25,6 @@ describe 'Excel Exporter' do
     # handle migration changes or reset of test DB
     migrate_up
 
-    db_clear()    # todo read up about proper transactional fixtures
     results_clear()
 
     @klazz = Project
@@ -36,12 +35,32 @@ describe 'Excel Exporter' do
     MethodDictionary.clear
     MethodDictionary.find_operators( @klazz )
     MethodDictionary.find_operators( @assoc_klazz )
+    
+    db_clear()    # todo read up about proper transactional fixtures
+        
+    Project.create( :value_as_string	=> 'Value as String', :value_as_boolean => true,	:value_as_double => 75.672)
+    Project.create( :value_as_string	=> 'Another Value as String', :value_as_boolean => false,	:value_as_double => 12)
+     
+    
   end
   
   it "should be able to create a new excel exporter" do
     generator = ExcelExporter.new( 'dummy.xls' )
       
     generator.should_not be_nil
+  end
+  
+  it "should handle bad params to export" do
+
+    expect = result_file('project_first_export_spec.csv')
+
+    exporter = DataShift::ExcelExporter.new( expect )
+    
+    expect{ exporter.export(nil) }.not_to raise_error
+
+    expect{ exporter.export([]) }.not_to raise_error
+   
+    puts "Can manually check file @ #{expect}"
   end
   
   it "should export model object to .xls file" do

@@ -32,7 +32,7 @@ describe 'Thor high level command line tasks' do
 
   it "should list available datashift thor tasks" do
     x = capture(:stdout){ Thor::Runner.start(["list"]) }
-    x.should =~ /.+datashift.+\n---------\n/
+    x.should start_with("datashift\n--------")
     x.should =~ / csv -i/
     x.should =~ / excel -i/
   end
