@@ -95,10 +95,14 @@ if(DataShift::Guards::jruby?)
         
         return create_sheet_and_set_styles( sheet_name )
       else 
-        if (@workbook.getSheetIndex(sheet_name) < 0)  #Check sheet doesn't already exist
-          return create_sheet_and_set_styles( sheet_name )
+        
+        name = sanitize_sheet_name( sheet_name )
+        
+        puts "WTF #{name}"
+        if (@workbook.getSheetIndex(name) < 0)  #Check sheet doesn't already exist
+          return create_sheet_and_set_styles( name )
         else
-          activate_sheet(sheet_name)
+          activate_sheet(name)
         end
       end
     end
@@ -205,9 +209,12 @@ if(DataShift::Guards::jruby?)
     private
        
     def create_sheet_and_set_styles( sheet_name )
-      @sheet = @workbook.createSheet( sanitize_sheet_name(sheet_name) )
+      
+      name = sanitize_sheet_name(sheet_name)
+      
+      @sheet = @workbook.createSheet( name )
 
-      @patriarchs.store(sheet_name, @sheet.createDrawingPatriarch())
+      @patriarchs.store(name, @sheet.createDrawingPatriarch())
      
       @date_style = @workbook.createCellStyle
       @date_style.setDataFormat( JExcelFile::date_format )

@@ -30,6 +30,10 @@ describe 'CSV Exporter' do
     DataShift::MethodDictionary.find_operators( Project )
     
     db_clear()    # todo read up about proper transactional fixtures
+    
+    Project.create( :value_as_string	=> 'Value as String', :value_as_boolean => true,	:value_as_double => 75.672)
+    Project.create( :value_as_string	=> 'Another Value as String', :value_as_boolean => false,	:value_as_double => 12)
+     
   end
   
   it "should be able to create a new CSV exporter" do
@@ -53,8 +57,6 @@ describe 'CSV Exporter' do
      
     count = Project.count 
     
-    puts Project.all.class
-    
     Project.create( :value_as_string	=> 'Value as String', :value_as_boolean => true,	:value_as_double => 75.672)
      
     Project.count.should == count + 1
@@ -69,6 +71,19 @@ describe 'CSV Exporter' do
     count = $.
     count.should == Project.count + 1
   end
+
+  it "should handle bad params to export" do
+
+    expect = result_file('project_first_export_spec.csv')
+
+    exporter = DataShift::CsvExporter.new( expect )
+    
+    expect{ exporter.export(nil) }.not_to raise_error
+
+    expect{ exporter.export([]) }.not_to raise_error
+   
+    puts "Can manually check file @ #{expect}"
+  end
   
   it "should export a model object to csv file" do
 
@@ -76,7 +91,7 @@ describe 'CSV Exporter' do
 
     exporter = DataShift::CsvExporter.new( expect )
     
-    exporter.export(Project.all.first)
+    exporter.export(Project.all[0])
  
     File.exists?(expect).should be_true
       
@@ -88,9 +103,6 @@ describe 'CSV Exporter' do
     expect = result_file('project_with_methods_export_spec.csv')
 
     exporter = DataShift::CsvExporter.new( expect )
-     
-    Project.create( :value_as_string	=> 'Value as String', :value_as_boolean => true,	:value_as_double => 75.672)
-    Project.create( :value_as_string	=> 'Another Value as String', :value_as_boolean => false,	:value_as_double => 12)
      
     exporter.export(Project.all, {:methods => [:multiply]})
  

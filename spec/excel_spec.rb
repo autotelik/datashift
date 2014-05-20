@@ -39,13 +39,34 @@ describe 'Excel Proxy' do
     sheet2 = @excel.create_worksheet( :name => "underworld")
     sheet2.name.should == "underworld"
   end
-  
-  it "ensures name of worksheet sanitized" do
-    sheet = @excel.create_worksheet( :name => "daft: ?punk")
-    sheet.name.should == "daft punk"
+
+  it "can sanitize worksheet names as per Excel spec" do
     
-    sheet = @excel.create_worksheet( :name => "under[]world")
-    sheet.name.should == "underworld"
+    include ExcelBase
+    extend ExcelBase
+    
+    #    name.gsub(/[\[\]:\*\/\\\?]/, '
+    
+    sanitize_sheet_name("aute?chre").should == "autechre"
+    sanitize_sheet_name("?autechre").should == "autechre"
+    sanitize_sheet_name("aute?chre?").should == "autechre"
+    
+    sanitize_sheet_name("daft: ?punk").should == "daft punk"
+    sanitize_sheet_name("guy call[]ed *Gerald").should == "guy called Gerald"
+
+    sanitize_sheet_name("guy called */Gerald").should == "guy called Gerald"
+  end
+  
+  # Pending - inject create_worksheet method into Spreadsheet gem
+  if(DataShift::Guards.jruby?)  
+    it "ensures name of worksheet sanitized" do
+    
+      sheet = @excel.create_worksheet( :name => "daft: ?punk")
+      sheet.name.should == "daft punk"
+    
+      sheet = @excel.create_worksheet( :name => "under[]world")
+      sheet.name.should == "underworld"
+    end
   end
   
   it "can create multiple named worksheets" do

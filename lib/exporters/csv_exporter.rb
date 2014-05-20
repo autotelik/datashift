@@ -12,9 +12,9 @@ require 'csv'
 module DataShift
 
   class CsvExporter < ExporterBase
-
+     
     include DataShift::Logging
-        
+    
     attr_accessor :text_delim
     
     def initialize(filename)
@@ -37,7 +37,10 @@ module DataShift
     def export(export_records, options = {})
       
       records = [*export_records]
+       
             
+      puts records, records.inspect
+      
       unless(records && records.size > 0)
         logger.warn("No objects supplied for export") 
         return 
