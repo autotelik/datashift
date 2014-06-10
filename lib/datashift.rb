@@ -117,6 +117,7 @@ end
 DataShift::require_libraries
 
 require 'datashift/guards'
+require 'datashift/logging'
 require 'datashift/method_detail'
 require 'datashift/method_dictionary'
 require 'datashift/method_mapper'
