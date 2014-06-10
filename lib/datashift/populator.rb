@@ -75,8 +75,14 @@ module DataShift
     end
     
     def assign(method_detail, record, value )
-      
+     
       @current_value = value
+       
+      # Rails 4 - not an array any more - what can we call ?
+      if( value.is_a? ActiveRecord::Relation )
+        logger.warn("Relation passed rather than value #{value.inspect}")
+        @current_value = value.all
+      end
 
       # logger.info("WARNING nil value supplied for Column [#{@name}]") if(@current_value.nil?)
 
@@ -89,24 +95,24 @@ module DataShift
 
       elsif( method_detail.operator_for(:has_many) )
         
-        #puts "DEBUG : VALUE TYPE [#{value.class.name.include?(operator.classify)}] [#{ModelMapper.class_from_string(value.class.name)}]" unless(value.is_a?(Array))
+        puts "DEBUG : VALUE TYPE [#{value.class.name.include?(operator.classify)}] [#{ModelMapper.class_from_string(value.class.name)}]" unless(value.is_a?(Array))
      
         # The include? check is best I can come up with right now .. to handle module/namespaces
         # TODO - can we determine the real class type of an association
         # e.g given a association taxons, which operator.classify gives us Taxon, but actually it's Spree::Taxon
         # so how do we get from 'taxons' to Spree::Taxons ? .. check if further info in reflect_on_all_associations
 
-        if(value.is_a?(Array) || value.class.name.include?(operator.classify))
-          record.send(operator) << value
+        if(@current_value.is_a?(Array) || @current_value.class.name.include?(operator.classify))
+          record.send(operator) << @current_value
         else
-          puts "ERROR #{value.class} - Not expected type for has_many #{operator} - cannot assign"
+          puts "ERROR #{@current_value.class} - Not expected type for has_many #{operator} - cannot assign"
         end
 
       elsif( method_detail.operator_for(:has_one) )
 
         #puts "DEBUG : HAS_MANY :  #{@name} : #{operator}(#{operator_class}) - Lookup #{@current_value} in DB"
-        if(value.is_a?(method_detail.operator_class))
-          record.send(operator + '=', value)
+        if(@current_value.is_a?(method_detail.operator_class))
+          record.send(operator + '=', @current_value)
         else
           logger.error("ERROR #{value.class} - Not expected type for has_one #{operator} - cannot assign")
           # TODO -  Not expected type - maybe try to look it up somehow ?"
@@ -127,6 +133,7 @@ module DataShift
         insistent_assignment(record, @current_value, operator)
       else
         puts "WARNING: No assignment possible on #{record.inspect} using [#{operator}]"
+        logger.error("WARNING: No assignment possible on #{record.inspect} using [#{operator}]")
       end
     end
     
@@ -171,7 +178,7 @@ module DataShift
               break
             end
           rescue => e
-            puts "ERROR: #{e.inspect}"
+            logger.error("Attempt to find  associated object failed for #{method_detail}")
             if(x == Populator::insistent_method_list.last)
               raise "Populator failed to assign [#{value}] via moperator #{operator}" unless value.nil?
             end

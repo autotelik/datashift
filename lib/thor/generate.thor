@@ -17,7 +17,7 @@
 #    bundle exec thor help  datashift:generate:excel
 #
 require 'datashift'
-require 'excel_generator'
+require 'generators/excel_generator'
 
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
 module Datashift

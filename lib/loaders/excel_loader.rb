@@ -198,6 +198,9 @@ module DataShift
 
 
     def perform_load( file_name, options = {} )
+      
+      logger.info "Starting bulk load from Excel : #{file_name}"
+       
       perform_excel_load( file_name, options )
 
       puts "Excel loading stage complete - #{loaded_count} rows added."  

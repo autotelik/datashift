@@ -131,6 +131,7 @@ module DataShift
               break
             end
           rescue => e
+            logger.error "Failed to match belongs_to association #{value}"
             puts "ERROR: #{e.inspect}"
             if(x == Populator::insistent_method_list.last)
               raise "I'm sorry I have failed to assign [#{value}] to #{@assignment}" unless value.nil?
