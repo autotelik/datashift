@@ -18,7 +18,7 @@ module DataShift
 
     attr_accessor :attachment
 
-    # Get all image files (based on file extensions) from supplied path.
+    # Get all files (based on file extensions) from supplied path.
     # Options :
     #     :glob : The glob to use to find files
     # =>  :recursive : Descend tree looking for files rather than just supplied path
@@ -86,7 +86,7 @@ module DataShift
       begin
         @attachment = klass.new(paperclip_attributes, :without_protection => true)
       rescue => e
-        puts e.inspect
+        logger.error( e.backtrace)
         logger.error("Failed to create PaperClip Attachment : #{e.inspect}")
         raise CreateAttachmentFailed.new("Failed to create PaperClip Attachment from : #{attachment_path}")
       ensure

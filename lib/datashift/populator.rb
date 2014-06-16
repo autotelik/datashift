@@ -78,10 +78,10 @@ module DataShift
      
       @current_value = value
        
-      # Rails 4 - not an array any more - what can we call ?
+      # Rails 4 - not an array any more
       if( value.is_a? ActiveRecord::Relation )
         logger.warn("Relation passed rather than value #{value.inspect}")
-        @current_value = value.all
+        @current_value = value.to_a
       end
 
       # logger.info("WARNING nil value supplied for Column [#{@name}]") if(@current_value.nil?)
