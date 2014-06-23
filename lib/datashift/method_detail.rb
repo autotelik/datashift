@@ -98,22 +98,19 @@ module DataShift
     def operator_class_name()
       @operator_class_name ||= 
         if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))
-
-              
-        puts "DERIVE Class Name for #{operator} (#{@operator_type}) : #{operator} (#{operator.classify})"
-          
+   
         result = ModelMapper::class_from_string(operator.classify)
         
         if(result.nil?)
           begin
-            puts "Try with Parent Namespace", klass.superclass.inspect
+            
+            first = klass.to_s.split('::').first
+            logger.debug "Trying to find operator class with Parent Namespace #{first}"
 
-            result ModelMapper::const_get_from_string("#{klass.superclass}::#{operator.classify}")
+            result = ModelMapper::const_get_from_string("#{first}::#{operator.classify}")
           rescue => e
-            puts e.inspect
             logger.error(e.inspect)
             logger.error("Could not derive Class Name for #{@operator_type} (#{@operator_type})")
-            nil
           end
         end
         
