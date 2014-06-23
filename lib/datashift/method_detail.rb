@@ -99,22 +99,7 @@ module DataShift
       @operator_class_name ||= 
         if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))
    
-        result = ModelMapper::class_from_string(operator.classify)
-        
-        if(result.nil?)
-          begin
-            
-            first = klass.to_s.split('::').first
-            logger.debug "Trying to find operator class with Parent Namespace #{first}"
-
-            result = ModelMapper::const_get_from_string("#{first}::#{operator.classify}")
-          rescue => e
-            logger.error(e.inspect)
-            logger.error("Could not derive Class Name for #{@operator_type} (#{@operator_type})")
-          end
-        end
-        
-        result
+        get_operator_class.name
   
       elsif(@col_type)
         @col_type.type.to_s.classify
@@ -192,10 +177,25 @@ module DataShift
     # TODO this should call operator_class_name once we work out how to handle namespaced classes
     # in that method
     def get_operator_class()
-      if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))  
-        begin     
-          Kernel.const_get(operator.classify)
-        rescue; nil; end
+      
+      if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))
+   
+        result = ModelMapper::class_from_string(operator.classify)
+        
+        if(result.nil?)
+          begin
+            
+            first = klass.to_s.split('::').first
+            logger.debug "Trying to find operator class with Parent Namespace #{first}"
+
+            result = ModelMapper::const_get_from_string("#{first}::#{operator.classify}")
+          rescue => e
+            logger.error(e.inspect)
+            logger.error("Could not derive Class Name for #{@operator_type} (#{@operator_type})")
+          end
+        end
+        
+        result
 
       elsif(@col_type)
         begin
