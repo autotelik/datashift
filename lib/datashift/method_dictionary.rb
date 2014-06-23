@@ -114,7 +114,6 @@ module DataShift
       end
         
       belongs_to_for(klass).each do |n|
-        puts "BUILD FOR #{klass} : #{n.inspect}"
         method_details_mgr << MethodDetail.new(n, klass, n, :belongs_to)
       end
       
