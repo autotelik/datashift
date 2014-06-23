@@ -52,4 +52,32 @@ describe 'Thor high level command line tasks' do
     }
     x.join
   end
+  
+  
+  it "should attach Images to a specified Class from a directory" do
+   
+    # Owner has_many :digitals of type Digital
+    
+    # Owner has a name by which we can id/look it up
+      
+    args = [
+      '--attachment-klass',        'Digital', 
+      '--attach-to-klass',         'Owner',  
+      '--attach-to-find-by-field', 'name',
+      '--attach-to-field',         'digitals']
+      
+    # which boils down to
+    # 
+    # Digital.find_by_name( abc ).digitals << :Digital.new( File.read('abc_001.jpg') )
+      
+    args << '--input' << File.join(fixtures_path(), 'images')
+     
+    puts "Running attach with: #{args}"
+    
+    x = capture(:stdout){ Thor::Runner.start(["datashift:paperclip:attach", [], args]) }
+    x.should start_with("datashift\n--------")
+    #x.should =~ / csv -i/
+    #x.should =~ / excel -i/
+
+  end
 end
