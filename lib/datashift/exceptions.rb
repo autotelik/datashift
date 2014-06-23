@@ -1,5 +1,27 @@
-module DataShift
+# Copyright:: (c) Autotelik Media Ltd 2014 
+# Author ::   Tom Statter
+# Date ::     June 2014
+# License::   Free, Open Source.
+#
 
+module DataShift
+  
+  class DataShiftException < StandardError
+    #
+    include DataShift::Logging
+        
+    def initialize( msg )
+      super
+      logger.error( msg)
+    end
+  end
+  
+  class SaveError < DataShiftException
+    def initialize( msg )
+      super( msg )
+    end
+  end
+  
   class BadRuby < StandardError; end
   
   class UnsupportedFileType < StandardError; end

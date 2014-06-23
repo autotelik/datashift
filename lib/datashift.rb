@@ -116,6 +116,7 @@ end
 
 DataShift::require_libraries
 
+require 'datashift/exceptions'
 require 'datashift/guards'
 require 'datashift/logging'
 require 'datashift/method_detail'

@@ -128,6 +128,25 @@ describe 'Method Dictionary' do
     end
 
   end
+  
+  
+  it "should populate method_details on Class for belongs_to", :fail => true do
+
+    DataShift::MethodDictionary.find_operators( Owner )
+    
+    DataShift::MethodDictionary.build_method_details( Owner )
+        
+    [:project, 'PROJECT'].each do |format|
+
+      method_details = DataShift::MethodDictionary.find_method_detail( Owner, format )
+
+      expect(method_details.operator_class_name).to eq 'Project'
+      expect(method_details.operator_class).to be_a(Class)
+      expect(method_details.operator_class).to eq Project
+    end
+
+  end
+  
 
   it "should populate belongs_to operator for method details for different forms of a column name" do
 

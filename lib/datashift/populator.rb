@@ -90,7 +90,7 @@ module DataShift
          
       if( method_detail.operator_for(:belongs_to) )
       
-        #puts "DEBUG : BELONGS_TO : #{@name} : #{operator} - Lookup #{@current_value} in DB"
+        puts "DEBUG : BELONGS_TO : #{method_detail.inspect}"
         insistent_belongs_to(method_detail, record, @current_value)
 
       elsif( method_detail.operator_for(:has_many) )
@@ -164,15 +164,25 @@ module DataShift
     def insistent_belongs_to(method_detail, record, value )
 
       operator = method_detail.operator
+     
+      puts "insistent_belongs_to => #{operator}"
       
       if( value.class == method_detail.operator_class)
         record.send(operator) << value
       else
 
-        insistent_find_by_list.each do |x|
+        Populator::insistent_find_by_list.each do |x|
           begin
+            
+            puts "insistent_belongs_to  => #{x}  : class [#{method_detail.operator_class}]"
+            
+            puts "insistent_belongs_to => #{method_detail.operator_class.respond_to?( "find_by_#{x}" )}"
+             
             next unless method_detail.operator_class.respond_to?( "find_by_#{x}" )
-            item = method_detail.operator_class.send("find_by_#{x}", value)
+            item = method_detail.operator_class.send("find_or_create_by_#{x}", value)
+            
+             puts "insistent_belongs_to find_created => #{item.inspect}"
+            
             if(item)
               record.send(operator + '=', item)
               break
@@ -184,6 +194,7 @@ module DataShift
             end
           end
         end
+        
       end
     end
     

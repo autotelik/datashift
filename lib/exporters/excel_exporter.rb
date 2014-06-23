@@ -27,8 +27,6 @@ module DataShift
        
       records = [*export_records]
       
-      puts records, records.inspect
-      
       unless(records && records.size > 0)
         logger.warn("No objects supplied for export") 
         return 
@@ -36,6 +34,8 @@ module DataShift
       
       first = records[0]
      
+      logger.info("Exporting #{records.size} #{first.class} to Excel")
+        
       raise ArgumentError.new('Please supply set of ActiveRecord objects to export') unless(first.is_a?(ActiveRecord::Base))
  
       

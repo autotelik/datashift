@@ -74,7 +74,6 @@ module DataShift
 
       @verbose = @config[:verbose]
       
-      puts "Verbose Mode" if(verbose)
       @headers = []
      
       @reporter = DataShift::Reporter.new
@@ -440,7 +439,7 @@ module DataShift
       if(load_object.valid?)  
         save
       else
-        puts "Cannot Save - Invalid #{load_object.class} - #{load_object.errors.full_messages}" if(verbose)
+        raise DataShift::SaveError.new("Cannot Save - Invalid #{load_object.class} Record - #{load_object.errors.full_messages}")
       end
     end
   

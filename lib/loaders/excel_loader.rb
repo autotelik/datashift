@@ -48,24 +48,26 @@ module DataShift
       
       @sheet = @excel.worksheet( sheet_number )
 
-      header_row_index =  options[:header_row] || 0
-      @header_row = @sheet.row(header_row_index)
+      headers(@sheet, options[:header_row])
+            
+     # header_row_index =  options[:header_row] || 0
+    #  @header_row = @sheet.row(header_row_index)
 
-      raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{header_row_index} contains headers" unless(@header_row)
+     # raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{header_row_index} contains headers" unless(@header_row)
 
-      @headers = []
+
 
       # TODO - make more robust - currently end on first empty column
       # There is no actual max columns in Excel .. you will run out of memory though at some point
-      (0..1024).each do |column|
-        cell = @header_row[column]
-        break unless cell
-        header = "#{cell.to_s}".strip
-        break if header.empty?
-        @headers << header
-      end
+     # (0..1024).each do |column|
+     #   cell = @header_row[column]
+     #   break unless cell
+     #   header = "#{cell.to_s}".strip
+     #   break if header.empty?
+     #   @headers << header
+    #  end
 
-      raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{header_row_index} contains headers" if(@headers.empty?)
+      raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{@header_row_index} contains headers" if(@headers.empty?)
       
       # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
       # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
@@ -85,7 +87,7 @@ module DataShift
             
             @current_row = row 
             
-            next if(i == header_row_index)
+            next if(i == @header_row_index)
           
             # Excel num_rows seems to return all 'visible' rows, which appears to be greater than the actual data rows
             # (TODO - write spec to process .xls with a huge number of rows)
@@ -183,6 +185,29 @@ module DataShift
     def value_at(row, column)
       @excel[row, column]
     end
+    
+    def headers( sheet,  header_row_index = 0 )
+
+      @header_row_index = header_row_index || 0 
+      
+      @header_row = sheet.row(@header_row_index)
+
+      raise MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{@header_row_index} contains headers" unless(@header_row)
+
+      @headers = []
+
+      # TODO - make more robust - currently end on first empty column
+      # There is no actual max columns in Excel .. you will run out of memory though at some point
+      (0..1024).each do |column|
+        cell = @header_row[column]
+        break unless cell
+        header = "#{cell.to_s}".strip
+        break if header.empty?
+        @headers << header
+      end
+      
+      @headers
+  end
     
   end
 

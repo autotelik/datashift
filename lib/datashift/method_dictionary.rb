@@ -98,7 +98,9 @@ module DataShift
     #
     def self.build_method_details( klass )
       method_details_mgr = MethodDetailsManager.new( klass )
-         
+      
+      method_details_mgrs[klass] = method_details_mgr
+            
       assignments_for(klass).each do |n|
         method_details_mgr << MethodDetail.new(n, klass, n, :assignment, column_types[klass])
       end
@@ -112,10 +114,11 @@ module DataShift
       end
         
       belongs_to_for(klass).each do |n|
+        puts "BUILD FOR #{klass} : #{n.inspect}"
         method_details_mgr << MethodDetail.new(n, klass, n, :belongs_to)
       end
       
-      method_details_mgrs[klass] = method_details_mgr
+      method_details_mgr
       
     end
     

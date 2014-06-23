@@ -3,7 +3,7 @@
 # Date ::     Aug 2010
 # License::   MIT
 #
-# Details::   This class provides info and access to the individual population methods
+# Details::   This class provides info and access to the details of individual population methods
 #             on an AR model. Populated by, and coupled with MethodMapper,
 #             which does the model interrogation work and stores sets of MethodDetails.
 #
@@ -32,13 +32,20 @@ module DataShift
     end
 
 
-    # Name is the raw, client supplied name
+    # Klass is the class of the 'parent' object i.e with the associations,
+    # For example Product which may have operator orders
+    attr_accessor :klass
+    
+    # Name is the raw, client supplied name e.g Orders
     attr_accessor :name
     attr_accessor :column_index
   
     # The rel col type from the DB
     attr_reader :col_type, :current_value
 
+    # The :operator that can be called to assign  e.g orders or Products.new.orders << Order.new
+    # 
+    # The type of operator e.g :assignment, :belongs_to, :has_one, :has_many etc
     attr_reader :operator, :operator_type
 
     # TODO make it a list/primary keys
@@ -46,7 +53,8 @@ module DataShift
         
     # Store the raw (client supplied) name against the active record  klass(model).
     # Operator is the associated method call on klass,
-    # so client name maybe Price but true operator is price
+    # i.e client supplies name 'Price' in a spreadsheet, 
+    # but true operator to call on klass is price
     # 
     # col_types can typically be derived from klass.columns - set of ActiveRecord::ConnectionAdapters::Column
 
@@ -88,11 +96,28 @@ module DataShift
 
     # Return the operator's expected class name, if can be derived, else nil
     def operator_class_name()
-      @operator_class_name ||= if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))
-        begin
-          Kernel.const_get(operator.classify)
-          operator.classify
-        rescue; ""; end
+      @operator_class_name ||= 
+        if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))
+
+              
+        puts "DERIVE Class Name for #{operator} (#{@operator_type}) : #{operator} (#{operator.classify})"
+          
+        result = ModelMapper::class_from_string(operator.classify)
+        
+        if(result.nil?)
+          begin
+            puts "Try with Parent Namespace", klass.superclass.inspect
+
+            result ModelMapper::const_get_from_string("#{klass.superclass}::#{operator.classify}")
+          rescue => e
+            puts e.inspect
+            logger.error(e.inspect)
+            logger.error("Could not derive Class Name for #{@operator_type} (#{@operator_type})")
+            nil
+          end
+        end
+        
+        result
   
       elsif(@col_type)
         @col_type.type.to_s.classify
@@ -164,9 +189,11 @@ module DataShift
       end
     end
     
-  private
+    private
   
     # Return the operator's expected class, if can be derived, else nil
+    # TODO this should call operator_class_name once we work out how to handle namespaced classes
+    # in that method
     def get_operator_class()
       if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))  
         begin     
