@@ -164,8 +164,6 @@ module DataShift
     def insistent_belongs_to(method_detail, record, value )
 
       operator = method_detail.operator
-     
-      puts "insistent_belongs_to => #{operator}"
       
       if( value.class == method_detail.operator_class)
         record.send(operator) << value
@@ -173,15 +171,11 @@ module DataShift
 
         Populator::insistent_find_by_list.each do |x|
           begin
-            
-            puts "insistent_belongs_to  => #{x}  : class [#{method_detail.operator_class}]"
-            
-            puts "insistent_belongs_to => #{method_detail.operator_class.respond_to?( "find_by_#{x}" )}"
+ 
+           # puts "DEBUG : insistent_belongs_to => #{method_detail.operator_class.respond_to?( "find_by_#{x}" )}"
              
             next unless method_detail.operator_class.respond_to?( "find_by_#{x}" )
             item = method_detail.operator_class.send("find_or_create_by_#{x}", value)
-            
-             puts "insistent_belongs_to find_created => #{item.inspect}"
             
             if(item)
               record.send(operator + '=', item)
