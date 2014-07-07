@@ -22,6 +22,8 @@ logs
 logs/**
 public
 public/**
+MissingAttachmentRecords
+MissingAttachmentRecords/*
 spec/logs
 spec/fixtures/results
 spec/private
