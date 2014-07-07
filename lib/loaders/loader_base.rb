@@ -232,11 +232,12 @@ module DataShift
     end
     
     
-    # Return the find_by operator and the rest of the (row,columns) data
+    # Return the find_by operator and the rest of the (row,columns) data e.g
     #   price:0.99
     # 
-    # Column headings can already contain the operator so possible that row only contains
+    # Column headings will be used, if the row only contains data e.g
     #   0.99
+    #   
     # We leave it to caller to manage any other aspects or problems in 'rest'
     #
     def get_find_operator_and_rest(inbound_data)
@@ -246,16 +247,13 @@ module DataShift
       logger.info("Parsed inbound data into #{operator} << #{rest}")
        
       # Find by operator embedded in row takes precedence over operator in column heading
-      if(@populator.current_method_detail.find_by_operator)
+      if((rest.nil? || rest.empty?) && @populator.current_method_detail.find_by_operator)
         # row contains 0.99 so rest is effectively operator, and operator is in method details
-        if(rest.nil?)
-          rest = operator
-          operator = @populator.current_method_detail.find_by_operator
-        end
+        rest = operator
+        operator = @populator.current_method_detail.find_by_operator
       end
        
-      #puts "DEBUG: get_find_operator_and_rest: #{operator} => #{rest}"
-      
+      #puts "DEBUG: get_find_operator_and_rest: #{operator} => #{rest}"    
       return operator, rest
     end
     
@@ -264,12 +262,13 @@ module DataShift
     # Method detail represents a column from a file and it's correlated AR associations.
     # Value string which may contain multiple values for a collection association.
     #
-    # TODO - Move ALL of this into Populator properly
     def process(method_detail, value)  
       
       current_method_detail = method_detail
-      current_value         = value
-      
+
+      current_value, current_attribute_hash = @populator.prepare_data(method_detail, value)
+       
+      # TODO - Move ALL of this into Populator properly
       if(current_method_detail.operator_for(:has_many))
 
         if(current_method_detail.operator_class && current_value)
@@ -315,13 +314,12 @@ module DataShift
             
             # Lookup Assoc's Model done, now add the found value(s) to load model's collection
             @populator.prepare_and_assign(current_method_detail, @load_object, current_value)
-          end
+          end # END HAS_MANY
         end
-        # END HAS_MANY
       else
         # Nice n simple straight assignment to a column variable
         #puts "INFO: LOADER BASE processing #{method_detail.name}"
-        @populator.prepare_and_assign(current_method_detail, @load_object, current_value)
+        @populator.assign(@load_object)
       end
     end
     

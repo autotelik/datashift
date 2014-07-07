@@ -52,7 +52,7 @@ describe 'Excel Loader' do
     loader.loaded_count.should == (Project.count - count)
   end
 
-  it "should process multiple associationss from single column", :fail => true do 
+  it "should process multiple associationss from single column" do 
    
     DataShift::MethodDictionary.find_operators( Category )
     
@@ -97,7 +97,7 @@ describe 'Excel Loader' do
   
   end
   
-  it "should process multiple associations with lookup specified in column from excel spreedsheet" do
+  it "should process multiple associations with lookup specified in column from excel spreedsheet", :fail => true do
   
     loader = ExcelLoader.new(Project)
   
