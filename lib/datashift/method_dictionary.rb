@@ -139,7 +139,8 @@ module DataShift
     end
     
  
-    # Find the proper format of name, appropriate call + column type for a given name.
+    # For a client supplied name/header - find the operator i.e appropriate call + column type
+    # 
     # e.g Given users entry in spread sheet check for pluralization, missing underscores etc
     #
     # If not nil, returned method can be used directly in for example klass.new.send( call, .... )

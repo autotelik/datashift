@@ -6,6 +6,11 @@
 # Details::   This class provides info and access to groups of accessor methods,
 #             grouped by AR model. 
 #
+#             Stores complete collection of MethodDetail instances per mapped class.
+#             Provides high level find facilites to find a MethodDetail and to list out
+#             operators per type (has_one, has_many, belongs_to, instance_method etc) 
+#             and all possible operators, 
+
 require 'to_b'
 
 module DataShift
@@ -68,10 +73,21 @@ module DataShift
       get_list(type).collect { |md| md.operator }
     end
     
-    alias_method(:get_list_of_operators, :get_list) 
+    alias_method(:get_list_of_operators, :get_operators) 
      
-    def all_available_operators
+    def available_operators
       method_details_list.values.flatten.collect(&:operator)
+    end
+
+    # A reverse map  showing all operators with their associated 'type'
+    def available_operators_with_type
+      h = {}
+      method_details_list.each { |t, mds| mds.each do |v| h[v.operator] = t end }
+    
+      # this is meant to be more efficient that Hash[h.sort]
+      sh = {}
+      h.keys.sort.each do |k| sh[k] = h[k] end
+      sh
     end
     
   end

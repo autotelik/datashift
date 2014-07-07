@@ -49,23 +49,6 @@ module DataShift
       @sheet = @excel.worksheet( sheet_number )
 
       headers(@sheet, options[:header_row])
-            
-     # header_row_index =  options[:header_row] || 0
-    #  @header_row = @sheet.row(header_row_index)
-
-     # raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{header_row_index} contains headers" unless(@header_row)
-
-
-
-      # TODO - make more robust - currently end on first empty column
-      # There is no actual max columns in Excel .. you will run out of memory though at some point
-     # (0..1024).each do |column|
-     #   cell = @header_row[column]
-     #   break unless cell
-     #   header = "#{cell.to_s}".strip
-     #   break if header.empty?
-     #   @headers << header
-    #  end
 
       raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{@header_row_index} contains headers" if(@headers.empty?)
       
@@ -94,7 +77,7 @@ module DataShift
             #
             # This is rubbish but currently manually detect when actual data ends, this isn't very smart but
             # got no better idea than ending once we hit the first completely empty row
-            break if @current_row.nil?
+            break if(@current_row.nil? || @current_row.compact.empty?)
             
             logger.info "Processing Row #{i} : #{@current_row}"
             
@@ -113,32 +96,36 @@ module DataShift
          
               # Iterate over method_details, working on data out of associated Excel column
               @method_mapper.method_details.each do |method_detail|
-                       
-                next unless method_detail # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
-            
-                logger.info "Processing Column #{method_detail.column_index}"
+                    
+                unless method_detail
+                  logger.warn("No method_detail found - These headings couldn't be mapped  #{@method_mapper.missing_methods.inspect}")
+                  next # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
+                end
+                logger.info "Processing Column #{method_detail.column_index} (#{method_detail.operator})"
                 
                 value = @current_row[method_detail.column_index]
 
                 contains_data = true unless(value.nil? || value.to_s.empty?)
               
-                prepare_data(method_detail, value)
-              
-                process()           
+                process(method_detail, value)           
               end
-                     
+               
+              # This is rubbish but currently have to manually detect when actual data ends, 
+              # no other way to detect when we hit the first completely empty row
+              break unless(contains_data == true)
+                          
             rescue => e
               @reporter.processed_object_count += 1
               
               failure(@current_row, true)
               
               if(verbose)
-                puts "Failed to process row [#{i}] (#{@current_row})" 
-                puts e.inspect, e.backtrace
+                puts "perform_excel_load failed in row [#{i}] #{@current_row} - #{e.message} :" 
+                puts e.backtrace
               end
               
-              logger.error "Failed to process row [#{i}] (#{@current_row})"
-              logger.error e.backtrace
+              logger.error  "perform_excel_load failed in row [#{i}] #{@current_row} - #{e.message} :" 
+              logger.error e.backtrace.join("\n")
               
               # don't forget to reset the load object 
               new_load_object
@@ -207,7 +194,7 @@ module DataShift
       end
       
       @headers
-  end
+    end
     
   end
 

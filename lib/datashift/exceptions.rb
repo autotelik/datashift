@@ -21,6 +21,12 @@ module DataShift
       super( msg )
     end
   end
+
+  class NilDataSuppliedError  < DataShiftException
+    def initialize( msg )
+      super( msg )
+    end
+  end
   
   class BadRuby < StandardError; end
   
