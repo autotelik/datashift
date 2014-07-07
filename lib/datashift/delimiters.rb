@@ -49,10 +49,23 @@ module DataShift
     
     def self.multi_value_delim
       @multi_value_delim ||= ','
-      @multi_value_delim
     end
     
     def self.set_multi_value_delim(x) @multi_value_delim = x; end
+
+    # Objects can be created with multiple facets in single columns.
+    # In this example a single Product can be configured with a consolidated mime and print types
+    # 
+    # mime_type:jpeg,PDF ; print_type:colour	 equivalent to 
+    # 
+    #   => mime_type:jpeg;print_type:colour | mime_type:PDF; print_type:colour
+    
+    def self.multi_facet_delim
+      @multi_facet_delim ||= ';'
+    end
+    
+    def self.setmulti_facet_delim(x) @multi_facet_delim = x; end
+   
     
     # Multiple objects can be embedded in single columns.
     # In this example a single Category column contains 3 separate entries, New, SecondHand, Retro

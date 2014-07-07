@@ -119,10 +119,6 @@ RSpec.configure do |config|
     logdir = File.join(File.dirname(__FILE__), 'log')
     FileUtils.mkdir_p(logdir) unless File.exists?(logdir)
     ActiveRecord::Base.logger = Logger.new( File.join(logdir, name) )
-
-    # Anyway to direct one logger to another ????? ... Logger.new(STDOUT)
-    
-    @dslog = ActiveRecord::Base.logger
   end
   
   def bundler_setup(gemfile = File.join(DataShift::root_path, 'spec', 'Gemfile') )
@@ -166,21 +162,11 @@ RSpec.configure do |config|
     puts "Setting DB Config:", db.inspect
     ActiveRecord::Base.configurations = db
     
-    #dbtype = Rails.configuration.database_configuration[Rails.env]['adapter'].to_sym
-
     set_logger
     
     puts "Connecting to DB"
     
     ActiveRecord::Base.establish_connection( db )
-
-    # See errors  #<NameError: uninitialized constant RAILS_CACHE> when doing save (AR without Rails)
-    # so copied this from ... Rails::Initializer.initialize_cache
-    #Object.const_set "RAILS_CACHE", ActiveSupport::Cache.lookup_store( :memory_store ) unless defined?(RAILS_CACHE)
-
-    puts "Connected to DB"
-    
-    @dslog.info "Connected to DB - #{ActiveRecord::Base.connection.inspect}"
   end
   
   # These are our test models with associations

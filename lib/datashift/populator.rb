@@ -30,107 +30,156 @@ module DataShift
     
     
     attr_reader :current_value, :original_value_before_override
+    attr_reader :current_col_type
+    
     attr_reader :current_attribute_hash
     attr_reader :current_method_detail
     
     def initialize   
       @current_value = nil
+      @current_method_detail = nil
       @original_value_before_override = nil
       @current_attribute_hash = {}
 
     end
     
-    # Set member variables to hold details, value and optional attributes.
+    # Convert DSL string forms into a hash
+    # e.g
+    # 
+    #  "{:name => 'autechre'}" =>   Hash['name'] = autechre'
+    #  "{:cost_price => '13.45', :price => 23,  :sale_price => 4.23 }"
+    
+    def self.string_to_hash( str )
+      h = {}
+      str.gsub(/[{}:]/,'').split(', ').map do |e| 
+        k,v = e.split('=>')
+        
+        k.strip!
+        v.strip!
+        
+        if( v.match(/['"]/) )
+          h[k] = v.gsub(/["']/, '')
+        elsif( v.match(/^\d+$|^\d*\.\d+$|^\.\d+$/) )
+          h[k] = v.to_f
+        else
+          h[k] = v
+        end
+        h
+      end
+   
+      h
+    end
+    
+    # Set member variables to hold details, value and optional attributes,
+    # to be set on the 'value' once created
     # 
     # Check supplied value, validate it, and if required :
     #   set to provided default value
     #   prepend any provided prefixes 
     #   add any provided postfixes
     def prepare_data(method_detail, value)
-      
-      @current_value, @current_attribute_hash = value.to_s.split(Delimiters::attribute_list_start)
-      
-      if(@current_attribute_hash)
-        @current_attribute_hash.strip!
-        puts "DEBUG: Populator Value contains additional attributes"
-        @current_attribute_hash = nil unless @current_attribute_hash.include?('}')
-      end
-      
-      @current_attribute_hash ||= {}
-      
-      @current_method_detail = method_detail
-      
-      operator = method_detail.operator
-      
-      override_value(operator)
-        
-      if((value.nil? || value.to_s.empty?) && default_value(operator))
-        @current_value = default_value(operator)
-      end
-      
-      @current_value = "#{prefix(operator)}#{@current_value}" if(prefix(operator))
-      @current_value = "#{@current_value}#{postfix(operator)}" if(postfix(operator))
 
+      raise NilDataSuppliedError.new("No method detail supplied for prepare_data") unless(method_detail)
+     
+      begin
+        @prepare_data_const_regexp ||= Regexp.new( Delimiters::attribute_list_start + ".*" + Delimiters::attribute_list_end)
+              
+        # Rails 4 - query no longer returns an array
+        if( value.is_a? ActiveRecord::Relation )
+          @current_value = value.to_a
+        else
+          @current_value = value.to_s
+          
+          attribute_hash = @current_value.slice!(@prepare_data_const_regexp)
+          
+          if(attribute_hash)  
+            #@current_value.chop!    # the slice seems to add an extra space/eol
+            @current_attribute_hash = Populator::string_to_hash( attribute_hash )
+            logger.info "Populator for #{@current_value} has attributes #{@current_attribute_hash.inspect}"
+          end
+        end
+      
+        @current_attribute_hash ||= {}
+       
+        @current_method_detail = method_detail
+      
+        @current_col_type = @current_method_detail.col_type
+      
+        operator = method_detail.operator
+      
+        override_value(operator)
+        
+        if((value.nil? || value.to_s.empty?) && default_value(operator))
+          @current_value = default_value(operator)
+        end
+      
+        @current_value = "#{prefix(operator)}#{@current_value}" if(prefix(operator))
+        @current_value = "#{@current_value}#{postfix(operator)}" if(postfix(operator))
+
+      rescue => e
+        logger.error("populator failed to prepare data supplied for operator #{method_detail.operator}")
+        logger.error("populator stacktrace: #{e.backtrace.join('\\n')}")
+      end
+      
       return @current_value, @current_attribute_hash
     end
     
-    def assign(method_detail, record, value )
-     
-      @current_value = value
-       
-      # Rails 4 - not an array any more
-      if( value.is_a? ActiveRecord::Relation )
-        logger.warn("Relation passed rather than value #{value.inspect}")
-        @current_value = value.to_a
-      end
-
-      # logger.info("WARNING nil value supplied for Column [#{@name}]") if(@current_value.nil?)
-
-      operator = method_detail.operator
-         
-      if( method_detail.operator_for(:belongs_to) )
+    def prepare_and_assign(method_detail, record, value)
       
-        puts "DEBUG : BELONGS_TO : #{method_detail.inspect}"
-        insistent_belongs_to(method_detail, record, @current_value)
+      prepare_data(method_detail, value) 
+       
+      assign(record)
+      
+    end
+    
+    def assign(record)
+     
+      raise NilDataSuppliedError.new("No method detail - cannot assign data") unless(current_method_detail)
+       
+      operator = current_method_detail.operator
 
-      elsif( method_detail.operator_for(:has_many) )
+      logger.debug("Populator assigning data via #{current_method_detail.operator}")
+              
+      if( current_method_detail.operator_for(:belongs_to) )
+ 
+        insistent_belongs_to(current_method_detail, record, current_value)
+
+      elsif( current_method_detail.operator_for(:has_many) )
         
-        puts "DEBUG : VALUE TYPE [#{value.class.name.include?(operator.classify)}] [#{ModelMapper.class_from_string(value.class.name)}]" unless(value.is_a?(Array))
+        #puts "DEBUG : HAS_MANY [#{current_value.class.name.include?(operator.classify)}] [#{ModelMapper.class_from_string(current_value.class.name)}]" unless(current_value.is_a?(Array))
      
         # The include? check is best I can come up with right now .. to handle module/namespaces
         # TODO - can we determine the real class type of an association
         # e.g given a association taxons, which operator.classify gives us Taxon, but actually it's Spree::Taxon
         # so how do we get from 'taxons' to Spree::Taxons ? .. check if further info in reflect_on_all_associations
 
-        if(@current_value.is_a?(Array) || @current_value.class.name.include?(operator.classify))
-          record.send(operator) << @current_value
+        if(current_value.is_a?(Array) || current_value.class.name.include?(operator.classify))
+          record.send(operator) << current_value
         else
-          puts "ERROR #{@current_value.class} - Not expected type for has_many #{operator} - cannot assign"
+          logger.error "Cannot assign to has_many operator [#{operator}] - #{current_value} (#{current_value.class})"
         end
 
-      elsif( method_detail.operator_for(:has_one) )
+      elsif( current_method_detail.operator_for(:has_one) )
 
         #puts "DEBUG : HAS_MANY :  #{@name} : #{operator}(#{operator_class}) - Lookup #{@current_value} in DB"
-        if(@current_value.is_a?(method_detail.operator_class))
-          record.send(operator + '=', @current_value)
+        if(current_value.is_a?(current_method_detail.operator_class))
+          record.send(operator + '=', current_value)
         else
-          logger.error("ERROR #{value.class} - Not expected type for has_one #{operator} - cannot assign")
+          logger.error("ERROR #{current_value.class} - Not expected type for has_one #{operator} - cannot assign")
           # TODO -  Not expected type - maybe try to look it up somehow ?"
           #insistent_has_many(record, @current_value)
         end
 
-      elsif( method_detail.operator_for(:assignment) && method_detail.col_type )
-        #puts "DEBUG : COl TYPE defined for #{@name} : #{@assignment} => #{@current_value} #{@col_type.type}"
-        # puts "DEBUG : Column [#{@name}] : COl TYPE CAST: #{@current_value} => #{@col_type.type_cast( @current_value ).inspect}"
-        record.send( operator + '=' , method_detail.col_type.type_cast( @current_value ) )
+      elsif( current_method_detail.operator_for(:assignment) && current_col_type)
+        logger.debug("Assignging #{current_value} => [#{operator}] (CAST 2 TYPE  #{current_col_type.type_cast( current_value ).inspect})")
+        
+        record.send( operator + '=' , current_method_detail.col_type.type_cast( current_value ) )
 
-        #puts "DEBUG : MethodDetails Assignment RESULT: #{record.send(operator)}"
-
-      elsif( method_detail.operator_for(:assignment) )
-        #puts "DEBUG : Column [#{@name}] : Brute force assignment of value  #{@current_value}"
+      elsif( current_method_detail.operator_for(:assignment) )
+        logger.debug("Brute force assignment of value  #{current_value} => [#{operator}]")
         # brute force case for assignments without a column type (which enables us to do correct type_cast)
         # so in this case, attempt straightforward assignment then if that fails, basic ops such as to_s, to_i, to_f etc
-        insistent_assignment(record, @current_value, operator)
+        insistent_assignment(record, current_value, operator)
       else
         puts "WARNING: No assignment possible on #{record.inspect} using [#{operator}]"
         logger.error("WARNING: No assignment possible on #{record.inspect} using [#{operator}]")
@@ -139,12 +188,15 @@ module DataShift
     
     def insistent_assignment(record, value, operator)
       
-      #puts "DEBUG: RECORD CLASS #{record.class}"
       op = operator + '=' unless(operator.include?('='))
     
+      puts "DEBUG: insistent_assignment : #{op} => #{value} (#{value.class})"
+            
       begin
         record.send(op, value)
       rescue => e
+        puts "ERROR in insistent_assignment: #{e.inspect}"
+         
         Populator::insistent_method_list.each do |f|
           begin
             record.send(op, value.send( f) )
@@ -172,7 +224,7 @@ module DataShift
         Populator::insistent_find_by_list.each do |x|
           begin
  
-           # puts "DEBUG : insistent_belongs_to => #{method_detail.operator_class.respond_to?( "find_by_#{x}" )}"
+            # puts "DEBUG : insistent_belongs_to => #{method_detail.operator_class.respond_to?( "find_by_#{x}" )}"
              
             next unless method_detail.operator_class.respond_to?( "find_by_#{x}" )
             item = method_detail.operator_class.send("find_or_create_by_#{x}", value)

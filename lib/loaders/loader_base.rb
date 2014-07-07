@@ -161,7 +161,7 @@ module DataShift
       end
       
       unless(@method_mapper.missing_methods.empty?)
-        puts "WARNING: These headings couldn't be mapped to class #{load_object_class} :\n#{@method_mapper.missing_methods.inspect}"
+        logger.warn("Following headings couldn't be mapped to #{load_object_class} \n#{@method_mapper.missing_methods.inspect}")
         raise MappingDefinitionError, "Missing mappings for columns : #{@method_mapper.missing_methods.join(",")}" if(strict)
       end
 
@@ -195,8 +195,7 @@ module DataShift
       method_detail = MethodDictionary.find_method_detail( load_object_class, column_name )
 
       if(method_detail)
-        prepare_data(method_detail, data)
-        process()
+        process(method_detail, data)
       else
         puts "No matching method found for column #{column_name}"
         @load_object.errors.add(:base, "No matching method found for column #{column_name}")
@@ -232,15 +231,6 @@ module DataShift
       logger.info("Loader Options : #{@config.inspect}")
     end
     
-    # Set member variables to hold details and value.
-    # 
-    # Check supplied value, validate it, and if required :
-    #   set to provided default value
-    #   prepend any provided prefixes 
-    #   add any provided postfixes
-    def prepare_data(method_detail, value)
-      return @populator.prepare_data(method_detail, value)
-    end
     
     # Return the find_by operator and the rest of the (row,columns) data
     #   price:0.99
@@ -253,7 +243,7 @@ module DataShift
         
       operator, rest = inbound_data.split(Delimiters::name_value_delim) 
      
-      #puts "DEBUG inbound_data: #{inbound_data} => #{operator} , #{rest}"
+      logger.info("Parsed inbound data into #{operator} << #{rest}")
        
       # Find by operator embedded in row takes precedence over operator in column heading
       if(@populator.current_method_detail.find_by_operator)
@@ -274,12 +264,11 @@ module DataShift
     # Method detail represents a column from a file and it's correlated AR associations.
     # Value string which may contain multiple values for a collection association.
     #
-    def process()  
+    # TODO - Move ALL of this into Populator properly
+    def process(method_detail, value)  
       
-      current_method_detail = @populator.current_method_detail
-      current_value         = @populator.current_value
-        
-      logger.info("Current value to assign : #{current_value}")
+      current_method_detail = method_detail
+      current_value         = value
       
       if(current_method_detail.operator_for(:has_many))
 
@@ -294,7 +283,9 @@ module DataShift
           # Size:large|Colour:red,green,blue => ['Size:large', 'Colour:red,green,blue']
           columns = current_value.to_s.split( Delimiters::multi_assoc_delim )
 
-          # Size:large|Colour:red,green,blue   => generates find_by_size( 'large' ) and find_all_by_colour( ['red','green','blue'] )
+          # Size:large|Colour:red,green,blue  =>
+          #   find_by_size( 'large' )
+          #   find_all_by_colour( ['red','green','blue'] )
 
           columns.each do |col_str|
             
@@ -304,41 +295,33 @@ module DataShift
              
             find_by_values = col_values.split(Delimiters::multi_value_delim)
             
-            find_by_values << current_method_detail.find_by_value if(current_method_detail.find_by_value)
-                     
-            if(find_by_values.size > 1)
+            find_by_values << current_method_detail.find_by_value if(current_method_detail.find_by_value)           
+              
+            logger.info("Scan for multiple has_many associations #{find_by_values}")
+            
+            #RAILS 4 current_value = current_method_detail.operator_class.send("find_all_by_#{find_operator}", find_by_values )
+            current_value = current_method_detail.operator_class.where(find_operator => find_by_values)
 
-              #RAILS 4 current_value = current_method_detail.operator_class.send("find_all_by_#{find_operator}", find_by_values )
-              current_value = current_method_detail.operator_class.where(find_operator => find_by_values)
-
-              unless(find_by_values.size == current_value.size)
-                found = current_value.collect {|f| f.send(find_operator) }
-                @load_object.errors.add( current_method_detail.operator, "Association with key(s) #{(find_by_values - found).inspect} NOT found")
-                puts "WARNING: Association #{current_method_detail.operator} with key(s) #{(find_by_values - found).inspect} NOT found - Not added."
-                next if(@current_value.empty?)
-              end
-
-            else
-
-              current_value = current_method_detail.operator_class.send("find_by_#{find_operator}", find_by_values )
-
-              unless(current_value)
-                @load_object.errors.add( current_method_detail.operator, "Association with key #{find_by_values} NOT found")
-                puts "WARNING: Association with key #{find_by_values} NOT found - Not added."
-                next
-              end
-
+            logger.info("Scan result #{current_value.inspect}")
+                
+            unless(find_by_values.size == current_value.size)
+              found = current_value.collect {|f| f.send(find_operator) }
+              @load_object.errors.add( current_method_detail.operator, "Association with key(s) #{(find_by_values - found).inspect} NOT found")
+              logger.error "Association #{current_method_detail.operator} with key(s) #{(find_by_values - found).inspect} NOT found - Not added."
+              next if(current_value.empty?)
             end
 
+            logger.info("Assigning #{current_value.inspect} (#{current_value.class}")
+            
             # Lookup Assoc's Model done, now add the found value(s) to load model's collection
-            @populator.assign(current_method_detail, @load_object, current_value)
+            @populator.prepare_and_assign(current_method_detail, @load_object, current_value)
           end
         end
         # END HAS_MANY
       else
         # Nice n simple straight assignment to a column variable
         #puts "INFO: LOADER BASE processing #{method_detail.name}"
-        @populator.assign(current_method_detail, @load_object, current_value)
+        @populator.prepare_and_assign(current_method_detail, @load_object, current_value)
       end
     end
     

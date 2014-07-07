@@ -53,8 +53,7 @@ describe 'Excel Loader' do
   end
 
   it "should process multiple associationss from single column", :fail => true do 
-    
-  
+   
     DataShift::MethodDictionary.find_operators( Category )
     
     DataShift::MethodDictionary.build_method_details( Category )
@@ -63,7 +62,6 @@ describe 'Excel Loader' do
     count = Project.count
 
     loader = ExcelLoader.new(Project)
-    
 
     loader.perform_load( ifixture_file('ProjectsSingleCategories.xls') )
 

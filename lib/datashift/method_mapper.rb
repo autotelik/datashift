@@ -120,7 +120,7 @@ module DataShift
             find_by, find_value = lookup.split(MethodMapper::column_delim) 
             md.find_by_value    = find_value 
             md.find_by_operator = find_by # TODO and klass.x.respond_to?(active_record_helper))
-            puts "DEBUG: Method Detail #{md.name};#{md.operator} : find_by_operator #{md.find_by_operator}"
+            #puts "DEBUG: Method Detail #{md.name};#{md.operator} : find_by_operator #{md.find_by_operator}"
           end
         else
           # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil

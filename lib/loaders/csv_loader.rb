@@ -73,11 +73,16 @@ module DataShift
               # pulling data out of associated column
               @method_mapper.method_details.each_with_index do |method_detail, col|
 
+                unless method_detail
+                  logger.warn("No method_detail found for col #{col} - These headings couldn't be mapped  #{@method_mapper.missing_methods.inspect}")
+                  next # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
+                end
+                
                 value = row[col]
 
-                prepare_data(method_detail, value)
+                #prepare_data(method_detail, value)
             
-                process()
+                process(method_detail, value)
               end
 
             rescue => e
@@ -112,9 +117,9 @@ module DataShift
           raise ActiveRecord::Rollback if(options[:dummy]) # Don't actually create/upload to DB if we are doing dummy run
         end
       rescue => e
-        puts "CAUGHT ", e.backtrace, e.inspect
+        logger.error "perform_csv_load failed - #{e.message}:\n#{e.backtrace}"
         if e.is_a?(ActiveRecord::Rollback) && options[:dummy]
-          puts "CSV loading stage complete - Dummy run so Rolling Back."
+          logger.info "CSV loading stage complete - Dummy run so Rolling Back."
         else
           raise e
         end
