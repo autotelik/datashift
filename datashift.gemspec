@@ -1,21 +1,16 @@
 require 'rake'
 
-lib = File.expand_path('../lib/', __FILE__)
-
-$:.unshift lib unless $:.include?(lib)
-
-require 'datashift'
+#TODO version = File.read("VERSION").strip
   
 Gem::Specification.new do |s|
   s.name = "datashift"
-  s.version = DataShift::gem_version
-  s.date = Date.today.to_s
+  s.version = "0.16.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   
   s.authors = ["Thomas Statter"]
 
-  s.description = "Comprehensive tools to import/export between Excel/CSV and ActiveRecord databases, Rails apps, and any Ruby project."
+  s.description = "Comprehensive import/export tools between Excel/CSV & ActiveRecord Databases, Rails apps, and any Ruby project."
   s.email = "rubygems@autotelik.co.uk"
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -42,7 +37,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/autotelik/datashift"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.24"
+
   s.summary = "Shift data betwen Excel/CSV and any Ruby app"
 
   if s.respond_to? :specification_version then
