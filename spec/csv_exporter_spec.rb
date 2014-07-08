@@ -51,9 +51,9 @@ describe 'CSV Exporter' do
 
   it "should export collection of model objects to .xls file" do
 
-    expect = result_file('project_export_spec.csv')
+    expected = result_file('project_export_spec.csv')
 
-    exporter = DataShift::CsvExporter.new( expect )
+    exporter = DataShift::CsvExporter.new( expected )
      
     count = Project.count 
     
@@ -63,54 +63,54 @@ describe 'CSV Exporter' do
     
     exporter.export(Project.all)
  
-    File.exists?(expect).should be_true
+    expect(File.exists?(expected)).to eq true
       
-    puts "Can manually check file @ #{expect}"
+    puts "Can manually check file @ #{expected}"
     
-    File.foreach(expect) {}
+    File.foreach(expected) {}
     count = $.
     count.should == Project.count + 1
   end
 
   it "should handle bad params to export" do
 
-    expect = result_file('project_first_export_spec.csv')
+    expected = result_file('project_first_export_spec.csv')
 
-    exporter = DataShift::CsvExporter.new( expect )
+    exporter = DataShift::CsvExporter.new( expected )
     
     expect{ exporter.export(nil) }.not_to raise_error
 
     expect{ exporter.export([]) }.not_to raise_error
    
-    puts "Can manually check file @ #{expect}"
+    puts "Can manually check file @ #{expected}"
   end
   
   it "should export a model object to csv file" do
 
-    expect = result_file('project_first_export_spec.csv')
+    expected = result_file('project_first_export_spec.csv')
 
-    exporter = DataShift::CsvExporter.new( expect )
+    exporter = DataShift::CsvExporter.new( expected )
     
     exporter.export(Project.all[0])
  
-    File.exists?(expect).should be_true
+    expect(File.exists?(expected)).to eq true
       
-    puts "Can manually check file @ #{expect}"
+    puts "Can manually check file @ #{expected}"
   end
 
   it "should export a model and result of method calls on it to csv file" do
 
-    expect = result_file('project_with_methods_export_spec.csv')
+    expected = result_file('project_with_methods_export_spec.csv')
 
-    exporter = DataShift::CsvExporter.new( expect )
+    exporter = DataShift::CsvExporter.new( expected )
      
     exporter.export(Project.all, {:methods => [:multiply]})
  
-    File.exists?(expect).should be_true
+    expect(File.exists?(expected)).to eq true
       
-    puts "Can manually check file @ #{expect}"
+    puts "Can manually check file @ #{expected}"
     
-    File.foreach(expect) {}
+    File.foreach(expected) {}
     count = $.
     count.should == Project.count + 1
   end
@@ -121,15 +121,15 @@ describe 'CSV Exporter' do
 
     p.milestones.create( :name => 'milestone_1', :cost => 23.45)
     
-    expect= result_file('project_plus_assoc_export_spec.csv')
+    expected = result_file('project_plus_assoc_export_spec.csv')
 
-    gen = DataShift::CsvExporter.new(expect)
+    gen = DataShift::CsvExporter.new(expected)
 
     gen.export_with_associations(Project, Project.all)
 
-    File.exists?(expect).should be_true
+    expect(File.exists?(expected)).to eq true
 
-    File.foreach(expect) {}
+    File.foreach(expected) {}
     count = $.
     count.should == Project.count + 1
     

@@ -27,7 +27,7 @@ describe 'Method Mapper' do
     
     method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
     
-    method_details.should have_exactly(4).items
+    expect(method_details.size).to eq 4
   end
 
   it "should leave nil in set of methods when no such operator" do
@@ -36,7 +36,7 @@ describe 'Method Mapper' do
     
     method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
     
-    method_details.should have_exactly(6).items
+    expect(method_details.size).to eq 6
     
     method_details[2].should be_nil
     method_details[5].should be_nil
@@ -53,7 +53,7 @@ describe 'Method Mapper' do
     
     method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
     
-    method_details.should have_exactly(4).items
+    expect(method_details.size).to eq 4
     
     method_details[2].should be_nil
    
@@ -67,7 +67,7 @@ describe 'Method Mapper' do
     
     method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
     
-    method_details.should have_exactly(4).items
+    expect(method_details.size).to eq 4
     
     method_details[0].should be_a DataShift::MethodDetail
     
@@ -85,7 +85,7 @@ describe 'Method Mapper' do
     
     method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
     
-    method_details.should have_exactly(4).items
+    expect(method_details.size).to eq 4
     
     method_details.should_not include nil
     

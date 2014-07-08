@@ -45,20 +45,20 @@ describe 'Excel Generator' do
   
   it "should generate template .xls file from model" do
 
-    expect = result_file('project_template_spec.xls')
+    expected = result_file('project_template_spec.xls')
 
-    gen = ExcelGenerator.new( expect )
+    gen = ExcelGenerator.new( expected )
     
     gen.generate(Project)
  
-    File.exists?(expect).should be_true
+    expect(File.exists?(expected)).to eq true
       
-    puts "Can manually check file @ #{expect}"
+    puts "Can manually check file @ #{expected}"
     
     excel = Excel.new
-    excel.open(expect)
+    excel.open(expected)
     
-    excel.worksheets.should have(1).items
+    expect(excel.worksheets.size).to eq 1
     
     excel.worksheet(0).name.should == 'Project'
       
@@ -77,18 +77,18 @@ describe 'Excel Generator' do
   
   it "should include all associations in template .xls file from model" do
 
-    expect= result_file('project_plus_assoc_template_spec.xls')
+    expected = result_file('project_plus_assoc_template_spec.xls')
 
-    gen = ExcelGenerator.new(expect)
+    gen = ExcelGenerator.new(expected)
 
     gen.generate_with_associations(Project)
 
-    File.exists?(expect).should be_true
+   expect( File.exists?(expected)).to eq true
 
     excel = Excel.new
-    excel.open(expect)
+    excel.open(expected)
     
-    excel.worksheets.should have(1).items
+    expect(excel.worksheets.size).to eq 1
     
     excel.worksheet(0).name.should == 'Project'
       
@@ -100,22 +100,22 @@ describe 'Excel Generator' do
   end
    
       
-  it "should enable us to exclude associations by type in template .xls file", :fail => true do
+  it "should enable us to exclude associations by type in template .xls file" do
 
-    expect= result_file('project_plus_some_assoc_template_spec.xls')
+    expected = result_file('project_plus_some_assoc_template_spec.xls')
 
-    gen = ExcelGenerator.new(expect)
+    gen = ExcelGenerator.new(expected)
 
     options = {:exclude => :has_many }
       
     gen.generate_with_associations(Project, options)
 
-    File.exists?(expect).should be_true, "Failed to find expected result file #{expect}"
+    expect(File.exists?(expected)).to eq true #, "Failed to find expected result file #{expected}"
       
     excel = Excel.new
-    excel.open(expect)
+    excel.open(expected)
     
-    excel.worksheets.should have(1).items
+    expect(excel.worksheets.size).to eq 1
     
     excel.worksheet(0).name.should == 'Project'
       
@@ -133,20 +133,20 @@ describe 'Excel Generator' do
     
   it "should enable us to exclude certain associations in template .xls file ", :fail => true do
 
-    expect= result_file('project_plus_some_assoc_template_spec.xls')
+    expected = result_file('project_plus_some_assoc_template_spec.xls')
 
-    gen = ExcelGenerator.new(expect)
+    gen = ExcelGenerator.new(expected)
 
     options = {:remove => [:milestones, :versions] }
       
     gen.generate_with_associations(Project, options)
 
-    File.exists?(expect).should be_true, "Failed to find expected result file #{expect}"
+    expect(File.exists?(expected)).to eq true#, "Failed to find expected result file #{expected}"
       
     excel = Excel.new
-    excel.open(expect)
+    excel.open(expected)
     
-    excel.worksheets.should have(1).items
+    expect(excel.worksheets.size).to eq 1
     
     excel.worksheet(0).name.should == 'Project'
       
@@ -166,20 +166,20 @@ describe 'Excel Generator' do
     
    it "should enable us to remove standard rails feilds from template .xls file ", :fail => true do
 
-    expect= result_file('project_plus_some_assoc_template_spec.xls')
+    expected = result_file('project_plus_some_assoc_template_spec.xls')
 
-    gen = ExcelGenerator.new(expect)
+    gen = ExcelGenerator.new(expected)
 
     options = {:remove_rails => true}
       
     gen.generate_with_associations(Project, options)
 
-    File.exists?(expect).should be_true, "Failed to find expected result file #{expect}"
+    expect(File.exists?(expected)).to eq true#, "Failed to find expected result file #{expected}"
       
     excel = Excel.new
-    excel.open(expect)
+    excel.open(expected)
     
-    excel.worksheets.should have(1).items
+    expect(excel.worksheets.size).to eq 1
     
     excel.worksheet(0).name.should == 'Project'
       
@@ -194,18 +194,18 @@ describe 'Excel Generator' do
   
   it "should enable us to autosize columns in the .xls file" do
 
-    expect= result_file('project_autosized_template_spec.xls')
+    expected = result_file('project_autosized_template_spec.xls')
 
-    gen = ExcelGenerator.new(expect)
+    gen = ExcelGenerator.new(expected)
 
     options = {:autosize => true, :exclude => :milestones }
       
     gen.generate_with_associations(Project, options)
 
-    File.exists?(expect).should be_true
+    expect( File.exists?(expected)).to eq true
       
     excel = Excel.new
-    excel.open(expect)
+    excel.open(expected)
       
   end
     
