@@ -22,7 +22,7 @@ describe 'LoaderBase' do
   it "should be able to create a new loader and load object" do
     @loader.load_object.should_not be_nil
     @loader.load_object.should be_is_a(Project)
-    @loader.load_object.new_record?.should be_true
+    expect(@loader.load_object.new_record?).to eq true
   end
 
 
@@ -33,7 +33,7 @@ describe 'LoaderBase' do
 
     @loader.find_and_process(column, row)
 
-    @loader.load_object.errors.should have_exactly(0).items
+    expect(@loader.load_object.errors.size).to eq 0
   end
   
   it "should process a string field against an assigment method detail" do
@@ -114,7 +114,7 @@ describe 'LoaderBase' do
   it "should be able to mark a load attempt as a failure" do
     
     failed_count = @loader.failed_count
-    @loader.load_object.new_record?.should be_true
+    expect(@loader.load_object.new_record?).to eq true
      
     @loader.load_object.save!
      

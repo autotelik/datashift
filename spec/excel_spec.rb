@@ -76,7 +76,7 @@ describe 'Excel Proxy' do
     @excel.create_worksheet( :name => "autechre")
     @excel.create_worksheet( :name => "swarms")
         
-    @excel.worksheets.should have_exactly(4).items
+    expect(@excel.worksheets.size).to eq 4
   end
   
   it "can access a worksheet by index" do
@@ -175,9 +175,12 @@ describe 'Excel Proxy' do
   end
   
   
-  it "can support bools" do
-    pending("reading back value sometimes returns "" when cell was set to false")
-  end
+  #it "can support bools" do
+  #  pending "reading back value sometimes returns "" when cell was set to false"
+    
+   # sheet = @excel.create_worksheet
+    
+  #end
 
   it "can write an Excel file" do
     @excel = Excel.new
@@ -193,7 +196,7 @@ describe 'Excel Proxy' do
     
     @excel.write( expected )
     
-    File.exists?(expected).should be_true
+    expect(File.exists?(expected)).to eq true
     
   end
 end

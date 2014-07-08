@@ -65,43 +65,43 @@ describe 'Excel Exporter' do
   
   it "should export model object to .xls file" do
 
-    expect = result_file('project_first_export_spec.xls')
+    expected = result_file('project_first_export_spec.xls')
 
-    gen = ExcelExporter.new( expect )
+    gen = ExcelExporter.new( expected )
     
     gen.export(Project.all.first)
  
-    File.exists?(expect).should be_true
+    expect(File.exists?(expected)).to eq true
       
-    puts "Can manually check file @ #{expect}"
+    puts "Can manually check file @ #{expected}"
   end
 
   it "should export collection of model objects to .xls file" do
 
-    expect = result_file('project_export_spec.xls')
+    expected = result_file('project_export_spec.xls')
 
-    gen = ExcelExporter.new( expect )
+    gen = ExcelExporter.new( expected )
     
     gen.export(Project.all)
  
-    File.exists?(expect).should be_true
+    expect( File.exists?(expected)).to eq true
       
-    puts "Can manually check file @ #{expect}"
+    puts "Can manually check file @ #{expected}"
   end
   
   it "should export a  model and associations to .xls file" do
 
     Project.create( :value_as_string	=> 'Value as Text', :value_as_boolean => true,	:value_as_double => 75.672)
 
-    expect= result_file('project_plus_assoc_export_spec.xls')
+    expected = result_file('project_plus_assoc_export_spec.xls')
 
-    gen = ExcelExporter.new(expect)
+    gen = ExcelExporter.new(expected)
 
     items = Project.all
 
     gen.export_with_associations(Project, items)
 
-    File.exists?(expect).should be_true
+    expect(File.exists?(expected)).to eq true
 
   end
 

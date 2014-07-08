@@ -89,7 +89,7 @@ describe 'PaperClip Bulk Loader' do
  
     loader.process_from_filesystem(@attachment_path, opts)
     
-    Dir.glob("MissingAttachmentRecords/*.jpeg", File::FNM_CASEFOLD).should have_exactly(names.size).items
+    expect(Dir.glob("MissingAttachmentRecords/*.jpeg", File::FNM_CASEFOLD).size).to eq names.size
   end
   
 end

@@ -39,7 +39,7 @@ describe 'Excel Loader' do
     
     loader.load_object.should_not be_nil
     loader.load_object.should be_is_a(Project)
-    loader.load_object.new_record?.should be_true
+    expect(loader.load_object.new_record?).to eq true
   end
   
   it "should process a simple .xls spreedsheet" do
@@ -74,7 +74,7 @@ describe 'Excel Loader' do
       project.should_not be_nil
       #puts "#{project.inspect} [#{project.categories.size}]"
       
-      project.should have(expected).categories
+      expect(project.categories.size).to eq expected
     end
   end
 
@@ -92,7 +92,7 @@ describe 'Excel Loader' do
   
       project.should_not be_nil
 
-      project.should have(expected).categories
+      expect(project.categories.size).to eq expected
     end
   
   end
@@ -112,7 +112,7 @@ describe 'Excel Loader' do
   
       project.should_not be_nil
 
-      project.should have(expected).categories
+       expect(project.categories.size).to eq expected
     end
   
   end
