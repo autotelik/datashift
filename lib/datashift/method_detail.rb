@@ -10,9 +10,6 @@
 #             Enables 'loaders' to iterate over the MethodMapper results set,
 #             and assign values to AR object, without knowing anything about that receiving object.
 #
-require 'to_b'
-require 'logging'
-require 'populator'
 require 'set'
 
 module DataShift

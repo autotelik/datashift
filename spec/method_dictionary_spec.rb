@@ -130,7 +130,7 @@ describe 'Method Dictionary' do
   end
   
   
-  it "should populate method_details on Class for belongs_to", :fail => true do
+  it "should populate method_details on Class for belongs_to" do
 
     DataShift::MethodDictionary.find_operators( Owner )
     
@@ -269,10 +269,6 @@ describe 'Method Dictionary' do
     end
   end
 
-
-  it "should find a set of methods based on a list of column names" do
-    pending("key API - map column headers to set of methods")
-  end
 
   it "should not by default map setter methods" do
     DataShift::MethodDictionary.find_operators( Milestone )

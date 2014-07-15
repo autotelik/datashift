@@ -81,7 +81,8 @@ describe 'Thor high level command line tasks' do
     puts "Running attach with: #{args}"
     
     x = capture(:stdout){ Thor::Runner.start(["datashift:paperclip:attach", [], args]) }
-    x.should start_with("datashift\n--------")
+    
+    expect(x).to include ("datashift\n--------")
     #x.should =~ / csv -i/
     #x.should =~ / excel -i/
 

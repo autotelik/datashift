@@ -33,7 +33,7 @@ class Datashift < Thor
 
   method_option :version, :aliases => '-v',  :desc => "New version"
   method_option :push, :aliases => '-p', :desc => "Push resulting gem to rubygems.org"
- 
+  method_option :install, :aliases => '-i', :desc => "Install freshly built gem locally"
 
   def build
 
@@ -53,10 +53,12 @@ class Datashift < Thor
     version = DataShift.gem_version
     puts "Installing version #{version}"
   
-    gem = "#{DataShift.gem_name}-#{version}.gem"
-    cmd = "gem install --no-ri --no-rdoc #{gem}"
-    system(cmd)
-    
+    if(options[:install])         
+        gem = "#{DataShift.gem_name}-#{version}.gem"
+        cmd = "gem install --no-ri --no-rdoc #{gem}"
+        system(cmd)
+    end
+
     if(options[:push])
       cmd = "gem push #{gem}"
       system(cmd)

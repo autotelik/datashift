@@ -40,19 +40,13 @@ Gem::Specification.new do |s|
 
   s.summary = "Shift data betwen Excel/CSV and any Ruby app"
 
-  if s.respond_to? :specification_version then
-    s.specification_version = 3
-
-    if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<spreadsheet>, [">= 0"])
-      s.add_runtime_dependency(%q<rubyzip>, [">= 0"])
-    else
-      s.add_dependency(%q<spreadsheet>, [">= 0"])
-      s.add_dependency(%q<rubyzip>, [">= 0"])
-    end
+  if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
+    s.add_runtime_dependency 'rubyzip', '~> 1.1', '>= 1.1.6'
+    s.add_runtime_dependency 'spreadsheet', '~> 0.9', '>= 0.9.7'
   else
-    s.add_dependency(%q<spreadsheet>, [">= 0"])
-    s.add_dependency(%q<rubyzip>, [">= 0"])
+    s.add_dependency(%q<spreadsheet>, [">= 1.1.6"])
+    s.add_dependency(%q<rubyzip>, [">=  0.9.7"])
   end
+
 end
 

@@ -114,14 +114,18 @@ module DataShift
   
 end
 
-DataShift::require_libraries
+require 'helpers/core_ext/to_b'
 
+require 'datashift/logging'
 require 'datashift/exceptions'
 require 'datashift/guards'
-require 'datashift/logging'
+
 require 'datashift/method_detail'
 require 'datashift/method_dictionary'
 require 'datashift/method_mapper'
+
+DataShift::require_libraries
+
 
 module DataShift
   if(Guards::jruby?)
