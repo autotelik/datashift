@@ -5,4 +5,4 @@ rvm:
   - 2.1.0
   - jruby-19mode
 gemfile: spec/Gemfile
-script: 'cd spec && bundle exec rspec -c .'
+script: 'cd ./spec && bundle exec rspec -c .'
