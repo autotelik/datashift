@@ -1,0 +1,5 @@
+title,value_as_string,Value as Text,value as datetime,value_as_boolean,value_as_double,category,
+001,Demo string,blah blah,2011-02-14,1.00,320.00,"reference:category_001,category_002",
+002,Loads via Jruby,,2011-03-23,0.00,30.00,reference:category_003,
+003,003 Can handle different column naming styles,,2011-05-19,TRUE,520.00,"reference:category_001,category_002,category_003",
+099,,,,,,,
