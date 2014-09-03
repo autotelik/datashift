@@ -1,0 +1,5 @@
+TITLE,value_as_string,Value as Text,value as datetime,value_as_boolean,value_as_double,Categories:reference,Categories,Categories:reference
+004,Demo string,blah blah,2011-02-14,1.00,320.00,"category_001,category_002",reference:category_003,category_004
+005,Loads via Jruby,,2011-03-23,0.00,30.00,category_005,,
+006,Can load mulitple assoc columns with same name,,2011-05-19,TRUE,520.00,,,
+007,,more blah,,FALSE,-345.00,,,category_002
