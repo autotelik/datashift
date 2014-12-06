@@ -42,5 +42,14 @@ describe 'DataShift' do
     
     
   end
+
+  it "should provide quick way to create exception class" do
+    DataShift::DataShiftException.generate( "BadRspecError")
+
+    e = DataShift::BadRspecError.new("my new exception  class")
+
+    expect(e).to be
+    expect(e.message).to eq "my new exception  class"
+  end
   
 end

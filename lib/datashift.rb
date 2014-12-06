@@ -116,6 +116,7 @@ end
 
 require_relative 'helpers/core_ext/to_b'
 
+require_relative 'datashift/delimiters'
 require_relative 'datashift/logging'
 require_relative 'datashift/exceptions'
 require_relative 'datashift/guards'

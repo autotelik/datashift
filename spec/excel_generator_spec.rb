@@ -14,18 +14,13 @@ include DataShift
 
 describe 'Excel Generator' do
 
+  include_context "ActiveRecordTestModelsConnected"
+
   before(:all) do
-    
-    # load our test model definitions - Project etc  
-    require ifixture_file('test_model_defs')  
-  
-    db_connect( 'test_file' )    # , test_memory, test_mysql
-   
-    # handle migration changes or reset of test DB
-    migrate_up
 
     db_clear()    # todo read up about proper transactional fixtures
-    results_clear()
+
+    results_clear("gen_*.xls")
 
     @klazz = Project
     @assoc_klazz = Category
@@ -38,14 +33,14 @@ describe 'Excel Generator' do
   end
   
   it "should be able to create a new excel generator" do
-    generator = ExcelGenerator.new( 'dummy.xls' )
+    generator = ExcelGenerator.new( 'gen_dummy.xls' )
       
     generator.should_not be_nil
   end
   
   it "should generate template .xls file from model" do
 
-    expected = result_file('project_template_spec.xls')
+    expected = result_file('gen_project_template_spec.xls')
 
     gen = ExcelGenerator.new( expected )
     
@@ -77,7 +72,7 @@ describe 'Excel Generator' do
   
   it "should include all associations in template .xls file from model" do
 
-    expected = result_file('project_plus_assoc_template_spec.xls')
+    expected = result_file('gen_project_plus_assoc_template_spec.xls')
 
     gen = ExcelGenerator.new(expected)
 
@@ -102,7 +97,7 @@ describe 'Excel Generator' do
       
   it "should enable us to exclude associations by type in template .xls file" do
 
-    expected = result_file('project_plus_some_assoc_template_spec.xls')
+    expected = result_file('gen_project_plus_some_assoc_template_spec.xls')
 
     gen = ExcelGenerator.new(expected)
 
@@ -133,7 +128,7 @@ describe 'Excel Generator' do
     
   it "should enable us to exclude certain associations in template .xls file ", :fail => true do
 
-    expected = result_file('project_plus_some_assoc_template_spec.xls')
+    expected = result_file('gen_project_plus_some_assoc_template_spec.xls')
 
     gen = ExcelGenerator.new(expected)
 
@@ -166,7 +161,7 @@ describe 'Excel Generator' do
     
    it "should enable us to remove standard rails feilds from template .xls file ", :fail => true do
 
-    expected = result_file('project_plus_some_assoc_template_spec.xls')
+    expected = result_file('gen_project_plus_some_assoc_template_spec.xls')
 
     gen = ExcelGenerator.new(expected)
 
@@ -194,7 +189,7 @@ describe 'Excel Generator' do
   
   it "should enable us to autosize columns in the .xls file" do
 
-    expected = result_file('project_autosized_template_spec.xls')
+    expected = result_file('gen_project_autosized_template_spec.xls')
 
     gen = ExcelGenerator.new(expected)
 

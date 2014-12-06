@@ -9,6 +9,7 @@ class CreateTestBed < ActiveRecord::Migration
   
   def self.up
 
+    # has many :projects
     create_table :users do |t|
       t.string   :title
       t.string   :first_name
@@ -43,6 +44,7 @@ class CreateTestBed < ActiveRecord::Migration
     # belongs_to  :project, project => has_one
     create_table :owners do |t|
       t.string   :name
+      t.decimal   :budget
       t.references :project
       t.timestamps
     end

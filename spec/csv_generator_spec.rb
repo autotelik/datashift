@@ -14,18 +14,13 @@ include DataShift
 
 describe 'CSV Generator' do
 
+  include_context "ActiveRecordTestModelsConnected"
+
   before(:all) do
 
-    # load our test model definitions - Project etc
-    require ifixture_file('test_model_defs')
-
-    db_connect( 'test_file' )    # , test_memory, test_mysql
-
-    # handle migration changes or reset of test DB
-    migrate_up
-
     db_clear()    # todo read up about proper transactional fixtures
-    results_clear()
+
+    results_clear("*.csv")
 
     @klazz = Project
     @assoc_klazz = Category

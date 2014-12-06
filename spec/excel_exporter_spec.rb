@@ -7,7 +7,7 @@
 #
 require File.dirname(__FILE__) + '/spec_helper'
 
- 
+
 require 'erb'
 require 'excel_exporter'
 
@@ -15,85 +15,91 @@ include DataShift
 
 describe 'Excel Exporter' do
 
-  before(:all) do
-      
-    # load our test model definitions - Project etc  
-    require ifixture_file('test_model_defs')  
-  
-    db_connect( 'test_file' )    # , test_memory, test_mysql
-   
-    # handle migration changes or reset of test DB
-    migrate_up
+  include_context "ActiveRecordTestModelsConnected"
 
-    results_clear()
+  before(:all) do
+
+    results_clear( "exp_*.xls" )
 
     @klazz = Project
     @assoc_klazz = Category
   end
-  
+
   before(:each) do
     MethodDictionary.clear
     MethodDictionary.find_operators( @klazz )
     MethodDictionary.find_operators( @assoc_klazz )
-    
+
     db_clear()    # todo read up about proper transactional fixtures
-        
-    Project.create( :value_as_string	=> 'Value as String', :value_as_boolean => true,	:value_as_double => 75.672)
-    Project.create( :value_as_string	=> 'Another Value as String', :value_as_boolean => false,	:value_as_double => 12)
-     
-    
+
   end
-  
-  it "should be able to create a new excel exporter" do
-    generator = ExcelExporter.new( 'dummy.xls' )
-      
-    generator.should_not be_nil
-  end
-  
-  it "should handle bad params to export" do
 
-    expect = result_file('project_first_export_spec.csv')
+  context 'simple project' do
 
-    exporter = DataShift::ExcelExporter.new( expect )
-    
-    expect{ exporter.export(nil) }.not_to raise_error
+    before(:each) do
+      create( :project )
+    end
 
-    expect{ exporter.export([]) }.not_to raise_error
-   
-    puts "Can manually check file @ #{expect}"
-  end
-  
-  it "should export model object to .xls file" do
+    it "should be able to create a new excel exporter" do
+      generator = ExcelExporter.new( 'exp_dummy.xls' )
 
-    expected = result_file('project_first_export_spec.xls')
+      generator.should_not be_nil
+    end
 
-    gen = ExcelExporter.new( expected )
-    
-    gen.export(Project.all.first)
- 
-    expect(File.exists?(expected)).to eq true
-      
-    puts "Can manually check file @ #{expected}"
+    it "should handle bad params to export" do
+
+      expect = result_file('project_first_export_spec.csv')
+
+      exporter = DataShift::ExcelExporter.new( expect )
+
+      expect{ exporter.export(nil) }.not_to raise_error
+
+      expect{ exporter.export([]) }.not_to raise_error
+
+      puts "Can manually check file @ #{expect}"
+    end
+
+    it "should export model object to .xls file" do
+
+      expected = result_file('exp_project_first_export_spec.xls')
+
+      gen = ExcelExporter.new( expected )
+
+      gen.export(Project.all.first)
+
+      expect(File.exists?(expected)).to eq true
+
+      puts "Can manually check file @ #{expected}"
+    end
+
   end
 
   it "should export collection of model objects to .xls file" do
 
-    expected = result_file('project_export_spec.xls')
+    create_list(:project, 7)
+
+    expected = result_file('exp_project_export_spec.xls')
 
     gen = ExcelExporter.new( expected )
-    
+
     gen.export(Project.all)
- 
+
     expect( File.exists?(expected)).to eq true
-      
-    puts "Can manually check file @ #{expected}"
+
+    excel = Excel.new
+    excel.open(expected)
+
+    expect(excel.num_rows).to eq 8
+
   end
-  
-  it "should export a  model and associations to .xls file" do
 
-    Project.create( :value_as_string	=> 'Value as Text', :value_as_boolean => true,	:value_as_double => 75.672)
 
-    expected = result_file('project_plus_assoc_export_spec.xls')
+  it "should export a model and associations to .xls file", :fail => true do
+
+    create( :project_user )
+    create_list(:project, 7)
+
+    expected = result_file('exp_project_plus_assoc_export_spec.xls')
 
     gen = ExcelExporter.new(expected)
 
@@ -103,6 +109,19 @@ describe 'Excel Exporter' do
 
     expect(File.exists?(expected)).to eq true
 
+    excel = Excel.new
+    excel.open(expected)
+
+    expect(excel.row(0)).to include 'owner'
+    expect(excel.row(0)).to include 'user'
+
+    expect(excel.num_rows).to eq 9
+
+    user_inx = excel.row(0).index 'user'
+
+    expect(user_inx).to be > -1
+
+    expect( excel[1, user_inx] ).to include 'mr'
   end
 
 end

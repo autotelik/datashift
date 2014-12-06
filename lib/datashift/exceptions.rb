@@ -14,13 +14,19 @@ module DataShift
       super
       logger.error( msg)
     end
-  end
-  
-  class SaveError < DataShiftException
-    def initialize( msg )
-      super( msg )
+
+    def self.generate name
+      new_class = Class.new(DataShiftException) do
+        def initialize( msg )
+          super( msg )
+        end
+      end
+
+      DataShift.const_set(name, new_class)
     end
+
   end
+
 
   class NilDataSuppliedError  < DataShiftException
     def initialize( msg )
@@ -46,5 +52,8 @@ module DataShift
   class BadUri < StandardError; end
    
   class CreateAttachmentFailed < StandardError; end
-  
+
 end
+
+DataShift::DataShiftException.generate( "SaveError")
+DataShift::DataShiftException.generate( "ConnectionError")

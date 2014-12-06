@@ -8,39 +8,55 @@
 # 
 #
 require 'exporter_base'
-require 'csv'
 
 module DataShift
 
   module ColumnPacker
 
-    
-    def text_delim
-      @text_delim ||= "\'"
-    end
+    include Delimiters
 
-    def text_delim=(x)
-      @text_delim = x
-    end
-    
     # Return opposite of text delim - "hello, 'barry'" => '"hello, "barry""'
     def escape_text_delim
       return '"' if text_delim == "\'"
       "\'"
     end
-    
- 
+
+
+    # Ensure a value is written to CSV correctly
+    # TODO - better ways ?? - see transcoding and String#encode
+
+    def escape_for_csv(value)
+      text = value.to_s.gsub(text_delim, escape_text_delim()).gsub("\n", "\\n")
+
+      text = "#{text_delim}#{text}#{text_delim}" if(text.include?(Delimiters::csv_delim))
+      text
+    end
+
     # Convert an AR instance to a single column
+    # e.g User  :  " :name = > 'tom', :role => 'developer' "
   
-    def record_to_column(record, attribute_delim = Delimiters::csv_delim) 
-    
-      csv_data = []
-      record.serializable_hash.each do |name, value|
-        value = 'nil' if value.nil?
-        text = value.to_s.gsub(@text_delim, escape_text_delim())
-        csv_data << "#{name.to_sym} => #{text}"
+    def record_to_column(record, options = {})
+
+      return "" if(record.nil?)
+
+      data = []
+
+      if( record.respond_to?(:each) )
+        return "" if(record.empty?)
+        record..each { |r| record_to_column(r, options) }
+      elsif(options[:to_json])
+        record.to_json   # pack association into single column
+      else
+        record.serializable_hash.each do |name, value|
+          #value = 'nil' if value.nil?
+
+          text = value.to_s.gsub(text_delim, escape_text_delim())
+          data << "#{name.to_sym} #{Delimiters::key_value_sep} #{text}"
+        end
+
+        "#{Delimiters::attribute_list_start}#{data.join(Delimiters::multi_value_delim)}#{Delimiters::attribute_list_end}"
+
       end
-      "#{csv_data.join(attribute_delim)}"
     end
     
     
@@ -52,13 +68,7 @@ module DataShift
       
       csv_data.join( Delimiters::csv_delim )
     end
-    
-    def escape_for_csv(value)
-      text = value.to_s.gsub(@text_delim, escape_text_delim())
-      
-      text = "#{@text_delim}#{text}#{@text_delim}" if(text.include?(Delimiters::csv_delim)) 
-      text
-    end
+
     
   end
 end

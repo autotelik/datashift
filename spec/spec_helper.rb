@@ -14,21 +14,21 @@ require 'thor/actions'
 require 'bundler'
 require 'stringio'
 require 'paperclip'
+require 'factory_girl_rails'
 
 $:.unshift '.'  # 1.9.3 quite strict, '.' must be in load path for relative paths to work from here
-    
-datashift_spec_base = File.expand_path( File.join(File.dirname(__FILE__), '..') )
 
-require File.join(datashift_spec_base, 'lib/datashift')
-
+require File.expand_path("../../lib/datashift", __FILE__)
 
 RSpec.configure do |config|
   config.before do
     ARGV.replace []
+    FactoryGirl.reload    # fixes factories not autoloading
   end
 
+  config.include FactoryGirl::Syntax::Methods
+
   shared_context "ActiveRecordTestModelsConnected" do
-    
     before(:all) do
       bundler_setup()
     
@@ -107,10 +107,14 @@ RSpec.configure do |config|
     expect
   end
   
-  def results_clear
-    begin FileUtils.rm_rf(results_path); rescue; end
-    
-    FileUtils.mkdir(results_path) unless File.exists?(results_path);
+  def results_clear( glob = nil )
+    if(glob)
+      begin FileUtils.rm_rf( File.join(results_path, glob) ); rescue; end
+    else
+      begin FileUtils.rm_rf(results_path); rescue; end
+
+      FileUtils.mkdir(results_path) unless File.exists?(results_path);
+    end
   end
   
   def set_logger( name = 'datashift_spec.log')

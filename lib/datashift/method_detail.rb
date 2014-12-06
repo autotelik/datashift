@@ -29,6 +29,11 @@ module DataShift
     end
 
 
+    def self.is_association_type? ( type )
+      association_types_enum.member?( type )
+    end
+
+
     # Klass is the class of the 'parent' object i.e with the associations,
     # For example Product which may have operator orders
     attr_accessor :klass

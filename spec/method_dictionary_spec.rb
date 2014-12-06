@@ -42,7 +42,7 @@ describe 'Method Dictionary' do
     DataShift::MethodDictionary.assignments[Project].should include('value_as_text')
 
     DataShift::MethodDictionary.belongs_to.should_not be_empty
-    DataShift::MethodDictionary.belongs_to[Project].should be_empty
+    expect(DataShift::MethodDictionary.belongs_to[Project]).to include 'user'
 
 
     DataShift::MethodDictionary.column_types.should be_is_a(Hash)

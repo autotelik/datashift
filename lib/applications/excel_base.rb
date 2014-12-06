@@ -8,11 +8,25 @@ module ExcelBase
   end
   
   # Helpers for dealing with Active Record models and collections
-  
-  def ar_to_headers( records )
+  # Specify array of operators/associations to include - possible values are :
+  #     [:assignment, :belongs_to, :has_one, :has_many]
+
+  def ar_to_headers( records, associations = nil )
     return if( !records.first.is_a?(ActiveRecord::Base) || records.empty?)
-      
-    headers = records.first.class.columns.collect( &:name )    
+
+    headers =[]
+
+    if associations
+      details_mgr = MethodDictionary.method_details_mgrs[records.first.class]
+
+      associations.each do |a|
+        details_mgr.get_list(a).each { |md| headers << "#{md.operator}" }
+      end if(details_mgr)
+
+    else
+      headers = records.first.class.columns.collect( &:name )
+    end
+
     set_headers( headers )
   end
       

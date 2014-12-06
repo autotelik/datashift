@@ -5,14 +5,60 @@
 - [Active Record - Import/Export](#Active Record - Import/Export)
 - [License](#license)
 
-Provides tools to shift data between Excel/CSV files and Rails projects and Ruby applications
+Provides tools to shift data between Excel/CSV files and Rails or Ruby applications
 
 Import and export models fully with all associations.
 
 Comprehensive Wiki here : **https://github.com/autotelik/datashift/wiki**
 
-Specific command line tools and full Product loading for Spree E-Commerce 
-now separate gem at [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
+Specific toolsfor Spree E-Commerce now separate gem [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
+
+### Testing
+
+Specs have own Gemfile, so you can specify versions of active record that you want  specs to run against :
+
+Edit
+    ```ruby spec/Gemfile. ```
+
+Then run :
+
+```ruby
+cd spec
+bundle install
+```
+
+###  Changing Versions
+
+A sandbox will be generated in spec/sandbox if no such directory exists.
+
+**N.B Manual Step**
+When changing versions you probably need to **delete this whole directory**  spec/sandbox. Next time you run spree specs it will be auto generated using latest Rails versions
+
+The database are created in sqlite3 and are stored in spec/fixtures. When switching versions, of say Spree,
+ you will probably want to and to clear out old versions and retrigger the migrations
+
+    rm spec/fixtures/*.sqlite
+
+You will probably also want to remove lock file :
+
+    rm spec/Gemfile.lock
+
+First time the sandbox is regenerated, alot of tests may fail,perhaps not everything loads correctly during regeneration process.
+
+Invariably the next run, the specs pass, so a fix is low priority.
+
+#### Run the Tests
+
+** N.B You should run the specs from within the specs directory. **
+```ruby
+    bundle exec rspec -c .
+```
+
+A datashift **log **will be written within **spec/logs**, which hooks into the standard active record logger
+
+      /log/datashift.log
+      spec/logs/datashift_spec.log
+
 
 
 ### Features

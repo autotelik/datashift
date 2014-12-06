@@ -15,16 +15,14 @@
 #
 # => bundle exec thor datashift:export:excel -m <active record class> -r <output_template.xls> -a
 #
-require 'datashift'
+require 'thor_base'
   
-# Note, not DataShift, case sensitive, create namespace for command line : datashift
+# Note, for thor not DataShift, case sensitive, want namespace for cmd line to be : datashift
 module Datashift
 
           
-  class Export < Thor     
-  
-    include DataShift::Logging
-      
+  class Export < DataShift::DSThorBase
+
     desc "excel", "export any active record model (with optional associations)" 
     method_option :model, :aliases => '-m', :required => true, :desc => "The active record model to export"
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
@@ -32,10 +30,8 @@ module Datashift
     method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
     
     def excel()
-     
-      # TODO - We're assuming run from a rails app/top level dir...
-      # ...can we make this more robust ? e.g what about when using active record but not in Rails app, 
-      require File.expand_path('config/environment.rb')
+
+      start_connections
    
       require 'excel_exporter'
 
