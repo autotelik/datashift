@@ -12,8 +12,6 @@ require 'csv_exporter'
 
 describe 'CSV Exporter' do
 
-  include_context "ActiveRecordTestModelsConnected"
-
   before(:all) do
     results_clear( "*.csv" )
   end
@@ -34,7 +32,7 @@ describe 'CSV Exporter' do
     it "should be able to create a new CSV exporter" do
       exporter = DataShift::CsvExporter.new( 'exp_rspec_csv_empty.csv' )
 
-      exporter.should_not be_nil
+      expect(exporter).not_to be_nil
     end
 
     it "should throw if not active record objects" do

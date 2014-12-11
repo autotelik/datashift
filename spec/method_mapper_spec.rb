@@ -12,8 +12,6 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 require 'method_mapper'
 
 describe 'Method Mapper' do
-
-  include_context "ActiveRecordTestModelsConnected"
    
   before(:each) do
     DataShift::MethodDictionary.clear   

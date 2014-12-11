@@ -6,7 +6,6 @@
 # Details::   Simple internal representation of Csv File
 
 require 'csv'
-require 'column_packer'
 
 class CSV
 

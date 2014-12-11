@@ -9,18 +9,25 @@
 # We are not setup as a Rails project so need to mimic an active record database setup so
 # we have some  AR models to test against. Create an in memory database from scratch.
 #
+
+# This file is copied to spec/ when you run 'rails generate rspec:install'
+ENV["RAILS_ENV"] ||= 'test'
+
+
 require 'active_record'
 require 'thor/actions'
 require 'bundler'
 require 'stringio'
 require 'paperclip'
 require 'factory_girl_rails'
+require 'database_cleaner'
 
 $:.unshift '.'  # 1.9.3 quite strict, '.' must be in load path for relative paths to work from here
 
 require File.expand_path("../../lib/datashift", __FILE__)
 
 RSpec.configure do |config|
+
   config.before do
     ARGV.replace []
     FactoryGirl.reload    # fixes factories not autoloading
@@ -28,38 +35,43 @@ RSpec.configure do |config|
 
   config.include FactoryGirl::Syntax::Methods
 
-  shared_context "ActiveRecordTestModelsConnected" do
-    before(:all) do
-      bundler_setup()
-    
-      # load all test model definitions - Project etc  
-      require ifixture_file('test_model_defs')  
-  
-      db_connect( 'test_file' )    # , test_memory, test_mysql
+  config.before(:suite) do
 
-      migrate_up
-    end
+    bundler_setup()
+
+    # load all test model definitions - Project etc
+    require ifixture_file('test_model_defs')
+
+    db_connect( 'test_file' )    # , test_memory, test_mysql
+
+    migrate_up
+
+    DatabaseCleaner.clean_with(:truncation)
+
+    DataShift::MethodDictionary.clear
+
+    DataShift::MethodDictionary.find_operators( Project )
+
+    DataShift::MethodDictionary.build_method_details( Project )
   end
-  
-  
+
+  config.before(:each) do
+    DatabaseCleaner.strategy = :transaction
+
+    DatabaseCleaner.start
+  end
+
+  config.after(:each) do
+    DatabaseCleaner.clean
+  end
+
+=begin
   shared_context "ClearAndPopulateProject" do
-  
     before(:each) do
-      
-      Project.delete_all
-      Owner.delete_all
-      
-      DataShift::MethodDictionary.clear
-    
-      DataShift::MethodDictionary.find_operators( Project )
-    
-      DataShift::MethodDictionary.build_method_details( Project )
-    
-      DataShift::MethodDictionary.for?(Project).should == true
     end
   end
-  
-  
+=end
+
   def run_in(dir )
     puts "RSpec .. running test in path [#{dir}]"
     original_dir = Dir.pwd
@@ -132,7 +144,8 @@ RSpec.configure do |config|
     ENV['BUNDLE_GEMFILE'] = gemfile
     #Bundler.setup
     begin
-      Bundler.setup(:default, :development)
+      #Bundler.setup(:default, :development)
+      Bundler.setup(:default, :test)
     rescue Bundler::BundlerError => e
       $stderr.puts e.message
       $stderr.puts "Run `bundle install` to install missing gems"

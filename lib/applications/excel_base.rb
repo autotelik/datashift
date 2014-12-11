@@ -17,7 +17,7 @@ module ExcelBase
     headers =[]
 
     if associations
-      details_mgr = MethodDictionary.method_details_mgrs[records.first.class]
+      details_mgr = DataShift::MethodDictionary.method_details_mgrs[records.first.class]
 
       associations.each do |a|
         details_mgr.get_list(a).each { |md| headers << "#{md.operator}" }

@@ -9,14 +9,15 @@ gem 'spreadsheet', '1.0.0'
 gem 'paperclip'
 gem 'activesupport'
 
+gem 'database_cleaner'
 
 gem 'factory_girl_rails'
 
-gem 'rspec', '~> 2.9'              # Behavior Driven Development (BDD) for Ruby
-gem 'rspec-core', '~> 2.9'         # RSpec runner and example groups.
-gem 'rspec-expectations', '~> 2.9' # RSpec matchers for should and should_not.
-gem 'rspec-mocks', '~> 2.9'        # RSpec test double framework with stubbing and mocking.
-gem 'rspec-rails', '~> 2.9'        # RSpec version 2.x for Rails version 3.x.
+gem 'rspec'
+gem 'rspec-core'
+gem 'rspec-expectations' # RSpec matchers for should and should_not.
+gem 'rspec-mocks'        # RSpec test double framework with stubbing and mocking.
+gem 'rspec-rails'       # RSpec version 2.x for Rails version 3.x.
 
 # we need both, for JRuby testing of Excel and non JRuby csv
 platform :jruby do

@@ -14,16 +14,12 @@ include DataShift
 
 describe 'Csv Loader' do
 
-  include_context "ActiveRecordTestModelsConnected"
-
   before(:each) do
     DataShift::MethodDictionary.clear
 
     @method_mapper = DataShift::MethodMapper.new
   end
 
-
-  include_context "ClearAndPopulateProject"
 
   before(:each) do
 

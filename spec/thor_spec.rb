@@ -32,7 +32,7 @@ describe 'Thor high level command line tasks' do
 
   it "should list available datashift thor tasks" do
 
-   pending "better understanding of testign thor"
+   skip "better understanding of testign thor"
    
     #x = capture(:stdout){ Thor::Runner.start(["list"]) }
     #x.should start_with("datashift\n--------")
@@ -44,7 +44,7 @@ describe 'Thor high level command line tasks' do
   #  ...  You cannot have more than one Rails::Application
         
   it "should be able to import a model from a complex excel through import CLI" do
-    pending "How to run once rails already initialzed .. error : database configuration does not specify adapter"
+    skip "How to run once rails already initialzed .. error : database configuration does not specify adapter"
     
     x = Thread.new {
       run_in(rails_sandbox()) do
@@ -60,7 +60,7 @@ describe 'Thor high level command line tasks' do
   
   it "should attach Images to a specified Class from a directory" do
    
-    pending "better understanding of testign thor"
+    skip "better understanding of testign thor"
     
     # Owner has_many :digitals of type Digital
     

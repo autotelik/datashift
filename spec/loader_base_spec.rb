@@ -11,10 +11,7 @@ require 'erb'
 
 describe 'LoaderBase' do
 
-  include_context "ActiveRecordTestModelsConnected"
-  
-  include_context "ClearAndPopulateProject"
-  
+
   before(:each) do    
     @loader = DataShift::LoaderBase.new(Project)
   end

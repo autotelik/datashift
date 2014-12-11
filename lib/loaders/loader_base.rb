@@ -240,21 +240,20 @@ module DataShift
     #   
     # We leave it to caller to manage any other aspects or problems in 'rest'
     #
-    def get_find_operator_and_rest(inbound_data)
+    def get_operator_and_data(inbound_data)
         
-      operator, rest = inbound_data.split(Delimiters::name_value_delim) 
+      operator, data = inbound_data.split(Delimiters::name_value_delim)
      
-      logger.info("Parsed inbound data into #{operator} << #{rest}")
+      logger.debug("Parsed - operator : [#{operator}] - data : [#{data}]")
        
       # Find by operator embedded in row takes precedence over operator in column heading
-      if((rest.nil? || rest.empty?) && @populator.current_method_detail.find_by_operator)
-        # row contains 0.99 so rest is effectively operator, and operator is in method details
-        rest = operator
+      if((data.nil? || data.empty?) && @populator.current_method_detail.find_by_operator)
+        # row contains data only so operator becomes header via method details
+        data = operator
         operator = @populator.current_method_detail.find_by_operator
       end
-       
-      #puts "DEBUG: get_find_operator_and_rest: #{operator} => #{rest}"    
-      return operator, rest
+
+      return operator, data
     end
     
     # Process a value string from a column.
@@ -288,7 +287,7 @@ module DataShift
 
           columns.each do |col_str|
             
-            find_operator, col_values = get_find_operator_and_rest( col_str )
+            find_operator, col_values = get_operator_and_data( col_str )
                       
             raise "Cannot perform DB find by #{find_operator}. Expected format key:value" unless(find_operator && col_values)
              
@@ -296,9 +295,8 @@ module DataShift
             
             find_by_values << current_method_detail.find_by_value if(current_method_detail.find_by_value)           
               
-            logger.info("Scan for multiple has_many associations #{find_by_values}")
-            
-            #RAILS 4 current_value = current_method_detail.operator_class.send("find_all_by_#{find_operator}", find_by_values )
+            logger.info("Scanning for existing has_many associations [#{find_by_values}]")
+
             current_value = current_method_detail.operator_class.where(find_operator => find_by_values)
 
             logger.info("Scan result #{current_value.inspect}")

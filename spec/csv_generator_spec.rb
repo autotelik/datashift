@@ -14,12 +14,7 @@ include DataShift
 
 describe 'CSV Generator' do
 
-  include_context "ActiveRecordTestModelsConnected"
-
   before(:all) do
-
-    db_clear()    # todo read up about proper transactional fixtures
-
     results_clear("*.csv")
 
     @klazz = Project

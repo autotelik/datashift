@@ -11,4 +11,8 @@ FactoryGirl.define do
     budget 10000.23
   end
 
+  factory :category do
+    sequence(:reference) { |n| "category_00#{n}" }
+  end
+
 end

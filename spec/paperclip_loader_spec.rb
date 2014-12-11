@@ -13,9 +13,6 @@ Paperclip.options[:command_path] = "/usr/local/bin/"
 
 describe 'PaperClip Bulk Loader' do
 
-  include_context "ActiveRecordTestModelsConnected"
-  
-  include_context "ClearAndPopulateProject"
   
   include DataShift::Logging
   

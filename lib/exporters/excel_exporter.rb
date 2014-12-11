@@ -57,11 +57,15 @@ module DataShift
       excel.write( filename() )
     end
 
-    # Create an Excel file from list of ActiveRecord objects
-    # Specify which associations to export via :with or :exclude
-    # Possible values are : [:assignment, :belongs_to, :has_one, :has_many]
-    #   options[:sheet_name]
-
+    # Create an Excel file from list of ActiveRecord objects, includes relationships
+    #
+    #   Options
+    #
+    #     with:         Specify which association types to export :with
+    #                   Possible values are : [:assignment, :belongs_to, :has_one, :has_many]
+    #     sheet_name    Else uses Class name
+    #     json:         Export association data in single column in JSON format
+    #
     def export_with_associations(klass, records, options = {})
 
       excel = Excel.new
@@ -90,17 +94,17 @@ module DataShift
 
         column = 0
 
-        operators.each do |op_type|
+        operators.each do |op_type|     # belongs_to, has_one, has_many etc
 
           operators_for_type = details_mgr.get_list(op_type)
 
           next if(operators_for_type.nil? || operators_for_type.empty?)
 
-          operators_for_type.each do |md|
-            #puts "Add datum [#{obj.send( md.operator )}]"
+          operators_for_type.each do |md|     # actual associations on obj
+            #puts "#TS exporting for MethodDetail [#{md.inspect}]"
+
             if(MethodDetail.is_association_type?(op_type))
-              puts "Add  [#{md.operator}] - [#{obj.send( md.operator )}]"
-              excel[row, column] = record_to_column( obj.send( md.operator ), to_json: true )    # pack association into single column
+              excel[row, column] = record_to_column( obj.send( md.operator ), options )    # pack association into single column
             else
               excel[row, column] = obj.send( md.operator )
             end
