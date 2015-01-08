@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 
 # DEFINE WHICH VERSIONS ON VITAL GEMS WE WANT TO TEST WITH
 
-gem 'rails', '4.0.4'
+gem 'rails', '4.1.8'
 
 gem 'spreadsheet', '1.0.0'
 gem 'paperclip'

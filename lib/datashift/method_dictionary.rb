@@ -95,8 +95,13 @@ module DataShift
     
     # Build a thorough and usable picture of the operators by building dictionary of our MethodDetail
     # objects which can be used to import/export data to objects of type 'klass'
-    #
-    def self.build_method_details( klass )
+    # Subsequent calls with same class will return existign mapping
+    # To over ride this behaviour, supply :force => true to force  regeneration
+
+    def self.build_method_details( klass, options = {} )
+
+      return method_details_mgrs[klass] if(method_details_mgrs[klass] && !options[:force])
+
       method_details_mgr = MethodDetailsManager.new( klass )
       
       method_details_mgrs[klass] = method_details_mgr

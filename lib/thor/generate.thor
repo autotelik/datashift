@@ -46,16 +46,8 @@ module Datashift
       result = options[:result]
      
       logger.info "Datashift: Start Excel template generation in #{result}"
-            
-      begin
-        # support modules e.g "Spree::Property") 
-        klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
-      rescue NameError => e
-        puts e
-        raise Thor::Error.new("ERROR: No such Model [#{model}] found - check valid model supplied")
-      end
 
-      raise Thor::Error.new("ERROR: No such Model [#{model}] found - check valid model supplied") unless(klass)
+      klass = DataShift::ModelMapper.class_from_string_or_raise( model )
       
       begin
         gen = DataShift::ExcelGenerator.new(result)

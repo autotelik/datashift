@@ -7,7 +7,7 @@
 module DataShift
   
   class DataShiftException < StandardError
-    #
+
     include DataShift::Logging
         
     def initialize( msg )
@@ -24,9 +24,7 @@ module DataShift
 
       DataShift.const_set(name, new_class)
     end
-
   end
-
 
   class NilDataSuppliedError  < DataShiftException
     def initialize( msg )
@@ -50,10 +48,13 @@ module DataShift
   class PathError < StandardError; end
   
   class BadUri < StandardError; end
-   
-  class CreateAttachmentFailed < StandardError; end
 
 end
 
-DataShift::DataShiftException.generate( "SaveError")
+
 DataShift::DataShiftException.generate( "ConnectionError")
+DataShift::DataShiftException.generate( "CreateAttachmentFailed")
+DataShift::DataShiftException.generate( "FileNotFound")
+DataShift::DataShiftException.generate( "NoSuchClassError")
+DataShift::DataShiftException.generate( "MissingConfigOptionError")
+DataShift::DataShiftException.generate( "SaveError")

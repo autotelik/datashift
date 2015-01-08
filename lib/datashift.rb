@@ -79,7 +79,7 @@ module DataShift
       end
     end
 
-    require_libs = %w{ datashift loaders helpers }
+    require_libs = %w{ datashift loaders generators helpers }
 
     require_libs.each do |base|
       Dir[File.join(library_path, base, '*.rb')].each do |rb|

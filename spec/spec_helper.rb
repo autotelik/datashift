@@ -13,7 +13,6 @@
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 ENV["RAILS_ENV"] ||= 'test'
 
-
 require 'active_record'
 require 'thor/actions'
 require 'bundler'
@@ -37,7 +36,11 @@ RSpec.configure do |config|
 
   config.before(:suite) do
 
+    FileUtils.mkdir_p(results_path()) unless File.exists?(results_path)
+
     bundler_setup()
+
+    rails_sandbox
 
     # load all test model definitions - Project etc
     require ifixture_file('test_model_defs')
@@ -50,6 +53,7 @@ RSpec.configure do |config|
 
     DataShift::MethodDictionary.clear
 
+    #TODO this is bad here - remove
     DataShift::MethodDictionary.find_operators( Project )
 
     DataShift::MethodDictionary.build_method_details( Project )
@@ -72,7 +76,7 @@ RSpec.configure do |config|
   end
 =end
 
-  def run_in(dir )
+  def run_in(dir)
     puts "RSpec .. running test in path [#{dir}]"
     original_dir = Dir.pwd
     begin
@@ -97,7 +101,11 @@ RSpec.configure do |config|
   end  
   
   alias :silence :capture
-  
+
+  def rspec_datashift_root()
+    File.expand_path("../../", __FILE__)
+  end
+
   def fixtures_path()
     File.expand_path(File.dirname(__FILE__) + '/fixtures')
   end
@@ -167,7 +175,9 @@ RSpec.configure do |config|
     # Some active record stuff seems to rely on the RAILS_ENV being set ?
 
     ENV['RAILS_ENV'] = env
- 
+
+    puts "Load DB Config for Env : #{env}"
+
     # We have multiple schemas and hence connections tested in single spec directory   
     db_clear_connections
      
@@ -176,12 +186,9 @@ RSpec.configure do |config|
     configuration[:database_configuration] = YAML::load( ERB.new( IO.read(database_yml_path) ).result )
     db = configuration[:database_configuration][ env ]
 
-    puts "Setting DB Config:", db.inspect
-    ActiveRecord::Base.configurations = db
-    
     set_logger
     
-    puts "Connecting to DB"
+    puts "Connecting to DB", db.inspect
     
     ActiveRecord::Base.establish_connection( db )
   end
@@ -207,37 +214,39 @@ RSpec.configure do |config|
 
   def rails_sandbox( force = false)
     
-    rails_sandbox = rails_sandbox_path
+    sandbox = rails_sandbox_path
      
-    if(force == true && File.exists?(rails_sandbox))
-      FileUtils::rm_rf(rails_sandbox)
+    if(force == true && File.exists?(sandbox))
+      FileUtils::rm_rf(sandbox)
     end
     
-    unless(File.exists?(rails_sandbox))
-      
-      puts "Creating new Rails sandbox : ", File.expand_path( "#{rails_sandbox}/.." )
-    
-      run_in( File.expand_path("#{rails_sandbox}/..") ) do |path|
+    unless(File.exists?(sandbox))
+
+      sandbox_exe_path =  File.expand_path( "#{sandbox}/.." )
+
+      puts "Creating new Rails sandbox in : #{sandbox_exe_path}"
+
+      run_in( sandbox_exe_path ) do |path|
           
-        name = File.basename(DataShift::sandbox)
-      
-        puts "Creating new Rails sandbox in : #{path}"
+        name = File.basename(rails_sandbox_path)
+
         system('rails new ' + name)
           
         puts "Copying over models :", Dir.glob(File.join(fixtures_path, 'models', '*.rb')).inspect
         
         FileUtils::cp_r( Dir.glob(File.join(fixtures_path, 'models', '*.rb')), File.join(name, 'app/models'))
         
-        migrations = File.expand_path('../../spec/db/migrate', __FILE__)
+        migrations = File.expand_path(File.join(fixtures_path, 'db', 'migrate'), __FILE__)
         
-        FileUtils::cp_r( migrations, File.join(rails_sandbox, 'db'))
+        FileUtils::cp_r( migrations, File.join(rails_sandbox_path, 'db'))
         
         puts "Running db:migrate"
-        
-        run_in(rails_sandbox) { system('bundle exec rake db:migrate') }
       end
+
+      run_in(rails_sandbox_path) { system('bundle exec rake db:migrate') }
+
     end
-    rails_sandbox
+    return sandbox
   end
   
 end
