@@ -60,23 +60,8 @@ pkg
 #
 .DS_Store
 
-# For TextMate
-#*.tmproj
-#tmtags
-
-# For emacs:
-#*~
-#\#*
-#.\#*
-
-# For vim:
 *.swp
-
-# For redcar:
-#.redcar
-
-# For rubinius:
-#*.rbc
+.idea
 /nbproject/private/
 
 # Additional
