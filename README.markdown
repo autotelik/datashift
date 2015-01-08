@@ -1,105 +1,20 @@
 ##  DataShift 
 
+- [Installation](#Installation)
 - [Features](#features)
-- [Installation](#installation)
-- [Active Record - Import/Export](#Active Record - Import/Export)
+- [Testing](#testing)
 - [License](#license)
 
-Provides tools to shift data between Excel/CSV files and Rails or Ruby applications
-
-Import and export models fully with all associations.
+Shift data between Excel/CSV files and Rails or Ruby applications
 
 Comprehensive Wiki here : **https://github.com/autotelik/datashift/wiki**
 
-Specific toolsfor Spree E-Commerce now separate gem [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
-
-### Testing
-
-Specs have own Gemfile, so you can specify versions of active record that you want  specs to run against :
-
-Edit
-    ```ruby spec/Gemfile. ```
-
-Then run :
-
-```ruby
-cd spec
-bundle install
-```
-
-###  Changing Versions
-
-A sandbox will be generated in spec/sandbox if no such directory exists.
-
-**N.B Manual Step**
-When changing versions you probably need to **delete this whole directory**  spec/sandbox. Next time you run spree specs it will be auto generated using latest Rails versions
-
-The database are created in sqlite3 and are stored in spec/fixtures. When switching versions, of say Spree,
- you will probably want to and to clear out old versions and retrigger the migrations
-
-    rm spec/fixtures/*.sqlite
-
-You will probably also want to remove lock file :
-
-    rm spec/Gemfile.lock
-
-First time the sandbox is regenerated, alot of tests may fail,perhaps not everything loads correctly during regeneration process.
-
-Invariably the next run, the specs pass, so a fix is low priority.
-
-#### Run the Tests
-
-** N.B You should run the specs from within the specs directory. **
-```ruby
-    bundle exec rspec -c .
-```
-
-A datashift **log **will be written within **spec/logs**, which hooks into the standard active record logger
-
-      /log/datashift.log
-      spec/logs/datashift_spec.log
-
-
-
-### Features
-
-Import and Export ActiveRecord models direct to CSV or Excel/OpenOffice (.xls) (JRuby, 1.8.7, REE, 1.9.3)
-
-You can select which associations to include and for import, set configurable defaults or over rides.
-
-Create, parse and use Excel/OpenOffice (.xls) documents dynamically from Ruby (JRuby, 1.8.7, REE, 1.9.3)
-
-Generate a sample template with headers only.
-
-Export template and populate with model data 
-
-Bulk import tools for Paperclip attachments.
-
-Easily extendable Loader functionality to deal with non trivial import cases, such
-as complex association lookups.
-
-High level rake and thor command line tasks for import/export provided.
-
-Specific loaders and command line tasks provided out the box for **Spree E-Commerce**, 
-enabling import/export of Product data including creating Variants with different
- count on hands and all associations including Properties/Taxons/OptionTypes and Images.
-
-Loaders can be configured via YAML with over ride values, default values and mandatory column settings.
-
-Many example Spreadsheets/CSV files in spec/fixtures, fully documented with comments for each column.
-
-## Installation
+### <a name="Installation">Installation</a>
 
 Add gem 'datashift' to your Gemfile/bundle or use ```gem install```
 
-```ruby 
-gem 'datashift' 
-```
-
-For Spree support also add :
-
-```ruby 
-gem 'datashift_spree'
+```ruby
+gem 'datashift'
 ```
 
 To use :
@@ -110,7 +25,7 @@ To use the Thor command line applications, pull in the tasks.
 
 Generally the easiest way is to, create a high level .thor file in your Rails root directory
 
-    e.g mysite.thor  
+    e.g mysite.thor
 
 Edit the file and add the following to pull in the thor commands :
 
@@ -135,6 +50,33 @@ To get usage information use thor help <command>, for example
 
 To use Excel OLE and MS Excel are NOT required.
 
+Specific tools for Spree E-Commerce now separate gem [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
+
+
+#### <a name="Features">Features</a>
+
+Import and Export ActiveRecord models direct to CSV or Excel/OpenOffice (.xls)
+
+You can select which associations to include and for import, set configurable defaults or over rides.
+
+Create, parse and use Excel/OpenOffice (.xls) documents dynamically from Ruby
+
+Generate a sample template with headers only.
+
+Export template and populate with model data 
+
+Bulk import tools for Paperclip attachments.
+
+Easily extendable Loader functionality to deal with non trivial import cases, such
+as complex association lookups.
+
+High level rake and thor command line tasks for import/export provided.
+
+
+Loaders can be configured via YAML with over ride values, default values and mandatory column settings.
+
+Many example Spreadsheets/CSV files in spec/fixtures, fully documented with comments for each column.
+
 Features a common Excel interface over both our own wrapper around Apache POI (JRuby) and spreadsheet gem (all main Rubies) 
 
 This means you can switch seamlessly between the two libraries, and if required drop down to make use of advanced
@@ -148,7 +90,7 @@ Guards are provided, and used internally, for mixed Ruby setups. Can be used lik
         ..do something with speadsheet
     end
 
-## Active Record - Import/Export
+#### Active Record - Import/Export
 
 Provides high level tasks for importing data via ActiveRecord models into a DB,
  from various sources, currently csv or .xls files (Excel/Open Office)
@@ -191,7 +133,7 @@ complicated lookup requirements. Spree is the prime Open Source e-commerce proje
 and the specific loaders and tasks support loading Spree Products, and associated data such as Variants,
 OptionTypes, Properties and Images.
 
-## Template Generation and Export
+#### Template Generation and Export
 
 Template generation tasks can be used to export a model's definition as column headings to CSV or .xls.
 These can be provided to developers or business users, as a template for data collection and then loading.
@@ -201,7 +143,7 @@ Export tasks can be used to export of a model's definition and any existing data
 This data can be exported directly to CSV or Excel/OpenOffice spreadsheets.
 
 
-## Example Spreadsheets
+#### Example Spreadsheets
     
   A number of example Spreadsheets with headers and comments, can be found in the spec/fixtures directory.
 
@@ -211,7 +153,7 @@ This data can be exported directly to CSV or Excel/OpenOffice spreadsheets.
   Column headings contain comments with full descriptions and instructions on syntax. 
 
 
-## Excel
+#### Excel
 
 
   MS Excel itself does not need to be installed.
@@ -227,7 +169,7 @@ This data can be exported directly to CSV or Excel/OpenOffice spreadsheets.
   without converting first to CSV or YAML.
 
 
-### Associations
+#### Associations
 
 To perform a lookup for an associated model, the primary column(s) must be supplied, along with required select values for those columns.
 
@@ -245,7 +187,7 @@ During loading, a call to find_all_by_reference will be made, picking up the 2 c
  and our Project model will contain those two i.e project.categories = [category_002,category_003]
 
 
-## TODO
+### TODO
 
   - Smart sorting of column processing order ....
 
@@ -254,14 +196,62 @@ During loading, a call to find_all_by_reference will be made, picking up the 2 c
   - Look at implementing import/export API using something like https://github.com/ianwhite/orm_adapter 
     rather than active record, so we can support additional ORMs
 
-    
+
+### <a name="Testing">Testing</a>
+    Specs have own Gemfile, so you can specify versions of active record that you want  specs to run against :
+
+    Edit
+        ```ruby spec/Gemfile. ```
+
+    Then run :
+
+    ```ruby
+    cd spec
+    bundle install
+    ```
+
+####  Changing Versions
+
+    A sandbox will be generated in spec/sandbox if no such directory exists.
+
+    **N.B Manual Step**
+    When changing versions you probably need to **delete this whole directory**  spec/sandbox. Next time you run spree specs it will be auto generated using latest Rails versions
+
+    The database are created in sqlite3 and are stored in spec/fixtures. When switching versions, of say Spree,
+     you will probably want to and to clear out old versions and retrigger the migrations
+
+        rm spec/fixtures/*.sqlite
+
+    You will probably also want to remove lock file :
+
+        rm spec/Gemfile.lock
+
+    First time the sandbox is regenerated, alot of tests may fail,perhaps not everything loads correctly during regeneration process.
+
+    Invariably the next run, the specs pass, so a fix is low priority.
+
+#### Run the Tests
+
+    ** N.B You should run the specs from within the specs directory. **
+    ```ruby
+        bundle exec rspec -c .
+    ```
+
+    A datashift **log **will be written within **spec/logs**, which hooks into the standard active record logger
+
+          /log/datashift.log
+          spec/logs/datashift_spec.log
+
+
+
+
 ## License
 
-Copyright:: (c) Autotelik Media Ltd 2011
+Copyright:: (c) Autotelik Media Ltd 2015
 
 Author ::   Tom Statter
 
-Date ::     Dec 2011
+Date ::     Dec 2015
 
 The MIT License
 
