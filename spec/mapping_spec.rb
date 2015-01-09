@@ -28,7 +28,7 @@ describe 'Mapping Services' do
 
     mapper = DataShift::MappingGenerator.new(f)
 
-    mapper.generate()
+    mapper.generate(nil, {:file => f} )
 
     expect(File.exists?(f)).to be true
   end
@@ -40,7 +40,7 @@ describe 'Mapping Services' do
 
     mapper = DataShift::MappingGenerator.new(f)
 
-    mapper.generate(nil, {:name => "MyDataShiftMappings"} )
+    mapper.generate(nil,  {:file => f} )
 
     expect(File.exists?(f)).to be true
   end
@@ -51,7 +51,7 @@ describe 'Mapping Services' do
 
     mapper = DataShift::MappingGenerator.new(f)
 
-    mapper.generate( Project )
+    mapper.generate( Project,  {:file => f} )
 
     expect(File.exists?(f)).to be true
   end
@@ -68,7 +68,7 @@ describe 'Mapping Services' do
 
     mapper = DataShift::MappingGenerator.new(f)
 
-    mapper.generate(Project, {:name => "ProjectMappings"} )
+    mapper.generate(Project, {:file => f} )
 
     expect(File.exists?(f)).to be true
 
@@ -95,7 +95,7 @@ describe 'Mapping Services' do
 
     mapper = DataShift::MappingGenerator.new(f)
 
-    mapper.generate_from_excel(ifixture_file('SimpleProjects.xls') )
+    mapper.generate_from_excel(ifixture_file('SimpleProjects.xls'), :file => f )
 
   end
 

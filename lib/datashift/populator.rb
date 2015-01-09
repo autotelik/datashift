@@ -226,17 +226,19 @@ module DataShift
  
             # puts "DEBUG : insistent_belongs_to => #{method_detail.operator_class.respond_to?( "find_by_#{x}" )}"
              
-            next unless method_detail.operator_class.respond_to?( "find_by_#{x}" )
-            item = method_detail.operator_class.send("find_or_create_by_#{x}", value)
-            
+            next unless method_detail.operator_class.respond_to?("where")
+
+            item = method_detail.operator_class.where(x => value).first_or_create
+
             if(item)
               record.send(operator + '=', item)
               break
             end
           rescue => e
-            logger.error("Attempt to find  associated object failed for #{method_detail}")
+            logger.error(e.inspect)
+            logger.error("Failed attempting to find belongs_to for #{method_detail.pp}")
             if(x == Populator::insistent_method_list.last)
-              raise "Populator failed to assign [#{value}] via moperator #{operator}" unless value.nil?
+              raise "Populator failed to assign [#{value}] via operator #{operator}" unless value.nil?
             end
           end
         end
@@ -306,17 +308,18 @@ module DataShift
       
       #puts load_object_class.new.to_yaml
       
-      logger.info("Read Datashift loading config: #{data.inspect}")
+      logger.info("Setting Populator defaults: #{data.inspect}")
       
       if(data[load_object_class.name])
-        
-        logger.info("Assigning defaults and over rides from config")
-        
+
         deflts = data[load_object_class.name]['datashift_defaults']
         default_values.merge!(deflts) if deflts
+
+        logger.info("Set Populator default_values: #{default_values.inspect}")
         
         ovrides = data[load_object_class.name]['datashift_overrides']
         override_values.merge!(ovrides) if ovrides
+        logger.info("Set Populator overrides: #{override_values.inspect}")
       end
       
 

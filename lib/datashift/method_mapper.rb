@@ -88,7 +88,9 @@ module DataShift
       @method_details, @missing_methods = [], []
     
       columns.each_with_index do |col_data, col_index|
-        
+
+        puts "DEBUG: Mapping column [#{col_data}] to model"
+
         raw_col_data = col_data.to_s
         
         if(raw_col_data.nil? or raw_col_data.empty?)
@@ -102,7 +104,7 @@ module DataShift
         md = MethodDictionary::find_method_detail(klass, raw_col_name)
                
         if(md.nil?)          
-          #puts "DEBUG: Check Forced\n #{forced}.include?(#{raw_col_name}) #{forced.include?(raw_col_name.downcase)}"
+          puts "DEBUG: Check Forced\n #{forced}.include?(#{raw_col_name}) #{forced.include?(raw_col_name.downcase)}"
          
           if(options[:include_all] || forced.include?(raw_col_name.downcase))
             md = MethodDictionary::add(klass, raw_col_name)
@@ -120,10 +122,11 @@ module DataShift
             find_by, find_value = lookup.split(MethodMapper::column_delim) 
             md.find_by_value    = find_value 
             md.find_by_operator = find_by # TODO and klass.x.respond_to?(active_record_helper))
-            #puts "DEBUG: Method Detail #{md.name};#{md.operator} : find_by_operator #{md.find_by_operator}"
+            puts "DEBUG: Method Detail #{md.name};#{md.operator} : find_by_operator #{md.find_by_operator}"
           end
         else
           # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
+          logger.warn("No operator or association found for Header #{raw_col_name}")
           @missing_methods << raw_col_name
         end
         

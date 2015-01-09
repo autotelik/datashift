@@ -56,7 +56,7 @@ module DataShift
       
       # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
       # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
-      populate_method_mapper_from_headers( excel_headers, options )
+      populate_method_mapper_from_headers(excel_headers, options )
       
       # currently pointless num_rows rubbish i.e inaccurate!
       #logger.info "Excel Loader processing #{@sheet.num_rows} rows"

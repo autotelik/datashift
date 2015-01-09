@@ -18,9 +18,9 @@ module Datashift
 
 
   class Mapping < Thor
-         
+
     include DataShift::Logging
-      
+
     desc "template", "Generate a simple mappings template\nInput is treated as the *source* unless otherwise directed"
 
     method_option :model, :aliases => '-m', :desc => "The active record model to use for mappings"
@@ -30,9 +30,9 @@ module Datashift
     method_option :excel_as_dest, :aliases => '-f', :type=> :boolean, :desc => "Set excel headers as destination"
 
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
-    
+
     def template()
-     
+
       # TODO - We're assuming run from a rails app/top level dir...
       # ...can we make this more robust ? e.g what about when using active record but not in Rails app, 
       require File.expand_path('config/environment.rb')
@@ -50,13 +50,16 @@ module Datashift
 
       model = options[:model]
 
-      mapper.generate(model, options) unless(model.nil? && options[:excel])
+      mappings = String.new
 
-      mapper.generate_from_excel(options[:excel], options) if(options[:excel])
+      mappings += mapper.generate(model, options) unless(model.nil? && options[:excel])
+
+      mappings += mapper.generate_from_excel(options[:excel], options) if(options[:excel])
+
+      File.open(result, 'w') { |f| f << mappings }
 
     end
-    
-    
+
   end
 
 end
