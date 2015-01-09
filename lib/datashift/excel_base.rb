@@ -6,7 +6,39 @@ module ExcelBase
   def sanitize_sheet_name( name )
     name.gsub(/[\[\]:\*\/\\\?]/, '')
   end
-  
+
+
+  # TODO -revisit/refactor - maybe this should just be on the base class Excel
+  # so you can call direct like excel.parse_headers(options[:header_row])
+  # rather than
+  #   sheet = excel.worksheet( sheet_number )
+  #   parse_headers(sheet, options[:header_row])
+
+  attr_accessor :header_row_index, :excel_headers
+
+  def parse_headers( sheet,  header_row = 0 )
+
+    @header_row_index = header_row || 0
+
+    header_row = sheet.row(header_row_index)
+
+    raise MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{header_row_index} contains headers" unless(header_row)
+
+    @excel_headers = []
+
+    # TODO - make more robust - currently end on first empty column
+    # There is no actual max columns in Excel .. you will run out of memory though at some point
+    (0..1024).each do |column|
+      cell = header_row[column]
+      break unless cell
+      header = "#{cell.to_s}".strip
+      break if header.empty?
+      @excel_headers << header
+    end
+
+    @excel_headers
+  end
+
   # Helpers for dealing with Active Record models and collections
   # Specify array of operators/associations to include - possible values are :
   #     [:assignment, :belongs_to, :has_one, :has_many]

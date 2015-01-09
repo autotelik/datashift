@@ -21,10 +21,13 @@ module Datashift
          
     include DataShift::Logging
       
-    desc "template", "generate a simple mappings template"
+    desc "template", "Generate a simple mappings template\nInput is treated as the *source* unless otherwise directed"
 
-    method_option :model, :aliases => '-m', :desc => "The active record model to export"
+    method_option :model, :aliases => '-m', :desc => "The active record model to use for mappings"
     method_option :model_as_dest, :aliases => '-d', :type=> :boolean, :desc => "Set model attributes as destination"
+
+    method_option :excel, :aliases => '-e', :desc => "The excel spreadsheet to use for mappings"
+    method_option :excel_as_dest, :aliases => '-f', :type=> :boolean, :desc => "Set excel headers as destination"
 
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
     
@@ -34,7 +37,6 @@ module Datashift
       # ...can we make this more robust ? e.g what about when using active record but not in Rails app, 
       require File.expand_path('config/environment.rb')
 
-      model = options[:model]
       result = options[:result]
 
       if(File.directory?(result))
@@ -46,7 +48,11 @@ module Datashift
 
       mapper = DataShift::MappingGenerator.new(result)
 
-      mapper.generate(model, options)
+      model = options[:model]
+
+      mapper.generate(model, options) unless(model.nil? && options[:excel])
+
+      mapper.generate_from_excel(options[:excel], options) if(options[:excel])
 
     end
     

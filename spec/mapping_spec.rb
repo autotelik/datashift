@@ -89,6 +89,16 @@ describe 'Mapping Services' do
 
   end
 
+  it "should be able to generate a mapping from_excel" do
+
+    f = result_file("mapping_service_excel.yaml")
+
+    mapper = DataShift::MappingGenerator.new(f)
+
+    mapper.generate_from_excel(ifixture_file('SimpleProjects.xls') )
+
+  end
+
   it "should provide tasks to generate a mapping doc" do
 
     opts  = {:model =>  "Project", :result => "#{results_path}"}
@@ -101,5 +111,7 @@ describe 'Mapping Services' do
       expect(output).to include("Output generated")
     end
   end
+
+
 
 end
