@@ -60,7 +60,7 @@ module DataShift
             
             begin
               # First assign any default values for columns not included in parsed_file
-              process_missing_columns_with_defaults
+              process_defaults
 
               # TODO - Smart sorting of column processing order ....
               # Does not currently ensure mandatory columns (for valid?) processed first but model needs saving

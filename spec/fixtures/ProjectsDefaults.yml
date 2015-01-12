@@ -9,8 +9,9 @@
 Project: 
   datashift_defaults: 
     value_as_string: "Default Project Value"
-  category: reference:category_002
-  
+    category: reference:category_002
+    value_as_datetime:  <%= Time.now.to_s(:db) %>
+
   datashift_overrides: 
     value_as_double: 99.23546
   

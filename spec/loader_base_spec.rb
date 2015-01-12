@@ -11,10 +11,11 @@ require 'erb'
 
 describe 'LoaderBase' do
 
-
   before(:each) do    
     @loader = DataShift::LoaderBase.new(Project)
   end
+
+  let(:loader) {DataShift::LoaderBase.new(Project)  }
   
   it "should be able to create a new loader and load object" do
     @loader.load_object.should_not be_nil
@@ -119,5 +120,47 @@ describe 'LoaderBase' do
     
     @loader.failed_count.should == failed_count + 1
   end
+
+
+  it "should be able to set a plain default value" do
+
+    loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
+
+    loader.process_defaults
+
+    expect(loader.load_object.value_as_string).to eq "Default Project Value"
+
+  end
+
+  it "should be able to set an association default value", :fail => true do
+
+    skip "pending more work on Populator to make this advanced lookup style work"
+
+    loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
+
+    loader.process_defaults
+
+    expect(loader.load_object.categories.first.reference).to eq "category_002"
+
+  end
+
+
+  it "should be able to set a eval default value" do
+
+    loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
+
+    puts loader.load_object.inspect
+    puts loader.load_object.value_as_datetime.inspect
+
+    loader.process_defaults
+
+    puts loader.load_object.inspect
+    puts loader.load_object.value_as_datetime.inspect
+
+    expect(loader.load_object.value_as_datetime).to be
+    expect(loader.load_object.value_as_datetime).to be <= Time.now.to_s(:db)
+  end
+
+
   
 end

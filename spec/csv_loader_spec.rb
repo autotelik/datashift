@@ -187,7 +187,6 @@ describe 'Csv Loader' do
 
     loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
 
-
     loader.perform_load( ifixture_file('csv/ProjectsSingleCategories.csv') )
 
     p = Project.find_by_title( '099' )

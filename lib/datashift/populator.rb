@@ -283,8 +283,9 @@ module DataShift
     #
     def configure_from(load_object_class, yaml_file)
 
-      data = YAML::load( File.open(yaml_file) )
-      
+      data = YAML::load( ERB.new( IO.read(yaml_file) ).result )
+
+
       # TODO - MOVE DEFAULTS TO OWN MODULE 
       # decorate the loading class with the defaults/ove rides to manage itself
       #   IDEAS .....

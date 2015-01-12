@@ -175,16 +175,16 @@ module DataShift
 
 
     #TODO - Move code into Populator
-    # Process any defaults user has specified, for those columns that are not included in
-    # the incoming import format
-    def process_missing_columns_with_defaults()
-
+    # Process columns with a default value specified
+    def process_defaults()
+   
       @populator.default_values.each do |dname, dv|
 
         method_detail = MethodDictionary.find_method_detail( load_object_class, dname )
 
         logger.debug "Processing default value #{dname} => #{dv}"
         @populator.prepare_and_assign(method_detail, @load_object, dv) if(method_detail)
+        #prepare_and_assign(method_detail, record, value)
       end
     end
     
