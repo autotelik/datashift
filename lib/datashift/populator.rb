@@ -145,9 +145,7 @@ module DataShift
         insistent_belongs_to(current_method_detail, record, current_value)
 
       elsif( current_method_detail.operator_for(:has_many) )
-        
-        #puts "DEBUG : HAS_MANY [#{current_value.class.name.include?(operator.classify)}] [#{ModelMapper.class_from_string(current_value.class.name)}]" unless(current_value.is_a?(Array))
-     
+
         # The include? check is best I can come up with right now .. to handle module/namespaces
         # TODO - can we determine the real class type of an association
         # e.g given a association taxons, which operator.classify gives us Taxon, but actually it's Spree::Taxon

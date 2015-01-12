@@ -27,3 +27,9 @@ class Project < ActiveRecord::Base
   end
   
 end
+
+
+module DataShift
+  class AClassInAModule
+  end
+end

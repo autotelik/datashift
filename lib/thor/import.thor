@@ -44,19 +44,13 @@ module Datashift
       require 'excel_loader'
 
       model = options[:model]
-      begin
-        # support modules e.g "Spree::Property") 
-        klass = ModelMapper::class_from_string(model) 
-      rescue NameError
-        raise "ERROR: No such AR Model found - check valid model supplied with -m <Class>"
-      end
 
-      raise "ERROR: No such AR Model found - check valid model supplied with -m <Class>" if(klass.nil?) 
-      
+      klass = DataShift::ModelMapper.class_from_string_or_raise( model )
+
       if(options[:loader])
         begin
      
-          loader_klass = ModelMapper::class_from_string(options[:loader])  
+          loader_klass = DataShift::ModelMapper::class_from_string(options[:loader])
 
           loader = loader_klass.new(klass)
 
@@ -96,15 +90,8 @@ module Datashift
       require 'csv_loader'
 
       model = options[:model]
-      begin
-        # support modules e.g "Spree::Property") 
-        klass = ModelMapper::class_from_string(model) 
-      rescue NameError
-        raise "ERROR: No such AR Model found - check valid model supplied with -m <Class>"
-      end
 
-      raise "ERROR: No such AR Model found - check valid model supplied with -m <Class>" if(klass.nil?) 
-      
+      klass = DataShift::ModelMapper.class_from_string_or_raise( model )
 
       loader = DataShift::CsvLoader.new(klass)
       

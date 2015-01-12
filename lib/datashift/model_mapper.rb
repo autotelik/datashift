@@ -10,10 +10,10 @@ module DataShift
         ModelMapper::class_from_string(klass)  #Kernel.const_get(model)
       rescue NameError => e
         puts e
-        raise Thor::Error.new("ERROR: No such Class [#{ruby_klass}] found ")
+        raise Thor::Error.new("ERROR: No such Class [#{klass}] found - check valid model supplied")
       end
 
-      raise NoSuchClassError.new("ERROR: No such Model [#{ruby_klass}] found - check valid model supplied") unless(ruby_klass)
+      raise NoSuchClassError.new("ERROR: No such Model [#{klass}] found - check valid model supplied") unless(ruby_klass)
 
       ruby_klass
     end
