@@ -184,7 +184,6 @@ module DataShift
 
         logger.debug "Processing default value #{dname} => #{dv}"
         @populator.prepare_and_assign(method_detail, @load_object, dv) if(method_detail)
-        #prepare_and_assign(method_detail, record, value)
       end
     end
     

@@ -189,23 +189,20 @@ module DataShift
     def insistent_assignment(record, value, operator)
       
       op = operator + '=' unless(operator.include?('='))
-    
-      puts "DEBUG: insistent_assignment : #{op} => #{value} (#{value.class})"
-            
+
       begin
         record.send(op, value)
       rescue => e
-        puts "ERROR in insistent_assignment: #{e.inspect}"
-         
+
         Populator::insistent_method_list.each do |f|
           begin
             record.send(op, value.send( f) )
             break
           rescue => e
-            puts "DEBUG: insistent_assignment: #{e.inspect}"
             if f == Populator::insistent_method_list.last
-              puts  "I'm sorry I have failed to assign [#{value}] to #{operator}"
-              raise "I'm sorry I have failed to assign [#{value}] to #{operator}" unless value.nil?
+              logger.error(e.inspect)
+              logger.error("Failed to assign [#{value}] via operator #{operator}")
+              raise "Failed to assign [#{value}] to #{operator}" unless value.nil?
             end
           end
         end
@@ -247,7 +244,7 @@ module DataShift
     end
     
     def assignment( operator, record, value )
-      #puts "DEBUG: RECORD CLASS #{record.class}"
+
       op = operator + '=' unless(operator.include?('='))
     
       begin
@@ -258,7 +255,6 @@ module DataShift
             record.send(op, value.send( f) )
             break
           rescue => e
-            #puts "DEBUG: insistent_assignment: #{e.inspect}"
             if f == Populator::insistent_method_list.last
               puts  "I'm sorry I have failed to assign [#{value}] to #{operator}"
               raise "I'm sorry I have failed to assign [#{value}] to #{operator}" unless value.nil?

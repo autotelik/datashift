@@ -48,9 +48,15 @@ module DataShift
     # specified may not be exactly as required e.g handles capitalisation, white space, _ etc
     # 
     # The header can also contain the fields to use in lookups, separated with MethodMapper::column_delim
-    # 
-    #   product:name or project:title  or user:email
-    # 
+    # For example specify that lookups on has_one association called 'product', be performed using name'
+    #   product:name
+    #
+    # The header can also contain a default value for the lookup field, again separated with MethodMapper::column_delim
+    #
+    # For example specify lookups on assoc called 'user', be performed using 'email' == 'test@blah.com'
+    #
+    #   user:email:test@blah.com
+    #
     # Returns: Array of matching method_details, including nils for non matched items
     # 
     # N.B Columns that could not be mapped are left in the array as NIL
@@ -59,15 +65,14 @@ module DataShift
     # 
     # Other callers can simply call compact on the results if the index not important.
     # 
-    # The Methoddetails instance will contain a pointer to the column index from which it was mapped.
-    # 
+    # The MethodDetails instance will contain a pointer to the column index from which it was mapped.
     # 
     # Options:
     # 
-    #   [:force_inclusion]  : List of columns that do not map to any operator but should be includeed in processing.
+    #   [:force_inclusion]  : List of columns that do not map to any operator but should be included in processing.
     #                     
     #       This provides the opportunity for loaders to provide specific methods to handle these fields
-    #       when no direct operator is available on the modle or it's associations
+    #       when no direct operator is available on the model or it's associations
     #       
     #   [:include_all]      : Include all headers in processing - takes precedence of :force_inclusion
     #
@@ -89,8 +94,6 @@ module DataShift
     
       columns.each_with_index do |col_data, col_index|
 
-        puts "DEBUG: Mapping column [#{col_data}] to model"
-
         raw_col_data = col_data.to_s
         
         if(raw_col_data.nil? or raw_col_data.empty?)
@@ -99,12 +102,12 @@ module DataShift
           next
         end
         
-        raw_col_name, lookup = raw_col_data.split(MethodMapper::column_delim) 
+        raw_col_name, lookup = raw_col_data.split(MethodMapper::column_delim)
          
         md = MethodDictionary::find_method_detail(klass, raw_col_name)
                
         if(md.nil?)          
-          puts "DEBUG: Check Forced\n #{forced}.include?(#{raw_col_name}) #{forced.include?(raw_col_name.downcase)}"
+          #puts "DEBUG: Check Forced\n #{forced}.include?(#{raw_col_name}) #{forced.include?(raw_col_name.downcase)}"
          
           if(options[:include_all] || forced.include?(raw_col_name.downcase))
             md = MethodDictionary::add(klass, raw_col_name)
@@ -114,15 +117,21 @@ module DataShift
         if(md)       
           md.name = raw_col_name
           md.column_index = col_index
-          
-          # TODO we should check that the assoc on klass responds to the specified
-          # lookup key now (nice n early)
-          # active_record_helper = "find_by_#{lookup}"
+
           if(lookup)
-            find_by, find_value = lookup.split(MethodMapper::column_delim) 
-            md.find_by_value    = find_value 
-            md.find_by_operator = find_by # TODO and klass.x.respond_to?(active_record_helper))
-            puts "DEBUG: Method Detail #{md.name};#{md.operator} : find_by_operator #{md.find_by_operator}"
+            find_by, md.find_by_value = lookup.split(MethodMapper::column_delim)
+
+            # Example :
+            # User (klass) has_one project (operator) lookup by name  (find_by_operator) == 'My Best Project' (find_by_value)
+            # User.project.where( :name => 'My Best Project')
+
+            if(klass.respond_to?(md.operator) && klass.new.send(md.operator).respond_to?(find_by) )
+              md.find_by_operator = find_by
+              logger.debug("Complex Lookup specified for #{md.name};#{md.operator} : find_by operator #{md.find_by_operator} : find_by value #{md.find_by_value}")
+            else
+              logger.warn("Complex Lookup specified not found on operator or association #{klass}.#{md}")
+            end
+
           end
         else
           # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
