@@ -89,7 +89,7 @@ module DataShift
         raw_col_name, lookup = raw_col_data.split(Delimiters::column_delim)
          
         md = MethodDictionary::find_method_detail(klass, raw_col_name)
-               
+
         if(md.nil?)
           if(options[:include_all] || forced.include?(raw_col_name.downcase))
             logger.debug("Operator #{raw_col_name} not found but forced inclusion operative")
@@ -127,7 +127,9 @@ module DataShift
           logger.warn("No operator or association found for Header #{raw_col_name}")
           @missing_methods << raw_col_name
         end
-        
+
+        logger.debug("Column [#{col_data}] (#{col_index}) - mapped to :\n#{md.inspect}")
+
         @method_details << md
         
       end

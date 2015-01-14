@@ -86,7 +86,7 @@ module DataShift
               
         # Rails 4 - query no longer returns an array
         if( value.is_a? ActiveRecord::Relation )
-          @current_value = value.to_a 
+          @current_value = value.to_a
         elsif( value.is_a? Array )
           @current_value = value
         else
@@ -216,9 +216,8 @@ module DataShift
 
       operator = method_detail.operator
 
-      logger.debug("insistent_belongs_to => #{method_detail.inspect}")
-
       if( value.class == method_detail.operator_class)
+        logger.info("Populator assigning #{value} to belongs_to association #{operator}")
         record.send(operator) << value
       else
 
@@ -228,7 +227,7 @@ module DataShift
           item = method_detail.operator_class.where(method_detail.find_by_operator => value).first_or_create
 
           if(item)
-            logger.debug("Set belongs_to association [#{operator}] to #{item.inspect}")
+            logger.info("Populator assigning #{item.inspect} to belongs_to association #{operator}")
             record.send(operator + '=', item)
           else
             logger.error("Could not find or create [#{value}] for belongs_to association [#{operator}]")
@@ -240,13 +239,12 @@ module DataShift
           Populator::insistent_find_by_list.each do |x|
             begin
 
-              logger.debug("insistent_belongs_to => #{method_detail.ooperator_class} where(#{x} => #{value})")
-
               next unless method_detail.operator_class.respond_to?("where")
 
               item = method_detail.operator_class.where(x => value).first_or_create
 
               if(item)
+                logger.info("Populator assigning #{item.inspect} to belongs_to association #{operator}")
                 record.send(operator + '=', item)
                 break
               end

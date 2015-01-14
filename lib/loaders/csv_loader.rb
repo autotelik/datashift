@@ -106,8 +106,8 @@ module DataShift
             unless(save)
               failure
               if(load_object)
-                load_object.validate if(load_object.errors.empty?)  # seen situatiuons where save fails but errors empty ?
-                logger.error "Failed to save row [#{@current_row}]"
+                load_object.valid? if(load_object.errors.empty?)  # seen situations where save fails but errors empty ?
+                logger.error "Failed to save row [#{i}] [#{@current_row}]"
                 logger.error "Rails errors : #{load_object.errors.full_messages.inspect}"
               end
             else

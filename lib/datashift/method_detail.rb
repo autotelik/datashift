@@ -62,7 +62,7 @@ module DataShift
 
     def initialize(client_name, klass, operator, type, col_types = {}, find_by_operator = nil, find_by_value = nil )
       @klass, @name = klass, client_name
-      @find_by_operator = find_by_operator || operator
+      @find_by_operator = find_by_operator
       @find_by_value = find_by_value
 
       if( MethodDetail::supported_types_enum.member?(type.to_sym) )
