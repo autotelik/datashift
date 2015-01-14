@@ -38,7 +38,7 @@ module DataShift
     def self.class_from_string( str )
       begin
         ModelMapper::const_get_from_string(str.to_s)  #Kernel.const_get(model)
-      rescue NameError => e
+      rescue
         return nil
       end
     end

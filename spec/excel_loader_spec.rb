@@ -44,7 +44,7 @@ describe 'Excel Loader' do
       loader.loaded_count.should == (Project.count - count)
     end
 
-    it "should process multiple associations from single column", :fail => true do
+    it "should process multiple associations from single column" do
 
       DataShift::MethodDictionary.find_operators( Category )
 
@@ -53,8 +53,6 @@ describe 'Excel Loader' do
       expect(Project.find_by_title('001')).to be_nil
 
       count = Project.count
-
-      puts "COUNT #{count}"
 
       loader = ExcelLoader.new(Project)
 
@@ -67,9 +65,7 @@ describe 'Excel Loader' do
       {'001' => 2, '002' => 1, '003' => 3, '099' => 0 }.each do|title, expected|
         project = Project.find_by_title(title)
 
-        puts project.categories.inspect
-
-        project.should_not be_nil
+        expect(project).to_not be_nil
 
         expect(project.categories.size).to eq expected
       end

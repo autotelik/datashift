@@ -75,7 +75,7 @@ describe 'Populator' do
     
   end
 
-  it "should process a DSL string into a real hash", :fail=> true do
+  it "should process a DSL string into a real hash" do
 
     str1  = "{:name => 'the_fox' }"
     
@@ -103,7 +103,7 @@ describe 'Populator' do
     
   end
   
-  it "should process a string value against an assigment instance method", :fail=> true do
+  it "should process a string value against an assigment instance method" do
    
     value = 'Get up Lazy fox {:name => \'the_fox\' }'
 

@@ -42,7 +42,7 @@ describe 'CSV Exporter' do
     end
 
 
-    it "should export collection of model objects to .xls file", :fail => true do
+    it "should export collection of model objects to .xls file" do
 
       expected = result_file('exp_project_collection_spec.csv')
 

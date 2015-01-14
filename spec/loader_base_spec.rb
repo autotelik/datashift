@@ -132,7 +132,7 @@ describe 'LoaderBase' do
 
   end
 
-  it "should be able to set an association default value", :fail => true do
+  it "should be able to set an association default value" do
 
     skip "pending more work on Populator to make this advanced lookup style work"
 

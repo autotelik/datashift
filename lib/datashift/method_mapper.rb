@@ -23,22 +23,6 @@ module DataShift
     
     attr_accessor :method_details, :missing_methods
   
-    
-    # As well as just the column name, support embedding find operators for that column
-    # in the heading .. i.e Column header => 'BlogPosts:user_id' 
-    # ... association has many BlogPosts selected via find_by_user_id
-    # 
-    # in the heading .. i.e Column header => 'BlogPosts:user_name:John Smith' 
-    # ... association has many BlogPosts selected via find_by_user_name("John Smith")
-    #
-    def self.column_delim
-      @column_delim ||= ':'
-      @column_delim
-    end
-
-    def self.set_column_delim(x)  @column_delim = x; end
-    
-  
     def initialize
       @method_details = []
     end
@@ -47,11 +31,11 @@ module DataShift
     # Handles method names as defined by a user, from spreadsheets or file headers where the names
     # specified may not be exactly as required e.g handles capitalisation, white space, _ etc
     # 
-    # The header can also contain the fields to use in lookups, separated with MethodMapper::column_delim
+    # The header can also contain the fields to use in lookups, separated with Delimiters ::column_delim
     # For example specify that lookups on has_one association called 'product', be performed using name'
     #   product:name
     #
-    # The header can also contain a default value for the lookup field, again separated with MethodMapper::column_delim
+    # The header can also contain a default value for the lookup field, again separated with Delimiters ::column_delim
     #
     # For example specify lookups on assoc called 'user', be performed using 'email' == 'test@blah.com'
     #
@@ -102,14 +86,13 @@ module DataShift
           next
         end
         
-        raw_col_name, lookup = raw_col_data.split(MethodMapper::column_delim)
+        raw_col_name, lookup = raw_col_data.split(Delimiters::column_delim)
          
         md = MethodDictionary::find_method_detail(klass, raw_col_name)
                
-        if(md.nil?)          
-          #puts "DEBUG: Check Forced\n #{forced}.include?(#{raw_col_name}) #{forced.include?(raw_col_name.downcase)}"
-         
+        if(md.nil?)
           if(options[:include_all] || forced.include?(raw_col_name.downcase))
+            logger.debug("Operator #{raw_col_name} not found but forced inclusion operative")
             md = MethodDictionary::add(klass, raw_col_name)
           end
         end
@@ -119,19 +102,25 @@ module DataShift
           md.column_index = col_index
 
           if(lookup)
-            find_by, md.find_by_value = lookup.split(MethodMapper::column_delim)
+            logger.info("Lookup data [#{lookup}] - specified for association #{md.operator}")
+
+            md.find_by_operator, md.find_by_value = lookup.split(Delimiters::name_value_delim)
 
             # Example :
-            # User (klass) has_one project (operator) lookup by name  (find_by_operator) == 'My Best Project' (find_by_value)
-            # User.project.where( :name => 'My Best Project')
+            # Project:name:My Best Project
+            #   User (klass) has_one project (operator) lookup by name  (find_by_operator) == 'My Best Project' (find_by_value)
+            #   User.project.where( :name => 'My Best Project')
 
-            if(klass.respond_to?(md.operator) && klass.new.send(md.operator).respond_to?(find_by) )
-              md.find_by_operator = find_by
-              logger.debug("Complex Lookup specified for #{md.name};#{md.operator} : find_by operator #{md.find_by_operator} : find_by value #{md.find_by_value}")
+            # check the finder method name is a valid field on the actual association class
+
+            if(klass.reflect_on_association(md.operator) &&
+               klass.reflect_on_association(md.operator).klass.new.respond_to?(md.find_by_operator))
+              logger.info("Complex Lookup specified for [#{md.operator}] : on field [#{md.find_by_operator}] (optional value [#{md.find_by_value}])")
             else
-              logger.warn("Complex Lookup specified not found on operator or association #{klass}.#{md}")
+              logger.warn("Find by operator [#{md.find_by_operator}] Not Found on association [#{md.operator}] on Class #{klass.name} (#{md.inspect})")
+              logger.warn("Check column (#{md.column_index}) heading - e.g association field names are case sensitive")
+              md.find_by_operator, md.find_by_value = nil, nil
             end
-
           end
         else
           # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil

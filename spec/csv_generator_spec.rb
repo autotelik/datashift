@@ -106,7 +106,7 @@ describe 'CSV Generator' do
   end
 
 
-  it "should enable us to exclude certain associations in template .csv file ", :fail => true do
+  it "should enable us to exclude certain associations in template .csv file " do
 
     expected = result_file('project_plus_some_assoc_template_spec.csv')
 
@@ -134,7 +134,7 @@ describe 'CSV Generator' do
   end
 
 
-   it "should enable us to remove standard rails feilds from template .csv file ", :fail => true do
+   it "should enable us to remove standard rails feilds from template .csv file " do
 
     expected = result_file('project_plus_some_assoc_template_spec.csv')
 

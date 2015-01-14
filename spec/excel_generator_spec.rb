@@ -122,7 +122,7 @@ describe 'Excel Generator' do
   end
   
     
-  it "should enable us to exclude certain associations in template .xls file ", :fail => true do
+  it "should enable us to exclude certain associations in template .xls file " do
 
     expected = result_file('gen_project_plus_some_assoc_template_spec.xls')
 
@@ -155,7 +155,7 @@ describe 'Excel Generator' do
   end
     
     
-   it "should enable us to remove standard rails feilds from template .xls file ", :fail => true do
+   it "should enable us to remove standard rails feilds from template .xls file " do
 
     expected = result_file('gen_project_plus_some_assoc_template_spec.xls')
 

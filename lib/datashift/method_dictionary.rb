@@ -10,7 +10,8 @@ module DataShift
   class MethodDictionary
 
     include DataShift::Logging
-   
+    extend DataShift::Logging
+
     # Return true if dictionary has  been populated for  klass
     def self.for?(klass)
       any = has_many[klass] || belongs_to[klass] || has_one[klass] || assignments[klass]
@@ -26,6 +27,8 @@ module DataShift
     def self.find_operators(klass, options = {} )
       
       raise "Cannot find operators supplied klass nil #{klass}" if(klass.nil?)
+
+      logger.debug("MethodDictionary - building operators information for #{klass}")
 
       # Find the has_many associations which can be populated via <<
       if( options[:reload] || has_many[klass].nil? )
@@ -63,8 +66,6 @@ module DataShift
         
         assignments[klass].uniq!
 
-        #puts "\nDEBUG: DICT Setters\n#{assignments[klass]}\n"
-        
         assignments[klass].each do |assign|
           column_types[klass] ||= {}
           column_def = klass.columns.find{ |col| col.name == assign }

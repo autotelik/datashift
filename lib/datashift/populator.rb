@@ -86,7 +86,9 @@ module DataShift
               
         # Rails 4 - query no longer returns an array
         if( value.is_a? ActiveRecord::Relation )
-          @current_value = value.to_a
+          @current_value = value.to_a 
+        elsif( value.is_a? Array )
+          @current_value = value
         else
           @current_value = value.to_s
           
@@ -123,7 +125,9 @@ module DataShift
       
       return @current_value, @current_attribute_hash
     end
-    
+
+    # Main client hook
+
     def prepare_and_assign(method_detail, record, value)
       
       prepare_data(method_detail, value) 
@@ -138,7 +142,7 @@ module DataShift
        
       operator = current_method_detail.operator
 
-      logger.debug("Populator assigning data via #{current_method_detail.operator}")
+      logger.debug("Populator assigning data [#{current_value}] via #{current_method_detail.operator} (#{current_method_detail.operator_type})")
               
       if( current_method_detail.operator_for(:belongs_to) )
  
@@ -211,29 +215,47 @@ module DataShift
     def insistent_belongs_to(method_detail, record, value )
 
       operator = method_detail.operator
-      
+
+      logger.debug("insistent_belongs_to => #{method_detail.inspect}")
+
       if( value.class == method_detail.operator_class)
         record.send(operator) << value
       else
 
-        Populator::insistent_find_by_list.each do |x|
-          begin
- 
-            # puts "DEBUG : insistent_belongs_to => #{method_detail.operator_class.respond_to?( "find_by_#{x}" )}"
-             
-            next unless method_detail.operator_class.respond_to?("where")
+        # TODO - DRY all this
+        if(method_detail.find_by_operator)
 
-            item = method_detail.operator_class.where(x => value).first_or_create
+          item = method_detail.operator_class.where(method_detail.find_by_operator => value).first_or_create
 
-            if(item)
-              record.send(operator + '=', item)
-              break
-            end
-          rescue => e
-            logger.error(e.inspect)
-            logger.error("Failed attempting to find belongs_to for #{method_detail.pp}")
-            if(x == Populator::insistent_method_list.last)
-              raise "Populator failed to assign [#{value}] via operator #{operator}" unless value.nil?
+          if(item)
+            logger.debug("Set belongs_to association [#{operator}] to #{item.inspect}")
+            record.send(operator + '=', item)
+          else
+            logger.error("Could not find or create [#{value}] for belongs_to association [#{operator}]")
+            raise CouldNotAssignAssociation.new "Populator failed to assign [#{value}] to belongs_to association [#{operator}]"
+          end
+
+        else
+          #try the default field names
+          Populator::insistent_find_by_list.each do |x|
+            begin
+
+              logger.debug("insistent_belongs_to => #{method_detail.ooperator_class} where(#{x} => #{value})")
+
+              next unless method_detail.operator_class.respond_to?("where")
+
+              item = method_detail.operator_class.where(x => value).first_or_create
+
+              if(item)
+                record.send(operator + '=', item)
+                break
+              end
+            rescue => e
+              logger.error(e.inspect)
+              logger.error("Failed attempting to find belongs_to for #{method_detail.pp}")
+              if(x == Populator::insistent_method_list.last)
+                raise CouldNotAssignAssociation.new "Populator failed to assign [#{value}] to belongs_to association [#{operator}]" unless value.nil?
+              end
             end
           end
         end

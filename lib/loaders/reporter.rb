@@ -25,7 +25,7 @@ module DataShift
     end
 
     def add_loaded_object(object)
-      @loaded_objects << object unless(object.nil? || @loaded_objects.include?(object))
+      @loaded_objects << object.id unless(object.nil? || @loaded_objects.include?(object))
     end
     
     def add_failed_object(object)
@@ -38,7 +38,7 @@ module DataShift
       puts "\nProcessing Summary Report"
       puts ">>>>>>>>>>>>>>>>>>>>>>>>>\n"
       puts "Processed total of #{processed_object_count} #{processed_object_count > 1 ? 'entries' : 'entry'}"
-      puts "#{loaded_objects.size} objects were succesfully processed."
+      puts "#{loaded_objects.size} objects were successfully processed."
        
       puts "There were NO failures." if failed_objects.empty?
         

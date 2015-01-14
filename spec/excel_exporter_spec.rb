@@ -92,7 +92,7 @@ describe 'Excel Exporter' do
   end
 
 
-  it "should export a model and associations to .xls file", :fail => true do
+  it "should export a model and associations to .xls file" do
 
     create( :project_user )
     create_list(:project, 7)
@@ -128,7 +128,7 @@ describe 'Excel Exporter' do
     expect( excel[1, inx] ).to include '10000.23'
   end
 
-  it "should export a model and has_many assocs to .xls file", :fail => true do
+  it "should export a model and has_many assocs to .xls file" do
 
     create( :project_user )
     create( :project_with_milestones )
@@ -165,7 +165,7 @@ describe 'Excel Exporter' do
   end
 
 
-  it "should export a model and  assocs in json to .xls file", :fail => true do
+  it "should export a model and  assocs in json to .xls file" do
 
     create( :project_user )
     create( :project_with_milestones )

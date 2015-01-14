@@ -53,6 +53,7 @@ end
 
 
 DataShift::DataShiftException.generate( "ConnectionError")
+DataShift::DataShiftException.generate( "CouldNotAssignAssociation")
 DataShift::DataShiftException.generate( "CreateAttachmentFailed")
 DataShift::DataShiftException.generate( "FileNotFound")
 DataShift::DataShiftException.generate( "NoSuchClassError")

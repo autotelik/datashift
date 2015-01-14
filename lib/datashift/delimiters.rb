@@ -15,6 +15,22 @@ module DataShift
     # I made these class methods, feeling delims are 'global'
     # I dunno now if thats good pattern or not
 
+
+    # As well as just the column name, support embedding find operators for that column
+    # in the heading .. i.e Column header => 'BlogPosts:user_id'
+    # ... association has many BlogPosts selected via find_by_user_id
+    #
+    # in the heading .. i.e Column header => 'BlogPosts:user_name:John Smith'
+    # ... association has many BlogPosts selected via find_by_user_name("John Smith")
+    #
+    def self.column_delim
+      @column_delim ||= ':'
+      @column_delim
+    end
+
+    def self.set_column_delim(x)  @column_delim = x; end
+
+
     # Support multiple associations being added to a base object to be specified in a single column.
     # 
     # Entry represents the association to find via supplied name, value to use in the lookup.

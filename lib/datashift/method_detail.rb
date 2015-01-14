@@ -124,64 +124,17 @@ module DataShift
 
     private
 
-    # Attempt to find the associated object via id, name, title ....
-    def insistent_belongs_to( record, value )
-
-      if( value.class == operator_class)
-        record.send(operator) << value
-      else
-
-        @@insistent_find_by_list.each do |x|
-          begin
-            next unless operator_class.respond_to?( "find_by_#{x}" )
-            item = operator_class.send( "find_by_#{x}", value)
-            if(item)
-              record.send(operator + '=', item)
-              break
-            end
-          rescue => e
-            logger.error "Failed to match belongs_to association #{value}"
-            puts "ERROR: #{e.inspect}"
-            if(x == Populator::insistent_method_list.last)
-              raise "I'm sorry I have failed to assign [#{value}] to #{@assignment}" unless value.nil?
-            end
-          end
-        end
-      end
-    end
-
-    # Attempt to find the associated object via id, name, title ....
-    def insistent_has_many( record, value )
-
-      if( value.class == operator_class)
-        record.send(operator) << value
-      else
-        @@insistent_find_by_list.each do |x|
-          begin
-            item = operator_class.send( "find_by_#{x}", value)
-            if(item)
-              record.send(operator) << item
-              break
-            end
-          rescue => e
-            puts "ERROR: #{e.inspect}"
-            if(x == Populator::insistent_method_list.last)
-              raise "I'm sorry I have failed to assign [#{value}] to #{operator}" unless value.nil?
-            end
-          end
-        end
-      end
-    end
-    
-    private
   
     # Return the operator's expected class, if can be derived, else nil
-    # TODO this should call operator_class_name once we work out how to handle namespaced classes
-    # in that method
+    # TODO rspec- can reflect_on_association ever actually fail & do we ever need to try ourselves (badly)
     def get_operator_class()
       
       if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))
-   
+
+        result = klass.reflect_on_association(operator)
+
+        return result.klass if(result)
+
         result = ModelMapper::class_from_string(operator.classify)
         
         if(result.nil?)
@@ -192,8 +145,7 @@ module DataShift
 
             result = ModelMapper::const_get_from_string("#{first}::#{operator.classify}")
           rescue => e
-            logger.error(e.inspect)
-            logger.error("Could not derive Class Name for #{@operator_type} (#{@operator_type})")
+            logger.error("Failed to derive Class for #{operator} (#{@operator_type} - #{e.inspect}")
           end
         end
         
