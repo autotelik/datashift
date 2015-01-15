@@ -27,7 +27,7 @@ module Datashift
     method_option :model_as_dest, :aliases => '-d', :type=> :boolean, :desc => "Set model attributes as destination"
 
     method_option :excel, :aliases => '-e', :desc => "The excel spreadsheet to use for mappings"
-    method_option :excel_as_dest, :aliases => '-f', :type=> :boolean, :desc => "Set excel headers as destination"
+    method_option :excel_as_dest, :aliases => '-a', :type=> :boolean, :desc => "Set excel headers as destination"
 
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
 

@@ -43,7 +43,7 @@ module DataShift
     attr_accessor :column_index
   
     # The rel col type from the DB
-    attr_reader :col_type, :current_value
+    attr_reader :col_type
 
     # The :operator that can be called to assign  e.g orders or Products.new.orders << Order.new
     # 
@@ -51,6 +51,7 @@ module DataShift
     attr_reader :operator, :operator_type
 
     # TODO make it a list/primary keys
+    # Additional helpers for where clauses
     attr_accessor :find_by_operator, :find_by_value
         
     # Store the raw (client supplied) name against the active record  klass(model).
@@ -124,7 +125,6 @@ module DataShift
 
     private
 
-  
     # Return the operator's expected class, if can be derived, else nil
     # TODO rspec- can reflect_on_association ever actually fail & do we ever need to try ourselves (badly)
     def get_operator_class()

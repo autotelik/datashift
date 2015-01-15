@@ -86,7 +86,7 @@ module DataShift
           next
         end
         
-        raw_col_name, lookup = raw_col_data.split(Delimiters::column_delim)
+        raw_col_name, where_field, where_value, *data = raw_col_data.split(Delimiters::column_delim)
          
         md = MethodDictionary::find_method_detail(klass, raw_col_name)
 
@@ -97,14 +97,18 @@ module DataShift
           end
         end
         
-        if(md)       
+        if(md)
+
           md.name = raw_col_name
           md.column_index = col_index
 
-          if(lookup)
-            logger.info("Lookup data [#{lookup}] - specified for association #{md.operator}")
+          # put data back as string for now - leave it to clients to decide what to do with it later
+          Populator::set_header_default_data(md.operator, data.join(Delimiters::column_delim))
 
-            md.find_by_operator, md.find_by_value = lookup.split(Delimiters::name_value_delim)
+          if(where_field)
+            logger.info("Lookup query field [#{where_field}] - specified for association #{md.operator}")
+
+            md.find_by_value = where_value
 
             # Example :
             # Project:name:My Best Project
@@ -114,12 +118,13 @@ module DataShift
             # check the finder method name is a valid field on the actual association class
 
             if(klass.reflect_on_association(md.operator) &&
-               klass.reflect_on_association(md.operator).klass.new.respond_to?(md.find_by_operator))
+               klass.reflect_on_association(md.operator).klass.new.respond_to?(where_field))
+              md.find_by_operator = where_field
               logger.info("Complex Lookup specified for [#{md.operator}] : on field [#{md.find_by_operator}] (optional value [#{md.find_by_value}])")
             else
-              logger.warn("Find by operator [#{md.find_by_operator}] Not Found on association [#{md.operator}] on Class #{klass.name} (#{md.inspect})")
+              logger.warn("Find by operator [#{where_field}] Not Found on association [#{md.operator}] on Class #{klass.name} (#{md.inspect})")
               logger.warn("Check column (#{md.column_index}) heading - e.g association field names are case sensitive")
-              md.find_by_operator, md.find_by_value = nil, nil
+              # TODO - maybe derived loaders etc want this data for another purpose - should we stash elsewhere ?
             end
           end
         else

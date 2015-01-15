@@ -27,8 +27,19 @@ module DataShift
     def self.insistent_find_by_list
       @insistent_find_by_list ||= [:name, :title, :id]
     end
-    
-    
+
+
+    # Default data embedded in column headings - so effectively apply globally
+    # to teh whole column - hence class methods
+    def self.set_header_default_data(operator, data )
+      header_default_data[operator] = data
+    end
+
+    def self.header_default_data
+      @header_default_data ||= {}
+    end
+
+
     attr_reader :current_value, :original_value_before_override
     attr_reader :current_col_type
     
@@ -83,11 +94,10 @@ module DataShift
      
       begin
         @prepare_data_const_regexp ||= Regexp.new( Delimiters::attribute_list_start + ".*" + Delimiters::attribute_list_end)
-              
-        # Rails 4 - query no longer returns an array
-        if( value.is_a? ActiveRecord::Relation )
+
+        if( value.is_a? ActiveRecord::Relation ) # Rails 4 - query no longer returns an array
           @current_value = value.to_a
-        elsif( value.is_a? Array )
+        elsif( value.class.ancestors.include?(ActiveRecord::Base) || value.is_a?(Array))
           @current_value = value
         else
           @current_value = value.to_s
@@ -104,15 +114,22 @@ module DataShift
         @current_attribute_hash ||= {}
        
         @current_method_detail = method_detail
-      
+
         @current_col_type = @current_method_detail.col_type
       
         operator = method_detail.operator
-      
-        override_value(operator)
-        
-        if((value.nil? || value.to_s.empty?) && default_value(operator))
-          @current_value = default_value(operator)
+
+        if(has_override?(operator))
+          override_value(operator)      # takes precedence over anything else
+        else
+          # if no value check for a default
+          if(default_value(operator))
+            @current_value = default_value(operator)
+          elsif(Populator::header_default_data[operator])
+            @current_value = Populator::header_default_data[operator].to_s
+          elsif(method_detail.find_by_value)
+            @current_value = method_detail.find_by_value
+          end if(value.nil? || value.to_s.empty?)
         end
       
         @current_value = "#{prefix(operator)}#{@current_value}" if(prefix(operator))
@@ -121,6 +138,7 @@ module DataShift
       rescue => e
         logger.error("populator failed to prepare data supplied for operator #{method_detail.operator}")
         logger.error("populator stacktrace: #{e.backtrace.join('\\n')}")
+        raise DataProcessingError.new("opulator failed to prepare data #{value} for operator #{method_detail.operator}")
       end
       
       return @current_value, @current_attribute_hash
@@ -133,7 +151,6 @@ module DataShift
       prepare_data(method_detail, value) 
        
       assign(record)
-      
     end
     
     def assign(record)
@@ -155,10 +172,11 @@ module DataShift
         # e.g given a association taxons, which operator.classify gives us Taxon, but actually it's Spree::Taxon
         # so how do we get from 'taxons' to Spree::Taxons ? .. check if further info in reflect_on_all_associations
 
-        if(current_value.is_a?(Array) || current_value.class.name.include?(operator.classify))
+        begin #if(current_value.is_a?(Array) || current_value.class.name.include?(operator.classify))
           record.send(operator) << current_value
-        else
-          logger.error "Cannot assign to has_many operator [#{operator}] - #{current_value} (#{current_value.class})"
+        rescue => e
+          logger.error e.inspect
+          logger.error "Cannot assign #{current_value.inspect} (#{current_value.class}) to has_many association [#{operator}] "
         end
 
       elsif( current_method_detail.operator_for(:has_one) )
@@ -169,7 +187,6 @@ module DataShift
         else
           logger.error("ERROR #{current_value.class} - Not expected type for has_one #{operator} - cannot assign")
           # TODO -  Not expected type - maybe try to look it up somehow ?"
-          #insistent_has_many(record, @current_value)
         end
 
       elsif( current_method_detail.operator_for(:assignment) && current_col_type)
@@ -299,7 +316,6 @@ module DataShift
 
       data = YAML::load( ERB.new( IO.read(yaml_file) ).result )
 
-
       # TODO - MOVE DEFAULTS TO OWN MODULE 
       # decorate the loading class with the defaults/ove rides to manage itself
       #   IDEAS .....
@@ -357,7 +373,11 @@ module DataShift
         @current_value = @override_values[operator]
       end
     end
-    
+
+    def has_override?( operator )
+        return override_values.has_key?(operator)
+    end
+
     # Set a default value to be used to populate Model.operator
     # Generally defaults will be used when no value supplied.
     def set_default_value(operator, value )
@@ -372,7 +392,11 @@ module DataShift
     def default_value(operator)
       default_values[operator]
     end
-    
+
+    # Return the default value for supplied operator
+    def default_value(operator)
+      default_values[operator]
+    end
 
     def set_prefix( operator, value )
       prefixes[operator] = value

@@ -227,9 +227,11 @@ module DataShift
     #
     def configure_from(yaml_file)
 
-      data = YAML::load( File.open(yaml_file) )
-      
-      logger.info("Read Datashift loading config: #{data.inspect}")
+      logger.info("Reading Datashift loader config from: #{yaml_file.inspect}")
+
+      data = YAML::load( ERB.new( IO.read(yaml_file) ).result )
+
+      logger.info("Read Datashift config: #{data.inspect}")
         
       if(data['LoaderBase'])
         @config.merge!(data['LoaderBase'])
@@ -244,9 +246,12 @@ module DataShift
     end
     
     
-    # Return the find_by operator and the rest of the (row,columns) data e.g
+    # Return the find_by (where) operator, if specified, otherwise use the heading operator.
+    # i.e where operator embedded in row ,takes precedence over operator in column heading
+    #
+    # Treat rest of the node as the value to use in the where clause e.g
     #   price:0.99
-    # 
+    #
     # Column headings will be used, if the row only contains data e.g
     #   0.99
     #   
@@ -254,18 +259,29 @@ module DataShift
     #
     def get_operator_and_data(inbound_data)
 
-      operator, data = inbound_data.split(Delimiters::name_value_delim)
+      where_operator, data = inbound_data.split(Delimiters::name_value_delim)
+
+      md = @populator.current_method_detail
 
       # Find by operator embedded in row takes precedence over operator in column heading
-      if((data.nil? || data.empty?) && @populator.current_method_detail.find_by_operator)
-        # row contains data only so operator becomes header via method details
-        data = operator
-        operator = @populator.current_method_detail.find_by_operator
+      if((data.nil? || data.empty?) && md.find_by_operator)
+        if((where_operator.nil? || where_operator.empty?))  #colum completely empty - check for defaults
+          if(md.find_by_value)
+           data = md.find_by_value
+          else
+            data = Populator::header_default_data(md.operator)
+          end
+        else
+          data = where_operator
+        end
+
+        # row contains single entry only so take operator from header via method details
+        where_operator = md.find_by_operator
       end
 
-      logger.debug("LoaderBase - get_operator_and_data - [#{operator}] - [#{data}]")
+      logger.debug("LoaderBase - get_operator_and_data - [#{where_operator}] - [#{data}]")
 
-      return operator, data
+      return where_operator, data
     end
     
     # Process a value string from a column.
@@ -348,7 +364,7 @@ module DataShift
       else
         # Nice n simple straight assignment to a column variable
         #puts "INFO: LOADER BASE processing #{method_detail.name}"
-        @populator.assign(@load_object)
+        @populator.assign(load_object)
       end
     end
     
@@ -433,7 +449,7 @@ module DataShift
     # Supported Syntax :
     #  assoc_find_name:value | assoc2_find_name:value | etc
     def get_each_assoc
-      @populator.current_value.to_s.split( Delimiters::multi_assoc_delim )
+      current_value = @populator.current_value.to_s.split( Delimiters::multi_assoc_delim )
     end
       
     private

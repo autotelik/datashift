@@ -93,7 +93,7 @@ describe 'Csv Loader' do
 
   end
 
-  it "should process multiple associations with lookup specified in column from excel spreedsheet", :fail => true do
+  it "should process multiple associations with lookup specified in column from excel spreedsheet" do
 
     loader = CsvLoader.new(Project)
 
@@ -182,7 +182,7 @@ describe 'Csv Loader' do
     p.value_as_string.should == 'myprefixDemo stringmy post fix'
   end
 
-  it "should provide facility to set default values via YAML configuration", :csv => true do
+  it "should provide facility to set default values via YAML configuration" do
     loader = CsvLoader.new(Project)
 
     loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
@@ -197,7 +197,7 @@ describe 'Csv Loader' do
   end
 
 
-  it "should provide facility to over ride values via YAML configuration", :csv => true do
+  it "should provide facility to over ride values via YAML configuration", :fail => true do
     loader = CsvLoader.new(Project)
 
     loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
