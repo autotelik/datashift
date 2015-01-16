@@ -50,11 +50,11 @@ module DataShift
       #         :attach_to_field => avatar    : User.avatar = attachment
       #         
       #       
-      def initialize(attachment_klazz, find_operators = true, attachment = nil, options = {})
+      def initialize(attachment_klazz, attachment = nil, options = {})
         
         init_from_options( options )
  
-        super( attachment_klazz, find_operators, attachment, options.dup )
+        super( attachment_klazz, attachment, options.dup )
          
         puts "Attachment Class is #{load_object_class}" if(@verbose)
        
@@ -153,8 +153,8 @@ module DataShift
           # Check if attachment must have an associated record
           if(record)
             reset()
-          
-            create_attachment(@load_object_class, file_name, record, attach_to_field, options)
+
+            create_paperclip_attachment(@load_object_class, file_name, record, attach_to_field, options)
    
             puts "Added Attachment #{File.basename(file_name)} to #{record.send(attach_to_find_by_field)}(id : #{record.id})" if(@verbose)
           end

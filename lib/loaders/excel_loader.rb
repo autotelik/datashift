@@ -23,6 +23,32 @@ module DataShift
 
     include ExcelBase
 
+    attr_accessor :excel
+
+    def start_excel( file_name, options = {} )
+
+      @excel = Excel.new
+
+      excel.open(file_name)
+
+      puts "\n\n\nLoading from Excel file: #{file_name}"
+      logger.info("\nStarting Load from Excel file: #{file_name}")
+
+      sheet_number = options[:sheet_number] || 0
+
+      @sheet = excel.worksheet( sheet_number )
+
+      parse_headers(@sheet, options[:header_row])
+
+      raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{header_row_index} contains headers" if(excel_headers.empty?)
+
+      # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
+      # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
+      populate_method_mapper_from_headers(excel_headers, options )
+
+      reporter.reset
+    end
+
     #  Options:
     #   [:dummy]           : Perform a dummy run - attempt to load everything but then roll back
     #  
@@ -39,7 +65,8 @@ module DataShift
     def perform_excel_load( file_name, options = {} )
 
       raise MissingHeadersError, "Minimum row for Headers is 0 - passed #{options[:header_row]}" if(options[:header_row] && options[:header_row].to_i < 0)
-           
+
+=begin
       @excel = Excel.new
 
       @excel.open(file_name)
@@ -57,12 +84,9 @@ module DataShift
       # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
       # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
       populate_method_mapper_from_headers(excel_headers, options )
-      
-      # currently pointless num_rows rubbish i.e inaccurate!
-      #logger.info "Excel Loader processing #{@sheet.num_rows} rows"
-      
-      @reporter.reset
-      
+=end
+      start_excel(file_name, options)
+
       begin
         puts "Dummy Run - Changes will be rolled back" if options[:dummy]
           
@@ -97,10 +121,10 @@ module DataShift
               # has_and_belongs_to associations which require the load_object has an id for the join table
          
               # Iterate over method_details, working on data out of associated Excel column
-              @method_mapper.method_details.each do |method_detail|
+              @method_mapper.method_details.each_with_index do |method_detail, i|
                     
                 unless method_detail
-                  logger.warn("No method_detail found - These headings couldn't be mapped  #{@method_mapper.missing_methods.inspect}")
+                  logger.warn("No method_detail found for column (#{i})")
                   next # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
                 end
                 logger.info "Processing Column #{method_detail.column_index} (#{method_detail.operator})"
@@ -146,14 +170,14 @@ module DataShift
               logger.error "Failed to save row [#{@current_row}]"
               logger.error load_object.errors.inspect if(load_object)
             else
-              logger.info "Row #{@current_row} succesfully SAVED : ID #{load_object.id}"
+              logger.info("Successfully SAVED Object with ID #{load_object.id} for Row #{@current_row}")
               @reporter.add_loaded_object(@load_object)
             end
             
             # don't forget to reset the object or we'll update rather than create
             new_load_object
 
-          end
+          end   # all rows processed
           
           if(options[:dummy])
             puts "Excel loading stage complete - Dummy run so Rolling Back."
@@ -182,8 +206,8 @@ module DataShift
 
     include ExcelLoading
   
-    def initialize(klass, find_operators = true, object = nil, options = {})
-      super( klass, find_operators, object, options )
+    def initialize(klass, object = nil, options = {})
+      super( klass, object, options )
       raise "Cannot load - failed to create a #{klass}" unless @load_object
     end
 

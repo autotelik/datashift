@@ -35,7 +35,7 @@ describe 'PaperClip Bulk Loader' do
   end
   
   it "should create a new paperclip loader and define attachment class" do 
-    loader = DataShift::Paperclip::AttachmentLoader.new(@attachment_klass, true, nil, @common_options)
+    loader = DataShift::Paperclip::AttachmentLoader.new(@attachment_klass, nil, @common_options)
     
     loader.load_object_class.should == Digital
     loader.load_object.should be_a Digital
@@ -47,7 +47,7 @@ describe 'PaperClip Bulk Loader' do
              
     opts = { :attach_to_klass => Owner }.merge(@common_options)
     
-    loader = DataShift::Paperclip::AttachmentLoader.new(@attachment_klass, true, nil, opts)
+    loader = DataShift::Paperclip::AttachmentLoader.new(@attachment_klass, nil, opts)
     
     loader.attach_to_klass.should == Owner
   end

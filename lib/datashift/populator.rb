@@ -122,7 +122,7 @@ module DataShift
         if(has_override?(operator))
           override_value(operator)      # takes precedence over anything else
         else
-          # if no value check for a default
+          # if no value check for a defaults from config, headers
           if(default_value(operator))
             @current_value = default_value(operator)
           elsif(Populator::header_default_data[operator])

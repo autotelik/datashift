@@ -64,11 +64,10 @@ module Datashift
         loader = DataShift::ExcelLoader.new(klass, true)
       end
 
-      logger.info("ARGS #{options.inspect}")
-      loader.logger.verbose if(options['verbose'])
+      #TOFIX - multi loggers to file + STDOUT
+      # loader.logger.verbose if(options['verbose'])
       
       loader.configure_from( options[:config] ) if(options[:config])
-
 
       loader.perform_load(options[:input])
     end
@@ -94,8 +93,9 @@ module Datashift
       klass = DataShift::ModelMapper.class_from_string_or_raise( model )
 
       loader = DataShift::CsvLoader.new(klass)
-      
-      loader.logger.verbose if(options['verbose'])
+
+      #TOFIX - multi loggers to file + STDOUT
+      # loader.logger.verbose if(options['verbose'])
       
       loader.configure_from( options[:config] ) if(options[:config])
 

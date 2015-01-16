@@ -87,6 +87,8 @@ module DataShift
 
             rescue => e
               failure(row, true)
+              logger.error e.inspect
+              logger.error e.backtrace.first.inspect
               logger.error "Failed to process row [#{i}] (#{@current_row})"
 
               if(verbose)
@@ -111,7 +113,7 @@ module DataShift
                 logger.error "Rails errors : #{load_object.errors.full_messages.inspect}"
               end
             else
-              logger.info "Row #{@current_row} succesfully SAVED : ID #{load_object.id}"
+              logger.info("Successfully SAVED Object with ID #{load_object.id} for Row #{@current_row}")
               @reporter.add_loaded_object(@load_object)
             end
 
@@ -140,8 +142,8 @@ module DataShift
 
     include DataShift::CsvLoading
 
-    def initialize(klass, find_operators = true, object = nil, options = {})
-      super( klass, find_operators, object, options )
+    def initialize(klass, object = nil, options = {})
+      super( klass, object, options )
       raise "Cannot load - failed to create a #{klass}" unless @load_object
     end
 

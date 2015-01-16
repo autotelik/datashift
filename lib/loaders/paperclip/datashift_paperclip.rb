@@ -72,7 +72,9 @@ module DataShift
     #
     #       Give : { :has_attached_file_attribute => :icon }
     #
-    def create_attachment(klass, attachment_path, record = nil, attach_to_record_field = nil, options = {})
+    def create_paperclip_attachment(klass, attachment_path, record = nil, attach_to_record_field = nil, options = {})
+
+      logger.info("Paperclip::create_paperclip_attachment on Class #{klass}")
 
       has_attached_file_attribute = options[:has_attached_file_name] ? options[:has_attached_file_name].to_sym : :attachment
 
@@ -87,7 +89,7 @@ module DataShift
         @attachment = klass.new(paperclip_attributes, :without_protection => true)
       rescue => e
         logger.error( e.backtrace)
-        logger.error("Failed to create PaperClip Attachment : #{e.inspect}")
+        logger.error("Failed to create PaperClip Attachment for cl;ass #{klass} : #{e.inspect}")
         raise CreateAttachmentFailed.new("Failed to create PaperClip Attachment from : #{attachment_path}")
       ensure
         attachment_file.close unless attachment_file.closed?

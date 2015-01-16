@@ -37,16 +37,13 @@ module DataShift
     # Setup loading
     # 
     # Options to drive building the method dictionary for a class, enabling headers to be mapped to operators on that class.
-    #  
-    # find_operators [default = true] : Populate method dictionary with operators and method details
     #      
     # Options
-    #  
     #  :reload           : Force load of the method dictionary for object_class even if already loaded
     #  :instance_methods : Include setter/delegate style instance methods for assignment, as well as AR columns
-    #  :verbose          : Verboise logging and to STDOUT
+    #  :verbose          : Verbose logging and to STDOUT
     #
-    def initialize(object_class, find_operators = true, object = nil, options = {})
+    def initialize(object_class, object = nil, options = {})
       @load_object_class = object_class
       
       @populator = if(options[:populator].is_a?(String))
@@ -58,7 +55,7 @@ module DataShift
       end
           
       # Gather names of all possible 'setter' methods on AR class (instance variables and associations)
-      if((find_operators && !MethodDictionary::for?(object_class)) || options[:reload])
+      if( !MethodDictionary::for?(object_class) || options[:reload] )
         #puts "DEBUG Building Method Dictionary for class #{object_class}"
         
         meth_dict_opts = options.extract!(:reload, :instance_methods)
@@ -183,7 +180,7 @@ module DataShift
         method_detail = MethodDictionary.find_method_detail( load_object_class, dname )
 
         if(method_detail)
-          logger.debug "Applying default value [#{dname}] (#{method_detail})"
+          logger.debug "Applying default value [#{dname}] on (#{method_detail.operator})"
           @populator.prepare_and_assign(method_detail, load_object, dv)
         else
           logger.warn "No operator found for default [#{dname}] trying basic assignment"
@@ -217,7 +214,7 @@ module DataShift
     
     # Any Config under key 'LoaderBase' is merged over existing options - taking precedence.
     #  
-    # Any Config under a key equal to the full name of the Loader class (e.g DataShift::SpreeHelper::ImageLoader)
+    # Any Config under a key equal to the full name of the Loader class (e.g DataShift::SpreeEcom::ImageLoader)
     # is merged over existing options - taking precedence.
     # 
     #  Format :

@@ -11,17 +11,17 @@ require 'attachment_loader'
 module DataShift
 
   module ImageLoading
- 
+
+    include DataShift::Logging
     include DataShift::Paperclip 
 
-    
     # Note the paperclip attachment model defines the storage path via something like :
     # 
     # => :path => ":rails_root/public/blah/blahs/:id/:style/:basename.:extension"
     # 
     # Options 
     # 
-    #   See also DataShift::paperclip create_attachment for more options
+    #   See also DataShift::paperclip create_paperclip_attachment for more options
     #   
     #   Example:  Image is a model class with an attachment.
     #             Image table contains a viewable field which can contain other  models,
@@ -30,7 +30,9 @@ module DataShift
     #   :viewable_record 
     #   
     def create_attachment(klass, attachment_path, record = nil, attach_to_record_field = nil, options = {})
-        
+
+      logger.debug("ImageLoading::create_attachment on Class #{klass}")
+
       image_attributes = { :attributes => 
                             { :alt => (options[:alt] || ""),
                               :position => (!options[:position] && record and record.respond_to?(:images)) ? record.images.length : 0
@@ -39,9 +41,9 @@ module DataShift
 
       attachment_options = options.dup.merge(image_attributes)
       
-      #puts "DEBUG : create_attachment options : #{attachment_options.inspect}"
-       
-      super(klass, attachment_path, record, attach_to_record_field, attachment_options)
+      logger.debug("Adding Attachment for #{klass.inspect}")
+
+      create_paperclip_attachment(klass, attachment_path, record, attach_to_record_field, attachment_options)
     end
     
     # Set of file extensions ImageMagik can process so default glob

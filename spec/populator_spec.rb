@@ -32,7 +32,7 @@ describe 'Populator' do
     
     options = {:populator => 'AnotherPopulator' }
     
-    local_loader = DataShift::LoaderBase.new(Project, true, nil, options)
+    local_loader = DataShift::LoaderBase.new(Project, nil, options)
     
     local_loader.populator.should_not be_nil
     local_loader.populator.should be_a AnotherPopulator
@@ -45,7 +45,7 @@ describe 'Populator' do
     
     options = {:populator => AnotherPopulator }
     
-    local_loader = DataShift::LoaderBase.new(Project, true, nil, options)
+    local_loader = DataShift::LoaderBase.new(Project, nil, options)
     
     local_loader.populator.should_not be_nil
     local_loader.populator.should be_a AnotherPopulator
