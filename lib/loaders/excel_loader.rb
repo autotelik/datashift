@@ -25,6 +25,10 @@ module DataShift
 
     attr_accessor :excel
 
+    # Currently struggling to determine the 'end' of data in a spreadsheet
+    # this reflects if current row had any data at all
+    attr_reader :contains_data, :current_row_idx
+
     def start_excel( file_name, options = {} )
 
       @excel = Excel.new
@@ -66,25 +70,6 @@ module DataShift
 
       raise MissingHeadersError, "Minimum row for Headers is 0 - passed #{options[:header_row]}" if(options[:header_row] && options[:header_row].to_i < 0)
 
-=begin
-      @excel = Excel.new
-
-      @excel.open(file_name)
-        
-      puts "\n\n\nLoading from Excel file: #{file_name}"
-
-      sheet_number = options[:sheet_number] || 0
-      
-      @sheet = @excel.worksheet( sheet_number )
-
-      parse_headers(@sheet, options[:header_row])
-
-      raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{header_row_index} contains headers" if(excel_headers.empty?)
-      
-      # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
-      # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
-      populate_method_mapper_from_headers(excel_headers, options )
-=end
       start_excel(file_name, options)
 
       begin
@@ -93,10 +78,11 @@ module DataShift
         load_object_class.transaction do
        
           @sheet.each_with_index do |row, i|
-            
+
+            @current_row_idx = i
             @current_row = row 
             
-            next if(i == header_row_index)
+            next if(current_row_idx == header_row_index)
           
             # Excel num_rows seems to return all 'visible' rows, which appears to be greater than the actual data rows
             # (TODO - write spec to process .xls with a huge number of rows)
@@ -105,74 +91,34 @@ module DataShift
             # got no better idea than ending once we hit the first completely empty row
             break if(@current_row.nil? || @current_row.compact.empty?)
             
-            logger.info "Processing Row #{i} : #{@current_row}"
-            
-            contains_data = false
-            
+            logger.info "Processing Row #{current_row_idx} : #{@current_row}"
+
+            @contains_data = false
+
             begin
-              # First assign any default values for columns
-              process_defaults
 
-              # TODO - Smart sorting of column processing order ....
-              # Does not currently ensure mandatory columns (for valid?) processed first but model needs saving
-              # before associations can be processed so user should ensure mandatory columns are prior to associations
+              process_excel_row(row)
 
-              # as part of this we also attempt to save early, for example before assigning to
-              # has_and_belongs_to associations which require the load_object has an id for the join table
-         
-              # Iterate over method_details, working on data out of associated Excel column
-              @method_mapper.method_details.each_with_index do |method_detail, i|
-                    
-                unless method_detail
-                  logger.warn("No method_detail found for column (#{i})")
-                  next # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
-                end
-                logger.info "Processing Column #{method_detail.column_index} (#{method_detail.operator})"
-                
-                value = @current_row[method_detail.column_index]
-
-                contains_data = true unless(value.nil? || value.to_s.empty?)
-              
-                process(method_detail, value)           
-              end
-               
-              # This is rubbish but currently have to manually detect when actual data ends, 
+              # This is rubbish but currently have to manually detect when actual data ends,
               # no other way to detect when we hit the first completely empty row
               break unless(contains_data == true)
-                          
+
             rescue => e
-              @reporter.processed_object_count += 1
-              
-              failure(@current_row, true)
-              
-              if(verbose)
-                puts "perform_excel_load failed in row [#{i}] #{@current_row} - #{e.message} :" 
-                puts e.backtrace
-              end
-              
-              logger.error  "perform_excel_load failed in row [#{i}] #{@current_row} - #{e.message} :" 
-              logger.error e.backtrace.join("\n")
-              
-              # don't forget to reset the load object 
+              process_excel_failure
+
+              # don't forget to reset the load object
               new_load_object
               next
             end
-            
+
             break unless(contains_data == true)
 
             # currently here as we can only identify the end of a speadsheet by first empty row
             @reporter.processed_object_count += 1
-                        
+
             # TODO - make optional -  all or nothing or carry on and dump out the exception list at end
-            
-            unless(save)
-              failure
-              logger.error "Failed to save row [#{@current_row}]"
-              logger.error load_object.errors.inspect if(load_object)
-            else
-              logger.info("Successfully SAVED Object with ID #{load_object.id} for Row #{@current_row}")
-              @reporter.add_loaded_object(@load_object)
-            end
+
+            save_and_report
             
             # don't forget to reset the object or we'll update rather than create
             new_load_object
@@ -194,9 +140,65 @@ module DataShift
       end
      
     end
-    
+
+    def process_excel_failure
+      @reporter.processed_object_count += 1
+
+      failure(@current_row, true)
+
+      if(verbose)
+        puts "perform_excel_load failed in row [#{current_row_idx}] #{@current_row} - #{e.message} :"
+        puts e.backtrace
+      end
+
+      logger.error  "perform_excel_load failed in row [#{current_row_idx}] #{@current_row} - #{e.message} :"
+      logger.error e.backtrace.join("\n")
+  end
+
+    def save_and_report
+      unless(save)
+        failure
+        logger.error "Failed to save row [#{@current_row}]"
+        logger.error load_object.errors.inspect if(load_object)
+      else
+        logger.info("Successfully SAVED Object with ID #{load_object.id} for Row #{@current_row}")
+        @reporter.add_loaded_object(@load_object)
+      end
+    end
+
     def value_at(row, column)
       @excel[row, column]
+    end
+
+    def process_excel_row(row)
+
+      # First assign any default values for columns
+      process_defaults
+
+      # TODO - Smart sorting of column processing order ....
+      # Does not currently ensure mandatory columns (for valid?) processed first but model needs saving
+      # before associations can be processed so user should ensure mandatory columns are prior to associations
+
+      # as part of this we also attempt to save early, for example before assigning to
+      # has_and_belongs_to associations which require the load_object has an id for the join table
+
+      # Iterate over method_details, working on data out of associated Excel column
+      @method_mapper.method_details.each_with_index do |method_detail, i|
+
+        unless method_detail
+          logger.warn("No method_detail found for column (#{i})")
+          next # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
+        end
+
+        logger.info "Processing Column #{method_detail.column_index} (#{method_detail.operator})"
+
+        value = row[method_detail.column_index]
+
+        @contains_data = true unless(value.nil? || value.to_s.empty?)
+
+        process(method_detail, value)
+      end
+
     end
     
   end
