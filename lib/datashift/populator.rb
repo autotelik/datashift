@@ -336,7 +336,6 @@ module DataShift
         logger.info("Set Populator overrides: #{override_values.inspect}")
 
         subs = data[load_object_class.name]['datashift_substitutions']
-        puts subs.class, subs.inspect
         substitutions.merge!(subs) if subs
       end
       
