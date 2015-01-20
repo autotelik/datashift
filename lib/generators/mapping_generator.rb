@@ -53,8 +53,6 @@ module DataShift
 
         prepare_model_headers(MethodDictionary.method_details_mgrs[klass], options)
 
-        puts "TS DEBUG headers :#{headers.inspect}"
-
         if(options[:model_as_dest])
           headers.each_with_index do |s, i|  mappings += "       #srcs_column_heading_#{i}: #{s}\n" end
         else
@@ -96,8 +94,6 @@ EOS
       parse_headers(sheet, options[:header_row])
 
       mappings = "mappings:\n"
-
-      puts "TS DEBUG headers :#{headers.inspect}"
 
       if(options[:model_as_dest])
         excel_headers.each_with_index do |s, i|  mappings += "       #srcs_column_heading_#{i}: #{s}\n" end

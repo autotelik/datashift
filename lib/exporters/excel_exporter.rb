@@ -101,8 +101,6 @@ module DataShift
           next if(operators_for_type.nil? || operators_for_type.empty?)
 
           operators_for_type.each do |md|     # actual associations on obj
-            #puts "#TS exporting for MethodDetail [#{md.inspect}]"
-
             if(MethodDetail.is_association_type?(op_type))
               excel[row, column] = record_to_column( obj.send( md.operator ), options )    # pack association into single column
             else

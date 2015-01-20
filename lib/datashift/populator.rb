@@ -360,7 +360,6 @@ module DataShift
         @original_value_before_override = @current_value
 
         @current_value = @original_value_before_override.gsub(s[0], s[1])
-        puts "TS HELL YEAH ", @current_value, @original_value_before_override
       end
     end
 
