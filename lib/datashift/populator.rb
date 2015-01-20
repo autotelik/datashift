@@ -127,11 +127,15 @@ module DataShift
             @current_value = default_value(operator)
           elsif(Populator::header_default_data[operator])
             @current_value = Populator::header_default_data[operator].to_s
+          elsif(Populator::header_default_data[operator])
+            @current_value = Populator::header_default_data[operator].to_s
           elsif(method_detail.find_by_value)
             @current_value = method_detail.find_by_value
           end if(value.nil? || value.to_s.empty?)
         end
-      
+
+        substitute( operator )
+
         @current_value = "#{prefix(operator)}#{@current_value}" if(prefix(operator))
         @current_value = "#{@current_value}#{postfix(operator)}" if(postfix(operator))
 
@@ -159,7 +163,7 @@ module DataShift
        
       operator = current_method_detail.operator
 
-      logger.debug("Populator assigning data [#{current_value}] via #{current_method_detail.operator} (#{current_method_detail.operator_type})")
+      logger.debug("Populator assign - [#{current_value}] via #{current_method_detail.operator} (#{current_method_detail.operator_type})")
               
       if( current_method_detail.operator_for(:belongs_to) )
  
@@ -316,28 +320,7 @@ module DataShift
 
       data = YAML::load( ERB.new( IO.read(yaml_file) ).result )
 
-      # TODO - MOVE DEFAULTS TO OWN MODULE 
-      # decorate the loading class with the defaults/ove rides to manage itself
-      #   IDEAS .....
-      #
-      #unless(@default_data_objects[load_object_class])
-      #
-      #   @default_data_objects[load_object_class] = load_object_class.new
-      
-      #  default_data_object = @default_data_objects[load_object_class]
-      
-      
-      # default_data_object.instance_eval do
-      #  def datashift_defaults=(hash)
-      #   @datashift_defaults = hash
-      #  end
-      #  def datashift_defaults
-      #    @datashift_defaults
-      #  end
-      #end unless load_object_class.respond_to?(:datashift_defaults)
-      #end
-      
-      #puts load_object_class.new.to_yaml
+      # TODO - MOVE DEFAULTS TO OWN MODULE
       
       logger.info("Setting Populator defaults: #{data.inspect}")
       
@@ -351,11 +334,37 @@ module DataShift
         ovrides = data[load_object_class.name]['datashift_overrides']
         override_values.merge!(ovrides) if ovrides
         logger.info("Set Populator overrides: #{override_values.inspect}")
+
+        subs = data[load_object_class.name]['datashift_substitutions']
+        puts subs.class, subs.inspect
+        substitutions.merge!(subs) if subs
       end
       
 
     end
-    
+
+    # Set a default value to be used to populate Model.operator
+    # Generally defaults will be used when no value supplied.
+    def set_substitution(operator, value )
+      substitutions[operator] = value
+    end
+
+    def substitutions
+      @substitutions ||= {}
+    end
+
+    def substitute( operator )
+      s = substitutions[operator]
+
+      if(s)
+        @original_value_before_override = @current_value
+
+        @current_value = @original_value_before_override.gsub(s[0], s[1])
+        puts "TS HELL YEAH ", @current_value, @original_value_before_override
+      end
+    end
+
+
     # Set a value to be used to populate Model.operator
     # Generally over-rides will be used regardless of what value caller supplied.
     def set_override_value( operator, value )
@@ -374,6 +383,7 @@ module DataShift
       end
     end
 
+
     def has_override?( operator )
         return override_values.has_key?(operator)
     end
@@ -388,11 +398,6 @@ module DataShift
       @default_values ||= {}
     end
     
-    # Return the default value for supplied operator
-    def default_value(operator)
-      default_values[operator]
-    end
-
     # Return the default value for supplied operator
     def default_value(operator)
       default_values[operator]
@@ -421,8 +426,7 @@ module DataShift
     def postfixes
       @postfixes ||= {}
     end
-    
-    
+
   end
   
 end
