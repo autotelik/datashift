@@ -47,6 +47,8 @@ module Datashift
 
       klass = DataShift::ModelMapper.class_from_string_or_raise( model )
 
+      loader_options = { :instance_methods => true }
+
       if(options[:loader])
         begin
      
@@ -57,11 +59,11 @@ module Datashift
           logger.info("INFO: Using loader : #{loader.class}")
         rescue
           logger.error("INFO: No specific #{model}Loader found  - using generic ExcelLoader")
-          loader = DataShift::ExcelLoader.new(klass, true)
+          loader = DataShift::ExcelLoader.new(klass, nil, loader_options)
         end
       else
         logger.info("No Loader specified - using generic ExcelLoader")
-        loader = DataShift::ExcelLoader.new(klass, true)
+        loader = DataShift::ExcelLoader.new(klass, nil, loader_options)
       end
 
       #TOFIX - multi loggers to file + STDOUT

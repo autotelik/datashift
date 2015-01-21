@@ -207,7 +207,16 @@ module DataShift
   class ExcelLoader < LoaderBase
 
     include ExcelLoading
-  
+
+    # Setup loading
+    #
+    # Options to drive building the method dictionary for a class, enabling headers to be mapped to operators on that class.
+    #
+    # Options
+    #  :reload           : Force load of the method dictionary for object_class even if already loaded
+    #  :instance_methods : Include setter/delegate style instance methods for assignment, as well as AR columns
+    #  :verbose          : Verbose logging and to STDOUT
+    #
     def initialize(klass, object = nil, options = {})
       super( klass, object, options )
       raise "Cannot load - failed to create a #{klass}" unless @load_object

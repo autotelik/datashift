@@ -153,14 +153,16 @@ module DataShift
     # Main client hook
 
     def prepare_and_assign(method_detail, record, value)
-      
+
       prepare_data(method_detail, value) 
        
       assign(record)
     end
     
     def assign(record)
-     
+
+      puts "prepare_and_assign", method_detail, record, value
+
       raise NilDataSuppliedError.new("No method detail - cannot assign data") unless(current_method_detail)
        
       operator = current_method_detail.operator
@@ -196,8 +198,8 @@ module DataShift
         end
 
       elsif( current_method_detail.operator_for(:assignment) && current_col_type)
-        logger.debug("Assignging #{current_value} => [#{operator}] (CAST 2 TYPE  #{current_col_type.type_cast( current_value ).inspect})")
-        
+        logger.debug("Assign #{current_value} => [#{operator}] (CAST 2 TYPE  #{current_col_type.type_cast( current_value ).inspect})")
+
         record.send( operator + '=' , current_method_detail.col_type.type_cast( current_value ) )
 
       elsif( current_method_detail.operator_for(:assignment) )

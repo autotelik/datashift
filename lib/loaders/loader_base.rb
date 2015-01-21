@@ -45,6 +45,8 @@ module DataShift
     #
     def initialize(object_class, object = nil, options = {})
       @load_object_class = object_class
+
+      logger.info("Loading objects of type #{@load_object_class} (#{object}")
       
       @populator = if(options[:populator].is_a?(String))
         ::Object.const_get(options[:populator]).new
