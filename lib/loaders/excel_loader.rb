@@ -104,7 +104,7 @@ module DataShift
               break unless(contains_data == true)
 
             rescue => e
-              process_excel_failure
+              process_excel_failure(e)
 
               # don't forget to reset the load object
               new_load_object
@@ -141,7 +141,7 @@ module DataShift
      
     end
 
-    def process_excel_failure
+    def process_excel_failure( e)
       @reporter.processed_object_count += 1
 
       failure(@current_row, true)
