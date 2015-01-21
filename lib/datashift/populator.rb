@@ -14,10 +14,12 @@ require 'logging'
 
 module DataShift
 
+  Struct.new("Substitution", :pattern, :replacement)
+
   class Populator
     
     include DataShift::Logging
-        
+
     def self.insistent_method_list
       @insistent_method_list ||= [:to_s, :to_i, :to_f, :to_b]
     end
@@ -336,16 +338,22 @@ module DataShift
         logger.info("Set Populator overrides: #{override_values.inspect}")
 
         subs = data[load_object_class.name]['datashift_substitutions']
-        substitutions.merge!(subs) if subs
+
+        subs.each do |o, sub|
+          # TODO support single array as well as multiple [[..,..], [....]]
+          sub.each { |tuple| set_substitution(o, tuple) }
+        end if(subs)
+
       end
-      
 
     end
 
     # Set a default value to be used to populate Model.operator
     # Generally defaults will be used when no value supplied.
     def set_substitution(operator, value )
-      substitutions[operator] = value
+      substitutions[operator] ||= []
+
+      substitutions[operator] << Struct::Substitution.new(value[0], value[1])
     end
 
     def substitutions
@@ -353,12 +361,11 @@ module DataShift
     end
 
     def substitute( operator )
-      s = substitutions[operator]
+      subs = substitutions[operator] || {}
 
-      if(s)
+      subs.each do |s|
         @original_value_before_override = @current_value
-
-        @current_value = @original_value_before_override.gsub(s[0], s[1])
+        @current_value = @original_value_before_override.gsub(s.pattern.to_s, s.replacement.to_s)
       end
     end
 

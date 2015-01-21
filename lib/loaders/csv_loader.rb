@@ -58,7 +58,7 @@ module DataShift
 
             @reporter.processed_object_count += 1
 
-            logger.info("Begin processing Row #{i+1}  from CSV file")
+            logger.info("Begin processing Row #{@reporter.processed_object_count}  from CSV file")
 
             begin
               # First assign any default values for columns not included in parsed_file
@@ -89,10 +89,10 @@ module DataShift
               failure(row, true)
               logger.error e.inspect
               logger.error e.backtrace.first.inspect
-              logger.error "Failed to process row [#{i}] (#{@current_row})"
+              logger.error "Failed to process row [#{@reporter.processed_object_count}] (#{@current_row})"
 
               if(verbose)
-                puts "Failed to process row [#{i}] (#{@current_row})"
+                puts "Failed to process row [#{@reporter.processed_object_count}] (#{@current_row})"
                 puts e.inspect
               end
 
@@ -109,7 +109,7 @@ module DataShift
               failure
               if(load_object)
                 load_object.valid? if(load_object.errors.empty?)  # seen situations where save fails but errors empty ?
-                logger.error "Failed to save row [#{i}] [#{@current_row}]"
+                logger.error "Failed to save row [#{@reporter.processed_object_count}] [#{@current_row}]"
                 logger.error "Rails errors : #{load_object.errors.full_messages.inspect}"
               end
             else
