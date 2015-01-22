@@ -161,8 +161,6 @@ module DataShift
     
     def assign(record)
 
-      puts "prepare_and_assign", method_detail, record, value
-
       raise NilDataSuppliedError.new("No method detail - cannot assign data") unless(current_method_detail)
        
       operator = current_method_detail.operator
