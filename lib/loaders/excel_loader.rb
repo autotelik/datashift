@@ -74,23 +74,23 @@ module DataShift
 
       begin
         puts "Dummy Run - Changes will be rolled back" if options[:dummy]
-          
+
         load_object_class.transaction do
-       
+
           @sheet.each_with_index do |row, i|
 
             @current_row_idx = i
-            @current_row = row 
-            
+            @current_row = row
+
             next if(current_row_idx == header_row_index)
-          
+
             # Excel num_rows seems to return all 'visible' rows, which appears to be greater than the actual data rows
             # (TODO - write spec to process .xls with a huge number of rows)
             #
             # This is rubbish but currently manually detect when actual data ends, this isn't very smart but
             # got no better idea than ending once we hit the first completely empty row
             break if(@current_row.nil? || @current_row.compact.empty?)
-            
+
             logger.info "Processing Row #{current_row_idx} : #{@current_row}"
 
             @contains_data = false
@@ -104,7 +104,7 @@ module DataShift
               break unless(contains_data == true)
 
             rescue => e
-              process_excel_failure(e)
+              process_excel_failure(e, true)
 
               # don't forget to reset the load object
               new_load_object
@@ -119,32 +119,30 @@ module DataShift
             # TODO - make optional -  all or nothing or carry on and dump out the exception list at end
 
             save_and_report
-            
+
             # don't forget to reset the object or we'll update rather than create
             new_load_object
 
           end   # all rows processed
-          
+
           if(options[:dummy])
             puts "Excel loading stage complete - Dummy run so Rolling Back."
             raise ActiveRecord::Rollback # Don't actually create/upload to DB if we are doing dummy run
           end
-          
+
         end   # TRANSACTION N.B ActiveRecord::Rollback does not propagate outside of the containing transaction block
-      
-      rescue => e  
+
+      rescue => e
         puts "ERROR: Excel loading failed : #{e.inspect}"
         raise e
-      ensure     
+      ensure
         report
       end
-     
+
     end
 
-    def process_excel_failure( e)
-      @reporter.processed_object_count += 1
-
-      failure(@current_row, true)
+    def process_excel_failure( e, delete_object = true)
+      failure(@current_row, delete_object)
 
       if(verbose)
         puts "perform_excel_load failed in row [#{current_row_idx}] #{@current_row} - #{e.message} :"
@@ -153,18 +151,8 @@ module DataShift
 
       logger.error  "perform_excel_load failed in row [#{current_row_idx}] #{@current_row} - #{e.message} :"
       logger.error e.backtrace.join("\n")
-  end
-
-    def save_and_report
-      unless(save)
-        failure
-        logger.error "Failed to save row [#{@current_row}]"
-        logger.error load_object.errors.inspect if(load_object)
-      else
-        logger.info("Successfully SAVED Object with ID #{load_object.id} for Row #{@current_row}")
-        @reporter.add_loaded_object(@load_object)
-      end
     end
+
 
     def value_at(row, column)
       @excel[row, column]
@@ -200,7 +188,7 @@ module DataShift
       end
 
     end
-    
+
   end
 
 
@@ -224,12 +212,12 @@ module DataShift
 
 
     def perform_load( file_name, options = {} )
-      
+
       logger.info "Starting bulk load from Excel : #{file_name}"
-       
+
       perform_excel_load( file_name, options )
 
-      puts "Excel loading stage complete - #{loaded_count} rows added."  
+      puts "Excel loading stage complete - #{loaded_count} rows added."
     end
 
   end

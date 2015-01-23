@@ -43,8 +43,6 @@ module DataShift
   class MissingHeadersError < StandardError; end
   class MissingMandatoryError < StandardError; end
 
-  class RecordNotFound < StandardError; end
-  
   class PathError < StandardError; end
   
   class BadUri < StandardError; end
@@ -58,4 +56,5 @@ DataShift::DataShiftException.generate( "DataProcessingError")
 DataShift::DataShiftException.generate( "FileNotFound")
 DataShift::DataShiftException.generate( "NoSuchClassError")
 DataShift::DataShiftException.generate( "MissingConfigOptionError")
+DataShift::DataShiftException.generate( "RecordNotFound")
 DataShift::DataShiftException.generate( "SaveError")
