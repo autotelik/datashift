@@ -105,21 +105,10 @@ module DataShift
 
             logger.debug "Attempting Save on : #{load_object.inspect}"
 
-            unless(save)
-              failure
-              if(load_object)
-                load_object.valid? if(load_object.errors.empty?)  # seen situations where save fails but errors empty ?
-                logger.error "Failed to save row [#{@reporter.processed_object_count}] [#{@current_row}]"
-                logger.error "Rails errors : #{load_object.errors.full_messages.inspect}"
-              end
-            else
-              logger.info("Successfully SAVED Object with ID #{load_object.id} for Row #{@current_row}")
-              @reporter.add_loaded_object(@load_object)
-            end
+            save_and_report
 
             # don't forget to reset the object or we'll update rather than create
             new_load_object
-
           end
 
           raise ActiveRecord::Rollback if(options[:dummy]) # Don't actually create/upload to DB if we are doing dummy run

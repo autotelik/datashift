@@ -24,12 +24,16 @@ module DataShift
 
     attr_accessor :method_mapper
 
+    # The inbound row/line number
+    attr_accessor :current_row_idx
+
     attr_accessor :load_object_class, :load_object
 
     attr_accessor :reporter
     attr_accessor :populator
 
     attr_accessor :config, :verbose
+
 
     def options() return @config; end
 
@@ -72,6 +76,8 @@ module DataShift
       @config = options.dup    # clone can cause issues like 'can't modify frozen hash'
 
       @verbose = @config[:verbose]
+
+      @current_row_idx = 0
 
       @headers = []
 
@@ -387,7 +393,7 @@ module DataShift
     def save_and_report
       unless(save)
         failure
-        logger.error "Failed to save row [#{@current_row}]"
+        logger.error "Failed to save row (#{current_row_idx}) - [#{@current_row}]"
         logger.error load_object.errors.inspect if(load_object)
       else
         logger.info("Successfully SAVED Object with ID #{load_object.id} for Row #{@current_row}")

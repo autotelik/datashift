@@ -143,8 +143,16 @@ module DataShift
         name.gsub(' ', '_').underscore
       ]
     end
-    
- 
+
+
+    # Dump out all available operators
+    #
+    def self.dump( klass )
+      method_details_mgr = get_method_details_mgr( klass )
+      #TODO
+    end
+
+
     # For a client supplied name/header - find the operator i.e appropriate call + column type
     # 
     # e.g Given users entry in spread sheet check for pluralization, missing underscores etc

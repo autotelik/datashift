@@ -27,7 +27,7 @@ module DataShift
 
     # Currently struggling to determine the 'end' of data in a spreadsheet
     # this reflects if current row had any data at all
-    attr_reader :contains_data, :current_row_idx
+    attr_reader :contains_data
 
     def start_excel( file_name, options = {} )
 
@@ -79,7 +79,7 @@ module DataShift
 
           @sheet.each_with_index do |row, i|
 
-            @current_row_idx = i
+            current_row_idx = i
             @current_row = row
 
             next if(current_row_idx == header_row_index)
