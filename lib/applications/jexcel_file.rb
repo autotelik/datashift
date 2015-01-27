@@ -97,8 +97,7 @@ if(DataShift::Guards::jruby?)
       else 
         
         name = sanitize_sheet_name( sheet_name )
-        
-        puts "WTF #{name}"
+
         if (@workbook.getSheetIndex(name) < 0)  #Check sheet doesn't already exist
           return create_sheet_and_set_styles( name )
         else
