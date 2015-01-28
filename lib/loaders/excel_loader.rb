@@ -47,7 +47,7 @@ module DataShift
       raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{header_row_index} contains headers" if(excel_headers.empty?)
 
       # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
-      # For example if model has an attribute 'price' will map columns called Price, price, PRICE etc to this attribute
+      # For example if model has an attribute 'price' will map columns called Price or price or PRICE etc to this attribute
       populate_method_mapper_from_headers(excel_headers, options )
 
       reporter.reset
