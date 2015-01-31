@@ -178,9 +178,9 @@ module DataShift
           next # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
         end
 
-        logger.info "Processing Column #{method_detail.column_index} (#{method_detail.operator})"
+        logger.info "Processing Column #{method_detail.inbound_data.index} (#{method_detail.operator})"
 
-        value = row[method_detail.column_index]
+        value = row[method_detail.inbound_data.index]
 
         @contains_data = true unless(value.nil? || value.to_s.empty?)
 

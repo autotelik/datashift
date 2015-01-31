@@ -1,6 +1,6 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Aug 2011
+# Date ::     Aug 2015
 # License::   MIT
 #
 # Details::   Specs for MethodMapper aspect of Active Record Loader
@@ -9,23 +9,63 @@
 #
 require File.join(File.dirname(__FILE__), 'spec_helper')
   
-require 'method_dictionary'
+#require 'model_methods_mgr_dictionary'
 
-describe 'Method Dictionary' do
+describe ':ModelMethods ManagerDictionary' do
   
   before(:each) do
-    DataShift::MethodDictionary.clear
+    DataShift::ModelMethods::ManagerDictionary.clear
   end
   
-  it "should store dictionary for multiple AR models" do
-    
-    DataShift::ModelMethodsManager.find_methods( Project )
-    DataShift::ModelMethodsManager.find_methods( Milestone )
-    
-    DataShift::MethodDictionary.assignments.size.should == 2 
-    DataShift::MethodDictionary.has_many.size.should == 2
+  it "should provide a dictionary of class => manager" do
+    expect(DataShift::ModelMethods::ManagerDictionary.managers).to be_a Hash
+    expect(DataShift::ModelMethods::ManagerDictionary.managers.empty?).to eq true
   end
-  
+
+  it "should provide a dictionary of class => manager" do
+
+    expect(DataShift::ModelMethods::ManagerDictionary.managers[Milestone]).to be_nil
+
+    DataShift::ModelMethods::ManagerDictionary.build_for_klass(Milestone)
+
+    expect(DataShift::ModelMethods::ManagerDictionary.managers[Milestone]).to be_a  DataShift::ModelMethods::Manager
+
+    expect(DataShift::ModelMethods::ManagerDictionary.managers.size).to eq 1
+  end
+
+
+  it "should provide access to a manager" do
+    DataShift::ModelMethods::ManagerDictionary.build_for_klass(Milestone)
+
+    expect(DataShift::ModelMethods::ManagerDictionary.managers[Milestone]).to be_a DataShift::ModelMethods::Manager
+
+    expect(DataShift::ModelMethods::ManagerDictionary.managers[Milestone]).to eq DataShift::ModelMethods::ManagerDictionary.for(Milestone)
+  end
+
+  it "should populate assignment operators for method details for different forms of a column name" do
+
+    DataShift::ModelMethods::ManagerDictionary.build_for_klass(Project)
+    DataShift::ModelMethods::ManagerDictionary.build_for_klass(Milestone)
+
+      manager =  DataShift::ModelMethods::ManagerDictionary.for(Project)
+
+      expect(manager.managed_class).to eq  Project
+
+      model_method = manager.find('value_as_string', :assignment)
+
+      expect(model_method).to be_a  DataShift::ModelMethod
+
+      expect(model_method.operator).to eq 'value_as_string'
+      expect(model_method.operator_for(:assignment)).to eq 'value_as_string'
+
+      expect(model_method.operator?('value_as_string')).to eq true
+      expect(model_method.operator?('blah_as_string')).to eq false
+
+      expect(model_method.operator_for(:belongs_to)).to eq nil
+      expect(model_method.operator_for(:has_many)).to eq nil
+  end
+
+=begin
   it "should populate method dictionary for a given AR model" do
 
     DataShift::ModelMethodsManager.find_methods( Project )
@@ -62,29 +102,7 @@ describe 'Method Dictionary' do
   end
 
 
-  it "should populate assignment operators for method details for different forms of a column name" do
 
-    DataShift::ModelMethodsManager.find_methods( Project )
-    DataShift::ModelMethodsManager.find_methods( Milestone )
-    
-    DataShift::MethodDictionary.build_method_details( Project )
-    
-    [:value_as_string, 'value_as_string', "VALUE as_STRING", "value as string"].each do |format|
-
-      method_details = DataShift::MethodDictionary.find_method_detail( Project, format )
-
-      method_details.class.should == DataShift::MethodDetail
-
-      method_details.operator.should == 'value_as_string'
-      method_details.operator_for(:assignment).should == 'value_as_string'
-      
-      expect(method_details.operator?('value_as_string')).to eq true
-      expect(method_details.operator?('blah_as_string')).to eq false
-
-      expect(method_details.operator_for(:belongs_to)).to eq nil
-      expect(method_details.operator_for(:has_many)).to eq nil
-    end
-  end
 
 
   # Note : Not all assignments will currently have a column type, for example
@@ -296,5 +314,5 @@ describe 'Method Dictionary' do
     DataShift::MethodDictionary.assignments[Milestone].should include('title')
     DataShift::MethodDictionary.assignments[Milestone].should include('milestone_setter')
   end
-
+=end
 end

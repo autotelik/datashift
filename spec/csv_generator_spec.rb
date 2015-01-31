@@ -23,8 +23,8 @@ describe 'CSV Generator' do
 
   before(:each) do
     MethodDictionary.clear
-    MethodDictionary.find_operators( @klazz )
-    MethodDictionary.find_operators( @assoc_klazz )
+    ModelMethodsManager.find_methods( @klazz )
+    ModelMethodsManager.find_methods( @assoc_klazz )
   end
 
   it "should be able to create a new csv generator" do

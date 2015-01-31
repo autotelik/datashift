@@ -82,7 +82,16 @@ module DataShift
    
       h
     end
-    
+
+    # Main client hook
+
+    def prepare_and_assign(method_detail, record, value)
+
+      prepare_data(method_detail, value)
+
+      assign(record)
+    end
+
     # Set member variables to hold details, value and optional attributes,
     # to be set on the 'value' once created
     # 
@@ -150,15 +159,28 @@ module DataShift
       return @current_value, @current_attribute_hash
     end
 
-    # Main client hook
 
-    def prepare_and_assign(method_detail, record, value)
+    # Process columns with a default value specified
+    def process_defaults()
 
-      prepare_data(method_detail, value) 
-       
-      assign(record)
+      default_values.each do |dname, dv|
+
+        method_detail = MethodDictionary.find_method_detail( load_object_class, dname )
+
+        if(method_detail)
+          logger.debug "Applying default value [#{dname}] on (#{method_detail.operator})"
+          prepare_and_assign(method_detail, load_object, dv)
+        else
+          logger.warn "No operator found for default [#{dname}] trying basic assignment"
+          begin
+            insistent_assignment(load_object, dv, dname)
+          rescue
+            logger.error "Badly specified default - could not set #{dname}(#{dv})"
+          end
+        end
+      end
     end
-    
+
     def assign(record)
 
       raise NilDataSuppliedError.new("No method detail - cannot assign data") unless(current_method_detail)

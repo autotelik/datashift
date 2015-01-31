@@ -25,7 +25,7 @@ module DataShift
 
       prep_remove_list(options)
 
-      MethodDictionary.find_operators( klass )
+      ModelMethodsManager.find_methods( klass )
       @headers = MethodDictionary.assignments[klass]
 
       @headers.delete_if{|h| @remove_list.include?( h.to_sym ) }
@@ -40,7 +40,7 @@ module DataShift
     def generate_with_associations(klass, options = {})
       @filename = options[:filename] if options[:filename]
 
-      MethodDictionary.find_operators( klass )
+      ModelMethodsManager.find_methods( klass )
       MethodDictionary.build_method_details( klass )
 
       work_list = MethodDetail::supported_types_enum.to_a - [ *options[:exclude] ]

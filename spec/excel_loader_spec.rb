@@ -46,7 +46,7 @@ describe 'Excel Loader' do
 
     it "should process multiple associations from single column" do
 
-      DataShift::MethodDictionary.find_operators( Category )
+      DataShift::ModelMethodsManager.find_methods( Category )
 
       DataShift::MethodDictionary.build_method_details( Category )
 
@@ -71,14 +71,14 @@ describe 'Excel Loader' do
       end
     end
 
-    it "should process multiple associations in excel spreedsheet" do
+    it "should process multiple associations in excel spreadsheet", :fail => true do
 
       loader = ExcelLoader.new(Project)
 
       count = Project.count
       loader.perform_load( ifixture_file('ProjectsMultiCategories.xls' ))
 
-      loader.loaded_count.should == (Project.count - count)
+      expect(loader.loaded_count).to eq (Project.count - count)
 
       {'004' => 3, '005' => 1, '006' => 0, '007' => 1 }.each do|title, expected|
         project = Project.find_by_title(title)
@@ -90,7 +90,7 @@ describe 'Excel Loader' do
 
     end
 
-    it "should process multiple associations with lookup specified in column from excel spreedsheet" do
+    it "should process multiple associations with lookup specified in column from excel spreadsheet" do
 
       loader = ExcelLoader.new(Project)
 

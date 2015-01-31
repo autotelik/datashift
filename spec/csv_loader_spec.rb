@@ -50,7 +50,7 @@ describe 'Csv Loader' do
 
   it "should process multiple associationss from single column" do
 
-    DataShift::MethodDictionary.find_operators( Category )
+    DataShift::ModelMethodsManager.find_methods( Category )
 
     DataShift::MethodDictionary.build_method_details( Category )
 

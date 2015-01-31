@@ -72,7 +72,7 @@ module DataShift
             
         unless(@attach_to_klass.nil? || (MethodDictionary::for?(@attach_to_klass) && options[:reload] == false))
           #puts "Building Method Dictionary for class #{object_class}"
-          DataShift::MethodDictionary.find_operators( @attach_to_klass, :reload => options[:reload], :instance_methods => true )
+          DataShift::ModelMethodsManager.find_methods( @attach_to_klass, :reload => options[:reload], :instance_methods => true )
         
           # Create dictionary of data on all possible 'setter' methods which can be used to
           # populate or integrate an object of type @load_object_class

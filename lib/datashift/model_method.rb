@@ -1,47 +1,37 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Aug 2010
+# Date ::     Aug 2015
 # License::   MIT
 #
-# Details::   This class provides info and access to the details of individual population methods
-#             on an AR model. Populated by, and coupled with MethodMapper,
-#             which does the model interrogation work and stores sets of MethodDetails.
-#
-#             Enables 'loaders' to iterate over the MethodMapper results set,
-#             and assign values to AR object, without knowing anything about that receiving object.
+# Details::   This class holds info on a domain model's method,
+#             providing access to the details of an objects population methods
 #
 require 'set'
 
 module DataShift
 
-  class MethodDetail
+  class ModelMethod
 
     include DataShift::Logging
-      
+
     def self.supported_types_enum
-      @type_enum ||= Set[:assignment, :belongs_to, :has_one, :has_many]
+      @type_enum ||= Set[:assignment, :belongs_to, :has_one, :has_many, :method]
       @type_enum
     end
 
     def self.association_types_enum
-      @assoc_type_enum ||= Set[:belongs_to, :has_one, :has_many]
+      @assoc_type_enum ||= Set[:belongs_to, :has_one, :has_many, :method]
       @assoc_type_enum
     end
-
 
     def self.is_association_type? ( type )
       association_types_enum.member?( type )
     end
 
-
     # Klass is the class of the 'parent' object i.e with the associations,
     # For example Product which may have operator orders
     attr_accessor :klass
-    
-    # Name is the raw, client supplied name e.g Orders
-    attr_accessor :name
-    attr_accessor :column_index
-  
+
     # The rel col type from the DB
     attr_reader :col_type
 
@@ -50,41 +40,32 @@ module DataShift
     # The type of operator e.g :assignment, :belongs_to, :has_one, :has_many etc
     attr_reader :operator, :operator_type
 
-    # TODO make it a list/primary keys
-    # Additional helpers for where clauses
-    attr_accessor :find_by_operator, :find_by_value
-        
     # Store the raw (client supplied) name against the active record  klass(model).
     # Operator is the associated method call on klass,
     # i.e client supplies name 'Price' in a spreadsheet, 
     # but true operator to call on klass is price
+    #
+    # type determines the style of operator call; simple assignment, an association or a method call
     # 
     # col_types can typically be derived from klass.columns - set of ActiveRecord::ConnectionAdapters::Column
 
-    def initialize(client_name, klass, operator, type, col_types = {}, find_by_operator = nil, find_by_value = nil )
-      @klass, @name = klass, client_name
-      @find_by_operator = find_by_operator
-      @find_by_value = find_by_value
+    def initialize(klass, operator, type, col_type = nil)
+      @klass = klass
 
-      if( MethodDetail::supported_types_enum.member?(type.to_sym) )
+      if( ModelMethod::supported_types_enum.member?(type.to_sym) )
         @operator_type = type.to_sym
       else
-        raise "Bad operator Type #{type} passed to Method Detail"
+        raise BadOperatorType.new("No such operator Type [#{type}] cannot instantiate ModelMethod for #{operator}")
       end
 
       @operator = operator
-    
+
       # Note : Not all assignments will currently have a column type, for example
       # those that are derived from a delegate_belongs_to
-      if(col_types.empty?)
-        @col_type = klass.columns.find{ |col| col.name == operator }
-      else
-        @col_type = col_types[operator]
-      end
-      
-      @column_index = -1
-    end
+      @col_type = klass.columns.find{ |col| col.name == operator } if(col_type.nil?)
 
+      @col_type = DataShift::ModelMethods::Catalogue.column_type_for(klass, operator) if(col_type.nil?)
+    end
 
     # Return the actual operator's name for supplied method type
     # where type one of :assignment, :has_one, :belongs_to, :has_many etc
@@ -99,16 +80,16 @@ module DataShift
 
     # Return the operator's expected class name, if can be derived, else nil
     def operator_class_name()
-      @operator_class_name ||= 
-        if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))
-   
-        get_operator_class.name
-  
-      elsif(@col_type)
-        @col_type.type.to_s.classify
-      else
-        ""
-      end
+      @operator_class_name ||=
+          if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))
+
+            get_operator_class.name
+
+          elsif(@col_type)
+            @col_type.type.to_s.classify
+          else
+            ""
+          end
 
       @operator_class_name
     end
@@ -119,16 +100,12 @@ module DataShift
       @operator_class
     end
 
-    def pp
-      "#{@name} => #{operator}"
-    end
 
     private
 
     # Return the operator's expected class, if can be derived, else nil
-    # TODO rspec- can reflect_on_association ever actually fail & do we ever need to try ourselves (badly)
     def get_operator_class()
-      
+
       if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))
 
         result = klass.reflect_on_association(operator)
@@ -136,10 +113,10 @@ module DataShift
         return result.klass if(result)
 
         result = ModelMapper::class_from_string(operator.classify)
-        
+
         if(result.nil?)
           begin
-            
+
             first = klass.to_s.split('::').first
             logger.debug "Trying to find operator class with Parent Namespace #{first}"
 
@@ -148,7 +125,7 @@ module DataShift
             logger.error("Failed to derive Class for #{operator} (#{@operator_type} - #{e.inspect}")
           end
         end
-        
+
         result
 
       elsif(@col_type)
@@ -159,7 +136,7 @@ module DataShift
         nil
       end
     end
-    
+
   end
-  
+
 end

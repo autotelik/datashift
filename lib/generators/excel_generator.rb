@@ -130,7 +130,7 @@ module DataShift
         raise "Failed to create Excel WorkSheet for #{name}" 
       end
         
-      MethodDictionary.find_operators( klass )
+      ModelMethodsManager.find_methods( klass )
     end
   end # ExcelGenerator
   

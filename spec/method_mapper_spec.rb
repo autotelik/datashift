@@ -70,7 +70,7 @@ describe 'Method Mapper' do
     method_details[0].should be_a DataShift::MethodDetail
     
     headers.each_with_index do |c, i|
-      method_details[i].column_index.should == i
+      method_details[i].inbound_data.index.should == i
     end
       
   end
@@ -85,11 +85,10 @@ describe 'Method Mapper' do
     
     expect(method_details.size).to eq 4
     
-    method_details.should_not include nil
-    
     headers.each_with_index do |c, i|
-      method_details[i].column_index.should == i
-      method_details[i].name.should == c
+      expect(method_details[i].valid?).to eq true
+      method_details[i].inbound_index.should == i
+      method_details[i].inbound_name.should == c
       method_details[i].operator.should == operators[i]  
     end
     

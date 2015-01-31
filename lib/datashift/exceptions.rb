@@ -49,6 +49,7 @@ module DataShift
 
 end
 
+DataShift::DataShiftException.generate( "BadOperatorType")
 DataShift::DataShiftException.generate( "ConnectionError")
 DataShift::DataShiftException.generate( "CouldNotAssignAssociation")
 DataShift::DataShiftException.generate( "CreateAttachmentFailed")

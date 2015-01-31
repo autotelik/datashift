@@ -3,7 +3,7 @@
 # Date ::     Aug 2010
 # License::   MIT
 #
-# Details::   A base class that stores details of all possible associations on AR classes and,
+# Details::   Stores details of all possible associations on AR classes and,
 #             given user supplied class and name, attempts to find correct attribute/association.
 #
 #             Derived classes define where the user supplied list of names originates from.
@@ -20,7 +20,9 @@ module DataShift
   class MethodMapper
 
     include DataShift::Logging
-    
+
+    attr_reader :mapped_class
+
     attr_accessor :method_details, :missing_methods
   
     def initialize
@@ -61,16 +63,18 @@ module DataShift
     #   [:include_all]      : Include all headers in processing - takes precedence of :force_inclusion
     #
     def map_inbound_headers_to_methods( klass, columns, options = {} )
-      
+
+      @mapped_class = klass
+
       # If klass not in MethodDictionary yet, add to dictionary all possible operators on klass
       # which can be used to map headers and populate an object of type klass
       unless(MethodDictionary::for?(klass))
-        DataShift::MethodDictionary.find_operators(klass)
+        DataShift::ModelMethodsManager.find_methods(klass)
         
         DataShift::MethodDictionary.build_method_details(klass)
       end 
       
-      mgr = DataShift::MethodDictionary.method_details_mgrs[klass]
+      #mgr = DataShift::MethodDictionary.method_details_mgrs[klass]
        
       forced = [*options[:force_inclusion]].compact.collect { |f| f.to_s.downcase }
       
@@ -82,13 +86,15 @@ module DataShift
         
         if(raw_col_data.nil? or raw_col_data.empty?)
           logger.warn("Column list contains empty or null column at index #{col_index}") 
-          @method_details << nil
+          @method_details << nil # TODO Null MD with only Inbound Info
           next
         end
         
         raw_col_name, where_field, where_value, *data = raw_col_data.split(Delimiters::column_delim)
          
-        md = MethodDictionary::find_method_detail(klass, raw_col_name)
+        md = MethodDictionary::find_method_detail(klass, raw_col_name, )
+
+        puts md.inspect
 
         if(md.nil?)
           if(options[:include_all] || forced.include?(raw_col_name.downcase))
@@ -99,8 +105,7 @@ module DataShift
         
         if(md)
 
-          md.name = raw_col_name
-          md.column_index = col_index
+          md.set_inbound_data( raw_col_name, col_index)
 
           # put data back as string for now - leave it to clients to decide what to do with it later
           Populator::set_header_default_data(md.operator, data.join(Delimiters::column_delim))
@@ -108,22 +113,26 @@ module DataShift
           if(where_field)
             logger.info("Lookup query field [#{where_field}] - specified for association #{md.operator}")
 
-            md.find_by_value = where_value
+           # md.find_by_value = where_value
+
+            #md.add_lookup_field(where_field, where_value)
 
             # Example :
             # Project:name:My Best Project
-            #   User (klass) has_one project (operator) lookup by name  (find_by_operator) == 'My Best Project' (find_by_value)
+            #   User (klass) has_one project (operator) lookup by []name  == 'My Best Project'] (find_by_value)
             #   User.project.where( :name => 'My Best Project')
 
             # check the finder method name is a valid field on the actual association class
 
             if(klass.reflect_on_association(md.operator) &&
                klass.reflect_on_association(md.operator).klass.new.respond_to?(where_field))
-              md.find_by_operator = where_field
+
+              md.inbound_data.add_header_lookup(where_field, where_value)
               logger.info("Complex Lookup specified for [#{md.operator}] : on field [#{md.find_by_operator}] (optional value [#{md.find_by_value}])")
+
             else
               logger.warn("Find by operator [#{where_field}] Not Found on association [#{md.operator}] on Class #{klass.name} (#{md.inspect})")
-              logger.warn("Check column (#{md.column_index}) heading - e.g association field names are case sensitive")
+              logger.warn("Check column (#{md.inbound_data.index}) heading - e.g association field names are case sensitive")
               # TODO - maybe derived loaders etc want this data for another purpose - should we stash elsewhere ?
             end
           end
@@ -159,9 +168,7 @@ module DataShift
     # Returns true if discovered methods contain every operator in mandatory_list
     def contains_mandatory?( mandatory_list )
       a = [*mandatory_list].collect { |f| f.downcase }
-      puts a.inspect
       b = operator_names.collect { |f| f.downcase }
-      puts b.inspect
       (a - b).empty?
     end
 

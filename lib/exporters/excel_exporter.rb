@@ -76,7 +76,7 @@ module DataShift
         excel.create_worksheet( :name => records.first.class.name )
       end
 
-      MethodDictionary.find_operators( klass )
+      ModelMethodsManager.find_methods( klass )
 
       MethodDictionary.build_method_details( klass )
 

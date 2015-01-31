@@ -51,12 +51,7 @@ RSpec.configure do |config|
 
     DatabaseCleaner.clean_with(:truncation)
 
-    DataShift::MethodDictionary.clear
-
-    #TODO this is bad here - remove
-    DataShift::MethodDictionary.find_operators( Project )
-
-    DataShift::MethodDictionary.build_method_details( Project )
+    DataShift::ModelMethods::ManagerDictionary.clear
   end
 
   config.before(:each) do
@@ -69,12 +64,14 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
   end
 
-=begin
+
   shared_context "ClearAndPopulateProject" do
     before(:each) do
+      DataShift::ModelMethods::Manager.clear
+      DataShift::ModelMethods::Manager.find_methods( Project )
     end
   end
-=end
+
 
   def run_in(dir)
     puts "RSpec .. running test in path [#{dir}]"

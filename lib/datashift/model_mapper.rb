@@ -1,7 +1,13 @@
+# Copyright:: (c) Autotelik Media Ltd 2015
+# Author ::   Tom Statter
+# Date ::     Aug 2015
+# License::   MIT
+#
+# Details::   Helpers for mapping to/from inbound data and Classes
+
 module DataShift
 
   class ModelMapper
-
 
     def self.class_from_string_or_raise( klass )
 

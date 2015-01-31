@@ -25,8 +25,8 @@ describe 'Excel Exporter' do
 
   before(:each) do
     MethodDictionary.clear
-    MethodDictionary.find_operators( @klazz )
-    MethodDictionary.find_operators( @assoc_klazz )
+    ModelMethodsManager.find_methods( @klazz )
+    ModelMethodsManager.find_methods( @assoc_klazz )
 
     db_clear()    # todo read up about proper transactional fixtures
 

@@ -18,7 +18,7 @@ describe 'CSV Exporter' do
 
   before(:each) do
     DataShift::MethodDictionary.clear
-    DataShift::MethodDictionary.find_operators( Project )
+    DataShift::ModelMethodsManager.find_methods( Project )
 
     db_clear()    # todo read up about proper transactional fixtures
   end

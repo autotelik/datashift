@@ -65,7 +65,7 @@ module DataShift
         #puts "DEBUG Building Method Dictionary for class #{object_class}"
 
         meth_dict_opts = options.extract!(:reload, :instance_methods)
-        DataShift::MethodDictionary.find_operators( @load_object_class, meth_dict_opts)
+        DataShift::ModelMethodsManager.find_methods( @load_object_class, meth_dict_opts)
 
         # Create dictionary of data on all possible 'setter' methods which can be used to
         # populate or integrate an object of type @load_object_class
@@ -179,26 +179,9 @@ module DataShift
     end
 
 
-    #TODO - Move code into Populator
     # Process columns with a default value specified
     def process_defaults()
-
-      @populator.default_values.each do |dname, dv|
-
-        method_detail = MethodDictionary.find_method_detail( load_object_class, dname )
-
-        if(method_detail)
-          logger.debug "Applying default value [#{dname}] on (#{method_detail.operator})"
-          @populator.prepare_and_assign(method_detail, load_object, dv)
-        else
-          logger.warn "No operator found for default [#{dname}] trying basic assignment"
-          begin
-            @populator.insistent_assignment(load_object, dv, dname)
-          rescue
-            logger.error "Badly specified default - could not set #{dname}(#{dv})"
-          end
-        end
-      end
+      @populator.process_defaults
     end
 
     # Core API - Given a single free text column name from a file, search method mapper for
@@ -266,10 +249,14 @@ module DataShift
 
       where_operator, data = inbound_data.split(Delimiters::name_value_delim)
 
+      puts "inbound_data #{inbound_data}"
+
+      puts "inbound_data #{ where_operator} : #{data}"
+
       md = @populator.current_method_detail
 
       # Find by operator embedded in row takes precedence over operator in column heading
-      if((data.nil? || data.empty?) && md.find_by_operator)
+      if((data.nil? || data.empty?) && md.header_lookup.field)
         if((where_operator.nil? || where_operator.empty?))  #colum completely empty - check for defaults
           if(md.find_by_value)
             data = md.find_by_value
@@ -300,6 +287,8 @@ module DataShift
 
       current_value, current_attribute_hash = @populator.prepare_data(method_detail, value)
 
+      puts "process", value,current_value
+
       # TODO - Move ALL of this into Populator properly
       if(current_method_detail.operator_for(:has_many))
 
@@ -326,7 +315,11 @@ module DataShift
 
             find_by_values = col_values.split(Delimiters::multi_value_delim)
 
+            puts "FIND  1 #{find_by_values.inspect}"
+
             find_by_values << current_method_detail.find_by_value if(current_method_detail.find_by_value)
+
+            puts "FIND  2#{find_by_values.inspect}"
 
             found_values = []
 

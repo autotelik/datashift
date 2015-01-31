@@ -47,7 +47,7 @@ module DataShift
 
         klass = DataShift::ModelMapper.class_from_string_or_raise( model )
 
-        MethodDictionary.find_operators( klass )
+        ModelMethodsManager.find_methods( klass )
 
         MethodDictionary.build_method_details( klass )
 

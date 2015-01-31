@@ -60,7 +60,7 @@ module DataShift
 
       Delimiters.text_delim = options[:text_delim] if(options[:text_delim])
 
-      MethodDictionary.find_operators( klass )
+      DataShift::ModelMethodsManager.find_methods( klass )
 
       MethodDictionary.build_method_details( klass )
 

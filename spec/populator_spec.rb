@@ -107,7 +107,7 @@ describe 'Populator' do
    
     value = 'Get up Lazy fox {:name => \'the_fox\' }'
 
-    DataShift::MethodDictionary.find_operators( Milestone, :instance_methods => true  )
+    DataShift::ModelMethodsManager.find_methods( Milestone, :instance_methods => true  )
     
     DataShift::MethodDictionary.build_method_details( Milestone  )
       
