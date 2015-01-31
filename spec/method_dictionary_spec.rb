@@ -7,8 +7,10 @@
 #             MethodMapper provides the bridge between 'strings' e.g column headings
 #             and a classes different types of assignment operators
 #
-require File.join(File.dirname(__FILE__), 'spec_helper')
-  
+#require File.join(File.dirname(__FILE__), 'spec_helper')
+
+=begin
+
 require 'method_dictionary'
 
 describe 'Method Dictionary' do
@@ -298,3 +300,5 @@ describe 'Method Dictionary' do
   end
 
 end
+
+=end

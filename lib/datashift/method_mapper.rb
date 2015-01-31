@@ -23,10 +23,14 @@ module DataShift
 
     attr_reader :mapped_class
 
-    attr_accessor :method_details, :missing_methods
-  
+    attr_accessor :bindings, :missing_bindings
+
     def initialize
-      @method_details = []
+      reset
+    end
+
+    def reset
+      @bindings, @missing_bindings = [], []
     end
 
     # Build complete picture of the methods whose names listed in columns
@@ -62,109 +66,87 @@ module DataShift
     #       
     #   [:include_all]      : Include all headers in processing - takes precedence of :force_inclusion
     #
-    def map_inbound_headers_to_methods( klass, columns, options = {} )
+    #   [:model_classes]    : Also ensure these classes are included in ModelMethods Dictionary
+
+    def map_inbound_headers( klass, columns, options = {} )
 
       @mapped_class = klass
 
-      # If klass not in MethodDictionary yet, add to dictionary all possible operators on klass
+      # If klass not in Dictionary yet, add to dictionary all possible operators on klass
       # which can be used to map headers and populate an object of type klass
-      unless(MethodDictionary::for?(klass))
-        DataShift::ModelMethodsManager.find_methods(klass)
-        
-        DataShift::MethodDictionary.build_method_details(klass)
-      end 
-      
-      #mgr = DataShift::MethodDictionary.method_details_mgrs[klass]
-       
+      model_method_mgr =  ModelMethods::ManagerDictionary.build_for_klass(klass)
+
+      [*options[:model_classes]].each do |c|
+        ModelMethods::ManagerDictionary.build_for_klass(c) unless(ModelMethods::ManagerDictionary::for?(c))
+      end if(options[:model_classes])
+
       forced = [*options[:force_inclusion]].compact.collect { |f| f.to_s.downcase }
-      
-      @method_details, @missing_methods = [], []
-    
+
+      reset
+
       columns.each_with_index do |col_data, col_index|
 
         raw_col_data = col_data.to_s
-        
+
         if(raw_col_data.nil? or raw_col_data.empty?)
-          logger.warn("Column list contains empty or null column at index #{col_index}") 
-          @method_details << nil # TODO Null MD with only Inbound Info
+          logger.warn("Column list contains empty or null column at index #{col_index}")
+          bindings << NoMethodBinding.new(raw_col_data, col_index)
           next
         end
-        
+
         raw_col_name, where_field, where_value, *data = raw_col_data.split(Delimiters::column_delim)
-         
-        md = MethodDictionary::find_method_detail(klass, raw_col_name, )
 
-        puts md.inspect
+        model_method = model_method_mgr.search(raw_col_name)
 
-        if(md.nil?)
-          if(options[:include_all] || forced.include?(raw_col_name.downcase))
-            logger.debug("Operator #{raw_col_name} not found but forced inclusion operative")
-            md = MethodDictionary::add(klass, raw_col_name)
-          end
-        end
-        
-        if(md)
+        puts model_method.inspect
 
-          md.set_inbound_data( raw_col_name, col_index)
+        model_method =  if(options[:include_all] || forced.include?(raw_col_name.downcase))
+                          logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :method")
+                          model_method_mgr.insert(raw_col_name, :method)
+                        end  if(model_method.nil?)
 
+        if(model_method)
+
+          binding = MethodBinding.new(raw_col_name, col_index, model_method)
+
+          binding.add_column_data(data)
+
+          # TODO - remove
           # put data back as string for now - leave it to clients to decide what to do with it later
-          Populator::set_header_default_data(md.operator, data.join(Delimiters::column_delim))
+          Populator::set_header_default_data(model_method.operator, data.join(Delimiters::column_delim))
 
           if(where_field)
             logger.info("Lookup query field [#{where_field}] - specified for association #{md.operator}")
-
-           # md.find_by_value = where_value
-
-            #md.add_lookup_field(where_field, where_value)
-
-            # Example :
-            # Project:name:My Best Project
-            #   User (klass) has_one project (operator) lookup by []name  == 'My Best Project'] (find_by_value)
-            #   User.project.where( :name => 'My Best Project')
-
-            # check the finder method name is a valid field on the actual association class
-
-            if(klass.reflect_on_association(md.operator) &&
-               klass.reflect_on_association(md.operator).klass.new.respond_to?(where_field))
-
-              md.inbound_data.add_header_lookup(where_field, where_value)
-              logger.info("Complex Lookup specified for [#{md.operator}] : on field [#{md.find_by_operator}] (optional value [#{md.find_by_value}])")
-
-            else
-              logger.warn("Find by operator [#{where_field}] Not Found on association [#{md.operator}] on Class #{klass.name} (#{md.inspect})")
-              logger.warn("Check column (#{md.inbound_data.index}) heading - e.g association field names are case sensitive")
-              # TODO - maybe derived loaders etc want this data for another purpose - should we stash elsewhere ?
-            end
+            binding.add_lookup(model_method, where_field, where_value)
           end
+
         else
-          # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
           logger.warn("No operator or association found for Header #{raw_col_name}")
-          @missing_methods << raw_col_name
+          missing_bindings << NoMethodBinding.new(raw_col_data, col_index)
+          bindings << NoMethodBinding.new(raw_col_data, col_index)
         end
 
-        logger.debug("Column [#{col_data}] (#{col_index}) - mapped to :\n#{md.inspect}")
+        logger.debug("Column [#{col_data}] (#{col_index}) - mapped to :\n#{model_method.inspect}")
 
-        @method_details << md
-        
+        bindings << model_method
+
       end
-     
-      @method_details
+
+      bindings
     end
 
-    
-    # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
-    # 
+
     # The raw client supplied names
     def method_names()
-      @method_details.compact.collect( &:name )
+      bindings.collect( &:inbound_name )
     end
 
     # The true operator names discovered from model
     def operator_names()
-      @method_details.compact.collect( &:operator )
+      bindings.collect( &:operator )
     end
 
-    
+
     # Returns true if discovered methods contain every operator in mandatory_list
     def contains_mandatory?( mandatory_list )
       a = [*mandatory_list].collect { |f| f.downcase }

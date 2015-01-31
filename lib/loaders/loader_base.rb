@@ -130,10 +130,8 @@ module DataShift
     # Core API
     # 
     # Given a list of free text column names from a file, 
-    # map all headers to a MethodDetail instance containing details on operator, look ups etc.
-    # 
-    # These are available through @method_mapper.method_details
-    # 
+    # map all headers to a domain model containing details on operator, look ups etc.
+    #
     # Options:
     #    [:strict]          : Raise an exception of any headers can't be mapped to an attribute/association
     #    [:ignore]          : List of column headers to ignore when building operator map

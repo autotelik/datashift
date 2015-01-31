@@ -20,7 +20,7 @@ module DataShift
     end
 
     def self.association_types_enum
-      @assoc_type_enum ||= Set[:belongs_to, :has_one, :has_many, :method]
+      @assoc_type_enum ||= Set[:belongs_to, :has_one, :has_many]
       @assoc_type_enum
     end
 

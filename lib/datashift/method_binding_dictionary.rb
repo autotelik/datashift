@@ -20,14 +20,14 @@ module DataShift
     end
 
     def self.setters( klass )
-          
+
       # N.B In 1.8 these return strings, in 1.9 symbols.
       # map everything to strings a
       #setters = klass.accessible_attributes.sort.collect( &:to_s )
-      
+
       # remove methods that start with '_'
       @keep_only_pure_setters ||= Regexp.new(/^[a-zA-Z]\w+=/)
-      
+
       setters = klass.instance_methods.grep(@keep_only_pure_setters).sort.collect( &:to_s )
       setters.uniq
     end
@@ -38,119 +38,77 @@ module DataShift
       method_details_mgr <<  md
       return md
     end
-    
-    # Build a thorough and usable picture of the operators by building dictionary of our MethodDetail
-    # objects which can be used to import/export data to objects of type 'klass'
-    # Subsequent calls with same class will return existing mapping
-    # To over ride this behaviour, supply :force => true to force  regeneration
 
-    def self.build_method_details( klass, options = {} )
 
-      return method_details_mgrs[klass] if(method_details_mgrs[klass] && !options[:force])
-
-      method_details_mgr = MethodDetailsManager.new( klass )
-      
-      method_details_mgrs[klass] = method_details_mgr
-            
-      assignments_for(klass).each do |n|
-        method_details_mgr << MethodDetail.new(n, klass, n, :assignment, column_types[klass])
-      end
-        
-      has_one_for(klass).each do |n|
-        method_details_mgr << MethodDetail.new(n, klass, n, :has_one)
-      end
-        
-      has_many_for(klass).each do |n|
-        method_details_mgr << MethodDetail.new(n, klass, n, :has_many)
-      end
-        
-      belongs_to_for(klass).each do |n|
-        method_details_mgr << MethodDetail.new(n, klass, n, :belongs_to)
-      end
-      
-      method_details_mgr
-      
-    end
-    
     # TODO - check out regexp to do this work better plus Inflections ??
     # Want to be able to handle any of ["Count On hand", 'count_on_hand', "Count OnHand", "COUNT ONHand" etc]
     def self.substitutions(external_name)
       name = external_name.to_s
-      
+
       [
-        name.downcase,
-        name.tableize,
-        name.gsub(' ', '_'),
-        name.gsub(' ', '_').downcase,
-        name.gsub(/(\s+)/, '_').downcase,
-        name.gsub(' ', ''),
-        name.gsub(' ', '').downcase,
-        name.gsub(' ', '_').underscore
+          name.downcase,
+          name.tableize,
+          name.gsub(' ', '_'),
+          name.gsub(' ', '_').downcase,
+          name.gsub(/(\s+)/, '_').downcase,
+          name.gsub(' ', ''),
+          name.gsub(' ', '').downcase,
+          name.gsub(' ', '_').underscore
       ]
     end
 
 
-    # Dump out all available operators
-    #
-    def self.dump( klass )
-      method_details_mgr = get_method_details_mgr( klass )
-      #TODO
-    end
-
-
     # For a client supplied name/header - find the operator i.e appropriate call + column type
-    # 
+    #
     # e.g Given users entry in spread sheet check for pluralization, missing underscores etc
     #
     # If not nil, returned method can be used directly in for example klass.new.send( call, .... )
     #
-    def self.find_method_detail( klass, external_name, conditions = nil )
+    def self.find_model_method( klass, external_name, conditions = nil )
+      #def self.find_method_detail( klass, external_name, conditions = nil )
 
-      method_details_mgr = get_method_details_mgr( klass )
-   
-      # first try for an exact match across all association types
-      MethodDetail::supported_types_enum.each do |t|
-        method_detail = method_details_mgr.find(external_name, t)
-        return method_detail.clone if(method_detail)
-      end  
-              
-      # Now try various alternatives of the name
-      substitutions(external_name).each do |n|    
-        # Try each association type, returning first that contains matching operator with name n    
-        MethodDetail::supported_types_enum.each do |t|
-          method_detail = method_details_mgr.find(n, t)
-          return method_detail.clone if(method_detail)
-        end  
+      mm_mgr = ManagerDictionary::for( klass )
+
+      # first try for an exact match with external_name
+      model_method = mm_mgr.search(external_name, type)
+
+      unless(model_method)
+
+        # Now try various alternatives of the name
+        substitutions(external_name).each do |n|
+          model_method = mm_mgr.search(external_name, type)
+          return model_method if(model_method)
+        end
       end
 
-      nil
+      model_method
     end
-    
-    # Assignments can contain things like delegated methods, this returns a matching 
-    # method details only when a true database column   
+
+    # Assignments can contain things like delegated methods, this returns a matching
+    # method details only when a true database column
     def self.find_method_detail_if_column( klass, external_name )
 
       method_details_mgr = get_method_details_mgr( klass )
-      
+
       # first try for an exact match across all association types
       MethodDetail::supported_types_enum.each do |t|
         method_detail = method_details_mgr.find(external_name, t)
-        return method_detail.clone if(method_detail && method_detail.col_type) 
-      end  
-              
+        return method_detail.clone if(method_detail && method_detail.col_type)
+      end
+
       # Now try various alternatives
-      substitutions(external_name).each do |n|    
-        # Try each association type, returning first that contains matching operator with name n    
+      substitutions(external_name).each do |n|
+        # Try each association type, returning first that contains matching operator with name n
         MethodDetail::supported_types_enum.each do |t|
           method_detail = method_details_mgr.find(n, t)
-          return method_detail.clone if(method_detail && method_detail.col_type) 
-        end  
+          return method_detail.clone if(method_detail && method_detail.col_type)
+        end
       end
 
       nil
     end
-    
-    
+
+
     def self.clear
       belongs_to.clear
       has_many.clear
@@ -163,12 +121,12 @@ module DataShift
     def self.column_key(klass, column)
       "#{klass.name}:#{column}"
     end
-    
+
     def self.get_method_details_mgr( klass )
       method_details_mgrs[klass] || MethodDetailsManager.new( klass )
     end
 
-  
+
   end
 
 end

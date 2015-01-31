@@ -19,22 +19,48 @@ module DataShift
 
     attr_reader :model_method
 
-    attr_reader :inbound_data
+    attr_reader :inbound_column
 
     # Is this method detail a valid mapping, aids identifying unmapped/unmappable columns
     attr_accessor :valid
 
+    def operator
+      model_method.operator
+    end
+
     def inbound_name
-      inbound_data.name
+      inbound_column.name
     end
 
     def inbound_index
-      inbound_data.index
+      inbound_column.index
     end
 
-    def set_inbound_data( raw_name, index)
-      inbound_data.name = raw_name
-      inbound_data.index = index
+    def add_column_data(data)
+      inbound_column.data = data
+    end
+
+    # Example :
+    # Project:name:My Best Project
+    #   User (klass) has_one project  lookup where name(field) == 'My Best Project' (value)
+    #   User.project.where( :name => 'My Best Project')
+
+    def add_lookup( model_method, field, value)
+
+      # check the finder method name is a valid field on the actual association class
+      klass = model_method.mapped_class
+
+      association = klass.reflect_on_association(model_method.operator)
+
+      # TODO - this is instance methods .. what about class methods ?
+      if(association && association.klass.new.respond_to?(where_field))
+        model_method.add_lookup(association.klass, field, value)
+        logger.info("Complex Lookup specified for [#{model_method.operator}] : on field [#{field}] (optional value [#{value}])")
+      else
+        logger.warn("Find by operator [#{field}] Not Found on Association [#{model_method.operator}] with Class #{klass.name}")
+        logger.warn("Check column (#{model_method.inbound_data.index}) heading - e.g association field names are case sensitive")
+        # TODO - maybe derived loaders etc want this data for another purpose - should we stash elsewhere ?
+      end
     end
 
     # Store the raw (client supplied) name against the active record  klass(model).
@@ -46,21 +72,32 @@ module DataShift
     # 
     # col_types can typically be derived from klass.columns - set of ActiveRecord::ConnectionAdapters::Column
 
-    def initialize(client_name, model_method)
-      @inbound_data = InboundColumn.new(client_name)
+    def initialize(name, idx, model_method)
+      @inbound_column = InboundColumn.new(name, idx)
 
       @model_method = model_method
 
-      @valid = TODO
+      @valid = (name.nil? || model_method.nil?) ? false : true
     end
 
     def valid?
-      @valid == true
+      (@valid == true)
     end
 
     def pp
-      "#{@name} => #{model_method.operator}"
+      "#{inbound_name} => #{model_method.operator}"
     end
 
   end
+
+  class NoMethodBinding < MethodBinding
+    def initialize(client_name, client_idx)
+      super(client_name, client_idx, nil)
+    end
+
+    def valid?
+      false
+    end
+  end
+
 end

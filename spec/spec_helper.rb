@@ -67,8 +67,9 @@ RSpec.configure do |config|
 
   shared_context "ClearAndPopulateProject" do
     before(:each) do
-      DataShift::ModelMethods::Manager.clear
-      DataShift::ModelMethods::Manager.find_methods( Project )
+      DataShift::ModelMethods::Catalogue.clear
+      DataShift::ModelMethods::ManagerDictionary.clear
+      DataShift::ModelMethods::ManagerDictionary.build_for_klass( Project )
     end
   end
 

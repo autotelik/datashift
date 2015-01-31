@@ -27,6 +27,13 @@ module DataShift
         @model_methods_list = {}
       end
 
+
+      def insert(operator, type)
+        mm = ModelMethod.new(managed_class, operator, type)
+        add( mm )
+        mm
+      end
+
       def add(model_method)
         model_methods[model_method.operator_type.to_sym] ||= {}
 
@@ -44,10 +51,31 @@ module DataShift
         add(model_method)
       end
 
+      # Search for  matching ModelMethod for given name across all types in supported_types_enum order
+      def search(name)
+        ModelMethod::supported_types_enum.each do |type|
+          model_method = find(name, type)
+          return model_method if(model_method)
+        end
+
+        nil
+      end
+
+      # Return matching ModelMethod for given name and specific type
       def find(name, type)
         model_methods = get(type)
 
         model_methods ? model_methods[name] : nil
+      end
+
+      # Search for  matching ModelMethod for given name across Association types
+      def find_association(name)
+        ModelMethod::association_types_enum.each do |type|
+          model_method = find(name, type)
+          return model_method if(model_method)
+        end
+
+        nil
       end
 
       # type is expected to be one of ModelMethod::supported_types_enum
@@ -103,6 +131,8 @@ module DataShift
       #
       def self.find_methods(klass, options = {} )
 
+        puts "DEBUG: find_methods for [#{klass}]"
+
         raise "Cannot find operators supplied klass nil #{klass}" if(klass.nil?)
 
         register(klass)
@@ -153,8 +183,8 @@ module DataShift
         end
       end
 
-      def self.methods_for?(klass )
-        methods_for.include?(klass)
+      def self.catalogued?(klass)
+        catalogued.include?(klass)
       end
 
       def self.clear
@@ -163,6 +193,7 @@ module DataShift
         assignments.clear
         column_types.clear
         has_one.clear
+        catalogued.clear
       end
 
       def self.belongs_to
@@ -211,15 +242,15 @@ module DataShift
         column_types[klass] ?  column_types[klass][column] : []
       end
 
-  private
+      private
 
-      def self.methods_for
-        @methods_for ||= []
+      def self.catalogued
+        @catalogued ||= []
       end
 
       def self.register(klass)
-        methods_for << klass
-        methods_for.uniq!
+        catalogued << klass
+        catalogued.uniq!
       end
 
     end

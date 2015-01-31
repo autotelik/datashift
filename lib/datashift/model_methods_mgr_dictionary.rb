@@ -23,6 +23,10 @@ module DataShift
         managers[klass]
       end
 
+      def self.for?(klass)
+        managers[klass] != nil
+      end
+
       # Build a thorough and usable picture of the operators which can be
       # used to import/export data to objects of type 'klass'
       #  Stored as a dictionary of ModelMethods objects
@@ -35,7 +39,9 @@ module DataShift
 
         return managers[klass] if(managers[klass] && !options[:force])
 
-        DataShift::ModelMethods::Catalogue.find_methods(klass) unless DataShift::ModelMethods::Catalogue.methods_for?(klass)
+        DataShift::ModelMethods::Catalogue.find_methods(klass) unless DataShift::ModelMethods::Catalogue.catalogued?(klass)
+
+        puts "DEBUG: build_for_klass : #{klass}"
 
         model_method_mgr = Manager.new( klass )
 

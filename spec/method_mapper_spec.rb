@@ -12,34 +12,32 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 require 'method_mapper'
 
 describe 'Method Mapper' do
-   
-  before(:each) do
-    DataShift::MethodDictionary.clear   
-    
-    @method_mapper = DataShift::MethodMapper.new
-  end
- 
+
+  include_context "ClearAndPopulateProject"
+
+  let(:method_mapper)   { DataShift::MethodMapper.new }
+
+  let (:headers)        { [:value_as_string, :owner, :value_as_boolean, :value_as_double] }
+
+  #let(:bindings)        { method_mapper.map_inbound_headers( Project, headers ) }
+
   it "should find a set of methods based on a list of column symbols" do
-     
-    headers = [:value_as_string, :owner, :value_as_boolean, :value_as_double]
-    
-    method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
-    
-    expect(method_details.size).to eq 4
+    bindings = method_mapper.map_inbound_headers( Project, headers )
+    expect(bindings.size).to eq 4
   end
 
   it "should leave nil in set of methods when no such operator" do
      
     headers = [:value_as_string, :owner, :bad_no_such_column, :value_as_boolean, :value_as_double, :more_rubbish_as_nil]
+
+    bindings = method_mapper.map_inbound_headers( Project, headers )
     
-    method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
-    
-    expect(method_details.size).to eq 6
-    
-    method_details[2].should be_nil
-    method_details[5].should be_nil
-    
-    method_details[0].should be_a DataShift::MethodDetail
+    expect(bindings.size).to eq 6
+
+    expect(bindings[2]).to be_a DataShift::NoMethodBinding
+    expect(bindings[5]).to be_a DataShift::NoMethodBinding
+
+    expect(bindings[0]).to be_a DataShift::MethodBinding
     
   end
   
@@ -49,7 +47,7 @@ describe 'Method Mapper' do
     
     @method_mapper.map_inbound_headers_to_methods( Project, headers )
     
-    method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
+    method_details = method_mapper.map_inbound_headers( Project, headers )
     
     expect(method_details.size).to eq 4
     
@@ -63,7 +61,7 @@ describe 'Method Mapper' do
      
     headers = [:value_as_string, :owner, :value_as_boolean, :value_as_double]
     
-    method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
+    method_details = method_mapper.map_inbound_headers( Project, headers )
     
     expect(method_details.size).to eq 4
     
@@ -81,7 +79,7 @@ describe 'Method Mapper' do
     
     operators = %w{ value_as_string owner value_as_boolean value_as_double }
     
-    method_details = @method_mapper.map_inbound_headers_to_methods( Project, headers )
+    method_details = method_mapper.map_inbound_headers( Project, headers )
     
     expect(method_details.size).to eq 4
     

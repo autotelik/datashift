@@ -41,7 +41,6 @@ module DataShift
       @header_default_data ||= {}
     end
 
-
     attr_reader :current_value, :original_value_before_override
     attr_reader :current_col_type
     
@@ -138,8 +137,8 @@ module DataShift
             @current_value = default_value(operator)
           elsif(Populator::header_default_data[operator])
             @current_value = Populator::header_default_data[operator].to_s
-          elsif(Populator::header_default_data[operator])
-            @current_value = Populator::header_default_data[operator].to_s
+          #elsif(Populator::header_default_data[operator])
+           # @current_value = Populator::header_default_data[operator].to_s
           elsif(method_detail.find_by_value)
             @current_value = method_detail.find_by_value
           end if(value.nil? || value.to_s.empty?)
