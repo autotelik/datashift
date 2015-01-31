@@ -12,7 +12,7 @@ module DataShift
 
     include DataShift::Logging
     extend DataShift::Logging
-
+=begin
     # Return true if dictionary has  been populated for  klass
     def self.for?(klass)
       any = has_many[klass] || belongs_to[klass] || has_one[klass] || assignments[klass]
@@ -38,7 +38,7 @@ module DataShift
       method_details_mgr <<  md
       return md
     end
-
+=end
 
     # TODO - check out regexp to do this work better plus Inflections ??
     # Want to be able to handle any of ["Count On hand", 'count_on_hand', "Count OnHand", "COUNT ONHand" etc]
@@ -55,33 +55,6 @@ module DataShift
           name.gsub(' ', '').downcase,
           name.gsub(' ', '_').underscore
       ]
-    end
-
-
-    # For a client supplied name/header - find the operator i.e appropriate call + column type
-    #
-    # e.g Given users entry in spread sheet check for pluralization, missing underscores etc
-    #
-    # If not nil, returned method can be used directly in for example klass.new.send( call, .... )
-    #
-    def self.find_model_method( klass, external_name, conditions = nil )
-      #def self.find_method_detail( klass, external_name, conditions = nil )
-
-      mm_mgr = ManagerDictionary::for( klass )
-
-      # first try for an exact match with external_name
-      model_method = mm_mgr.search(external_name, type)
-
-      unless(model_method)
-
-        # Now try various alternatives of the name
-        substitutions(external_name).each do |n|
-          model_method = mm_mgr.search(external_name, type)
-          return model_method if(model_method)
-        end
-      end
-
-      model_method
     end
 
     # Assignments can contain things like delegated methods, this returns a matching

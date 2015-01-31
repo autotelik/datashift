@@ -24,8 +24,25 @@ module DataShift
     # Is this method detail a valid mapping, aids identifying unmapped/unmappable columns
     attr_accessor :valid
 
+    # Store the raw (client supplied) name against the active record  klass(model).
+    # Operator is the associated method call on klass,
+    # i.e client supplies name 'Price' in a spreadsheet,
+    # but true operator to call on klass is price
+    #
+    # type determines the style of operator call; simple assignment, an association or a method call
+    #
+    # col_types can typically be derived from klass.columns - set of ActiveRecord::ConnectionAdapters::Column
+
+    def initialize(name, idx, model_method)
+      @inbound_column = InboundColumn.new(name, idx)
+
+      @model_method = model_method
+
+      @valid = (name.nil? || model_method.nil?) ? false : true
+    end
+
     def operator
-      model_method.operator
+      model_method ? model_method.operator : ""
     end
 
     def inbound_name
@@ -63,22 +80,7 @@ module DataShift
       end
     end
 
-    # Store the raw (client supplied) name against the active record  klass(model).
-    # Operator is the associated method call on klass,
-    # i.e client supplies name 'Price' in a spreadsheet, 
-    # but true operator to call on klass is price
-    #
-    # type determines the style of operator call; simple assignment, an association or a method call
-    # 
-    # col_types can typically be derived from klass.columns - set of ActiveRecord::ConnectionAdapters::Column
 
-    def initialize(name, idx, model_method)
-      @inbound_column = InboundColumn.new(name, idx)
-
-      @model_method = model_method
-
-      @valid = (name.nil? || model_method.nil?) ? false : true
-    end
 
     def valid?
       (@valid == true)

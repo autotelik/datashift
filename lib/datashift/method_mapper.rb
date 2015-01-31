@@ -96,14 +96,21 @@ module DataShift
 
         raw_col_name, where_field, where_value, *data = raw_col_data.split(Delimiters::column_delim)
 
+        # Find the domain model method details
         model_method = model_method_mgr.search(raw_col_name)
 
-        puts model_method.inspect
+        # if not found via raw name, try various alternatives
+        unless(model_method)
+          MethodMapper::substitutions(raw_col_name).each do |n|
+            model_method = model_method_mgr.search(n)
+            break if(model_method)
+          end
+        end
 
         model_method =  if(options[:include_all] || forced.include?(raw_col_name.downcase))
                           logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :method")
                           model_method_mgr.insert(raw_col_name, :method)
-                        end  if(model_method.nil?)
+                        end if(model_method.nil?)
 
         if(model_method)
 
@@ -120,21 +127,38 @@ module DataShift
             binding.add_lookup(model_method, where_field, where_value)
           end
 
+          logger.debug("Column [#{col_data}] (#{col_index}) - mapped to :\n#{model_method.inspect}")
+
+          bindings << binding
+
         else
           logger.warn("No operator or association found for Header #{raw_col_name}")
           missing_bindings << NoMethodBinding.new(raw_col_data, col_index)
           bindings << NoMethodBinding.new(raw_col_data, col_index)
         end
 
-        logger.debug("Column [#{col_data}] (#{col_index}) - mapped to :\n#{model_method.inspect}")
-
-        bindings << model_method
-
       end
 
       bindings
     end
 
+
+    # TODO - check out regexp to do this work better plus Inflections ??
+    # Want to be able to handle any of ["Count On hand", 'count_on_hand', "Count OnHand", "COUNT ONHand" etc]
+    def self.substitutions(external_name)
+      name = external_name.to_s
+
+      [
+          name.downcase,
+          name.tableize,
+          name.gsub(' ', '_'),
+          name.gsub(' ', '_').downcase,
+          name.gsub(/(\s+)/, '_').downcase,
+          name.gsub(' ', ''),
+          name.gsub(' ', '').downcase,
+          name.gsub(' ', '_').underscore
+      ]
+    end
 
     # The raw client supplied names
     def method_names()

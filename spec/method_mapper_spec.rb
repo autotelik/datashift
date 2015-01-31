@@ -19,8 +19,6 @@ describe 'Method Mapper' do
 
   let (:headers)        { [:value_as_string, :owner, :value_as_boolean, :value_as_double] }
 
-  #let(:bindings)        { method_mapper.map_inbound_headers( Project, headers ) }
-
   it "should find a set of methods based on a list of column symbols" do
     bindings = method_mapper.map_inbound_headers( Project, headers )
     expect(bindings.size).to eq 4
@@ -41,57 +39,55 @@ describe 'Method Mapper' do
     
   end
   
-  it "should map a list of column names to a set of method details" do
+  it "should map a list of column names to a set of method details", :fail => true do
    
     headers = %w{ value_as_double value_as_string bad_no_such_column value_as_boolean  }
-    
-    @method_mapper.map_inbound_headers_to_methods( Project, headers )
-    
-    method_details = method_mapper.map_inbound_headers( Project, headers )
-    
-    expect(method_details.size).to eq 4
-    
-    method_details[2].should be_nil
-   
-    method_details[0].should be_a DataShift::MethodDetail 
-    method_details.last.should be_a DataShift::MethodDetail
+
+    bindings = method_mapper.map_inbound_headers( Project, headers )
+
+    expect(bindings.size).to eq 4
+
+    expect(bindings[2]).to be_a DataShift::NoMethodBinding
+
+    expect(bindings[0]).to be_a  DataShift::MethodBinding
+    expect(bindings.last).to be_a  DataShift::MethodBinding
   end
   
   it "should populate a method detail instance based on column and database info" do
      
     headers = [:value_as_string, :owner, :value_as_boolean, :value_as_double]
+
+    bindings = method_mapper.map_inbound_headers( Project, headers )
     
-    method_details = method_mapper.map_inbound_headers( Project, headers )
-    
-    expect(method_details.size).to eq 4
-    
-    method_details[0].should be_a DataShift::MethodDetail
+    expect(bindings.size).to eq 4
+
+    expect(bindings[0]).to be_a  DataShift::MethodBinding
     
     headers.each_with_index do |c, i|
-      method_details[i].inbound_data.index.should == i
+      expect(bindings[i].inbound_index).to eq i
+      expect(bindings[i].inbound_column.index).to eq i
     end
       
   end
   
-  it "should map between user name and real class operator and store in method detail instance" do
+  it "should map between user name and real class operator and store in method detail instance", :fail => true do
      
     headers = [ "Value as string", 'owner', "value_as boolean", 'Value_As_Double']
     
     operators = %w{ value_as_string owner value_as_boolean value_as_double }
-    
-    method_details = method_mapper.map_inbound_headers( Project, headers )
-    
-    expect(method_details.size).to eq 4
+
+    bindings = method_mapper.map_inbound_headers( Project, headers )
+
+    expect(bindings.size).to eq 4
     
     headers.each_with_index do |c, i|
-      expect(method_details[i].valid?).to eq true
-      method_details[i].inbound_index.should == i
-      method_details[i].inbound_name.should == c
-      method_details[i].operator.should == operators[i]  
+      expect(bindings[i].valid?).to eq true
+      expect(bindings[i].inbound_index).to eq  i
+      expect(bindings[i].inbound_name).to eq  c
+      expect(bindings[i].operator).to eq operators[i]
     end
     
   end
-  
-  
+
   
 end
