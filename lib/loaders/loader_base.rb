@@ -7,12 +7,12 @@
 #             based on a method map and supplied value from a file - i.e a single column/row's string value.
 #             Note that although a single column, the string can be formatted to contain multiple values.
 #
-#             Tightly coupled with MethodMapper classes (in lib/engine) which contains full details of
+#             Tightly coupled with Binder classes (in lib/engine) which contains full details of
 #             a file's column and it's correlated AR associations.
 #
 module DataShift
 
-  require 'datashift/method_mapper'
+  require 'datashift/binder'
   require 'datashift/querying'
 
   class LoaderBase
@@ -72,7 +72,7 @@ module DataShift
         DataShift::MethodDictionary.build_method_details(@load_object_class)
       end
 
-      @method_mapper = DataShift::MethodMapper.new
+      @method_mapper = DataShift::Binder.new
       @config = options.dup    # clone can cause issues like 'can't modify frozen hash'
 
       @verbose = @config[:verbose]

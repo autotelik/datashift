@@ -3,8 +3,8 @@
 # Date ::     Jan 2015
 # License::   MIT
 #
-# Details::   Specs for MethodDetail aspect of Active Record Loader
-#             MethodDetail holds details of a method call on an AR object
+# Details::   Specs for MethodBinding aspect of Active Record Loader
+#             MethodBinding holds details of a method call on an AR object
 #             linked to the incoming column header/index
 #
 require File.join(File.dirname(__FILE__), 'spec_helper')

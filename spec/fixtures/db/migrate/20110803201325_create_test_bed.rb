@@ -76,6 +76,7 @@ class CreateTestBed < ActiveRecord::Migration
 
 
     create_table :long_and_complex_table_linked_to_versions do |t|
+      t.decimal :price
       t.references :version
     end
 

@@ -127,7 +127,7 @@ require_relative 'helpers/core_ext/to_b'
 require_relative 'helpers/core_ext/csv_file'
 
 require_relative 'datashift/method_binding'
-require_relative 'datashift/method_mapper'
+require_relative 'datashift/binder'
 require_relative 'datashift/model_mapper'
 require_relative 'datashift/model_method'
 require_relative 'datashift/model_methods_manager'

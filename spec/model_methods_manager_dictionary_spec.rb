@@ -3,8 +3,8 @@
 # Date ::     Aug 2015
 # License::   MIT
 #
-# Details::   Specs for MethodMapper aspect of Active Record Loader
-#             MethodMapper provides the bridge between 'strings' e.g column headings
+# Details::   Specs for Binder aspect of Active Record Loader
+#             Binder provides the bridge between 'strings' e.g column headings
 #             and a classes different types of assignment operators
 #
 require File.join(File.dirname(__FILE__), 'spec_helper')

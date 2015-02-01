@@ -54,7 +54,7 @@ module DataShift
     end
 
     def add_column_data(data)
-      inbound_column.data = data
+      inbound_column.data << data
     end
 
     # Example :
@@ -65,21 +65,19 @@ module DataShift
     def add_lookup( model_method, field, value)
 
       # check the finder method name is a valid field on the actual association class
-      klass = model_method.mapped_class
+      klass = model_method.klass
 
       association = klass.reflect_on_association(model_method.operator)
 
       # TODO - this is instance methods .. what about class methods ?
-      if(association && association.klass.new.respond_to?(where_field))
-        model_method.add_lookup(association.klass, field, value)
+      if(association && association.klass.new.respond_to?(field))
+        inbound_column.add_lookup(association.klass, field, value)
         logger.info("Complex Lookup specified for [#{model_method.operator}] : on field [#{field}] (optional value [#{value}])")
       else
-        logger.warn("Find by operator [#{field}] Not Found on Association [#{model_method.operator}] with Class #{klass.name}")
-        logger.warn("Check column (#{model_method.inbound_data.index}) heading - e.g association field names are case sensitive")
-        # TODO - maybe derived loaders etc want this data for another purpose - should we stash elsewhere ?
+        logger.error("Check MethodBinding [#{inbound_name}](#{inbound_index}) - Association field names are case sensitive")
+        raise NoSuchOperator.new("Field [#{field}] Not Found on Association [#{model_method.operator}] within Class #{klass.name}")
       end
     end
-
 
 
     def valid?

@@ -17,7 +17,7 @@ describe 'Csv Loader' do
   before(:each) do
     DataShift::MethodDictionary.clear
 
-    @method_mapper = DataShift::MethodMapper.new
+    @method_mapper = DataShift::Binder.new
   end
 
 

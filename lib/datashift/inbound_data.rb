@@ -32,14 +32,14 @@ module DataShift
     attr_accessor :lookup_list, :data
 
     def initialize( in_name, in_index = -1)
-      @name = in_name
+      @name = in_name.to_s
       @index = in_index
 
       @lookup_list = []
-      @data = nil
+      @data = []
     end
 
-    def first
+    def first_lookup
       @lookup_list.first || LookupSupport.new(Class, nil, nil)
     end
 
@@ -48,11 +48,11 @@ module DataShift
     end
 
     def find_by_operator
-      lookup_support_list.first.field
+      first_lookup.field
     end
 
     def find_by_value
-      lookup_support_list.first.value
+      first_lookup.value
     end
 
   end

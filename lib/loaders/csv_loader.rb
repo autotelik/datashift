@@ -8,7 +8,7 @@
 #
 require 'loaders/loader_base'
 require 'datashift/exceptions'
-require 'datashift/method_mapper'
+require 'datashift/binder'
 
 module DataShift
 
