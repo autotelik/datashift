@@ -22,7 +22,7 @@ module DataShift
 
     attr_reader :headers
 
-    attr_accessor :method_mapper
+    attr_accessor :binder, :context
 
     # The inbound row/line number
     attr_accessor :current_row_idx
@@ -48,10 +48,11 @@ module DataShift
     #  :verbose          : Verbose logging and to STDOUT
     #
     def initialize(object_class, object = nil, options = {})
+
       @load_object_class = object_class
 
       logger.info("Loading objects of type #{@load_object_class} (#{object}")
-
+=begin Move to CONTEXT
       @populator = if(options[:populator].is_a?(String))
                      ::Object.const_get(options[:populator]).new
                    elsif(options[:populator].is_a?(Class))
@@ -71,15 +72,13 @@ module DataShift
         # populate or integrate an object of type @load_object_class
         DataShift::MethodDictionary.build_method_details(@load_object_class)
       end
-
-      @method_mapper = DataShift::Binder.new
+=end
+      @binder = DataShift::Binder.new
       @config = options.dup    # clone can cause issues like 'can't modify frozen hash'
 
       @verbose = @config[:verbose]
 
-      @current_row_idx = 0
-
-      @headers = []
+      @headers = Headers.new(:na,  -1)
 
       @reporter = DataShift::Reporter.new
 
@@ -148,32 +147,30 @@ module DataShift
     #           
     #    [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
     #
-    def populate_method_mapper_from_headers( headers, options = {} )
-      @headers = headers
-
+    def bind_headers( headers, options = {} )
       mandatory = options[:mandatory] || []
 
       strict = (options[:strict] == true)
 
       begin
-        @method_mapper.map_inbound_headers_to_methods( load_object_class, @headers, options )
+        @binder.map_inbound_headers(load_object_class, headers, options )
       rescue => e
         puts e.inspect, e.backtrace
         logger.error("Failed to map header row to set of database operators : #{e.inspect}")
         raise MappingDefinitionError, "Failed to map header row to set of database operators"
       end
 
-      unless(@method_mapper.missing_methods.empty?)
-        logger.warn("Following headings couldn't be mapped to #{load_object_class} \n#{@method_mapper.missing_methods.inspect}")
-        raise MappingDefinitionError, "Missing mappings for columns : #{@method_mapper.missing_methods.join(",")}" if(strict)
+      unless(@binder.missing_bindings.empty?)
+        logger.warn("Following headings couldn't be mapped to #{load_object_class} \n#{@binder.missing_bindings.inspect}")
+        raise MappingDefinitionError, "Missing mappings for columns : #{@binder.missing_bindings.join(",")}" if(strict)
       end
 
-      unless(mandatory.empty? || @method_mapper.contains_mandatory?(mandatory) )
-        @method_mapper.missing_mandatory(mandatory).each { |er| puts "ERROR: Mandatory column missing - expected column '#{er}'" }
+      unless(mandatory.empty? || @binder.contains_mandatory?(mandatory) )
+        @binder.missing_mandatory(mandatory).each { |er| puts "ERROR: Mandatory column missing - expected column '#{er}'" }
         raise MissingMandatoryError, "Mandatory columns missing  - please fix and retry."
       end
 
-      @method_mapper
+      @binder
     end
 
 
@@ -182,6 +179,7 @@ module DataShift
       @populator.process_defaults
     end
 
+=begin
     # Core API - Given a single free text column name from a file, search method mapper for
     # associated operator on base object class.
     # 
@@ -199,7 +197,7 @@ module DataShift
         @load_object.errors.add(:base, "No matching method found for column #{column_name}")
       end
     end
-
+=end
 
     # Any Config under key 'LoaderBase' is merged over existing options - taking precedence.
     #  
@@ -227,11 +225,12 @@ module DataShift
         @config.merge!(data[self.class.name])
       end
 
-      @populator.configure_from(load_object_class, yaml_file)
+      ContextFactory.configure(load_object_class, yaml_file)
+
       logger.info("Loader Options : #{@config.inspect}")
     end
 
-
+=begin
     # Return the find_by (where) operator, if specified, otherwise use the heading operator.
     # i.e where operator embedded in row ,takes precedence over operator in column heading
     #
@@ -273,6 +272,8 @@ module DataShift
 
       return where_operator, data
     end
+=end
+
 
     # Process a value string from a column.
     # Assigning value(s) to correct association on @load_object.

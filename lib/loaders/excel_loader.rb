@@ -42,15 +42,38 @@ module DataShift
 
       @sheet = excel.worksheet( sheet_number )
 
-      parse_headers(@sheet, options[:header_row])
+      header_row = options[:header_row] || 0
 
-      raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{header_row_index} contains headers" if(excel_headers.empty?)
+      parse_headers(@sheet, header_row)
+
+      raise MissingHeadersError, "No headers found - Check Sheet #{@sheet} is complete and Row #{header_row} contains headers" if(headers.empty?)
 
       # Create a method_mapper which maps list of headers into suitable calls on the Active Record class
       # For example if model has an attribute 'price' will map columns called Price or price or PRICE etc to this attribute
-      populate_method_mapper_from_headers(excel_headers, options )
+      bind_headers(headers, options )
 
       reporter.reset
+    end
+
+    def parse_headers( sheet,  header_row_idx = 0 )
+
+      @headers = Headers.new(:excel,  header_row_idx)
+
+      header_row = sheet.row(header_row_idx)
+
+      raise MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{header_row_idx} contains headers" unless(header_row)
+
+      # TODO - make more robust - currently end on first empty column
+      # There is no actual max columns in Excel .. you will run out of memory though at some point
+      (0..1024).each do |column|
+        cell = header_row[column]
+        break unless cell
+        header = "#{cell.to_s}".strip
+        break if header.empty?
+        @headers << header
+      end
+
+      @headers
     end
 
     #  Options:
@@ -82,7 +105,7 @@ module DataShift
             current_row_idx = i
             @current_row = row
 
-            next if(current_row_idx == header_row_index)
+            next if(current_row_idx == @headers.idx)
 
             # Excel num_rows seems to return all 'visible' rows, which appears to be greater than the actual data rows
             # (TODO - write spec to process .xls with a huge number of rows)
@@ -171,20 +194,20 @@ module DataShift
       # has_and_belongs_to associations which require the load_object has an id for the join table
 
       # Iterate over method_details, working on data out of associated Excel column
-      @method_mapper.method_details.each_with_index do |method_detail, i|
+      @binder.bindings.each_with_index do |method_binding, i|
 
-        unless method_detail
-          logger.warn("No method_detail found for column (#{i})")
-          next # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
+        unless(method_binding.valid?)
+          logger.warn("No binding was found for column (#{i})") if(@verbose)
+          next
         end
 
-        logger.info "Processing Column #{method_detail.inbound_data.index} (#{method_detail.operator})"
+        logger.info "Processing Column #{method_binding.inbound_data.index} (#{method_binding.operator})"
 
-        value = row[method_detail.inbound_data.index]
+        value = row[method_binding.inbound_data.index]
 
         @contains_data = true unless(value.nil? || value.to_s.empty?)
 
-        process(method_detail, value)
+        process(method_binding, value)
       end
 
     end

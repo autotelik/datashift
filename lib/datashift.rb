@@ -117,6 +117,8 @@ end
 
 require_relative 'datashift/delimiters'
 require_relative 'datashift/column_packer'
+require_relative 'datashift/context'
+require_relative 'datashift/context_factory'
 require_relative 'datashift/logging'
 require_relative 'datashift/exceptions'
 require_relative 'datashift/guards'
