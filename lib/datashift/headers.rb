@@ -21,7 +21,7 @@ module DataShift
 
     def_delegators :@headers, *Array.instance_methods.delete_if {|i| i.match(/__.*/)}
 
-    def initialize(source, idx, headers = [])
+    def initialize(source, idx = 0, headers = [])
       @source = source
       @idx = idx
       @headers = headers

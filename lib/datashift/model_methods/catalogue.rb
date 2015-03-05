@@ -1,120 +1,16 @@
 # Copyright:: (c) Autotelik Media Ltd 2011
 # Author ::   Tom Statter
-# Date ::     Aug 2015
+# Date ::     Feb 2015
 # License::   MIT
 #
-# Details::   Stores complete collection of ModelMethod instances per mapped class.
-#             Provides high level find facilities to find a ModelMethod and to list out
-#             operators per type (has_one, has_many, belongs_to, instance_method etc) 
-#             and all possible operators,
+# Details::   Catalogues all possible methods for populating data on a class
+#
+#             Provides high level find facilities to perform cataloguing on a class
+#             and retrieving operators per type (has_one, has_many, belongs_to, instance_method etc)
 #
 module DataShift
 
   module ModelMethods
-
-    class Manager
-
-      include DataShift::Logging
-      extend DataShift::Logging
-
-      attr_reader :managed_class
-
-      attr_accessor :model_methods, :model_methods_list
-
-      def initialize( klass )
-        @managed_class = klass
-        @model_methods = {}
-        @model_methods_list = {}
-      end
-
-
-      def insert(operator, type)
-        mm = ModelMethod.new(managed_class, operator, type)
-        add( mm )
-        mm
-      end
-
-      def add(model_method)
-        model_methods[model_method.operator_type.to_sym] ||= {}
-
-        # Mapped by Type and MethodDetail name
-        model_methods[model_method.operator_type.to_sym][model_method.operator] = model_method
-
-        # Helper list of all available by type
-        model_methods_list[model_method.operator_type.to_sym] ||= []
-
-        @model_methods_list[model_method.operator_type.to_sym] << model_method
-        @model_methods_list[model_method.operator_type.to_sym].uniq!
-      end
-
-      def <<(model_method)
-        add(model_method)
-      end
-
-      # Search for  matching ModelMethod for given name across all types in supported_types_enum order
-      def search(name)
-        ModelMethod::supported_types_enum.each do |type|
-          model_method = find(name, type)
-          return model_method if(model_method)
-        end
-
-        nil
-      end
-
-      # Return matching ModelMethod for given name and specific type
-      def find(name, type)
-        model_methods = get(type)
-
-        model_methods ? model_methods[name] : nil
-      end
-
-      # Search for  matching ModelMethod for given name across Association types
-      def find_association(name)
-        ModelMethod::association_types_enum.each do |type|
-          model_method = find(name, type)
-          return model_method if(model_method)
-        end
-
-        nil
-      end
-
-      # type is expected to be one of ModelMethod::supported_types_enum
-      # Returns all ModelMethod(s) for supplied type e.g :belongs_to
-      def get( type )
-        @model_methods[type.to_sym]
-      end
-
-      alias_method(:get_model_methods_by_type, :get)
-
-      def get_list( type )
-        @model_methods_list[type.to_sym] || []
-      end
-
-      alias_method(:get_list_of_model_methods, :get_list)
-
-      # Get list of Rails model operators
-      def get_operators(type)
-        get_list(type).collect { |mm| mm.operator }
-      end
-
-      alias_method(:get_list_of_operators, :get_operators)
-
-      def available_operators
-        model_methods_list.values.flatten.collect(&:operator)
-      end
-
-      # A reverse map  showing all operators with their associated 'type'
-      def available_operators_with_type
-        h = {}
-        model_methods_list.each { |t, mms| mms.each do |v| h[v.operator] = t end }
-
-        # this is meant to be more efficient that Hash[h.sort]
-        sh = {}
-        h.keys.sort.each do |k| sh[k] = h[k] end
-        sh
-      end
-    end
-
 
     # HIGH LEVEL COLLECTION METHODS
 
@@ -123,13 +19,21 @@ module DataShift
       include DataShift::Logging
       extend DataShift::Logging
 
+      def self.catalogued?(klass)
+        catalogued.include?(klass)
+      end
+
+      def self.size()
+        catalogued.size
+      end
+
       # Create simple picture of all the operator names for assignment available on a domain model,
       # grouped by type of association (includes belongs_to and has_many which provides both << and = )
       # Options:
       #   :reload => clear caches and re-perform  lookup
       #   :instance_methods => if true include instance method type 'setters' as well as model's pure columns
       #
-      def self.find_methods(klass, options = {} )
+      def self.populate(klass, options = {} )
 
         puts "DEBUG: find_methods for [#{klass}]"
 
@@ -137,7 +41,7 @@ module DataShift
 
         register(klass)
 
-        logger.debug("ModelMethodsManager - building operators information for #{klass}")
+        logger.debug("Catalogue - building operators information for #{klass}")
 
         # Find the has_many associations which can be populated via <<
         if( options[:reload] || has_many[klass].nil? )
@@ -183,9 +87,6 @@ module DataShift
         end
       end
 
-      def self.catalogued?(klass)
-        catalogued.include?(klass)
-      end
 
       def self.clear
         belongs_to.clear
@@ -215,6 +116,19 @@ module DataShift
         @assignments ||= {}
         @assignments
       end
+
+
+      # N.B this return strings for consistency with other collections
+      # Removes methods that start with '_'
+
+      def self.setters( klass )
+
+        @keep_only_pure_setters ||= Regexp.new(/^[a-zA-Z]\w+=/)
+
+        setters = klass.instance_methods.grep(@keep_only_pure_setters).sort.collect( &:to_s )
+        setters.uniq    # TOFIX is this really required ?
+      end
+
 
       def self.column_types
         @column_types ||= {}

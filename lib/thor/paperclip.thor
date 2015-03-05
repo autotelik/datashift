@@ -102,10 +102,10 @@ module Datashift
 
       puts "Using Field #{options[:attach_to_field]} for lookup"
        
-      klazz = ModelMapper::class_from_string( options[:attachment_klass] )     
+      klazz = MapperUtils::class_from_string( options[:attachment_klass] )
       raise "Cannot find Attachment Class #{options[:attachment_klass]}" unless klazz
        
-      attachment_klazz  = ModelMapper::class_from_string( options[:attach_to_klass] )
+      attachment_klazz  = MapperUtils::class_from_string( options[:attach_to_klass] )
       raise "Cannot find Attach to Class #{options[:attach_to_klass]}" unless klazz
       
       opts = options.dup

@@ -32,7 +32,7 @@ module Datashift
     method_option :input, :aliases => '-i', :required => true, :desc => "The input .xls file"
     method_option :config, :aliases => '-c', :desc => "YAML config file with defaults, over-rides etc"
     method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include any associations supplied in the input"
-    method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
+    method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::ModelMethod.supported_types_enum.to_a.inspect}"
     method_option :verbose, :aliases => '-v', :type => :boolean, :desc => "Verbose logging"
      
     def excel()
@@ -45,14 +45,14 @@ module Datashift
 
       model = options[:model]
 
-      klass = DataShift::ModelMapper.class_from_string_or_raise( model )
+      klass = DataShift::MapperUtils.class_from_string_or_raise( model )
 
       loader_options = { :instance_methods => true }
 
       if(options[:loader])
         begin
      
-          loader_klass = DataShift::ModelMapper::class_from_string(options[:loader])
+          loader_klass = DataShift::MapperUtils::class_from_string(options[:loader])
 
           loader = loader_klass.new(klass)
 
@@ -79,7 +79,7 @@ module Datashift
     method_option :input, :aliases => '-i', :required => true, :desc => "The input .xls file"
     method_option :config, :aliases => '-c', :desc => "YAML config file with defaults, over-rides etc"
     method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include any associations supplied in the input"
-    method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
+    method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::ModelMethod.supported_types_enum.to_a.inspect}"
     method_option :verbose, :aliases => '-v', :type => :boolean, :desc => "Verbose logging"
 
     def csv()
@@ -92,7 +92,7 @@ module Datashift
 
       model = options[:model]
 
-      klass = DataShift::ModelMapper.class_from_string_or_raise( model )
+      klass = DataShift::MapperUtils.class_from_string_or_raise( model )
 
       loader = DataShift::CsvLoader.new(klass)
 

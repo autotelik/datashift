@@ -44,7 +44,7 @@ module Datashift
         puts "Output generated in #{result}"
       end
 
-      logger.info "Datashift: Starting mapping template generation in #{result}"
+      logger.info "Datashift: Starting mapping template generation to [#{result}]"
 
       mapper = DataShift::MappingGenerator.new(result)
 
@@ -52,6 +52,7 @@ module Datashift
 
       mappings = String.new
 
+      # if not from Excel and no model, still generate most basic mapping possible
       mappings += mapper.generate(model, options) unless(model.nil? && options[:excel])
 
       mappings += mapper.generate_from_excel(options[:excel], options) if(options[:excel])

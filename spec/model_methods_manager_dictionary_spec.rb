@@ -3,51 +3,46 @@
 # Date ::     Aug 2015
 # License::   MIT
 #
-# Details::   Specs for Binder aspect of Active Record Loader
-#             Binder provides the bridge between 'strings' e.g column headings
-#             and a classes different types of assignment operators
 #
 require File.join(File.dirname(__FILE__), 'spec_helper')
-  
-#require 'model_methods_mgr_dictionary'
 
 describe ':ModelMethods ManagerDictionary' do
   
   before(:each) do
-    DataShift::ModelMethods::ManagerDictionary.clear
+    DataShift::ModelMethods::Manager.clear
   end
   
   it "should provide a dictionary of class => manager" do
-    expect(DataShift::ModelMethods::ManagerDictionary.managers).to be_a Hash
-    expect(DataShift::ModelMethods::ManagerDictionary.managers.empty?).to eq true
+    expect(DataShift::ModelMethods::Manager.managers).to be_a Hash
+    expect(DataShift::ModelMethods::Manager.managers.empty?).to eq true
   end
 
   it "should provide a dictionary of class => manager" do
 
-    expect(DataShift::ModelMethods::ManagerDictionary.managers[Milestone]).to be_nil
+    expect(DataShift::ModelMethods::Manager.managers[Milestone]).to be_nil
 
-    DataShift::ModelMethods::ManagerDictionary.build_for_klass(Milestone)
+    DataShift::ModelMethods::Manager.catalog_class(Milestone)
 
-    expect(DataShift::ModelMethods::ManagerDictionary.managers[Milestone]).to be_a  DataShift::ModelMethods::Manager
+    expect(DataShift::ModelMethods::Manager.managers[Milestone]).to be_a  DataShift::ModelMethods::Collection
 
-    expect(DataShift::ModelMethods::ManagerDictionary.managers.size).to eq 1
+    expect(DataShift::ModelMethods::Manager.managers.size).to eq 1
   end
 
 
   it "should provide access to a manager" do
-    DataShift::ModelMethods::ManagerDictionary.build_for_klass(Milestone)
+    DataShift::ModelMethods::Manager.catalog_class(Milestone)
 
-    expect(DataShift::ModelMethods::ManagerDictionary.managers[Milestone]).to be_a DataShift::ModelMethods::Manager
+    expect(DataShift::ModelMethods::Manager.managers[Milestone]).to be_a DataShift::ModelMethods::Collection
 
-    expect(DataShift::ModelMethods::ManagerDictionary.managers[Milestone]).to eq DataShift::ModelMethods::ManagerDictionary.for(Milestone)
+    expect(DataShift::ModelMethods::Manager.managers[Milestone]).to eq DataShift::ModelMethods::Manager.for(Milestone)
   end
 
   it "should populate assignment operators for method details for different forms of a column name" do
 
-    DataShift::ModelMethods::ManagerDictionary.build_for_klass(Project)
-    DataShift::ModelMethods::ManagerDictionary.build_for_klass(Milestone)
+    DataShift::ModelMethods::Manager.catalog_class(Project)
+    DataShift::ModelMethods::Manager.catalog_class(Milestone)
 
-      manager =  DataShift::ModelMethods::ManagerDictionary.for(Project)
+      manager =  DataShift::ModelMethods::Manager.for(Project)
 
       expect(manager.managed_class).to eq  Project
 

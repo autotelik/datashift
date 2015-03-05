@@ -64,7 +64,7 @@ module DataShift
       method_details_mgr = get_method_details_mgr( klass )
 
       # first try for an exact match across all association types
-      MethodDetail::supported_types_enum.each do |t|
+      ModelMethod.supported_types_enum.each do |t|
         method_detail = method_details_mgr.find(external_name, t)
         return method_detail.clone if(method_detail && method_detail.col_type)
       end
@@ -72,7 +72,7 @@ module DataShift
       # Now try various alternatives
       substitutions(external_name).each do |n|
         # Try each association type, returning first that contains matching operator with name n
-        MethodDetail::supported_types_enum.each do |t|
+        ModelMethod.supported_types_enum.each do |t|
           method_detail = method_details_mgr.find(n, t)
           return method_detail.clone if(method_detail && method_detail.col_type)
         end

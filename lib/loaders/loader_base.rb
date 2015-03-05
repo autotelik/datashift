@@ -78,7 +78,7 @@ module DataShift
 
       @verbose = @config[:verbose]
 
-      @headers = Headers.new(:na,  -1)
+      @headers = DataShift::Headers.new(:na)
 
       @reporter = DataShift::Reporter.new
 

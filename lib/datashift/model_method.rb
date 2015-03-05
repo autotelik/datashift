@@ -1,10 +1,12 @@
 # Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Aug 2015
+# Date ::     Feb 2015
 # License::   MIT
 #
-# Details::   This class holds info on a domain model's method,
-#             providing access to the details of an objects population methods
+# Details::   This class holds info on a single Method callable on a domain Model
+#             By holding information on the Type inbound data can be manipulated
+#             into the right format for the style of operator; simple assignment,
+#             appending to an association collection or a method call
 #
 require 'set'
 
@@ -13,6 +15,8 @@ module DataShift
   class ModelMethod
 
     include DataShift::Logging
+
+    # List of supported operator types e.g :assignment, :belongs_to, :has_one, :has_many etc
 
     def self.supported_types_enum
       @type_enum ||= Set[:assignment, :belongs_to, :has_one, :has_many, :method]
@@ -40,12 +44,8 @@ module DataShift
     # The type of operator e.g :assignment, :belongs_to, :has_one, :has_many etc
     attr_reader :operator, :operator_type
 
-    # Store the raw (client supplied) name against the active record  klass(model).
-    # Operator is the associated method call on klass,
-    # i.e client supplies name 'Price' in a spreadsheet, 
-    # but true operator to call on klass is price
-    #
-    # type determines the style of operator call; simple assignment, an association or a method call
+    # Operator is a population type method call on klass
+    # Type determines the style of operator call; simple assignment, an association or a method call
     # 
     # col_types can typically be derived from klass.columns - set of ActiveRecord::ConnectionAdapters::Column
 
@@ -112,7 +112,7 @@ module DataShift
 
         return result.klass if(result)
 
-        result = ModelMapper::class_from_string(operator.classify)
+        result = MapperUtils::class_from_string(operator.classify)
 
         if(result.nil?)
           begin
@@ -120,7 +120,7 @@ module DataShift
             first = klass.to_s.split('::').first
             logger.debug "Trying to find operator class with Parent Namespace #{first}"
 
-            result = ModelMapper::const_get_from_string("#{first}::#{operator.classify}")
+            result = MapperUtils::const_get_from_string("#{first}::#{operator.classify}")
           rescue => e
             logger.error("Failed to derive Class for #{operator} (#{@operator_type} - #{e.inspect}")
           end

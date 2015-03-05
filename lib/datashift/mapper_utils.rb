@@ -1,19 +1,19 @@
 # Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Aug 2015
+# Date ::     Feb 2015
 # License::   MIT
 #
 # Details::   Helpers for mapping to/from inbound data and Classes
 
 module DataShift
 
-  class ModelMapper
+  class MapperUtils
 
     def self.class_from_string_or_raise( klass )
 
       ruby_klass = begin
                      # support modules e.g "Spree::Property")
-        ModelMapper::class_from_string(klass)  #Kernel.const_get(model)
+        MapperUtils::class_from_string(klass)  #Kernel.const_get(model)
       rescue NameError => e
         puts e
         raise Thor::Error.new("ERROR: No such Class [#{klass}] found - check valid model supplied")
@@ -43,7 +43,7 @@ module DataShift
     #
     def self.class_from_string( str )
       begin
-        ModelMapper::const_get_from_string(str.to_s)  #Kernel.const_get(model)
+        MapperUtils::const_get_from_string(str.to_s)  #Kernel.const_get(model)
       rescue
         return nil
       end

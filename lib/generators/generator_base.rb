@@ -13,7 +13,7 @@ module DataShift
 
     def initialize(filename)
       @filename = filename
-      @headers = []
+      @headers = Headers.new(:na)
       @remove_list =[]
     end
 
@@ -22,14 +22,13 @@ module DataShift
     end
 
 
-    # Parse options and build collection of headers for a method_details_mgr wrapping a class
-    # based on association requirements,
+    # Parse options and build collection of headers
     #
     # Default is to include *everything*
     #
     # * <tt>:exclude</tt> - Association TYPE(s) to exclude completely.
     #
-    #     Possible association_type values are given by MethodDetail::supported_types_enum
+    #     Possible association_type values are given by ModelMethod.supported_types_enum
     #       ... [:assignment, :belongs_to, :has_one, :has_many]
     #
     # * <tt>:remove</tt> - Array of header names to remove
@@ -38,22 +37,21 @@ module DataShift
     #
     # * <tt>:include_rails</tt> - Specify to keep Rails columns in mappings
     #
-    def prepare_model_headers(method_details_mgr, options = {})
+    def prepare_model_headers(collection, options = {})
 
-      work_list = MethodDetail::supported_types_enum.to_a - [ *options[:exclude] ]
+      op_type_list = ModelMethod.supported_types_enum.to_a - [ *options[:exclude] ]
 
-      @headers = []
+      @headers = Headers.new(collection.klass)
 
-      work_list.each do |assoc_type|
-        method_details_for_assoc_type = method_details_mgr.get_list_of_method_details(assoc_type)
+      op_type_list.each do |assoc_type|
 
-        next if(method_details_for_assoc_type.nil? || method_details_for_assoc_type.empty?)
+        model_methods = collection.by_optype(assoc_type)
 
-        method_details_for_assoc_type.each do |md|
+        model_methods.each do |mm|
           #comparable_association = md.operator.to_s.downcase.to_sym
           #i = remove_list.index { |r| r == comparable_association }
           #(i) ? remove_list.delete_at(i) : @headers << "#{md.operator}"
-          @headers << md.operator
+          @headers << mm.op.operator
         end
       end
 

@@ -1,30 +1,27 @@
 # Copyright:: (c) Autotelik Media Ltd 2011
 # Author ::   Tom Statter
-# Date ::     Aug 2015
+# Date ::     Feb 2015
 # License::   MIT
 #
-# Details::   Map classes => model method managers
+# Details::   Just a high level helper to Map Class => Collections of model methods
 #
-#             class => [operators]
 #
-
 module DataShift
 
   module ModelMethods
 
-    # Stores ModelMethods for a class mapped by type
-    class ManagerDictionary
+    class Manager
 
-      def self.managers
-        @model_method_mgrs ||= {}
+      def self.collections
+        collections ||= {}
       end
 
       def self.for(klass)
-        managers[klass]
+        collections[klass]
       end
 
       def self.for?(klass)
-        managers[klass] != nil
+        collections[klass] != nil
       end
 
       # Build a thorough and usable picture of the operators which can be
@@ -35,40 +32,40 @@ module DataShift
       # To over ride this behaviour, supply
       #   :force => true to force  regeneration
 
-      def self.build_for_klass( klass, options = {} )
+      def self.catalog_class( klass, options = {} )
 
-        return managers[klass] if(managers[klass] && !options[:force])
+        return collections[klass] if(collections[klass] && !options[:force])
 
-        DataShift::ModelMethods::Catalogue.find_methods(klass) unless DataShift::ModelMethods::Catalogue.catalogued?(klass)
+        ModelMethods::Catalogue.find_methods(klass) unless ModelMethods::Catalogue.catalogued?(klass)
 
         puts "DEBUG: build_for_klass : #{klass}"
 
-        model_method_mgr = Manager.new( klass )
+        collection = ModelMethods::Collection.new( klass )
 
         DataShift::ModelMethods::Catalogue.assignments_for(klass).each do |n|
-          model_method_mgr <<  ModelMethod.new(klass, n, :assignment)
+          collection <<  ModelMethod.new(klass, n, :assignment)
         end
 
         DataShift::ModelMethods::Catalogue.has_one_for(klass).each do |n|
-          model_method_mgr <<  ModelMethod.new(klass, n, :has_one)
+          collection <<  ModelMethod.new(klass, n, :has_one)
         end
 
         DataShift::ModelMethods::Catalogue.has_many_for(klass).each do |n|
-          model_method_mgr <<  ModelMethod.new(klass, n, :has_many)
+          collection <<  ModelMethod.new(klass, n, :has_many)
         end
 
         DataShift::ModelMethods::Catalogue.belongs_to_for(klass).each do |n|
-          model_method_mgr <<  ModelMethod.new(klass, n, :belongs_to)
+          collection <<  ModelMethod.new(klass, n, :belongs_to)
         end
 
-        managers[klass] = model_method_mgr
+        collections[klass] = collection
 
-        model_method_mgr
+        collection
 
       end
 
       def self.clear
-        managers.clear
+        collections.clear
       end
 
     end

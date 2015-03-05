@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+ruby '2.1.5'
 
 # DEFINE WHICH VERSIONS ON VITAL GEMS WE WANT TO TEST WITH
 
@@ -27,5 +28,10 @@ end
 
 platform :ruby do
   gem 'sqlite3'
+end
+
+group :test do
+  # not sure about suitablity of this yet
+  # gem "fakefs", :require => "fakefs/safe"
 end
 

@@ -50,8 +50,6 @@ RSpec.configure do |config|
     migrate_up
 
     DatabaseCleaner.clean_with(:truncation)
-
-    DataShift::ModelMethods::ManagerDictionary.clear
   end
 
   config.before(:each) do
@@ -64,12 +62,20 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
   end
 
+  shared_context "ClearAllCatalogues" do
+    before(:each) do
+      DataShift::ModelMethods::Catalogue.clear
+      DataShift::ModelMethods::Manager.clear
+    end
+  end
+
 
   shared_context "ClearAndPopulateProject" do
     before(:each) do
       DataShift::ModelMethods::Catalogue.clear
-      DataShift::ModelMethods::ManagerDictionary.clear
-      DataShift::ModelMethods::ManagerDictionary.build_for_klass( Project )
+      DataShift::ModelMethods::Catalogue.populate( Project )
+
+      DataShift::ModelMethods::Manager.clear
     end
   end
 
@@ -134,6 +140,8 @@ RSpec.configure do |config|
       FileUtils.mkdir(results_path) unless File.exists?(results_path);
     end
   end
+
+  alias :clear_results_dir :results_clear
   
   def set_logger( name = 'datashift_spec.log')
     

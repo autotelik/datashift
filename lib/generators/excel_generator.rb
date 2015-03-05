@@ -59,7 +59,7 @@ module DataShift
     #   You can specify a hash of {association_type => [array of association names] }
     #   to exclude from the template.
     #   
-    #     Possible association_type values are given by MethodDetail::supported_types_enum
+    #     Possible association_type values are given by ModelMethod.supported_types_enum
     #       ... [:assignment, :belongs_to, :has_one, :has_many]
     #       
     # * <tt>:remove</tt> - Association NAME(s) to remove .. :title, :id, :name
@@ -73,7 +73,7 @@ module DataShift
          
       MethodDictionary.build_method_details( klass )
            
-      work_list = MethodDetail::supported_types_enum.to_a - [ *options[:exclude] ]
+      work_list = ModelMethod.supported_types_enum.to_a - [ *options[:exclude] ]
         
       prep_remove_list(options)    
       

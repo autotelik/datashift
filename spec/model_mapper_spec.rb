@@ -23,7 +23,7 @@ describe 'ModelMapper' do
     # returns nil if no such class found
     # Support modules e.g "Spree::Property"
     #
-    expect(DataShift::ModelMapper.class_from_string( Project)).to be_a Class
+    expect(DataShift::MapperUtils.class_from_string( Project)).to be_a Class
 
   end
 
@@ -32,7 +32,7 @@ describe 'ModelMapper' do
     # returns nil if no such class found
     # Support modules e.g "Spree::Property"
     #
-    expect(DataShift::ModelMapper.class_from_string( DataShift::AClassInAModule )).to be_a Class
+    expect(DataShift::MapperUtils.class_from_string( DataShift::AClassInAModule )).to be_a Class
 
   end
 

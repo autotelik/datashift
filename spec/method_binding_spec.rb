@@ -17,7 +17,7 @@ describe 'Method Binding' do
 
   let(:raw_column)  { 'value_as_string' }
 
-  let(:manager)      { DataShift::ModelMethods::ManagerDictionary.for(Project) }
+  let(:manager)      { DataShift::ModelMethods::Manager.for(Project) }
 
   it "should bind details of inbound header to domain model" do
 

@@ -82,7 +82,7 @@ module DataShift
 
       # For each type belongs has_one, has_many etc find the operators
       # and create headers, then for each record call those operators
-      operators = options[:with] || MethodDetail::supported_types_enum
+      operators = options[:with] || ModelMethod.supported_types_enum
 
       excel.ar_to_headers( records, operators)
 

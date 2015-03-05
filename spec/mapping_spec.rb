@@ -1,6 +1,6 @@
 # Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Aug 2015
+# Date ::     Feb 2015
 # License::   MIT
 #
 # Details::   Specs for Mapping aspects
@@ -12,60 +12,68 @@ require 'mapping_generator'
 
 describe 'Mapping Services' do
 
-  before(:all) do
-    DataShift::MethodDictionary.clear
-    DataShift::ModelMethodsManager.find_methods( Project )
-  end
+  include_context "ClearAllCatalogues"
 
   before(:each) do
-    load File.join( rspec_datashift_root,'lib/thor/mapping.thor')
+    results_clear
   end
 
   context 'generation' do
 
-    it "should generate an empty mapping doc" do
+    # maybe more trouble than its worth - more investigation needed
 
-      f = result_file("mapper.yaml")
+    #include FakeFS::SpecHelpers::Rails     # careful where this goes, restrict it's scope to specific contexts
+    #FakeFS.activate!
+    #FakeFS::FileSystem.clone(File.join(DataShift::root_path, 'spec'))
 
-      mapper = DataShift::MappingGenerator.new(f)
+    let(:map_file) { result_file("mapper.yaml") }
 
-      mapper.generate(nil, {:file => f} )
+    let(:mapper) {  DataShift::MappingGenerator.new(map_file) }
 
-      expect(File.exists?(f)).to be true
+    it "should generate a standard default mapping" do
+      result = mapper.generate
+
+      expect(result).to be_a String
+      expect(result).to include 'source_column_heading_0:'
     end
 
+    it "should have a consistent starting title" do
+      result = mapper.generate
+
+      expect(result).to include DataShift::MappingGenerator.title
+    end
+
+    it "should generate a standard default mapping file" do
+      mapper.generate(nil, {:file => map_file} )
+
+      expect(File.exists?(map_file)).to be true
+    end
 
     it "should generate a mapping doc with pre supplied title" do
 
-      f = result_file("mapper.yaml")
+      mapper.generate(nil,  {:file => map_file, title: 'rspec_mappings'} )
 
-      mapper = DataShift::MappingGenerator.new(f)
+      expect(File.exists?(map_file)).to be true
 
-      mapper.generate(nil,  {:file => f} )
-
-      expect(File.exists?(f)).to be true
+      # TODO file matchers like
+      # expect(map_file).have_content(/ blah /)
+      expect( File.read(map_file) ).to include "rspec_mappings"
     end
+
 
     it "should generate a populated mapping doc for a class" do
+      mapper.generate( Project,  {:file => map_file} )
 
-      f = result_file("mapper_project.yaml")
-
-      mapper = DataShift::MappingGenerator.new(f)
-
-      mapper.generate( Project,  {:file => f} )
-
-      expect(File.exists?(f)).to be true
+      expect(File.exists?(map_file)).to be true
+      expect( File.read(map_file) ).to include "Project:"
     end
+
 
     it "should be able to generate a mapping from_excel" do
 
-      f = result_file("mapping_service_excel.yaml")
+      mapper.generate_from_excel(ifixture_file('SimpleProjects.xls'), :file => map_file )
 
-      mapper = DataShift::MappingGenerator.new(f)
-
-      mapper.generate_from_excel(ifixture_file('SimpleProjects.xls'), :file => f )
-
-      expect(File.exists?(f)).to be true
+      expect(File.exists?(map_file)).to be true
 
     end
 
@@ -73,6 +81,16 @@ describe 'Mapping Services' do
       mapping_services = DataShift::MappingService.new(Project)
 
       expect(mapping_services).to be
+    end
+
+  end
+
+  context 'CLI' do
+
+    before(:each) do
+      load File.join( rspec_datashift_root,'lib/thor/mapping.thor')
+
+      results_clear
     end
 
     it "should provide tasks to generate a mapping doc" do
@@ -91,59 +109,62 @@ describe 'Mapping Services' do
 
   end
 
-  it "should be able to read a mapping" do
+  context 'reading' do
 
-    f = result_file("mapping_service_project.yaml")
+    it "should be able to read a mapping" do
 
-    mapper = DataShift::MappingGenerator.new(f)
+      f = result_file("mapping_service_project.yaml")
 
-    mapper.generate(Project, {:file => f} )
+      mapper = DataShift::MappingGenerator.new(f)
 
-    expect(File.exists?(f)).to be true
+      mapper.generate(Project, {:file => f} )
 
-    mapping_service = DataShift::MappingService.new(Project)
+      expect(File.exists?(f)).to be true
 
-    mapping_service.read(f)
+      mapping_service = DataShift::MappingService.new(Project)
 
-    expect(mapping_service.map_file_name).to eq f
+      mapping_service.read(f)
 
-    expect(mapping_service.raw_data).to_not be_empty
-    expect(mapping_service.yaml_data).to_not be_empty
+      expect(mapping_service.map_file_name).to eq f
 
-    expect(mapping_service.mapping_entry).to be_a OpenStruct
+      expect(mapping_service.raw_data).to_not be_empty
+      expect(mapping_service.yaml_data).to_not be_empty
 
-    # puts mapping_service.mapping_entry.inspect
-    expect(mapping_service.mapping_entry.mappings).to be_a Hash
-    expect(mapping_service.mapping_entry['mappings']).to be_a Hash
+      expect(mapping_service.mapping_entry).to be_a OpenStruct
+
+      # puts mapping_service.mapping_entry.inspect
+      expect(mapping_service.mapping_entry.mappings).to be_a Hash
+      expect(mapping_service.mapping_entry['mappings']).to be_a Hash
+
+    end
+
+    it "should be able to use a mapping" do
+
+      f = result_file("mapping_service_project.yaml")
+
+      mapper = DataShift::MappingGenerator.new(f)
+
+      mapper.generate(Project, {:file => f} )
+
+      expect(File.exists?(f)).to be true
+
+      mapping_service = DataShift::MappingService.new(Project)
+
+      mapping_service.read(f)
+
+      expect(mapping_service.map_file_name).to eq f
+
+      expect(mapping_service.raw_data).to_not be_empty
+      expect(mapping_service.yaml_data).to_not be_empty
+
+      expect(mapping_service.mapping_entry).to be_a OpenStruct
+
+      # puts mapping_service.mapping_entry.inspect
+      expect(mapping_service.mapping_entry.mappings).to be_a Hash
+      expect(mapping_service.mapping_entry['mappings']).to be_a Hash
+
+    end
 
   end
-
-  it "should be able to use a mapping" do
-
-    f = result_file("mapping_service_project.yaml")
-
-    mapper = DataShift::MappingGenerator.new(f)
-
-    mapper.generate(Project, {:file => f} )
-
-    expect(File.exists?(f)).to be true
-
-    mapping_service = DataShift::MappingService.new(Project)
-
-    mapping_service.read(f)
-
-    expect(mapping_service.map_file_name).to eq f
-
-    expect(mapping_service.raw_data).to_not be_empty
-    expect(mapping_service.yaml_data).to_not be_empty
-
-    expect(mapping_service.mapping_entry).to be_a OpenStruct
-
-    # puts mapping_service.mapping_entry.inspect
-    expect(mapping_service.mapping_entry.mappings).to be_a Hash
-    expect(mapping_service.mapping_entry['mappings']).to be_a Hash
-
-  end
-
 
 end

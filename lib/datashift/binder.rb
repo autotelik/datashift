@@ -72,10 +72,10 @@ module DataShift
 
       # If klass not in Dictionary yet, add to dictionary all possible operators on klass
       # which can be used to map headers and populate an object of type klass
-      model_method_mgr =  ModelMethods::ManagerDictionary.build_for_klass(klass)
+      model_method_mgr =  ModelMethods::Manager.catalog_class(klass)
 
       [*options[:model_classes]].each do |c|
-        ModelMethods::ManagerDictionary.build_for_klass(c) unless(ModelMethods::ManagerDictionary::for?(c))
+        ModelMethods::Manager.catalog_class(c) unless(ModelMethods::Manager::for?(c))
       end if(options[:model_classes])
 
       forced = [*options[:force_inclusion]].compact.collect { |f| f.to_s.downcase }

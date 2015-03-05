@@ -14,6 +14,10 @@ module DataShift
     include DataShift::Logging
     include ExcelBase
 
+    def self.title
+      @mappings_title ||= "datashift_mappings:\n"
+    end
+
     def initialize(filename)
       super(filename)
     end
@@ -24,7 +28,7 @@ module DataShift
     #
     # * <tt>:model_as_dest</tt> - Override default treatment of using model as the SOURCE
     #
-    # * <tt>:remove</tt> - Array of header names to remove
+    # * <tt>:title</tt> - Top level YAML node
     #
     # Rails columns like id, created_at etc are added to the remove list by default
     #
@@ -34,24 +38,22 @@ module DataShift
     #
     # * <tt>:exclude</tt> - Association TYPE(s) to exclude.
     #
-    #     Possible association_type values are given by MethodDetail::supported_types_enum
+    #     Possible association_type values are given by ModelMethod.supported_types_enum
     #       ... [:assignment, :belongs_to, :has_one, :has_many]
     #
     # * <tt>:file</tt> - Write mappings direct to file name provided
     #
     def generate(model = nil, options = {})
 
-      mappings = "mappings:\n"
+      mappings = options[:title] || MappingGenerator.title
 
       if(model)
 
-        klass = DataShift::ModelMapper.class_from_string_or_raise( model )
+        klass = MapperUtils.class_from_string_or_raise( model )
 
-        ModelMethodsManager.find_methods( klass )
+        collection = ModelMethods::Manager.catalog_class(klass)
 
-        MethodDictionary.build_method_details( klass )
-
-        prepare_model_headers(MethodDictionary.method_details_mgrs[klass], options)
+        prepare_model_headers(collection, options)
 
         if(options[:model_as_dest])
           headers.each_with_index do |s, i|  mappings += "       #srcs_column_heading_#{i}: #{s}\n" end
@@ -66,6 +68,8 @@ module DataShift
 
 EOS
       end
+
+      logger.info("Generating Mapping File [#{options[:file]}]")
 
       File.open(options[:file], 'w')  do |f| f << mappings  end if(options[:file])
 

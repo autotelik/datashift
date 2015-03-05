@@ -43,7 +43,7 @@ module DataShift
       ModelMethodsManager.find_methods( klass )
       MethodDictionary.build_method_details( klass )
 
-      work_list = MethodDetail::supported_types_enum.to_a - [ *options[:exclude] ]
+      work_list = ModelMethod.supported_types_enum.to_a - [ *options[:exclude] ]
 
       prep_remove_list(options)
 

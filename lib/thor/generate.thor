@@ -31,7 +31,7 @@ module Datashift
     method_option :model, :aliases => '-m', :required => true, :desc => "The active record model to export"
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
     method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
-    method_option :exclude, :aliases => '-x',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
+    method_option :exclude, :aliases => '-x',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::ModelMethod.supported_types_enum.to_a.inspect}"
     method_option :remove, :aliases => '-e',  :type => :array, :desc => "Don't generate in template the supplied fields"
     method_option :remove_rails, :type => :boolean, :desc => "Don't generate in template the standard Rails fields: #{DataShift::GeneratorBase::rails_columns.inspect}"
     
@@ -47,7 +47,7 @@ module Datashift
      
       logger.info "Datashift: Start Excel template generation in #{result}"
 
-      klass = DataShift::ModelMapper.class_from_string_or_raise( model )
+      klass = DataShift::MapperUtils.class_from_string_or_raise( model )
       
       begin
         gen = DataShift::ExcelGenerator.new(result)
@@ -78,7 +78,7 @@ module Datashift
     method_option :model, :aliases => '-m', :required => true, :desc => "The active record model to export"
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
     method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
-    method_option :exclude, :aliases => '-x',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
+    method_option :exclude, :aliases => '-x',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::ModelMethod.supported_types_enum.to_a.inspect}"
     
     def csv()
      
@@ -95,7 +95,7 @@ module Datashift
             
       begin
         # support modules e.g "Spree::Property") 
-        klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
+        klass = MapperUtils::class_from_string(model)  #Kernel.const_get(model)
       rescue NameError => e
         puts e
         raise Thor::Error.new("ERROR: No such Model [#{model}] found - check valid model supplied")
@@ -128,7 +128,7 @@ module Datashift
     method_option :prefix, :aliases => '-p', :desc => "For namespaced tables/models specify the table prefix e.g spree_"
     method_option :module, :aliases => '-m', :desc => "For namespaced tables/models specify the Module name e.g Spree"
     method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
-    method_option :exclude, :aliases => '-x',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::MethodDetail::supported_types_enum.to_a.inspect}"
+    method_option :exclude, :aliases => '-x',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::ModelMethod.supported_types_enum.to_a.inspect}"
     method_option :remove, :aliases => '-e',  :type => :array, :desc => "Don't generate the user supplied fields"
     method_option :remove_rails, :type => :boolean, :desc => "Don't generate the standard Rails fields: #{DataShift::GeneratorBase::rails_columns.inspect}"
      
