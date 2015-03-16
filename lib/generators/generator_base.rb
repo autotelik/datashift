@@ -3,16 +3,15 @@
 # Date ::     Aug 2010
 # License::   MIT
 #
-#  Details::  Base class for generators, which provide serivrs to describe a Model in an external format
+#  Details::  Base class for generators, which provide services to describe a Model in an external format
 #
 module DataShift
 
   class GeneratorBase
 
-    attr_accessor :filename, :headers, :remove_list
+    attr_accessor :headers, :remove_list
 
-    def initialize(filename)
-      @filename = filename
+    def initialize()
       @headers = Headers.new(:na)
       @remove_list =[]
     end
@@ -23,7 +22,8 @@ module DataShift
 
 
     # Parse options and build collection of headers
-    #
+    # Provide a ModelMethods::collection
+
     # Default is to include *everything*
     #
     # * <tt>:exclude</tt> - Association TYPE(s) to exclude completely.
@@ -45,19 +45,24 @@ module DataShift
 
       op_type_list.each do |assoc_type|
 
-        model_methods = collection.by_optype(assoc_type)
+        model_methods = collection.for_type(assoc_type)
 
         model_methods.each do |mm|
           #comparable_association = md.operator.to_s.downcase.to_sym
           #i = remove_list.index { |r| r == comparable_association }
           #(i) ? remove_list.delete_at(i) : @headers << "#{md.operator}"
-          @headers << mm.op.operator
+          @headers << mm.operator
         end
       end
 
       remove_headers(options)
 
+      @headers
+
     end
+
+    alias_method :collection_to_headers, :prepare_model_headers
+
 
     # Parse options and remove  headers
     # Specify columns to remove with :

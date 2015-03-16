@@ -1,6 +1,6 @@
 # Copyright:: (c) Autotelik Media Ltd 2011
 # Author ::   Tom Statter
-# Date ::     Aug 2015
+# Date ::     Mar 2015
 # License::   MIT
 #
 # Details::   Specs for ModelMapperManager and associated DataShift::ModelMethodsMgrs::Dictionary
@@ -51,7 +51,7 @@ module DataShift
 
       context 'Collected' do
 
-        include_context "ClearAndPopulateProject"
+        include_context "ClearThenManageProject"
 
         let(:collection) { Collection.new(Project) }
 

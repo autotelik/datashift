@@ -19,24 +19,22 @@ module DataShift
 
     include DataShift::Logging
     include DataShift::Querying
+    include DataShift::Loading
 
+=begin
     attr_reader :headers
+    attr_accessor :reporter
+=end
 
-    attr_accessor :binder, :context
-
-    # The inbound row/line number
-    attr_accessor :current_row_idx
-
-    attr_accessor :load_object_class, :load_object
+    attr_accessor :context
 
     attr_accessor :reporter
-    attr_accessor :populator
 
-    attr_accessor :config, :verbose
+    attr_reader :verbose
 
-
-    def options() return @config; end
-
+    def headers
+      doc_context.headers
+    end
 
     # Setup loading
     # 
@@ -49,38 +47,15 @@ module DataShift
     #
     def initialize(object_class, object = nil, options = {})
 
-      @load_object_class = object_class
+      @doc_context = DocContext.new(object_class)
 
-      logger.info("Loading objects of type #{@load_object_class} (#{object}")
-=begin Move to CONTEXT
-      @populator = if(options[:populator].is_a?(String))
-                     ::Object.const_get(options[:populator]).new
-                   elsif(options[:populator].is_a?(Class))
-                     options[:populator].new
-                   else
-                     DataShift::Populator.new
-                   end
+      @context = nil
 
-      # Gather names of all possible 'setter' methods on AR class (instance variables and associations)
-      if( !MethodDictionary::for?(object_class) || options[:reload] )
-        #puts "DEBUG Building Method Dictionary for class #{object_class}"
-
-        meth_dict_opts = options.extract!(:reload, :instance_methods)
-        DataShift::ModelMethodsManager.find_methods( @load_object_class, meth_dict_opts)
-
-        # Create dictionary of data on all possible 'setter' methods which can be used to
-        # populate or integrate an object of type @load_object_class
-        DataShift::MethodDictionary.build_method_details(@load_object_class)
-      end
-=end
-      @binder = DataShift::Binder.new
-      @config = options.dup    # clone can cause issues like 'can't modify frozen hash'
-
-      @verbose = @config[:verbose]
-
-      @headers = DataShift::Headers.new(:na)
+      logger.info("Loading objects of type #{load_object_class} (#{object})")
 
       @reporter = DataShift::Reporter.new
+
+      @verbose = (options[:verbose] == true)
 
       reset(object)
     end
@@ -125,54 +100,6 @@ module DataShift
     def report
       @reporter.report
     end
-
-    # Core API
-    # 
-    # Given a list of free text column names from a file, 
-    # map all headers to a domain model containing details on operator, look ups etc.
-    #
-    # Options:
-    #    [:strict]          : Raise an exception of any headers can't be mapped to an attribute/association
-    #    [:ignore]          : List of column headers to ignore when building operator map
-    #    [:mandatory]       : List of columns that must be present in headers
-    #  
-    #    [:force_inclusion] : List of columns that do not map to any operator but should be includeed in processing.
-    #                     
-    #       This provides the opportunity for :
-    #       
-    #       1) loaders to provide specific methods to handle these fields, when no direct operator
-    #        is available on the model or it's associations
-    #
-    #       2) Handle delegated methods i.e no direct association but method is on a model throuygh it's delegate
-    #           
-    #    [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
-    #
-    def bind_headers( headers, options = {} )
-      mandatory = options[:mandatory] || []
-
-      strict = (options[:strict] == true)
-
-      begin
-        @binder.map_inbound_headers(load_object_class, headers, options )
-      rescue => e
-        puts e.inspect, e.backtrace
-        logger.error("Failed to map header row to set of database operators : #{e.inspect}")
-        raise MappingDefinitionError, "Failed to map header row to set of database operators"
-      end
-
-      unless(@binder.missing_bindings.empty?)
-        logger.warn("Following headings couldn't be mapped to #{load_object_class} \n#{@binder.missing_bindings.inspect}")
-        raise MappingDefinitionError, "Missing mappings for columns : #{@binder.missing_bindings.join(",")}" if(strict)
-      end
-
-      unless(mandatory.empty? || @binder.contains_mandatory?(mandatory) )
-        @binder.missing_mandatory(mandatory).each { |er| puts "ERROR: Mandatory column missing - expected column '#{er}'" }
-        raise MissingMandatoryError, "Mandatory columns missing  - please fix and retry."
-      end
-
-      @binder
-    end
-
 
     # Process columns with a default value specified
     def process_defaults()
@@ -347,7 +274,7 @@ module DataShift
 
             unless(find_by_values.size == found_values.size)
               found = found_values.collect {|f| f.send(find_operator) }
-              @load_object.errors.add( current_method_detail.operator, "Association with key(s) #{(find_by_values - found).inspect} NOT found")
+              load_object.errors.add( current_method_detail.operator, "Association with key(s) #{(find_by_values - found).inspect} NOT found")
               logger.error "Association [#{current_method_detail.operator}] with key(s) #{(find_by_values - found).inspect} NOT found - Not added."
               next if(found_values.empty?)
             end
@@ -355,7 +282,7 @@ module DataShift
             logger.info("Assigning #{found_values.inspect} (#{found_values.class})")
 
             # Lookup Assoc's Model done, now add the found value(s) to load model's collection
-            @populator.prepare_and_assign(current_method_detail, @load_object, found_values)
+            @populator.prepare_and_assign(current_method_detail, load_object, found_values)
           end # END HAS_MANY
         end
       else
@@ -370,7 +297,7 @@ module DataShift
     # For use case where object saved early but subsequent required columns fail to process
     # so the load object is invalid
 
-    def failure( object = @load_object, rollback = false)
+    def failure( object = load_object, rollback = false)
       if(object)
         @reporter.add_failed_object(object)
 
@@ -385,23 +312,23 @@ module DataShift
     def save_and_report
       unless(save)
         failure
-        logger.error "Failed to save row (#{current_row_idx}) - [#{@current_row}]"
+        logger.error "Failed to save row (#{context.current_row_idx}) - [#{@current_row}]"
         logger.error load_object.errors.inspect if(load_object)
       else
         logger.info("Successfully SAVED Object with ID #{load_object.id} for Row #{@current_row}")
-        @reporter.add_loaded_object(@load_object)
+        @reporter.add_loaded_object(load_object)
         @reporter.success_inbound_count += 1
       end
     end
 
     def save
-      return unless( @load_object )
+      return unless( load_object )
 
-      puts "DEBUG: SAVING #{@load_object.class} : #{@load_object.inspect}" if(verbose)
+      puts "DEBUG: SAVING #{load_object.class} : #{load_object.inspect}" if(verbose)
       begin
-        return @load_object.save
+        return load_object.save
       rescue => e
-        logger.error( "Save Error : #{e.inspect} on #{@load_object.class}")
+        logger.error( "Save Error : #{e.inspect} on #{load_object.class}")
         logger.error(e.backtrace)
       end
 
@@ -411,15 +338,10 @@ module DataShift
     # Reset the loader, including database object to be populated, and load counts
     #
     def reset(object = nil)
-      @load_object = object || new_load_object
-      @reporter.reset
+      doc_context.reset
+      reporter.reset
     end
 
-
-    def new_load_object
-      @load_object = @load_object_class.new
-      @load_object
-    end
 
     def abort_on_failure?
       @config[:abort_on_failure].to_s == 'true'

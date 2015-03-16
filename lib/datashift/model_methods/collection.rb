@@ -95,15 +95,15 @@ module DataShift
 
       alias_method(:get_model_methods_by_type, :get)
 
-      def get_list( type )
-        @by_optype[type.to_sym] || []
+      def for_type( type )
+        by_optype[type.to_sym] || []
       end
 
-      alias_method(:get_list_of_model_methods, :get_list)
+      alias_method :get_list_of_model_methods, :for_type
 
       # Get list of Rails model operators
       def get_operators(type)
-        get_list(type).collect { |mm| mm.operator }
+        for_type(type).collect { |mm| mm.operator }
       end
 
       alias_method(:get_list_of_operators, :get_operators)

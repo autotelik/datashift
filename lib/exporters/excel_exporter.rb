@@ -96,12 +96,12 @@ module DataShift
 
         operators.each do |op_type|     # belongs_to, has_one, has_many etc
 
-          operators_for_type = details_mgr.get_list(op_type)
+          operators_for_type = details_mgr.for_type(op_type)
 
           next if(operators_for_type.nil? || operators_for_type.empty?)
 
           operators_for_type.each do |md|     # actual associations on obj
-            if(MethodDetail.is_association_type?(op_type))
+            if(ModelMethod.is_association_type?(op_type))
               excel[row, column] = record_to_column( obj.send( md.operator ), options )    # pack association into single column
             else
               excel[row, column] = obj.send( md.operator )

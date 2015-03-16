@@ -46,7 +46,7 @@ module Datashift
 
       logger.info "Datashift: Starting mapping template generation to [#{result}]"
 
-      mapper = DataShift::MappingGenerator.new(result)
+      mapper = DataShift::MappingGenerator.new
 
       model = options[:model]
 

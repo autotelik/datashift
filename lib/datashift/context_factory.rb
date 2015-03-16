@@ -46,6 +46,16 @@ module DataShift
 
     end
 
+=begin Move to CONTEXT
+    @populator = if(options[:populator].is_a?(String))
+                   ::Object.const_get(options[:populator]).new
+                 elsif(options[:populator].is_a?(Class))
+                   options[:populator].new
+                 else
+                   DataShift::Populator.new
+                 end
+=end
+
     def self.get_populator(method_binding)
       return populators[method_binding.operator] if(populators[method_binding.operator])
 

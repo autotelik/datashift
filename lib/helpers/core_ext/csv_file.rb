@@ -25,7 +25,7 @@ class CSV
         details_mgr = DataShift::MethodDictionary.method_details_mgrs[records.first.class]
 
         associations.each do |a|
-          details_mgr.get_list(a).each { |md| headers << "#{md.operator}" }
+          details_mgr.for_type(a).each { |md| headers << "#{md.operator}" }
         end if(details_mgr)
 
       else

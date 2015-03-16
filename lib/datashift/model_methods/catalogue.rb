@@ -64,7 +64,11 @@ module DataShift
         # the raw form i.e without the '='  for consistency
         if( options[:reload] || assignments[klass].nil? )
 
-          assignments[klass] = klass.column_names
+          begin
+            assignments[klass] = klass.column_names
+          rescue => x
+            raise DataShiftException.new("Failed to process column_names for class #{klass} - #{x.message}")
+          end
 
           # get into consistent format with other assignments names i.e remove the = for now
           assignments[klass] += setters(klass).map{|i| i.gsub(/=/, '')} if(options[:instance_methods])

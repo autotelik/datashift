@@ -21,7 +21,32 @@ describe 'Thor high level command line tasks' do
   before(:each) do
     db_clear_connections
   end
-  
+
+
+  context 'Mapping CLI' do
+
+    before(:each) do
+      load File.join( rspec_datashift_root,'lib/thor/mapping.thor')
+
+      results_clear
+    end
+
+    it "should provide tasks to generate a mapping doc" do
+
+      opts  = {:model =>  "Project", :result => "#{results_path}"}
+
+      run_in(rails_sandbox()) do
+        output = capture(:stdout) { Datashift::Mapping.new.invoke(:template, [], opts) }
+
+        puts output
+
+        expect(output).to include("Output generated")
+      end
+    end
+
+
+  end
+
   #thor datashift:export:csv -m, --model=MODEL -r, --result=RESULT              ...
   #thor datashift:export:excel -m, --model=MODEL -r, --result=RESULT            ...
   #thor datashift:generate:excel -m, --model=MODEL -r, --result=RESULT          ...

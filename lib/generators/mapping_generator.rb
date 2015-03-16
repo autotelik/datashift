@@ -1,6 +1,6 @@
 # Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Aug 2015
+# Date ::     Mar 2015
 # License::   MIT
 #
 # Details::   Create mappings between systems
@@ -18,17 +18,19 @@ module DataShift
       @mappings_title ||= "datashift_mappings:\n"
     end
 
-    def initialize(filename)
-      super(filename)
+    attr_accessor :output_filename
+
+    def initialize()
+      super
     end
 
     # Create an YAML template for mapping headers
     #
     # Options:
     #
-    # * <tt>:model_as_dest</tt> - Override default treatment of using model as the SOURCE
-    #
     # * <tt>:title</tt> - Top level YAML node
+    #
+    # * <tt>:model_as_dest</tt> - Place model operators as the DESTINATION. Override default treatment using model for SOURCE
     #
     # Rails columns like id, created_at etc are added to the remove list by default
     #
@@ -43,13 +45,15 @@ module DataShift
     #
     # * <tt>:file</tt> - Write mappings direct to file name provided
     #
-    def generate(model = nil, options = {})
+    def generate(klass_or_name = nil, options = {})
 
-      mappings = options[:title] || MappingGenerator.title
+      klass = klass_or_name.is_a?(String) ? MapperUtils.class_from_string_or_raise( klass_or_name ) : klass_or_name
 
-      if(model)
+      mappings = String.new
 
-        klass = MapperUtils.class_from_string_or_raise( model )
+      if(klass)
+
+        mappings = options[:title] || "#{klass.name}:" + "\n"
 
         collection = ModelMethods::Manager.catalog_class(klass)
 
@@ -61,23 +65,30 @@ module DataShift
           headers.each_with_index do |s, i|  mappings += "       #{s}: #dest_column_heading_#{i}\n" end
         end
       else
+
+        mappings = options[:title] || MappingGenerator.title
         mappings += <<EOS
-    ##source_column_heading_0: #dest_column_heading_0
-    ##source_column_heading_1: #dest_column_heading_1
-    ##source_column_heading_2: #dest_column_heading_2
+    # source_column_heading_0: dest_column_heading_0
+    # source_column_heading_1: dest_column_heading_1
+    # source_column_heading_2: dest_column_heading_2
 
 EOS
       end
 
-      logger.info("Generating Mapping File [#{options[:file]}]")
+      if(options[:file])
+        logger.info("Generating Mapping File [#{options[:file]}]")
 
-      File.open(options[:file], 'w')  do |f| f << mappings  end if(options[:file])
+        File.open(options[:file], 'w')  do |f| f << mappings  end
+      end
 
       mappings
 
     end
 
     # Create an YAML template from a Excel spreadsheet for mapping headers
+    #
+    #
+    # * <tt>:title</tt> - Top level YAML node -defaults to MappingGenerator.title
     #
     # * <tt>:model_as_dest</tt> - Override default treatment of using model as the SOURCE
     #
@@ -95,14 +106,14 @@ EOS
 
       sheet = excel.worksheet( sheet_number )
 
-      parse_headers(sheet, options[:header_row])
+      @headers = parse_headers(sheet, options[:header_row] || 0)
 
-      mappings = "mappings:\n"
+      mappings = options[:title] || MappingGenerator.title
 
       if(options[:model_as_dest])
-        excel_headers.each_with_index do |s, i|  mappings += "       #srcs_column_heading_#{i}: #{s}\n" end
+        headers.each_with_index do |s, i|  mappings += "       #srcs_column_heading_#{i}: #{s}\n" end
       else
-        excel_headers.each_with_index do |s, i|  mappings += "       #{s}: #dest_column_heading_#{i}\n" end
+        headers.each_with_index do |s, i|  mappings += "       #{s}: #dest_column_heading_#{i}\n" end
       end
 
       File.open(options[:file], 'w')  do |f| f << mappings  end if(options[:file])

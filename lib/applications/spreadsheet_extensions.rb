@@ -12,7 +12,7 @@ require 'excel_base'
   
 class Spreadsheet::Worksheet 
      
-   include ExcelBase
+   include DataShift::ExcelBase
     
   # Convert array into a header row
   def set_headers(headers, apply_style = nil)

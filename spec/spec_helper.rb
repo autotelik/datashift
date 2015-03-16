@@ -70,13 +70,14 @@ RSpec.configure do |config|
   end
 
 
-  shared_context "ClearAndPopulateProject" do
+  shared_context "ClearThenManageProject" do
+
     before(:each) do
       DataShift::ModelMethods::Catalogue.clear
-      DataShift::ModelMethods::Catalogue.populate( Project )
-
       DataShift::ModelMethods::Manager.clear
     end
+
+    let(:project_collection)  { DataShift::ModelMethods::Manager.catalog_class( Project ) }
   end
 
 
@@ -90,7 +91,7 @@ RSpec.configure do |config|
       Dir.chdir original_dir
     end
   end
-  
+
   def capture(stream)
     begin
       stream = stream.to_s
@@ -102,8 +103,8 @@ RSpec.configure do |config|
     end
 
     result
-  end  
-  
+  end
+
   alias :silence :capture
 
   def rspec_datashift_root()
@@ -113,15 +114,16 @@ RSpec.configure do |config|
   def fixtures_path()
     File.expand_path(File.dirname(__FILE__) + '/fixtures')
   end
-  
+
   def ifixture_file( name )
     File.join(fixtures_path(), name)
   end
-  
+
+
   def results_path
     File.join(fixtures_path(), 'results')
   end
-   
+
   # Return location of an expected results file and ensure tree clean before test
   def result_file( name )
     expect = File.join(results_path, name)
@@ -130,7 +132,7 @@ RSpec.configure do |config|
 
     expect
   end
-  
+
   def results_clear( glob = nil )
     if(glob)
       begin FileUtils.rm_rf( File.join(results_path, glob) ); rescue; end
@@ -142,19 +144,19 @@ RSpec.configure do |config|
   end
 
   alias :clear_results_dir :results_clear
-  
+
   def set_logger( name = 'datashift_spec.log')
-    
+
     require 'logger'
     logdir = File.join(File.dirname(__FILE__), 'log')
     FileUtils.mkdir_p(logdir) unless File.exists?(logdir)
     ActiveRecord::Base.logger = Logger.new( File.join(logdir, name) )
   end
-  
+
   def bundler_setup(gemfile = File.join(DataShift::root_path, 'spec', 'Gemfile') )
-    
+
     $stderr.puts "No Such Gemfile #{gemfile}" unless File.exists?(gemfile)
-    
+
     ENV['BUNDLE_GEMFILE'] = gemfile
     #Bundler.setup
     begin
@@ -166,18 +168,18 @@ RSpec.configure do |config|
       exit e.status_code
     end
   end
-  
+
   def db_clear_connections
     # We have multiple schemas and hence connections tested in single spec directory   
-    ActiveRecord::Base.clear_active_connections!()   
+    ActiveRecord::Base.clear_active_connections!()
   end
-  
+
   def database_yml_path
     File.join(fixtures_path, 'config', 'database.yml')
   end
-  
+
   def db_connect( env = 'test_file')
- 
+
     # Some active record stuff seems to rely on the RAILS_ENV being set ?
 
     ENV['RAILS_ENV'] = env
@@ -186,19 +188,19 @@ RSpec.configure do |config|
 
     # We have multiple schemas and hence connections tested in single spec directory   
     db_clear_connections
-     
+
     configuration = {}
-    
+
     configuration[:database_configuration] = YAML::load( ERB.new( IO.read(database_yml_path) ).result )
     db = configuration[:database_configuration][ env ]
 
     set_logger
-    
+
     puts "Connecting to DB", db.inspect
-    
+
     ActiveRecord::Base.establish_connection( db )
   end
-  
+
   # These are our test models with associations
   def db_clear
     [Project, Milestone, Category, Version, LoaderRelease].each {|x| x.delete_all}
@@ -218,14 +220,24 @@ RSpec.configure do |config|
     File.expand_path('../../spec/rails_sandbox', __FILE__)
   end
 
+  def add_gem(name, gem_options={})
+
+    puts "Append Gemfile with #{name}"
+    parts = ["'#{name}'"]
+    parts << ["'#{gem_options.delete(:version)}'"] if gem_options[:version]
+    gem_options.each { |key, value| parts << "#{key}: '#{value}'" }
+
+    File.open('Gemfile', 'ab') { |file| file.write( "\ngem #{parts.join(', ')}") }
+  end
+
   def rails_sandbox( force = false)
-    
+
     sandbox = rails_sandbox_path
-     
+
     if(force == true && File.exists?(sandbox))
       FileUtils::rm_rf(sandbox)
     end
-    
+
     unless(File.exists?(sandbox))
 
       sandbox_exe_path =  File.expand_path( "#{sandbox}/.." )
@@ -233,26 +245,40 @@ RSpec.configure do |config|
       puts "Creating new Rails sandbox in : #{sandbox_exe_path}"
 
       run_in( sandbox_exe_path ) do |path|
-          
+
         name = File.basename(rails_sandbox_path)
 
         system('rails new ' + name)
-          
+
         puts "Copying over models :", Dir.glob(File.join(fixtures_path, 'models', '*.rb')).inspect
-        
+
         FileUtils::cp_r( Dir.glob(File.join(fixtures_path, 'models', '*.rb')), File.join(name, 'app/models'))
-        
+
         migrations = File.expand_path(File.join(fixtures_path, 'db', 'migrate'), __FILE__)
-        
+
         FileUtils::cp_r( migrations, File.join(rails_sandbox_path, 'db'))
-        
-        puts "Running db:migrate"
+
+        FileUtils::cp_r( File.join(fixtures_path, 'sabdbox_example.thor'), rails_sandbox_path)
       end
 
-      run_in(rails_sandbox_path) { system('bundle exec rake db:migrate') }
+      run_in(rails_sandbox_path) do
+
+        add_gem 'datashift', path: rspec_datashift_root
+
+        puts "Running bundle install"
+
+        system('bundle install')
+
+        system('bundle exec rake db:create')
+
+        system('RAILS_ENV=development bundle exec rake db:migrate')
+        system('RAILS_ENV=test bundle exec rake db:migrate')
+
+        puts "Running db:migrate"
+      end
 
     end
     return sandbox
   end
-  
+
 end

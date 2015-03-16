@@ -58,7 +58,7 @@ describe 'Populator' do
 
     method_detail = DataShift::MethodDictionary.find_method_detail( Project, column_heading )
     
-    expect(method_detail).to be_a  DataShift::MethodDetail
+    expect(method_detail).to be_a  DataShift::ModelMethod
     
     pop_value, attributes = @populator.prepare_data(method_detail, value)
     

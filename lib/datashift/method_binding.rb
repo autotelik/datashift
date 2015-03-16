@@ -34,11 +34,11 @@ module DataShift
     # col_types can typically be derived from klass.columns - set of ActiveRecord::ConnectionAdapters::Column
 
     def initialize(name, idx, model_method)
-      @inbound_column = InboundColumn.new(name, idx)
+      @inbound_column = InboundData::Column.new(name, idx)
 
       @model_method = model_method
 
-      @valid = (name.nil? || model_method.nil?) ? false : true
+      @valid = (name && model_method) ? true : false
     end
 
     def operator

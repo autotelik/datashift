@@ -77,7 +77,7 @@ module DataShift
 
                 unless method_detail
                   logger.warn("No method_detail found for col #{col + 1} #{method_detail}")
-                  next # TODO populate unmapped with a real MethodDetail that is 'null' and create is_nil
+                  next # TODO populate unmapped with a real ModelMethod that is 'null' and create is_nil
                 end
 
                 value = row[col]

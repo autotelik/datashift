@@ -19,7 +19,7 @@ module DataShift
 
     attr_reader :idx
 
-    def_delegators :@headers, *Array.instance_methods.delete_if {|i| i.match(/__.*/)}
+    def_delegators :@headers, *Array.instance_methods.delete_if {|i| i.match(/__.*|class/)}
 
     def initialize(source, idx = 0, headers = [])
       @source = source
@@ -41,6 +41,10 @@ module DataShift
 
     def mapped?
       @mapped
+    end
+
+    def row_index
+      idx
     end
 
   end

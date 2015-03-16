@@ -35,3 +35,5 @@ group :test do
   # gem "fakefs", :require => "fakefs/safe"
 end
 
+
+gem 'datashift', path: '/home/rubyuser/SoftwareDev/git/datashift'

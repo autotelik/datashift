@@ -3,8 +3,8 @@
 # Date ::     Feb 2015
 # License::   MIT
 #
-# Details::   Just a high level helper to Map Class => Collections of model methods
-#
+# Details::   Just a high level helper to build Collections of model methods
+#             and enable quick access via Map of Class => Collection
 #
 module DataShift
 
@@ -13,7 +13,7 @@ module DataShift
     class Manager
 
       def self.collections
-        collections ||= {}
+        @collections ||= {}
       end
 
       def self.for(klass)
@@ -21,7 +21,7 @@ module DataShift
       end
 
       def self.for?(klass)
-        collections[klass] != nil
+        (collections[klass] != nil)
       end
 
       # Build a thorough and usable picture of the operators which can be
@@ -29,16 +29,18 @@ module DataShift
       #  Stored as a dictionary of ModelMethods objects
       #
       # Subsequent calls with same class will return existing mapping
-      # To over ride this behaviour, supply
-      #   :force => true to force  regeneration
+      # To over ride this behaviour, supply :reload
+      #
+      # Options:   TODO - find we are passing through options to other calls alot - good pattern for this ?
 
+      #   :reload => clear caches and re-perform  lookup
+      #   :instance_methods => if true include instance method type 'setters' as well as model's pure columns
+      #
       def self.catalog_class( klass, options = {} )
 
-        return collections[klass] if(collections[klass] && !options[:force])
+        return collections[klass] if(collections[klass] && !options[:reload])
 
-        ModelMethods::Catalogue.find_methods(klass) unless ModelMethods::Catalogue.catalogued?(klass)
-
-        puts "DEBUG: build_for_klass : #{klass}"
+        ModelMethods::Catalogue.populate(klass, options) unless ModelMethods::Catalogue.catalogued?(klass)
 
         collection = ModelMethods::Collection.new( klass )
 

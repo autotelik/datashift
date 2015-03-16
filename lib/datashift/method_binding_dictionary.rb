@@ -34,7 +34,7 @@ module DataShift
 
     def self.add( klass, operator, type = :assignment)
       method_details_mgr = get_method_details_mgr( klass )
-      md = MethodDetail.new(klass, operator, type)
+      md = ModelMethod.new(klass, operator, type)
       method_details_mgr <<  md
       return md
     end

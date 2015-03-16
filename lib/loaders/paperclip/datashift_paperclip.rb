@@ -100,7 +100,7 @@ module DataShift
         if(@attachment.save)
           puts "Success: Created Attachment #{@attachment.id} : #{@attachment.attachment_file_name}"
 
-          if(attach_to_record_field.is_a? MethodDetail)
+          if(attach_to_record_field.is_a? ModelMethod)
             DataShift::Populator.new().prepare_and_assign(attach_to_record_field, record, @attachment)
           else
             # assume its not a has_many and try basic send

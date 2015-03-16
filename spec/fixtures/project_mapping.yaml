@@ -1,0 +1,17 @@
+Project:
+       title: 'TheTitle'
+       value_as_integer: 'A Number'
+       versions: 'Indexes'
+<%
+=begin
+
+       srcs_column_heading_6: value_as_double
+       srcs_column_heading_7: user_id
+       srcs_column_heading_8: user
+       srcs_column_heading_9: owner
+       srcs_column_heading_10: milestones
+       srcs_column_heading_11: loader_releases
+
+       srcs_column_heading_13: categories
+=end
+%>

@@ -60,9 +60,7 @@ module DataShift
 
       Delimiters.text_delim = options[:text_delim] if(options[:text_delim])
 
-      DataShift::ModelMethodsManager.find_methods( klass )
-
-      MethodDictionary.build_method_details( klass )
+      collection = ModelMethods::Catalogue.populate( klass )
 
       # For each type belongs has_one, has_many etc find the operators
       # and create headers, then for each record call those operators
@@ -72,20 +70,18 @@ module DataShift
 
         csv.ar_to_headers( records, operators)
 
-        details_mgr = MethodDictionary.method_details_mgrs[klass]
-
         row = []
 
         records.each do |obj|
 
           operators.each do |op_type|
 
-            operators_for_type = details_mgr.get_list(op_type)
+            operators_for_type = collection.by_optype(op_type)
 
-            next if(operators_for_type.nil? || operators_for_type.empty?)
+            next if(operators_for_type.empty?)
 
-            operators_for_type.each do |md|
-              if(MethodDetail.is_association_type?(op_type))
+            operators_for_type.each do |mm|
+              if(ModelMethod.is_association_type?(op_type))
                 row << record_to_column( obj.send( md.operator ))    # pack association into single column
               else
                 row << escape_for_csv( obj.send( md.operator ) )

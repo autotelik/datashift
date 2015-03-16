@@ -1,7 +1,21 @@
 # A set of models and associations we can use in our specs to test
 # basic database columns and also relationships
 
-# See Companion migration spec/db/migrate
+# See Companion migration spec/db/migrate for latest def
+
+=begin
+    create_table :projects do |t|
+      t.string   :title
+      t.string   :value_as_string
+      t.text     :value_as_text
+      t.boolean  :value_as_boolean, :default => false
+      t.datetime :value_as_datetime, :default => nil
+      t.integer  :value_as_integer, :default => 0
+      t.decimal  :value_as_double, :precision => 8, :scale => 2, :default => 0.0
+      t.references :user
+      t.timestamps
+    end
+=end
 
 class Project < ActiveRecord::Base
 
