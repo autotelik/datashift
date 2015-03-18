@@ -9,14 +9,14 @@ namespace :datashift do
 
   desc "copy or mv a folder of files, consistently renaming in the process"
   task :file_rename, :input, :offset, :prefix, :width, :commit, :mv do |t, args|
-    raise "USAGE: rake file_rename input='C:\blah' [offset=n prefix='str' width=n]" unless args[:input] && File.exists?(args[:input])
+    raise "USAGE: rake file_rename input='C:\blah' [offset=n prefix='str' width=n]" unless args[:input] && File.exist?(args[:input])
     width = args[:width] || 2
 
     action = args[:mv] ? 'mv' : 'cp'
 
     cache = args[:input]
 
-    if(File.exists?(cache) )
+    if(File.exist?(cache) )
       puts "Renaming files from #{cache}"
       Dir.glob(File.join(cache, "*")) do |name|
         path, base_name = File.split(name)

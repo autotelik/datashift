@@ -37,7 +37,7 @@ module DataShift
 
   def self.gem_version
     unless(@gem_version)
-      if(File.exists?('VERSION'))
+      if(File.exist?('VERSION'))
         File.read( File.join('VERSION') ).match(/.*(\d+.\d+.\d+)/)
         @gem_version = $1
       else
@@ -80,6 +80,7 @@ module DataShift
     end
 
     require_libs = ['datashift',
+                    'datashift/core_ext',
                     'datashift/model_methods',
                     'datashift/inbound_data',
                     'loaders', 'generators', 'helpers' ]
@@ -92,7 +93,6 @@ module DataShift
         end
       end
     end
-
   end
 
   # Load all the datashift rake tasks and make them available throughout app
@@ -106,7 +106,7 @@ module DataShift
 
   # Load all the datashift Thor commands and make them available throughout app
 
-  def self.load_commands()
+  def self.load_commands
     base = File.join(library_path, 'thor', '**')
 
     Dir["#{base}/*.thor"].each do |f|
@@ -133,7 +133,6 @@ require_relative 'helpers/core_ext/csv_file'
 require_relative 'datashift/method_binding'
 require_relative 'datashift/binder'
 require_relative 'datashift/mapper_utils'
-require_relative 'datashift/model_method'
 
 DataShift::require_libraries
 

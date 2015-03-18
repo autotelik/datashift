@@ -28,20 +28,17 @@ module DataShift
         @data = []
       end
 
-      def first_lookup
-        @lookup_list.first || LookupSupport.new(Class, nil, nil)
-      end
 
       def add_lookup( klass, field, where_value )
         @lookup_list.unshift( LookupSupport.new(klass, field, where_value) )
       end
 
       def find_by_operator
-        first_lookup.field
+        lookup_list.first ? lookup_list.first.field : ""
       end
 
       def find_by_value
-        first_lookup.value
+        lookup_list.first ? lookup_list.first.value : ""
       end
 
     end

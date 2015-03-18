@@ -19,7 +19,7 @@ module DataShift
 
     attr_reader :idx
 
-    def_delegators :@headers, *Array.instance_methods.delete_if {|i| i.match(/__.*|class/)}
+    def_delegators :@headers, *Array.instance_methods.delete_if {|i| i.match(/__.*|class|object_id/)}
 
     def initialize(source, idx = 0, headers = [])
       @source = source

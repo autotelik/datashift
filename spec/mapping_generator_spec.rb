@@ -50,14 +50,14 @@ module DataShift
         it "should generate a standard default mapping file" do
           mapping_generator.generate(nil, {:file => map_file} )
 
-          expect(File.exists?(map_file)).to be true
+          expect(File.exist?(map_file)).to be true
         end
 
         it "should generate a mapping doc with pre supplied title" do
 
           result = mapping_generator.generate(nil,  {:file => map_file, title: 'rspec_mappings:'} )
 
-          expect(File.exists?(map_file)).to be true
+          expect(File.exist?(map_file)).to be true
 
           # TODO file matchers like
           # expect(map_file).have_content(/ blah /)
@@ -73,7 +73,7 @@ module DataShift
         it "should generate a populated mapping doc for a class" do
           result = mapping_generator.generate( Project,  {:file => map_file} )
 
-          expect(File.exists?(map_file)).to be true
+          expect(File.exist?(map_file)).to be true
           expect( File.read(map_file) ).to include "Project:"
         end
 
@@ -102,7 +102,7 @@ module DataShift
 
           mapping_generator.generate_from_excel(ifixture_file('SimpleProjects.xls'), :file => map_file )
 
-          expect(File.exists?(map_file)).to be true
+          expect(File.exist?(map_file)).to be true
 
         end
       end

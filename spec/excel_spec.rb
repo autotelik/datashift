@@ -196,7 +196,7 @@ describe 'Excel Proxy' do
     
     @excel.write( expected )
     
-    expect(File.exists?(expected)).to eq true
+    expect(File.exist?(expected)).to eq true
     
   end
 end

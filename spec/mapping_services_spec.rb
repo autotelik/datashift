@@ -40,7 +40,7 @@ module DataShift
       before(:each) do
         mapper.generate(Project, {:file => mfile} )
 
-        expect(File.exists?(mfile)).to be true
+        expect(File.exist?(mfile)).to be true
 
         mapping_service.read(mfile)
       end
@@ -95,7 +95,7 @@ module DataShift
       let(:mfile) { ifixture_file("project_mapping.yaml") }
 
       before(:each) do
-        expect(File.exists?(mfile)).to be true
+        expect(File.exist?(mfile)).to be true
 
         mapping_service.read(mfile)
 

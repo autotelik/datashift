@@ -57,6 +57,10 @@ module DataShift
       inbound_column.data << data
     end
 
+    def klass
+      model_method.klass
+    end
+
     # Example :
     # Project:name:My Best Project
     #   User (klass) has_one project  lookup where name(field) == 'My Best Project' (value)
@@ -84,15 +88,23 @@ module DataShift
       (@valid == true)
     end
 
+    def invalid?
+      !valid?
+    end
+
     def pp
-      "#{inbound_name} => #{model_method.operator}"
+      "Binding: Row [#{inbound_index}] : Header [#{inbound_name}] : Operator [#{model_method.operator}]"
     end
 
   end
 
   class NoMethodBinding < MethodBinding
-    def initialize(client_name, client_idx)
+    def initialize(client_name = "", client_idx = -1)
       super(client_name, client_idx, nil)
+    end
+
+    def invalid?
+      !valid?
     end
 
     def valid?

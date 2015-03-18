@@ -18,7 +18,7 @@ module DataShift
 
         # TODO - We're assuming run from a rails app/top level dir...
 
-        if(File.exists?(File.expand_path('config/environment.rb')))
+        if(File.exist?(File.expand_path('config/environment.rb')))
           begin
             require File.expand_path('config/environment.rb')
           rescue => e

@@ -117,10 +117,6 @@ module DataShift
           # we slurped up all possible data in split, turn it back into original string
           binding.add_column_data(data.join(Delimiters::column_delim))
 
-          # TODO - remove
-          # put data back as string for now - leave it to clients to decide what to do with it later
-          Populator::set_header_default_data(model_method.operator, data.join(Delimiters::column_delim))
-
           if(where_field)
             logger.info("Lookup query field [#{where_field}] - specified for association #{model_method.operator}")
             binding.add_lookup(model_method, where_field, where_value)

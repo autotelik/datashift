@@ -29,29 +29,10 @@ $:.unshift lib unless $:.include?(lib)
 
 require 'datashift'
 
-require 'rake/testtask'
-Rake::TestTask.new(:test) do |test|
-  test.libs << 'lib' << 'test'
-  test.pattern = 'test/**/test_*.rb'
-  test.verbose = true
-end
-
-task :default => :test
-
-require 'rdoc/task'
-Rake::RDocTask.new do |rdoc|
-  version = File.exist?('VERSION') ? File.read('VERSION') : ""
-
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "DataShift #{version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
-end
-
 # Add in our own Tasks
 
 desc 'Build gem and install in one step'
-task :build, :version do |t, args|
+task :build, :version do |_t, args|
 
   v = (args[:version] || ENV['version'])
 

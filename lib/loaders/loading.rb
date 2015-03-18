@@ -26,28 +26,65 @@ module DataShift
 
 
     def load_object
-      doc_context.current_object
+      doc_context.load_object
     end
 
+
+    # Based on filename call appropriate loading function
+
+    # Currently supports :
+    #   Excel/Open Office files saved as .xls
+    #   CSV files
+    #
+    # OPTIONS :
+    #
+    #  [:dummy]         : Perform a dummy run - attempt to load everything but then roll back
+    #
+    #  strict           : Raise an exception of any headers can't be mapped to an attribute/association
+    #  ignore           : List of column headers to ignore when building operator map
+    #  mandatory        : List of columns that must be present in headers
+    #
+    #  force_inclusion  : List of columns that do not map to any operator but should be includeed in processing.
+    #                     This provides the opportunity for loaders to provide specific methods to handle these fields
+    #                     when no direct operator is available on the model or it's associations
+    #
+    def perform_load( file_name, options = {} )
+
+      raise DataShift::BadFile, "Cannot load #{file_name} file not found." unless(File.exist?(file_name))
+
+      logger.info("Perform Load Options:\n#{options.inspect}")
+
+      ext = File.extname(file_name)
+
+      if(ext.casecmp('.xls') == 0 || ext.casecmp('.xlsx') == 0)
+        perform_excel_load(file_name, options)
+      elsif(ext.casecmp('.csv') == 0)
+        perform_csv_load(file_name, options)
+      else
+        raise DataShift::UnsupportedFileType, "#{ext} files not supported - Try .csv or OpenOffice/Excel .xls"
+      end
+    end
+
+
     # Core API
-    # 
-    # Given a list of free text column names from a file, 
+    #
+    # Given a list of free text column names from a file,
     # map all headers to a domain model containing details on operator, look ups etc.
     #
     # Options:
     #    [:strict]          : Raise an exception of any headers can't be mapped to an attribute/association
     #    [:ignore]          : List of column headers to ignore when building operator map
     #    [:mandatory]       : List of columns that must be present in headers
-    #  
+    #
     #    [:force_inclusion] : List of columns that do not map to any operator but should be includeed in processing.
-    #                     
+    #
     #       This provides the opportunity for :
-    #       
+    #
     #       1) loaders to provide specific methods to handle these fields, when no direct operator
     #        is available on the model or it's associations
     #
     #       2) Handle delegated methods i.e no direct association but method is on a model throuygh it's delegate
-    #           
+    #
     #    [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
     #
     def bind_headers( headers, options = {} )

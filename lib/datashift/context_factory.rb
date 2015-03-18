@@ -57,7 +57,10 @@ module DataShift
 =end
 
     def self.get_populator(method_binding)
-      return populators[method_binding.operator] if(populators[method_binding.operator])
+
+      unless(method_binding.nil? || method_binding.invalid?)
+        return populators[method_binding.operator] if(populators[method_binding.operator])
+      end
 
       DataShift::Populator.new
     end

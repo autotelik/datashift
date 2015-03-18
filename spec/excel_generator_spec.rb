@@ -42,7 +42,7 @@ describe 'Excel Generator' do
     
     gen.generate(Project)
  
-    expect(File.exists?(expected)).to eq true
+    expect(File.exist?(expected)).to eq true
       
     puts "Can manually check file @ #{expected}"
     
@@ -74,7 +74,7 @@ describe 'Excel Generator' do
 
     gen.generate_with_associations(Project)
 
-   expect( File.exists?(expected)).to eq true
+   expect( File.exist?(expected)).to eq true
 
     excel = Excel.new
     excel.open(expected)
@@ -101,7 +101,7 @@ describe 'Excel Generator' do
       
     gen.generate_with_associations(Project, options)
 
-    expect(File.exists?(expected)).to eq true #, "Failed to find expected result file #{expected}"
+    expect(File.exist?(expected)).to eq true #, "Failed to find expected result file #{expected}"
       
     excel = Excel.new
     excel.open(expected)
@@ -132,7 +132,7 @@ describe 'Excel Generator' do
       
     gen.generate_with_associations(Project, options)
 
-    expect(File.exists?(expected)).to eq true#, "Failed to find expected result file #{expected}"
+    expect(File.exist?(expected)).to eq true#, "Failed to find expected result file #{expected}"
       
     excel = Excel.new
     excel.open(expected)
@@ -165,7 +165,7 @@ describe 'Excel Generator' do
       
     gen.generate_with_associations(Project, options)
 
-    expect(File.exists?(expected)).to eq true#, "Failed to find expected result file #{expected}"
+    expect(File.exist?(expected)).to eq true#, "Failed to find expected result file #{expected}"
       
     excel = Excel.new
     excel.open(expected)
@@ -193,7 +193,7 @@ describe 'Excel Generator' do
       
     gen.generate_with_associations(Project, options)
 
-    expect( File.exists?(expected)).to eq true
+    expect( File.exist?(expected)).to eq true
       
     excel = Excel.new
     excel.open(expected)

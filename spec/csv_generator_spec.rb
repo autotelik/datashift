@@ -41,7 +41,7 @@ describe 'CSV Generator' do
 
     gen.generate(Project)
 
-    expect(File.exists?(expected)).to eq true
+    expect(File.exist?(expected)).to eq true
 
     puts "Can manually check file @ #{expected}"
 
@@ -68,7 +68,7 @@ describe 'CSV Generator' do
 
     gen.generate_with_associations(Project)
 
-    expect( File.exists?(expected)).to eq true
+    expect( File.exist?(expected)).to eq true
 
     csv = CSV.read(expected)
 
@@ -90,7 +90,7 @@ describe 'CSV Generator' do
 
     gen.generate_with_associations(Project, options)
 
-    expect(File.exists?(expected)).to eq true #, "Failed to find expected result file #{expected}"
+    expect(File.exist?(expected)).to eq true #, "Failed to find expected result file #{expected}"
 
     csv = CSV.read(expected)
 
@@ -116,7 +116,7 @@ describe 'CSV Generator' do
 
     gen.generate_with_associations(Project, options)
 
-    expect(File.exists?(expected)).to eq true#, "Failed to find expected result file #{expected}"
+    expect(File.exist?(expected)).to eq true#, "Failed to find expected result file #{expected}"
 
     csv = CSV.read(expected)
 
@@ -144,7 +144,7 @@ describe 'CSV Generator' do
 
     gen.generate_with_associations(Project, options)
 
-    expect(File.exists?(expected)).to eq true#, "Failed to find expected result file #{expected}"
+    expect(File.exist?(expected)).to eq true#, "Failed to find expected result file #{expected}"
 
     csv = CSV.read(expected)
 

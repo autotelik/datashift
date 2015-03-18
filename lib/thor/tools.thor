@@ -60,7 +60,7 @@ module Datashift
       
       output = options[:results]
       
-      FileUtils::mkdir_p(output) unless File.exists?(output)
+      FileUtils::mkdir_p(output) unless File.exist?(output)
       
       puts "Creating #{ready_to_zip.keys.size} new zips"
       ready_to_zip.each do |basename, paths|

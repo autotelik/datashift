@@ -15,4 +15,9 @@ FactoryGirl.define do
     sequence(:reference) { |n| "category_00#{n}" }
   end
 
+
+  factory :loader_release do
+    sequence(:name) { |n| "Loader Release V#{n}" }
+  end
+
 end

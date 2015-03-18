@@ -5,8 +5,13 @@ FactoryGirl.define do
     sequence(:name) { |n| "milestone #{n}" }
     cost 100
     datetime Time.new
-    project
+
+    factory :milestone_with_project do
+      project
+    end
+
   end
+
 
   factory :project do
     title 'project 1'
@@ -34,7 +39,7 @@ FactoryGirl.define do
         # attributes; `create_list`'s second argument is the number of records
         # to create and we make sure the project is associated properly to the milestone
         after(:create) do |project, evaluator|
-          create_list(:milestone, evaluator.milestones_count, project: project)
+          create_list(:milestone_with_project, evaluator.milestones_count, project: project)
         end
       end
     end

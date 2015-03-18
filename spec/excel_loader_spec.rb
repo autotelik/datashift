@@ -37,9 +37,9 @@ module  DataShift
       expect(loader.load_object.new_record?).to eq true
     end
 
-    let(:simple_xls) { ifixture_file('SimpleProjects.xls') }
-
     context 'prepare to load' do
+
+      let(:simple_xls) { ifixture_file('SimpleProjects.xls') }
 
       let(:loader) { ExcelLoader.new(Project) }
 
@@ -79,39 +79,41 @@ module  DataShift
 
     context 'creates new records' do
 
+      let(:simple_xls) { ifixture_file('SimpleProjects.xls') }
+
       let(:loader)  { ExcelLoader.new( Project) }
 
-      it "should process a simple .xls spreedsheet", :fail => true  do
-
-        loader = ExcelLoader.new(Project)
-
+      it "should process a simple .xls spreedsheet"  do
         count = Project.count
+
         loader.perform_load(simple_xls)
 
-        loader.loaded_count.should == (Project.count - count)
+        expect(loader.loaded_count).to eq 3
+        expect(Project.count).to eq count + 3
       end
 
-      it "should process a simple .xls spreedsheet" do
 
-        loader = ExcelLoader.new(Project)
+      it "should populate database objects from a simple .xls spreedsheet", :fail => true  do
 
-        count = Project.count
         loader.perform_load(simple_xls)
 
-        loader.loaded_count.should == (Project.count - count)
+        loaded = Project.last
+
+        puts Project.last.inspect
+
+        expect(loaded.value_as_string).to eq '003 Can handle different column naming styles'
+        expect(loaded.value_as_text).to eq ""
+        expect(loaded.value_as_datetime).to eq '2011-05-19'
+        expect(loaded.value_as_boolean).to eq true
+        expect(loaded.value_as_double).to eq 520.00
       end
+
 
       it "should process multiple associations from single column" do
-
-        DataShift::ModelMethodsManager.find_methods( Category )
-
-        DataShift::MethodDictionary.build_method_details( Category )
 
         expect(Project.find_by_title('001')).to be_nil
 
         count = Project.count
-
-        loader = ExcelLoader.new(Project)
 
         loader.perform_load( ifixture_file('ProjectsSingleCategories.xls') )
 
@@ -130,8 +132,6 @@ module  DataShift
 
       it "should process multiple associations in excel spreadsheet" do
 
-        loader = ExcelLoader.new(Project)
-
         count = Project.count
         loader.perform_load( ifixture_file('ProjectsMultiCategories.xls' ))
 
@@ -149,18 +149,16 @@ module  DataShift
 
       it "should process multiple associations with lookup specified in column from excel spreadsheet" do
 
-        loader = ExcelLoader.new(Project)
-
         count = Project.count
         loader.perform_load( ifixture_file('ProjectsMultiCategoriesHeaderLookup.xls'))
 
-        loader.loaded_count.should == (Project.count - count)
-        loader.loaded_count.should > 3
+        expect(loader.loaded_count).to eq 4
+        expect(Project.count).to eq count + 4
 
         {'004' => 4, '005' => 1, '006' => 0, '007' => 1 }.each do|title, expected|
           project = Project.find_by_title(title)
 
-          project.should_not be_nil
+          expect(project).to_not be_nil
 
           expect(project.categories.size).to eq expected
         end
@@ -168,17 +166,14 @@ module  DataShift
       end
 
       it "should process excel spreedsheet with extra undefined columns" do
-        loader = ExcelLoader.new(Project)
         lambda {loader.perform_load( ifixture_file('BadAssociationName.xls') ) }.should_not raise_error
       end
 
       it "should NOT process excel spreedsheet with extra undefined columns when strict mode" do
-        loader = ExcelLoader.new(Project)
         expect {loader.perform_load( ifixture_file('BadAssociationName.xls'), :strict => true)}.to raise_error(MappingDefinitionError)
       end
 
       it "should raise an error when mandatory columns missing" do
-        loader = ExcelLoader.new(Project)
         expect {loader.perform_load(ifixture_file('ProjectsMultiCategories.xls'), :mandatory => ['not_an_option', 'must_be_there'])}.to raise_error(DataShift::MissingMandatoryError)
       end
 
@@ -190,17 +185,16 @@ module  DataShift
     context 'external configuration of loader' do
 
       it "should provide facility to set default values", :focus => true do
-        loader = ExcelLoader.new(Project)
 
-        populator = loader.populator
+        DataShift::Transformer.factory do |factory|
+          factory.set_default_on(Project, 'value_as_string', 'some default text' )
+          factory.set_default_value('value_as_double', 45.467 )
+          factory.set_default_value('value_as_boolean', true )
 
-        populator.set_default_value('value_as_string', 'some default text' )
-        populator.set_default_value('value_as_double', 45.467 )
-        populator.set_default_value('value_as_boolean', true )
+          texpected = Time.now.to_s(:db)
 
-        texpected = Time.now.to_s(:db)
-
-        populator.set_default_value('value_as_datetime', texpected )
+          factory.set_default_value('value_as_datetime', texpected )
+        end
 
         #value_as_string	Value as Text	value as datetime	value_as_boolean	value_as_double	category
 
@@ -264,12 +258,10 @@ module  DataShift
 
         loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
 
-
         loader.perform_load( ifixture_file('ProjectsSingleCategories.xls') )
 
         Project.all.each {|p| p.value_as_double.should == 99.23546 }
       end
-
 
 
       it "should provide facility to over ride values via YAML configuration", :yaml => true do

@@ -36,7 +36,7 @@ RSpec.configure do |config|
 
   config.before(:suite) do
 
-    FileUtils.mkdir_p(results_path()) unless File.exists?(results_path)
+    FileUtils.mkdir_p(results_path()) unless File.exist?(results_path)
 
     bundler_setup()
 
@@ -78,6 +78,9 @@ RSpec.configure do |config|
     end
 
     let(:project_collection)  { DataShift::ModelMethods::Manager.catalog_class( Project ) }
+    let(:project_collection)  { DataShift::ModelMethods::Manager.catalog_class( Project ) }
+
+    let(:project_headers)     { [:value_as_string, :owner, :value_as_boolean, :value_as_double] }
   end
 
 
@@ -139,7 +142,7 @@ RSpec.configure do |config|
     else
       begin FileUtils.rm_rf(results_path); rescue; end
 
-      FileUtils.mkdir(results_path) unless File.exists?(results_path);
+      FileUtils.mkdir(results_path) unless File.exist?(results_path);
     end
   end
 
@@ -149,13 +152,13 @@ RSpec.configure do |config|
 
     require 'logger'
     logdir = File.join(File.dirname(__FILE__), 'log')
-    FileUtils.mkdir_p(logdir) unless File.exists?(logdir)
+    FileUtils.mkdir_p(logdir) unless File.exist?(logdir)
     ActiveRecord::Base.logger = Logger.new( File.join(logdir, name) )
   end
 
   def bundler_setup(gemfile = File.join(DataShift::root_path, 'spec', 'Gemfile') )
 
-    $stderr.puts "No Such Gemfile #{gemfile}" unless File.exists?(gemfile)
+    $stderr.puts "No Such Gemfile #{gemfile}" unless File.exist?(gemfile)
 
     ENV['BUNDLE_GEMFILE'] = gemfile
     #Bundler.setup
@@ -212,7 +215,7 @@ RSpec.configure do |config|
 
   def migrate_up( rails_root = fixtures_path )
     p = File.join(fixtures_path, 'db/migrate')
-    raise "Cannot migrate DB - no such path #{p}" unless File.exists?(p)
+    raise "Cannot migrate DB - no such path #{p}" unless File.exist?(p)
     ActiveRecord::Migrator.up(p)
   end
 
@@ -234,11 +237,11 @@ RSpec.configure do |config|
 
     sandbox = rails_sandbox_path
 
-    if(force == true && File.exists?(sandbox))
+    if(force == true && File.exist?(sandbox))
       FileUtils::rm_rf(sandbox)
     end
 
-    unless(File.exists?(sandbox))
+    unless(File.exist?(sandbox))
 
       sandbox_exe_path =  File.expand_path( "#{sandbox}/.." )
 
@@ -258,7 +261,7 @@ RSpec.configure do |config|
 
         FileUtils::cp_r( migrations, File.join(rails_sandbox_path, 'db'))
 
-        FileUtils::cp_r( File.join(fixtures_path, 'sabdbox_example.thor'), rails_sandbox_path)
+        FileUtils::cp_r( File.join(fixtures_path, 'sandbox_example.thor'), rails_sandbox_path)
       end
 
       run_in(rails_sandbox_path) do

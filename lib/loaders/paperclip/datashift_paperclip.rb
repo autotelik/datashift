@@ -33,7 +33,7 @@ module DataShift
 
     def get_file( attachment_path )
 
-      unless File.exists?(attachment_path) && File.readable?(attachment_path)
+      unless File.exist?(attachment_path) && File.readable?(attachment_path)
         logger.error("Cannot process Image from #{Dir.pwd}: Invalid Path #{attachment_path}")
         raise PathError.new("Cannot process Image : Invalid Path #{attachment_path}")
       end

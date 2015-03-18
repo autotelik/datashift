@@ -89,7 +89,7 @@ module Datashift
 
       @attachment_path = options[:input]
       
-      unless(File.exists?(@attachment_path))
+      unless(File.exist?(@attachment_path))
         puts "ERROR: Supplied Path [#{@attachment_path}] not accesible"
         exit(-1)
       end

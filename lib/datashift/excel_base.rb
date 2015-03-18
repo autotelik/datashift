@@ -5,7 +5,6 @@ module DataShift
 
   module ExcelBase
 
-
     def self.max_columns
       1024
     end
@@ -46,12 +45,6 @@ module DataShift
       end
 
       headers
-    end
-
-
-
-    def create_context( bindings, row)
-      @context = Context.new()
     end
 
 

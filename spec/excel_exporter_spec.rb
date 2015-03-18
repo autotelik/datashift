@@ -65,7 +65,7 @@ describe 'Excel Exporter' do
 
       gen.export(Project.all.first)
 
-      expect(File.exists?(expected)).to eq true
+      expect(File.exist?(expected)).to eq true
 
       puts "Can manually check file @ #{expected}"
     end
@@ -82,7 +82,7 @@ describe 'Excel Exporter' do
 
     gen.export(Project.all)
 
-    expect( File.exists?(expected)).to eq true
+    expect( File.exist?(expected)).to eq true
 
     excel = Excel.new
     excel.open(expected)
@@ -105,7 +105,7 @@ describe 'Excel Exporter' do
 
     gen.export_with_associations(Project, items)
 
-    expect(File.exists?(expected)).to eq true
+    expect(File.exist?(expected)).to eq true
 
     excel = Excel.new
     excel.open(expected)
@@ -143,7 +143,7 @@ describe 'Excel Exporter' do
 
     gen.export_with_associations(Project, items)
 
-    expect(File.exists?(expected)).to eq true
+    expect(File.exist?(expected)).to eq true
 
     excel = Excel.new
     excel.open(expected)
@@ -180,7 +180,7 @@ describe 'Excel Exporter' do
 
     gen.export_with_associations(Project, items, json: true)
 
-    expect(File.exists?(expected)).to eq true
+    expect(File.exist?(expected)).to eq true
 
     excel = Excel.new
     excel.open(expected)

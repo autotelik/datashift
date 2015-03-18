@@ -56,7 +56,7 @@ describe 'CSV Exporter' do
 
       exporter.export(Project.all)
 
-      expect(File.exists?(expected)).to eq true
+      expect(File.exist?(expected)).to eq true
 
       puts "Can manually check file @ #{expected}"
 
@@ -86,7 +86,7 @@ describe 'CSV Exporter' do
 
       exporter.export(Project.all[0])
 
-      expect(File.exists?(expected)).to eq true
+      expect(File.exist?(expected)).to eq true
 
       puts "Can manually check file @ #{expected}"
     end
@@ -99,7 +99,7 @@ describe 'CSV Exporter' do
 
       exporter.export(Project.all, {:methods => [:multiply]})
 
-      expect(File.exists?(expected)).to eq true
+      expect(File.exist?(expected)).to eq true
 
       puts "Can manually check file @ #{expected}"
 
@@ -127,7 +127,7 @@ describe 'CSV Exporter' do
     count = $.
     count.should == items.size + 1
 
-    expect(File.exists?(expected)).to eq true
+    expect(File.exist?(expected)).to eq true
 
     csv = CSV.read(expected)
 

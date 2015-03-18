@@ -12,17 +12,17 @@ module DataShift
 
   class Context
 
-    attr_accessor :current_row_index, :populator
+    attr_accessor :current_row_index, :populator, :doc_context
 
     attr_reader :data, :method_binding
 
-    def initialize( method_binding, row_idx, data)
+    def initialize(doc_context, method_binding, row_idx, data)
+      @doc_context = doc_context
       @method_binding = method_binding
       @current_row_index = row_idx
       @data = data
 
       @populator = ContextFactory::get_populator(method_binding)
-
     end
 
     def set_node( method_binding  )
@@ -30,8 +30,28 @@ module DataShift
     end
 
     def contains_data?
-      !(value.nil? || value.to_s.empty?)
+      !(data.nil? || data.to_s.empty?)
+    end
+
+    def next_update?
+      false   # for now create only
+      #TODO :
+      # next = ProcessingRules.next_action(method_binding )
+      # next == :update
+    end
+
+
+    def process
+       populator.prepare_and_assign(self, doc_context.load_object, data)
     end
 
   end
+
+  class EmptyContext < Context
+
+    def initialize
+     super(NilClass, DataShift::NoMethodBinding.new , -1, [])
+    end
+  end
+
 end
