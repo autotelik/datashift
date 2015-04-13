@@ -117,15 +117,12 @@ module DataShift
 
 end
 
-
 require_relative 'datashift/delimiters'
-require_relative 'datashift/column_packer'
-require_relative 'datashift/context'
-require_relative 'datashift/context_factory'
-require_relative 'datashift/logging'
-require_relative 'datashift/exceptions'
 require_relative 'datashift/guards'
 
+DataShift::require_libraries
+
+require_relative 'applications/excel'
 
 require_relative 'helpers/core_ext/to_b'
 require_relative 'helpers/core_ext/csv_file'
@@ -133,9 +130,6 @@ require_relative 'helpers/core_ext/csv_file'
 require_relative 'datashift/method_binding'
 require_relative 'datashift/binder'
 require_relative 'datashift/mapper_utils'
-
-DataShift::require_libraries
-
 
 module DataShift
   if(Guards::jruby?)

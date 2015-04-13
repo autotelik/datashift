@@ -144,8 +144,8 @@ module DataShift
         expect(bindings[i].inbound_column.lookup_list).to be_a Array
         expect(bindings[i].inbound_column.lookup_list.size).to eq 1
         expect(bindings[i].inbound_column.lookup_list[0]).to be_a  InboundData::LookupSupport
-        expect(bindings[i].inbound_column.first_lookup).to be_a  InboundData::LookupSupport
-        expect(bindings[i].inbound_column.first_lookup).to eq bindings[i].inbound_column.lookup_list[0]
+        expect(bindings[i].inbound_column.lookups.first).to be_a  InboundData::LookupSupport
+        expect(bindings[i].inbound_column.lookups.first).to eq bindings[i].inbound_column.lookup_list[0]
       end
     end
 
@@ -159,7 +159,7 @@ module DataShift
       expect(bindings.size).to eq headers.size
 
       headers.each_with_index do |c, i|
-        first_lookup = bindings[i].inbound_column.first_lookup
+        first_lookup = bindings[i].inbound_column.lookups.first
         expect(first_lookup.klass).to eq Project
         expect(first_lookup.field).to eq 'title'
         expect(first_lookup.where_value).to eq nil
@@ -176,9 +176,10 @@ module DataShift
       expect(bindings.size).to eq headers.size
 
       headers.each_with_index do |c, i|
-        expect(bindings[i].inbound_column.first_lookup.klass).to eq Project
-        expect(bindings[i].inbound_column.first_lookup.field).to eq 'title'
-        expect(bindings[i].inbound_column.first_lookup.where_value).to eq 'my first project'
+        first_lookup = bindings[i].inbound_column.lookups.first
+        expect(first_lookup.klass).to eq Project
+        expect(first_lookup.field).to eq 'title'
+        expect(first_lookup.where_value).to eq 'my first project'
       end
     end
 
@@ -193,9 +194,10 @@ module DataShift
       expect(bindings.size).to eq headers.size
 
       headers.each_with_index do |c, i|
-        expect(bindings[i].inbound_column.first_lookup.klass).to eq LongAndComplexTableLinkedToVersion
-        expect(bindings[i].inbound_column.first_lookup.field).to eq 'price'
-        expect(bindings[i].inbound_column.first_lookup.where_value).to eq '10.2'
+        first_lookup = bindings[i].inbound_column.lookups.first
+        expect(first_lookup.klass).to eq LongAndComplexTableLinkedToVersion
+        expect(first_lookup.field).to eq 'price'
+        expect(first_lookup.where_value).to eq '10.2'
       end
     end
 
@@ -210,9 +212,10 @@ module DataShift
       expect(bindings.size).to eq headers.size
 
       headers.each_with_index do |c, i|
-        expect(bindings[i].inbound_column.first_lookup.klass).to eq Digital
-        expect(bindings[i].inbound_column.first_lookup.field).to eq 'attachment_file_name'
-        expect(bindings[i].inbound_column.first_lookup.where_value).to eq 'my pdf'
+        first_lookup = bindings[i].inbound_column.lookups.first
+        expect(first_lookup.klass).to eq Digital
+        expect(first_lookup.field).to eq 'attachment_file_name'
+        expect(first_lookup.where_value).to eq 'my pdf'
         expect(bindings[i].inbound_column.data).to be_a Array
         expect(bindings[i].inbound_column.data).to include 'random data for a loader'
       end

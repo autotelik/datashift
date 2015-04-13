@@ -145,6 +145,16 @@ module DataShift
 
       x
     end
+
+    def find_or_new( klass, condition_hash = {} )
+      records = klass.where(condition_hash).all
+      if records.any?
+        return records.first
+      else
+        return klass.new
+      end
+    end
+
   end
 
 end

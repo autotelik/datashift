@@ -28,6 +28,7 @@ module DataShift
         @data = []
       end
 
+      alias_method :lookups, :lookup_list
 
       def add_lookup( klass, field, where_value )
         @lookup_list.unshift( LookupSupport.new(klass, field, where_value) )

@@ -11,15 +11,19 @@
 #
 require 'guards'
 
+if(DataShift::Guards.jruby?)
+  require 'jexcel_file'
+else
+  require 'spreadsheet'
+  require 'spreadsheet_extensions'
+end
+
 module ExcelProxy
   # Returns the current proxy class
   def self.proxy_class
     if(DataShift::Guards.jruby?)
-      require 'jexcel_file'
       JExcelFile
     else
-      require 'spreadsheet'
-      require 'spreadsheet_extensions'
       Spreadsheet
     end
   end
