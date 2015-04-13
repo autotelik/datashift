@@ -196,9 +196,14 @@ module DataShift
         end
 
       elsif( current_method_detail.operator_for(:assignment) && current_col_type)
-        logger.debug("Assign #{current_value} => [#{operator}] (CAST 2 TYPE  #{current_col_type.type_cast( current_value ).inspect})")
-
-        record.send( operator + '=' , current_method_detail.col_type.type_cast( current_value ) )
+        # 'type_cast' was changed to 'type_cast_from_database'
+        if Rails::VERSION::STRING < '4.2.0'
+          logger.debug("Assign #{current_value} => [#{operator}] (CAST 2 TYPE  #{current_col_type.type_cast( current_value ).inspect})")
+          record.send( operator + '=' , current_method_detail.col_type.type_cast( current_value ) )
+        else
+          logger.debug("Assign #{current_value} => [#{operator}] (CAST 2 TYPE  #{current_col_type.type_cast_from_database( current_value ).inspect})")
+          record.send( operator + '=' , current_method_detail.col_type.type_cast_from_database( current_value ) )
+        end
 
       elsif( current_method_detail.operator_for(:assignment) )
         logger.debug("Brute force assignment of value  #{current_value} => [#{operator}]")
