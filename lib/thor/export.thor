@@ -16,7 +16,10 @@
 # => bundle exec thor datashift:export:excel -m <active record class> -r <output_template.xls> -a
 #
 require 'thor_base'
-  
+
+
+require 'datashift'
+
 # Note, for thor not DataShift, case sensitive, want namespace for cmd line to be : datashift
 module Datashift
 
@@ -32,7 +35,7 @@ module Datashift
     def excel()
 
       start_connections
-   
+
       require 'excel_exporter'
 
       model = options[:model]
@@ -40,7 +43,7 @@ module Datashift
      
       logger.info "Datashift: Start Excel export to #{result}"
             
-      klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
+      klass = DataShift::ModelMapper::class_from_string(model)  #Kernel.const_get(model)
     
       raise "ERROR: No such Model [#{model}] found - check valid model supplied via -model <Class>" if(klass.nil?)
 
@@ -82,7 +85,7 @@ module Datashift
      
       logger.info "Datashift: Start CSV export to #{result}"
             
-      klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
+      klass = DataShift::ModelMapper::class_from_string(model)  #Kernel.const_get(model)
     
       raise "ERROR: No such Model [#{model}] found - check valid model supplied via -model <Class>" if(klass.nil?)
 
