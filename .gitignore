@@ -27,6 +27,8 @@ MissingAttachmentRecords/*
 spec/logs
 spec/fixtures/results
 spec/private
+spec/rails_sandbox
+spec/rails_sandbox/**
 
 nbproject
 Thumbs.db

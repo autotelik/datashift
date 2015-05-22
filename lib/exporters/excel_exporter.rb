@@ -61,12 +61,18 @@ module DataShift
     #
     #   Options
     #
+    #     only          Specify (as symbols) columns (assignments) to export from klass
     #     with:         Specify which association types to export :with
     #                   Possible values are : [:assignment, :belongs_to, :has_one, :has_many]
+    #     with_only     Specify (as symbols) columns for association types to export
     #     sheet_name    Else uses Class name
     #     json:         Export association data in single column in JSON format
     #
     def export_with_associations(klass, records, options = {})
+
+      records = [*records]
+
+      only  = options[:only] ? [*options[:only]] : nil
 
       excel = Excel.new
 
@@ -84,7 +90,7 @@ module DataShift
       # and create headers, then for each record call those operators
       operators = options[:with] || MethodDetail::supported_types_enum
 
-      excel.ar_to_headers( records, operators)
+      excel.ar_to_headers( records, operators, options)
 
       details_mgr = MethodDictionary.method_details_mgrs[klass]
 
@@ -94,13 +100,16 @@ module DataShift
 
         column = 0
 
-        operators.each do |op_type|     # belongs_to, has_one, has_many etc
+        [*operators].each do |op_type|     # belongs_to, has_one, has_many etc
 
           operators_for_type = details_mgr.get_list(op_type)
 
           next if(operators_for_type.nil? || operators_for_type.empty?)
 
           operators_for_type.each do |md|     # actual associations on obj
+
+            next if(only && !only.include?( md.name.to_sym ) )
+
             if(MethodDetail.is_association_type?(op_type))
               excel[row, column] = record_to_column( obj.send( md.operator ), options )    # pack association into single column
             else
