@@ -31,6 +31,19 @@ module DataShift
       @bindings, @missing_bindings = [], []
     end
 
+
+    def missing_bindings?
+      !missing_bindings.empty?
+    end
+
+    def headers_missing_bindings
+      missing_bindings.collect &:inbound_name
+    end
+
+    def indexes_missing_bindings
+      missing_bindings.collect &:inbound_index
+    end
+
     # Build complete picture of the methods whose names listed in columns
     # Handles method names as defined by a user, from spreadsheets or file headers where the names
     # specified may not be exactly as required e.g handles capitalisation, white space, _ etc
@@ -119,7 +132,14 @@ module DataShift
 
           if(where_field)
             logger.info("Lookup query field [#{where_field}] - specified for association #{model_method.operator}")
-            binding.add_lookup(model_method, where_field, where_value)
+
+            begin
+              binding.add_lookup(model_method, where_field, where_value)
+            rescue => x
+              add_missing(raw_col_data, col_index, "Field [#{where_field}] Not Found for [#{raw_col_name}] (#{model_method.operator})")
+              next
+            end
+
           end
 
           logger.debug("Column [#{col_data}] (#{col_index}) - mapped to :\n#{model_method.inspect}")
@@ -127,9 +147,7 @@ module DataShift
           bindings << binding
 
         else
-          logger.warn("No operator or association found for Header #{raw_col_name}")
-          missing_bindings << NoMethodBinding.new(raw_col_data, col_index)
-          bindings << NoMethodBinding.new(raw_col_data, col_index)
+          add_missing(raw_col_data, col_index, "No operator or association found for Header #{raw_col_name}")
         end
 
       end
@@ -137,6 +155,15 @@ module DataShift
       bindings
     end
 
+
+    def add_missing(col_data, col_index, reason)
+      logger.warn(reason)
+
+      missing = NoMethodBinding.new(col_data, col_index, reason: reason)
+
+      missing_bindings << missing
+      bindings << missing
+    end
 
     # TODO - check out regexp to do this work better plus Inflections ??
     # Want to be able to handle any of ["Count On hand", 'count_on_hand', "Count OnHand", "COUNT ONHand" etc]

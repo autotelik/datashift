@@ -11,16 +11,13 @@ require 'erb'
 
 describe 'LoaderBase' do
 
-  before(:each) do    
-    @loader = DataShift::LoaderBase.new(Project)
-  end
+  let(:loader) { DataShift::LoaderBase.new }
 
-  let(:loader) {DataShift::LoaderBase.new(Project)  }
   
   it "should be able to create a new loader and load object" do
-    @loader.load_object.should_not be_nil
-    @loader.load_object.should be_is_a(Project)
-    expect(@loader.load_object.new_record?).to eq true
+    expect(loader.load_object).to be_nil
+    expect(loader.load_object).to be_is_a(Project)
+    expect(loader.load_object.new_record?).to eq true
   end
 
 

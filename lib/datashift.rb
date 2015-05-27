@@ -119,6 +119,7 @@ end
 
 require_relative 'datashift/delimiters'
 require_relative 'datashift/guards'
+require_relative 'loaders/file_loader'
 
 DataShift::require_libraries
 

@@ -107,7 +107,7 @@ module DataShift
 
     # Core API
     #
-    # Given a list of free text column names from a file,
+    # Given a list of free text column names from inbound headers,
     # map all headers to a domain model containing details on operator, look ups etc.
     #
     # Options:

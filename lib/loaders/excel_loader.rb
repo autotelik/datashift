@@ -14,7 +14,8 @@ module DataShift
 
   class ExcelLoader < LoaderBase
 
-    include ExcelBase
+    include DataShift::ExcelBase
+    include DataShift::FileLoader
 
     # Setup loading
     #
@@ -24,7 +25,9 @@ module DataShift
     #  :verbose          : Verbose logging and to STDOUT
     #
     def initialize( file_name, options = {} )
-      super( file_name, options )
+      super( options )
+
+      @file_name   = file_name
     end
 
 
