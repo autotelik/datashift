@@ -29,6 +29,37 @@ module DataShift
       text
     end
 
+
+    def to_headers( records, associations = nil, options = {} )
+      return if( !records.first.is_a?(ActiveRecord::Base) || records.empty?)
+
+      only = *options[:only] ? [*options[:only]] : nil
+
+      headers =[]
+
+      if associations
+        details_mgr = DataShift::MethodDictionary.method_details_mgrs[records.first.class]
+
+        [*associations].each do |a|
+
+          details_mgr.get_list(a).each do  |md|
+
+            next if(only && !only.include?( md.name.to_sym ) )
+
+            headers << "#{md.operator}"
+
+          end
+        end if(details_mgr)
+
+      else
+
+        headers = records.first.class.columns.collect( &:name )
+      end
+
+      headers
+    end
+
+
     # Convert an AR instance to a single column
     #    e.g User  :  ":name = > 'tom', :role => 'developer'"
     #

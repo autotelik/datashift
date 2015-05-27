@@ -3,6 +3,8 @@
 
 module ExcelBase
 
+
+
   def sanitize_sheet_name( name )
     name.gsub(/[\[\]:\*\/\\\?]/, '')
   end

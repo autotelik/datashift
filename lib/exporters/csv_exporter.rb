@@ -64,19 +64,21 @@ module DataShift
 
       MethodDictionary.build_method_details( klass )
 
+      only  = options[:only] ? [*options[:only]] : nil
+
       # For each type belongs has_one, has_many etc find the operators
       # and create headers, then for each record call those operators
       operators = options[:with] || MethodDetail::supported_types_enum
 
       CSV.open( (options[:filename] || filename), "w" ) do |csv|
 
-        csv.ar_to_headers( records, operators)
+        csv.ar_to_headers( records, operators, options)
 
         details_mgr = MethodDictionary.method_details_mgrs[klass]
 
-        row = []
-
         records.each do |obj|
+
+          row = []
 
           operators.each do |op_type|
 
@@ -85,6 +87,9 @@ module DataShift
             next if(operators_for_type.nil? || operators_for_type.empty?)
 
             operators_for_type.each do |md|
+
+              next if(only && !only.include?( md.name.to_sym ) )
+
               if(MethodDetail.is_association_type?(op_type))
                 row << record_to_column( obj.send( md.operator ))    # pack association into single column
               else
