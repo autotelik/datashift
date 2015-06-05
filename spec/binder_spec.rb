@@ -11,39 +11,89 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 
 module DataShift
 
-  describe 'Binder Mapper' do
+  describe Binder do
 
     include_context "ClearThenManageProject"
 
-    let(:method_mapper)   { Binder.new }
+    let(:binder)   { Binder.new }
 
-    let (:headers)        { [:value_as_string, :owner, :value_as_boolean, :value_as_double] }
+    context 'errors binding headers' do
+
+      let(:headers) { [:value_as_string, :owner, :bad_no_such_column, :value_as_boolean, :value_as_double, :more_rubbish_as_nil] }
+
+      before(:each) do
+        @bindings = binder.map_inbound_headers( Project, headers )
+      end
+
+      let(:bindings) { @bindings }
+
+      it "uses NoMethodBinding object methods when no such operator" do
+        expect(bindings.size).to eq 6
+
+        expect(bindings[2]).to be_a NoMethodBinding
+        expect(bindings[5]).to be_a NoMethodBinding
+
+        expect(bindings[0]).to be_a MethodBinding
+      end
+
+      it "should populate missing_bindings  when no such operator" do
+        expect(binder.missing_bindings.size).to eq 2
+      end
+
+      it "should indicate when bindings  missing" do
+        expect(binder.missing_bindings?).to eq true
+      end
+
+      it "should indicate names of missing bindings" do
+        missing = binder.headers_missing_bindings
+
+        expect(missing.size).to eq 2
+
+        expect(missing[0]).to eq 'bad_no_such_column'
+        expect(missing[1]).to eq 'more_rubbish_as_nil'
+      end
+
+      it "should indicate index of missing bindings " do
+        missing = binder.indexes_missing_bindings
+
+        expect(missing[0]).to eq 2
+        expect(missing[1]).to eq 5
+      end
+
+      it "uses NoMethodBinding object methods when operator has no such lookup field", :fail => true do
+
+        # Owner  has_many :digitals which has field attachment_file_name
+        headers = [ 'digitals:attachment_file_name',
+                    'Digitals:nonsense_lookup_field',
+                    'Digitals:nonsense:with a value',
+                    'Digitals:nonsense:with a value:and random data']
+
+        binder.map_inbound_headers( Owner, headers)
+
+        expect(binder.bindings.size).to eq 4
+        expect(binder.missing_bindings.size).to eq 3
+
+        expect(binder.missing_bindings?).to eq true
+        expect(binder.missing_bindings[0].reason).to include 'Field [nonsense_lookup_field] Not Found'
+
+      end
+
+
+    end
+
+    let (:headers) { [:value_as_string, :owner, :value_as_boolean, :value_as_double] }
 
     it "should find a set of methods based on a list of column symbols" do
-      bindings = method_mapper.map_inbound_headers( Project, headers )
+      bindings = binder.map_inbound_headers( Project, headers )
       expect(bindings.size).to eq 4
     end
 
-    it "should leave nil in set of methods when no such operator" do
-
-      headers = [:value_as_string, :owner, :bad_no_such_column, :value_as_boolean, :value_as_double, :more_rubbish_as_nil]
-
-      bindings = method_mapper.map_inbound_headers( Project, headers )
-
-      expect(bindings.size).to eq 6
-
-      expect(bindings[2]).to be_a NoMethodBinding
-      expect(bindings[5]).to be_a NoMethodBinding
-
-      expect(bindings[0]).to be_a MethodBinding
-
-    end
 
     it "should map a list of column names to a set of method details", :fail => true do
 
       headers = %w{ value_as_double value_as_string bad_no_such_column value_as_boolean  }
 
-      bindings = method_mapper.map_inbound_headers( Project, headers )
+      bindings = binder.map_inbound_headers( Project, headers )
 
       expect(bindings.size).to eq 4
 
@@ -57,7 +107,7 @@ module DataShift
 
       headers = [:value_as_string, :owner, :value_as_boolean, :value_as_double]
 
-      bindings = method_mapper.map_inbound_headers( Project, headers )
+      bindings = binder.map_inbound_headers( Project, headers )
 
       expect(bindings.size).to eq 4
 
@@ -76,7 +126,7 @@ module DataShift
 
       operators = %w{ value_as_string value_as_string value_as_boolean value_as_double }
 
-      bindings = method_mapper.map_inbound_headers( Project, headers )
+      bindings = binder.map_inbound_headers( Project, headers )
 
       expect(bindings.size).to eq headers.size
 
@@ -97,7 +147,7 @@ module DataShift
 
       operators = %w{ owner owner owner }
 
-      bindings = method_mapper.map_inbound_headers( Project, headers )
+      bindings = binder.map_inbound_headers( Project, headers )
 
       expect(bindings.size).to eq headers.size
 
@@ -117,7 +167,7 @@ module DataShift
 
       operators = %w{ loader_releases loader_releases loader_releases }
 
-      bindings = method_mapper.map_inbound_headers( Project, headers )
+      bindings = binder.map_inbound_headers( Project, headers )
 
       expect(bindings.size).to eq headers.size
 
@@ -134,7 +184,7 @@ module DataShift
       # Owner has a name and belongs_to Project which has a title i.e lookup on title
       headers = ["project:title"]
 
-      bindings = method_mapper.map_inbound_headers( Owner, headers )
+      bindings = binder.map_inbound_headers( Owner, headers )
 
       expect(bindings.size).to eq headers.size
 
@@ -144,8 +194,8 @@ module DataShift
         expect(bindings[i].inbound_column.lookup_list).to be_a Array
         expect(bindings[i].inbound_column.lookup_list.size).to eq 1
         expect(bindings[i].inbound_column.lookup_list[0]).to be_a  InboundData::LookupSupport
-        expect(bindings[i].inbound_column.first_lookup).to be_a  InboundData::LookupSupport
-        expect(bindings[i].inbound_column.first_lookup).to eq bindings[i].inbound_column.lookup_list[0]
+        expect(bindings[i].inbound_column.lookups.first).to be_a  InboundData::LookupSupport
+        expect(bindings[i].inbound_column.lookups.first).to eq bindings[i].inbound_column.lookup_list[0]
       end
     end
 
@@ -154,12 +204,12 @@ module DataShift
       # Owner has a name and belongs_to Project which has a title i.e lookup on title
       headers = [ "project:title", "Project:title"]
 
-      bindings = method_mapper.map_inbound_headers( Owner, headers )
+      bindings = binder.map_inbound_headers( Owner, headers )
 
       expect(bindings.size).to eq headers.size
 
       headers.each_with_index do |c, i|
-        first_lookup = bindings[i].inbound_column.first_lookup
+        first_lookup = bindings[i].inbound_column.lookups.first
         expect(first_lookup.klass).to eq Project
         expect(first_lookup.field).to eq 'title'
         expect(first_lookup.where_value).to eq nil
@@ -171,14 +221,15 @@ module DataShift
       # Owner has a name and belongs_to Project
       headers = [ 'project:title:my first project', 'Project:title:my first project']
 
-      bindings = method_mapper.map_inbound_headers( Owner, headers )
+      bindings = binder.map_inbound_headers( Owner, headers )
 
       expect(bindings.size).to eq headers.size
 
       headers.each_with_index do |c, i|
-        expect(bindings[i].inbound_column.first_lookup.klass).to eq Project
-        expect(bindings[i].inbound_column.first_lookup.field).to eq 'title'
-        expect(bindings[i].inbound_column.first_lookup.where_value).to eq 'my first project'
+        first_lookup = bindings[i].inbound_column.lookups.first
+        expect(first_lookup.klass).to eq Project
+        expect(first_lookup.field).to eq 'title'
+        expect(first_lookup.where_value).to eq 'my first project'
       end
     end
 
@@ -188,14 +239,15 @@ module DataShift
       # has_one :long_and_complex_table_linked_to_version
       headers = [ 'long_and_complex_table_linked_to_version:price:10.2', 'Long_And Complex Table_linked_to_version:price:10.2']
 
-      bindings = method_mapper.map_inbound_headers( Version, headers )
+      bindings = binder.map_inbound_headers( Version, headers )
 
       expect(bindings.size).to eq headers.size
 
       headers.each_with_index do |c, i|
-        expect(bindings[i].inbound_column.first_lookup.klass).to eq LongAndComplexTableLinkedToVersion
-        expect(bindings[i].inbound_column.first_lookup.field).to eq 'price'
-        expect(bindings[i].inbound_column.first_lookup.where_value).to eq '10.2'
+        first_lookup = bindings[i].inbound_column.lookups.first
+        expect(first_lookup.klass).to eq LongAndComplexTableLinkedToVersion
+        expect(first_lookup.field).to eq 'price'
+        expect(first_lookup.where_value).to eq '10.2'
       end
     end
 
@@ -205,29 +257,19 @@ module DataShift
       headers = [ 'digitals:attachment_file_name:my pdf:random data for a loader',
                   'Digitals:attachment_file_name:my pdf:random data for a loader']
 
-      bindings = method_mapper.map_inbound_headers( Owner, headers )
+      bindings = binder.map_inbound_headers( Owner, headers )
 
       expect(bindings.size).to eq headers.size
 
       headers.each_with_index do |c, i|
-        expect(bindings[i].inbound_column.first_lookup.klass).to eq Digital
-        expect(bindings[i].inbound_column.first_lookup.field).to eq 'attachment_file_name'
-        expect(bindings[i].inbound_column.first_lookup.where_value).to eq 'my pdf'
+        first_lookup = bindings[i].inbound_column.lookups.first
+        expect(first_lookup.klass).to eq Digital
+        expect(first_lookup.field).to eq 'attachment_file_name'
+        expect(first_lookup.where_value).to eq 'my pdf'
         expect(bindings[i].inbound_column.data).to be_a Array
         expect(bindings[i].inbound_column.data).to include 'random data for a loader'
       end
     end
-
-    it "should raise an error when association has no such field" do
-
-      # Owner  has_many :digitals which has field attachment_file_name
-      headers = [ 'digitals:blah_blah',
-                  'Digitals:nonsense:with a value',
-                  'Digitals:nonsense:with a value:and random data']
-
-      expect { method_mapper.map_inbound_headers( Owner, headers ) }.to raise_error NoSuchOperator
-    end
-
 
 
     it "should enable us to sort bindings into arbitrary processing order" do
@@ -236,7 +278,7 @@ module DataShift
 
       operators = %w{ value_as_string value_as_string value_as_boolean value_as_double }
 
-      bindings = method_mapper.map_inbound_headers( Project, headers )
+      bindings = binder.map_inbound_headers( Project, headers )
 
       pending 'sorting methods'
 

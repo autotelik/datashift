@@ -99,8 +99,13 @@ module DataShift
   end
 
   class NoMethodBinding < MethodBinding
-    def initialize(client_name = "", client_idx = -1)
+
+    attr_accessor :reason
+
+    def initialize(client_name = "", client_idx = -1, options = {})
       super(client_name, client_idx, nil)
+
+      @reason = options[:reason] || ''
     end
 
     def invalid?

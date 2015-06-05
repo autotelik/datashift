@@ -33,10 +33,13 @@ module DataShift
 
       @headers  = DataShift::Headers.new(:na)
       @reporter = DataShift::Reporter.new
-
-      reset
     end
 
+
+    def klass=( klass )
+      @klass = klass
+      reset
+    end
     # Reset the database object to be populated
     #
     def reset(object = nil)
