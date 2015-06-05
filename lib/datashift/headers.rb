@@ -30,6 +30,8 @@ module DataShift
     end
 
 
+    # swap any raw column headers for their mapped equivalent
+    # Excel => 'Customer', is mapped to 'user' which, correctly binds to domain operator 'user'
     def map( mapping )
       @previous_headers = @headers.dup
       mapping.each do |m, v|
