@@ -42,6 +42,8 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'spreadsheet'
   s.add_dependency 'rubyzip'
+  s.add_dependency 'thread_safe'
+
 
 
 end

@@ -241,6 +241,8 @@ RSpec.configure do |config|
       FileUtils::rm_rf(sandbox)
     end
 
+    puts "RSPEC - checking for Rails sandbox [#{sandbox}]"
+
     unless(File.exist?(sandbox))
 
       sandbox_exe_path =  File.expand_path( "#{sandbox}/.." )

@@ -6,6 +6,18 @@
 # Details::   Stores defaults, substitutions, over rides etc
 #             that can be applied to incoming data while being Populated
 #
+# Usage::     DataShift::transformer.factory do |factory|
+#                 factory.set_default  columns_name, 'some text'
+#             end
+
+# Yields a singleton instance of Transformations::Factory
+# so you can specify additional transforms in .rb config
+# If passed an optional locale, rules for other
+# languages can be specified. If not specified, defaults to <tt>:en</tt>.
+#
+# Only rules for English are provided.
+#
+
 # WORK In PROGRESS
 
 module DataShift
@@ -164,7 +176,7 @@ module DataShift
     #
     # Only rules for English are provided.
     #
-    # DataShift::Transformer.factory do |factory|
+    # DataShift::transformer.factory do |factory|
     #   factory.set_default  columns_name, 'some text'
     # end
 

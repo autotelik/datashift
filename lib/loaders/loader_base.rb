@@ -29,12 +29,13 @@ module DataShift
 
     # Options
     #
+    #  :file_name       : Filename that will be loaded
     #  :verbose         : Verbose logging and to STDOUT
     #  :strict          : Raise exceptions when no mapping found for non mandatory column headings
     #
-    def initialize( file_name, options = {} )
+    def initialize( options = {} )
 
-      @file_name   = file_name
+      @file_name   = options[:file_name] || ""
 
       @doc_context = DocContext.new(NilClass)
       @binder      = Binder.new
