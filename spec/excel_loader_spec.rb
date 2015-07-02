@@ -84,7 +84,7 @@ module  DataShift
 
       let(:loader)  { ExcelLoader.new( simple_xls ) }
 
-      it "should process a simple .xls spreedsheet"  do
+      it "should process a simple .xls spreedsheet", :fail => true  do
         count = Project.count
 
         loader.run(Project)

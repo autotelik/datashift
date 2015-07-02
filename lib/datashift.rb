@@ -82,6 +82,7 @@ module DataShift
     require_libs = ['datashift',
                     'datashift/core_ext',
                     'datashift/model_methods',
+                    'datashift/transformer',
                     'datashift/inbound_data',
                     'loaders', 'generators', 'helpers' ]
 

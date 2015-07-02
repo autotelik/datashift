@@ -20,6 +20,9 @@
 
 # WORK In PROGRESS
 
+
+require 'thread_safe'
+
 module DataShift
 
   module Transformer

@@ -100,6 +100,15 @@ module DataShift
       @operator_class
     end
 
+    def pp
+      x=<<-EOS
+      klass         [#{klass.name}]
+      operator_type [#{operator_type}]
+      operator      [#{operator}]
+      col_type      [#{col_type.inspect}]
+      EOS
+      x
+    end
 
     private
 

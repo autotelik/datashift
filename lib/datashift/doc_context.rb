@@ -76,7 +76,8 @@ module DataShift
 
     # We have our own error list available too
     def errors?
-      return !(errors.empty? && load_object.errors.empty?)
+      puts errors.inspect, load_object.errors.inspect
+      return !errors.empty? || !load_object.errors.empty?
     end
 
     def success
@@ -94,6 +95,8 @@ module DataShift
     # so the load object is invalid
 
     def failure( error_messages, delete_object = true)
+
+      [*error_messages].each {|e| errors << e }
 
       if(load_object)
         reporter.add_failed_object(load_object)

@@ -142,7 +142,7 @@ module DataShift
 
           end
 
-          logger.debug("Column [#{col_data}] (#{col_index}) - mapped to :\n#{model_method.inspect}")
+          logger.debug("Column [#{col_data}] (#{col_index}) - mapped to :\n#{model_method.pp}")
 
           bindings << binding
 

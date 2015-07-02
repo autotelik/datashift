@@ -122,10 +122,13 @@ module DataShift
             # manually have to detect when actual data ends
             break if(!allow_empty_rows && contains_data == false)
 
-            unless(doc_context.errors? && doc_context.all_or_nothing?)
+            if(doc_context.errors? && doc_context.all_or_nothing?)
+              logger.warn "Row #{current_row_idx} contained errors and has been skipped"
+            else
               doc_context.save_and_report
             end
 
+            # unless next operation is update, reset the loader object
             unless(doc_context.context.next_update?)
               doc_context.reset
             end
@@ -149,7 +152,7 @@ module DataShift
       puts "Excel loading stage Complete."
     end
 
-  private
+    private
 
     #  Options  :
     #

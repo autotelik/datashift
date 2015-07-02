@@ -95,29 +95,23 @@ module Datashift
 
       loader_options = { :instance_methods => true }
 
-      if(options[:loader])
+      loader_klass = if(options[:loader])
         begin
-     
-          loader_klass = DataShift::MapperUtils::class_from_string(options[:loader])
-
-          loader = loader_klass.new(klass)
-
-          logger.info("INFO: Using loader : #{loader.class}")
+           DataShift::MapperUtils::class_from_string(options[:loader])
         rescue
-          logger.error("INFO: No specific #{model}Loader found  - using generic ExcelLoader")
-          loader = DataShift::ExcelLoader.new(klass, nil, loader_options)
+         raise NoSuchClassError("INFO: No Loader [#{options[:loader]}] found ")
         end
       else
         logger.info("No Loader specified - using generic ExcelLoader")
-        loader = DataShift::ExcelLoader.new(klass, nil, loader_options)
+        DataShift::ExcelLoader
       end
 
-      #TOFIX - multi loggers to file + STDOUT
-      # loader.logger.verbose if(options['verbose'])
-      
+      loader = loader_klass.new(options[:input], loader_options)
+
+      logger.info("Using loader : #{loader.class}")
       loader.configure_from( options[:config] ) if(options[:config])
 
-      loader.perform_load(options[:input])
+      loader.run(klass)
     end
     
     desc "csv", "import CSV file for specified active record model" 

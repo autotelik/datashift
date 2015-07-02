@@ -21,7 +21,9 @@ require 'paperclip'
 require 'factory_girl_rails'
 require 'database_cleaner'
 
-$:.unshift '.'  # 1.9.3 quite strict, '.' must be in load path for relative paths to work from here
+# Requires supporting ruby files with custom matchers and macros, etc,
+# in spec/support/ and its subdirectories.
+Dir[File.join(File.dirname(__FILE__), "support/**/*.rb")].each { |f| require f }
 
 require File.expand_path("../../lib/datashift", __FILE__)
 
@@ -40,7 +42,7 @@ RSpec.configure do |config|
 
     bundler_setup()
 
-    rails_sandbox
+    Sandbox.gen_rails_sandbox
 
     # load all test model definitions - Project etc
     require ifixture_file('test_model_defs')
@@ -220,70 +222,8 @@ RSpec.configure do |config|
   end
 
   def rails_sandbox_path
-    File.expand_path('../../spec/rails_sandbox', __FILE__)
+    Sandbox.rails_sandbox_path
   end
 
-  def add_gem(name, gem_options={})
-
-    puts "Append Gemfile with #{name}"
-    parts = ["'#{name}'"]
-    parts << ["'#{gem_options.delete(:version)}'"] if gem_options[:version]
-    gem_options.each { |key, value| parts << "#{key}: '#{value}'" }
-
-    File.open('Gemfile', 'ab') { |file| file.write( "\ngem #{parts.join(', ')}") }
-  end
-
-  def rails_sandbox( force = false)
-
-    sandbox = rails_sandbox_path
-
-    if(force == true && File.exist?(sandbox))
-      FileUtils::rm_rf(sandbox)
-    end
-
-    puts "RSPEC - checking for Rails sandbox [#{sandbox}]"
-
-    unless(File.exist?(sandbox))
-
-      sandbox_exe_path =  File.expand_path( "#{sandbox}/.." )
-
-      puts "Creating new Rails sandbox in : #{sandbox_exe_path}"
-
-      run_in( sandbox_exe_path ) do |path|
-
-        name = File.basename(rails_sandbox_path)
-
-        system('rails new ' + name)
-
-        puts "Copying over models :", Dir.glob(File.join(fixtures_path, 'models', '*.rb')).inspect
-
-        FileUtils::cp_r( Dir.glob(File.join(fixtures_path, 'models', '*.rb')), File.join(name, 'app/models'))
-
-        migrations = File.expand_path(File.join(fixtures_path, 'db', 'migrate'), __FILE__)
-
-        FileUtils::cp_r( migrations, File.join(rails_sandbox_path, 'db'))
-
-        FileUtils::cp_r( File.join(fixtures_path, 'sandbox_example.thor'), rails_sandbox_path)
-      end
-
-      run_in(rails_sandbox_path) do
-
-        add_gem 'datashift', path: rspec_datashift_root
-
-        puts "Running bundle install"
-
-        system('bundle install')
-
-        system('bundle exec rake db:create')
-
-        system('RAILS_ENV=development bundle exec rake db:migrate')
-        system('RAILS_ENV=test bundle exec rake db:migrate')
-
-        puts "Running db:migrate"
-      end
-
-    end
-    return sandbox
-  end
 
 end
