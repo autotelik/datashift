@@ -35,11 +35,11 @@ module DataShift
       end
 
       def find_by_operator
-        lookup_list.first ? lookup_list.first.field : ""
+        lookup_list.first ? lookup_list.first.field : ''
       end
 
       def find_by_value
-        lookup_list.first ? lookup_list.first.value : ""
+        lookup_list.first ? lookup_list.first.value : ''
       end
 
     end

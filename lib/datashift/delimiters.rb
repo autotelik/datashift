@@ -4,8 +4,8 @@
 # License::   MIT
 #
 #  Details::  Module providing standard location for delimiters used in both export/import
-#  
-#             For example we support multiple entries in a single column, so the string 
+#
+#             For example we support multiple entries in a single column, so the string
 #             needs to be formatted with recognisable delimiters seperating each of the multiple values.
 #
 module DataShift
@@ -14,7 +14,6 @@ module DataShift
 
     # I made these class methods, feeling delims are 'global'
     # I dunno now if thats good pattern or not
-
 
     # As well as just the column name, support embedding find operators for that column
     # in the heading .. i.e Column header => 'BlogPosts:user_id'
@@ -28,13 +27,14 @@ module DataShift
       @column_delim
     end
 
-    def self.set_column_delim(x)  @column_delim = x; end
-
+    def self.set_column_delim(x)
+      @column_delim = x
+    end
 
     # Support multiple associations being added to a base object to be specified in a single column.
-    # 
+    #
     # Entry represents the association to find via supplied name, value to use in the lookup.
-    # 
+    #
     # Default syntax :
     #
     #   Name1:value1, value2|Name2:value1, value2, value3|Name3:value1, value2
@@ -56,8 +56,9 @@ module DataShift
       @name_value_delim
     end
 
-    def self.set_name_value_delim(x)  @name_value_delim = x; end
-
+    def self.set_name_value_delim(x)
+      @name_value_delim = x
+    end
 
     # The simple seperator for a list of values whether it be
     #     "Colour:red,green,blue".split(Delimiters::multi_value_delim) => [red,green,blue]
@@ -66,23 +67,26 @@ module DataShift
     def self.multi_value_delim
       @multi_value_delim ||= ','
     end
-    
-    def self.set_multi_value_delim(x) @multi_value_delim = x; end
+
+    def self.set_multi_value_delim(x)
+      @multi_value_delim = x
+    end
 
     # Objects can be created with multiple facets in single columns.
     # In this example a single Product can be configured with a consolidated mime and print types
-    # 
-    # mime_type:jpeg,PDF ; print_type:colour	 equivalent to 
-    # 
+    #
+    # mime_type:jpeg,PDF ; print_type:colour	 equivalent to
+    #
     #   => mime_type:jpeg;print_type:colour | mime_type:PDF; print_type:colour
-    
+
     def self.multi_facet_delim
       @multi_facet_delim ||= ';'
     end
-    
-    def self.setmulti_facet_delim(x) @multi_facet_delim = x; end
-   
-    
+
+    def self.setmulti_facet_delim(x)
+      @multi_facet_delim = x
+    end
+
     # Multiple objects can be embedded in single columns.
     # In this example a single Category column contains 3 separate entries, New, SecondHand, Retro
     # object creation/update via hash (which hopefully we should be able to just forward to AR)
@@ -95,32 +99,39 @@ module DataShift
       @multi_assoc_delim
     end
 
-    def self.set_multi_assoc_delim(x) @multi_assoc_delim = x; end
-    
-    
-    # Delimiters for {:abc => 2, :efg => 'some text}
-    
-    def self.attribute_list_start 
-      @attribute_list_start ||= '{';
+    def self.set_multi_assoc_delim(x)
+      @multi_assoc_delim = x
     end
 
-    def self.attribute_list_start=(x) @attribute_list_start = x; end
-    
+    # Delimiters for {:abc => 2, :efg => 'some text}
+
+    def self.attribute_list_start
+      @attribute_list_start ||= '{'
+    end
+
+    class << self
+      attr_writer :attribute_list_start
+    end
+
     def self.attribute_list_end
       @attribute_list_end ||= '}'
     end
-    
-    def self.attribute_list_end=(x) 
-      @attribute_list_end = x; 
+
+    class << self
+      attr_writer :attribute_list_end
     end
-  
+
     def self.csv_delim
       @csv_delim ||= ','
       @csv_delim
     end
-    
-    def self.csv_delim=(x) set_csv_delim(x); end
-    def self.set_csv_delim(x) @csv_delim = x; end
+
+    def self.csv_delim=(x)
+      set_csv_delim(x)
+    end
+    def self.set_csv_delim(x)
+      @csv_delim = x
+    end
 
     def self.eol
       "\n"
@@ -131,18 +142,16 @@ module DataShift
       @text_delim ||= "\'"
     end
 
-    def text_delim=(x)
-      @text_delim = x
-    end
+    attr_writer :text_delim
 
     # seperator for identifying normal key value pairs
 
     def self.key_value_sep
-      @key_value_sep ||= "=>"   #TODO check Ruby version and use appropriate has style ?
+      @key_value_sep ||= '=>'   # TODO: check Ruby version and use appropriate has style ?
     end
 
-    def self.key_value_sep=(x)
-      @key_value_sep = x
+    class << self
+      attr_writer :key_value_sep
     end
 
   end

@@ -29,7 +29,7 @@ module DataShift
       records = [*export_records]
 
       unless(records && records.size > 0)
-        logger.warn("No objects supplied for export")
+        logger.warn('No objects supplied for export')
         return
       end
 
@@ -37,24 +37,23 @@ module DataShift
 
       logger.info("Exporting #{records.size} #{first.class} to Excel")
 
-      raise ArgumentError.new('Please supply set of ActiveRecord objects to export') unless(first.is_a?(ActiveRecord::Base))
+      fail ArgumentError.new('Please supply set of ActiveRecord objects to export') unless(first.is_a?(ActiveRecord::Base))
 
-
-      raise ArgumentError.new('Please supply array of records to export') unless records.is_a? Array
+      fail ArgumentError.new('Please supply array of records to export') unless records.is_a? Array
 
       excel = Excel.new
 
       if(options[:sheet_name] )
-        excel.create_worksheet( :name => options[:sheet_name] )
+        excel.create_worksheet( name: options[:sheet_name] )
       else
-        excel.create_worksheet( :name => records.first.class.name )
+        excel.create_worksheet( name: records.first.class.name )
       end
 
       excel.ar_to_headers(records)
 
       excel.ar_to_xls(records)
 
-      excel.write( filename() )
+      excel.write( filename )
     end
 
     # Create an Excel file from list of ActiveRecord objects, includes relationships
@@ -71,9 +70,9 @@ module DataShift
       excel = Excel.new
 
       if(options[:sheet_name] )
-        excel.create_worksheet( :name => options[:sheet_name] )
+        excel.create_worksheet( name: options[:sheet_name] )
       else
-        excel.create_worksheet( :name => records.first.class.name )
+        excel.create_worksheet( name: records.first.class.name )
       end
 
       ModelMethodsManager.find_methods( klass )
@@ -91,11 +90,9 @@ module DataShift
       row = 1
 
       records.each do |obj|
-
         column = 0
 
         operators.each do |op_type|     # belongs_to, has_one, has_many etc
-
           operators_for_type = details_mgr.for_type(op_type)
 
           next if(operators_for_type.nil? || operators_for_type.empty?)
@@ -113,7 +110,7 @@ module DataShift
         row += 1
       end
 
-      excel.write( filename() )
+      excel.write( filename )
 
     end
   end # ExcelGenerator

@@ -11,31 +11,25 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 require 'mapping_generator'
 
 describe 'MapperUtils' do
-
   before(:all) do
   end
 
   before(:each) do
   end
 
-  it "should identify the class from a string" do
+  it 'should identify the class from a string' do
     # Similar to const_get_from_string except this version
     # returns nil if no such class found
     # Support modules e.g "Spree::Property"
     #
     expect(DataShift::MapperUtils.class_from_string( Project)).to be_a Class
-
   end
 
-  it "should identify the class from a string contianing modules" do
+  it 'should identify the class from a string contianing modules' do
     # Similar to const_get_from_string except this version
     # returns nil if no such class found
     # Support modules e.g "Spree::Property"
     #
     expect(DataShift::MapperUtils.class_from_string( DataShift::AClassInAModule )).to be_a Class
-
   end
-
-
-
 end

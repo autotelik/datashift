@@ -11,15 +11,14 @@ module DataShift
 
     attr_accessor :headers, :remove_list
 
-    def initialize()
+    def initialize
       @headers = Headers.new(:na)
-      @remove_list =[]
+      @remove_list = []
     end
 
     def self.rails_columns
       @rails_standard_columns ||= [:id, :created_at, :created_on, :updated_at, :updated_on]
     end
-
 
     # Parse options and build collection of headers
     # Provide a ModelMethods::collection
@@ -44,13 +43,12 @@ module DataShift
       @headers = Headers.new(collection.klass)
 
       op_type_list.each do |assoc_type|
-
         model_methods = collection.for_type(assoc_type)
 
         model_methods.each do |mm|
-          #comparable_association = md.operator.to_s.downcase.to_sym
-          #i = remove_list.index { |r| r == comparable_association }
-          #(i) ? remove_list.delete_at(i) : @headers << "#{md.operator}"
+          # comparable_association = md.operator.to_s.downcase.to_sym
+          # i = remove_list.index { |r| r == comparable_association }
+          # (i) ? remove_list.delete_at(i) : @headers << "#{md.operator}"
           @headers << mm.operator
         end
       end
@@ -63,7 +61,6 @@ module DataShift
 
     alias_method :collection_to_headers, :prepare_model_headers
 
-
     # Parse options and remove  headers
     # Specify columns to remove with :
     #   options[:remove]
@@ -74,18 +71,17 @@ module DataShift
     def remove_headers(options)
       remove_list = prep_remove_list( options )
 
-      #TODO - more efficient way ?
+      # TODO: - more efficient way ?
       headers.delete_if { |h| remove_list.include?( h.to_sym ) } unless(remove_list.empty?)
     end
-
 
     # Take options and create a list of symbols to remove from headers
     # Rails columns like id, created_at etc are added to the remove list by default
     # Specify :include_rails to keep them in
     def prep_remove_list( options )
-      remove_list = [ *options[:remove] ].compact.collect{|x| x.to_s.downcase.to_sym }
+      remove_list = [ *options[:remove] ].compact.collect { |x| x.to_s.downcase.to_sym }
 
-      remove_list += GeneratorBase::rails_columns unless(options[:include_rails])
+      remove_list += GeneratorBase.rails_columns unless(options[:include_rails])
 
       remove_list
     end

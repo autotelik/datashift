@@ -24,7 +24,7 @@ module DataShift
       #
       def get_loader(file_name, options = {} )
 
-        raise DataShift::BadFile, "Cannot load #{file_name} file not found." unless(File.exist?(file_name))
+        fail DataShift::BadFile, "Cannot load #{file_name} file not found." unless(File.exist?(file_name))
 
         logger.info("Perform Load Options:\n#{options.inspect}")
 
@@ -35,7 +35,7 @@ module DataShift
         elsif(ext.casecmp('.csv') == 0)
           return CsvLoader.new(file_name, options)
         else
-          raise DataShift::UnsupportedFileType, "#{ext} files not supported - Try .csv or OpenOffice/Excel .xls"
+          fail DataShift::UnsupportedFileType, "#{ext} files not supported - Try .csv or OpenOffice/Excel .xls"
         end
       end
 

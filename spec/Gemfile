@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '2.1.5'
+ruby '2.2.2'
 
 # DEFINE WHICH VERSIONS ON VITAL GEMS WE WANT TO TEST WITH
 

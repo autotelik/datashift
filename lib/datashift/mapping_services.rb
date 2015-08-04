@@ -42,7 +42,7 @@ module DataShift
 
       unless(map_file_name && File.exist?(map_file_name))
         logger.error "Cannot open mapping file - #{map_file_name} - file does not exist."
-        raise FileNotFound.new("Cannot open mapping file - #{map_file_name}")
+        fail FileNotFound.new("Cannot open mapping file - #{map_file_name}")
       end
 
       begin
@@ -58,8 +58,8 @@ module DataShift
     end
 
     # OpenStruct not a hash .. supports form ... config.path, config.full_name etc
-    def method_missing(method, *args, &block)
-      #logger :debug, "method_missing called with : #{method}"
+    def method_missing(method, *_args, &_block)
+      # logger :debug, "method_missing called with : #{method}"
       @mappings.send(method)
     end
 

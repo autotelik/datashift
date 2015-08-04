@@ -1,8 +1,8 @@
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
 
-$:.unshift File.join(File.dirname(__FILE__),'..','lib')
-$:.unshift File.join(File.dirname(__FILE__),'..','lib', 'engine')
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib', 'engine')
 
 require 'test/unit'
 require 'file_definitions'
@@ -27,12 +27,11 @@ class File_definitions < Test::Unit::TestCase
 
   end
 
-
   def test_fields_symbols
     klass = Object.const_set('SymClass', Class.new)
     klass.module_eval do
       include FileDefinitions
-      create_field_definition  [:a_symbol, :b_symbol]
+      create_field_definition [:a_symbol, :b_symbol]
 
       create_field_attr_accessors
     end
@@ -45,16 +44,16 @@ class File_definitions < Test::Unit::TestCase
     klass = Object.const_set('A', Class.new)
     klass.module_eval do
       include FileDefinitions
-      create_field_definition %w{abc def  ghi jkl}
+      create_field_definition %w(abc def  ghi jkl)
 
       create_field_attr_accessors
     end
 
     x = A.new
 
-    assert_equal ["abc", "def", "ghi", "jkl"], A.field_definition.sort
+    assert_equal %w(abc def ghi jkl), A.field_definition.sort
 
-    A::add_field( "xyz" )
+    A.add_field( 'xyz' )
 
     line = '1,2,3,4, 5'
     x = A.new(line)
@@ -101,7 +100,7 @@ class File_definitions < Test::Unit::TestCase
     assert_equal 3,  AFixed.field_definition.size
     assert_equal 3,  AFixed.fixed_definition.keys.size
 
-    assert_equal  ["ccy", "date", "value"], AFixed.field_definition.sort
+    assert_equal %w(ccy date value), AFixed.field_definition.sort
 
     assert_equal AFixed.field_definition.sort,  AFixed.fixed_definition.keys.sort
 

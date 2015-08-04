@@ -42,7 +42,7 @@ module DataShift
     end
 
     def operator
-      model_method ? model_method.operator : ""
+      model_method ? model_method.operator : ''
     end
 
     def inbound_name
@@ -73,16 +73,15 @@ module DataShift
 
       association = klass.reflect_on_association(model_method.operator)
 
-      # TODO - this is instance methods .. what about class methods ?
+      # TODO: - this is instance methods .. what about class methods ?
       if(association && association.klass.new.respond_to?(field))
         inbound_column.add_lookup(association.klass, field, value)
         logger.info("Complex Lookup specified for [#{model_method.operator}] : on field [#{field}] (optional value [#{value}])")
       else
         logger.error("Check MethodBinding [#{inbound_name}](#{inbound_index}) - Association field names are case sensitive")
-        raise NoSuchOperator.new("Field [#{field}] Not Found on Association [#{model_method.operator}] within Class #{klass.name}")
+        fail NoSuchOperator.new("Field [#{field}] Not Found on Association [#{model_method.operator}] within Class #{klass.name}")
       end
     end
-
 
     def valid?
       (@valid == true)
@@ -102,7 +101,7 @@ module DataShift
 
     attr_accessor :reason
 
-    def initialize(client_name = "", client_idx = -1, options = {})
+    def initialize(client_name = '', client_idx = -1, options = {})
       super(client_name, client_idx, nil)
 
       @reason = options[:reason] || ''

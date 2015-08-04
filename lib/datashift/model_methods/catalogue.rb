@@ -23,7 +23,7 @@ module DataShift
         catalogued.include?(klass)
       end
 
-      def self.size()
+      def self.size
         catalogued.size
       end
 
@@ -37,7 +37,7 @@ module DataShift
 
         puts "DEBUG: find_methods for [#{klass}]"
 
-        raise "Cannot find operators supplied klass nil #{klass}" if(klass.nil?)
+        fail "Cannot find operators supplied klass nil #{klass}" if(klass.nil?)
 
         register(klass)
 
@@ -46,7 +46,7 @@ module DataShift
         # Find the has_many associations which can be populated via <<
         if( options[:reload] || has_many[klass].nil? )
           has_many[klass] = klass.reflect_on_all_associations(:has_many).map { |i| i.name.to_s }
-          klass.reflect_on_all_associations(:has_and_belongs_to_many).inject(has_many[klass]) { |x,i| x << i.name.to_s }
+          klass.reflect_on_all_associations(:has_and_belongs_to_many).inject(has_many[klass]) { |x, i| x << i.name.to_s }
         end
 
         # Find the belongs_to associations which can be populated via  Model.belongs_to_name = OtherArModelObject
@@ -71,26 +71,25 @@ module DataShift
           end
 
           # get into consistent format with other assignments names i.e remove the = for now
-          assignments[klass] += setters(klass).map{|i| i.gsub(/=/, '')} if(options[:instance_methods])
+          assignments[klass] += setters(klass).map { |i| i.gsub(/=/, '') } if(options[:instance_methods])
 
           # Now remove all the associations
           assignments[klass] -= has_many[klass]   if(has_many[klass])
           assignments[klass] -= belongs_to[klass] if(belongs_to[klass])
           assignments[klass] -= has_one[klass]    if(has_one[klass])
 
-          # TODO remove assignments with id
+          # TODO: remove assignments with id
           # assignments => tax_id  but already in belongs_to => tax
 
           assignments[klass].uniq!
 
           assignments[klass].each do |assign|
             column_types[klass] ||= {}
-            column_def = klass.columns.find{ |col| col.name == assign }
+            column_def = klass.columns.find { |col| col.name == assign }
             column_types[klass].merge!( assign => column_def) if column_def
           end
         end
       end
-
 
       def self.clear
         belongs_to.clear
@@ -102,7 +101,7 @@ module DataShift
       end
 
       def self.belongs_to
-        @belongs_to ||={}
+        @belongs_to ||= {}
         @belongs_to
       end
 
@@ -121,7 +120,6 @@ module DataShift
         @assignments
       end
 
-
       # N.B this return strings for consistency with other collections
       # Removes methods that start with '_'
 
@@ -133,12 +131,10 @@ module DataShift
         setters.uniq    # TOFIX is this really required ?
       end
 
-
       def self.column_types
         @column_types ||= {}
         @column_types
       end
-
 
       def self.belongs_to_for(klass)
         belongs_to[klass] || []
@@ -157,7 +153,7 @@ module DataShift
       end
 
       def self.column_type_for(klass, column)
-        column_types[klass] ?  column_types[klass][column] : []
+        column_types[klass] ? column_types[klass][column] : []
       end
 
       private

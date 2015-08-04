@@ -9,11 +9,10 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 module DataShift
 
-  describe "#configure" do
-
+  describe '#configure' do
     let(:defaults) {
       { project:
-            { value_as_string: "Default Project Value",
+            { value_as_string: 'Default Project Value',
               category: 'reference:category_002',
               value_as_datetime:  Time.now.to_s(:db)
             }
@@ -26,7 +25,7 @@ module DataShift
       end
     end
 
-    it "returns hash with 3 elements" do
+    it 'returns hash with 3 elements' do
       draw = MegaLotto::Drawing.new.draw
 
       expect(draw).to be_a(Array)

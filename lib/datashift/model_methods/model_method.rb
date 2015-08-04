@@ -28,7 +28,7 @@ module DataShift
       @assoc_type_enum
     end
 
-    def self.is_association_type? ( type )
+    def self.is_association_type?( type )
       association_types_enum.member?( type )
     end
 
@@ -40,29 +40,29 @@ module DataShift
     attr_reader :col_type
 
     # The :operator that can be called to assign  e.g orders or Products.new.orders << Order.new
-    # 
+    #
     # The type of operator e.g :assignment, :belongs_to, :has_one, :has_many etc
     attr_reader :operator, :operator_type
 
     # Operator is a population type method call on klass
     # Type determines the style of operator call; simple assignment, an association or a method call
-    # 
+    #
     # col_types can typically be derived from klass.columns - set of ActiveRecord::ConnectionAdapters::Column
 
     def initialize(klass, operator, type, col_type = nil)
       @klass = klass
 
-      if( ModelMethod::supported_types_enum.member?(type.to_sym) )
+      if( ModelMethod.supported_types_enum.member?(type.to_sym) )
         @operator_type = type.to_sym
       else
-        raise BadOperatorType.new("No such operator Type [#{type}] cannot instantiate ModelMethod for #{operator}")
+        fail BadOperatorType.new("No such operator Type [#{type}] cannot instantiate ModelMethod for #{operator}")
       end
 
       @operator = operator
 
       # Note : Not all assignments will currently have a column type, for example
       # those that are derived from a delegate_belongs_to
-      @col_type = klass.columns.find{ |col| col.name == operator } if(col_type.nil?)
+      @col_type = klass.columns.find { |col| col.name == operator } if(col_type.nil?)
 
       @col_type = DataShift::ModelMethods::Catalogue.column_type_for(klass, operator) if(col_type.nil?)
     end
@@ -79,7 +79,7 @@ module DataShift
     end
 
     # Return the operator's expected class name, if can be derived, else nil
-    def operator_class_name()
+    def operator_class_name
       @operator_class_name ||=
           if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))
 
@@ -88,20 +88,20 @@ module DataShift
           elsif(@col_type)
             @col_type.type.to_s.classify
           else
-            ""
+            ''
           end
 
       @operator_class_name
     end
 
     # Return the operator's expected class, if can be derived, else nil
-    def operator_class()
-      @operator_class ||= get_operator_class()
+    def operator_class
+      @operator_class ||= get_operator_class
       @operator_class
     end
 
     def pp
-      x=<<-EOS
+      x = <<-EOS
       klass         [#{klass.name}]
       operator_type [#{operator_type}]
       operator      [#{operator}]
@@ -113,7 +113,7 @@ module DataShift
     private
 
     # Return the operator's expected class, if can be derived, else nil
-    def get_operator_class()
+    def get_operator_class
 
       if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))
 
@@ -121,7 +121,7 @@ module DataShift
 
         return result.klass if(result)
 
-        result = MapperUtils::class_from_string(operator.classify)
+        result = MapperUtils.class_from_string(operator.classify)
 
         if(result.nil?)
           begin
@@ -129,7 +129,7 @@ module DataShift
             first = klass.to_s.split('::').first
             logger.debug "Trying to find operator class with Parent Namespace #{first}"
 
-            result = MapperUtils::const_get_from_string("#{first}::#{operator.classify}")
+            result = MapperUtils.const_get_from_string("#{first}::#{operator.classify}")
           rescue => e
             logger.error("Failed to derive Class for #{operator} (#{@operator_type} - #{e.inspect}")
           end
@@ -141,9 +141,7 @@ module DataShift
         begin
           Kernel.const_get(@col_type.type.to_s.classify)
         rescue; nil; end
-      else
-        nil
-      end
+            end
     end
 
   end

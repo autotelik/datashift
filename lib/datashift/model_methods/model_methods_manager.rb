@@ -45,19 +45,19 @@ module DataShift
         collection = ModelMethods::Collection.new( klass )
 
         DataShift::ModelMethods::Catalogue.assignments_for(klass).each do |n|
-          collection <<  ModelMethod.new(klass, n, :assignment)
+          collection << ModelMethod.new(klass, n, :assignment)
         end
 
         DataShift::ModelMethods::Catalogue.has_one_for(klass).each do |n|
-          collection <<  ModelMethod.new(klass, n, :has_one)
+          collection << ModelMethod.new(klass, n, :has_one)
         end
 
         DataShift::ModelMethods::Catalogue.has_many_for(klass).each do |n|
-          collection <<  ModelMethod.new(klass, n, :has_many)
+          collection << ModelMethod.new(klass, n, :has_many)
         end
 
         DataShift::ModelMethods::Catalogue.belongs_to_for(klass).each do |n|
-          collection <<  ModelMethod.new(klass, n, :belongs_to)
+          collection << ModelMethod.new(klass, n, :belongs_to)
         end
 
         collections[klass] = collection

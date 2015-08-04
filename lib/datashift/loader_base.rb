@@ -35,7 +35,7 @@ module DataShift
     #
     def initialize( options = {} )
 
-      @file_name   = options[:file_name] || ""
+      @file_name   = options[:file_name] || ''
 
       @doc_context = DocContext.new(NilClass)
       @binder      = Binder.new
@@ -43,7 +43,6 @@ module DataShift
       @verbose = (options[:verbose] == true)
       @strict  = (options[:strict] == true)
     end
-
 
     # Options
     #
@@ -67,7 +66,7 @@ module DataShift
     end
 
     def abort_on_failure?
-      #TODO @config[:abort_on_failure].to_s == 'true'
+      # TODO: @config[:abort_on_failure].to_s == 'true'
     end
 
     def loaded_count
@@ -104,8 +103,6 @@ module DataShift
       reporter.report
     end
 
-
-
     # Core API
     #
     # Given a list of free text column names from inbound headers,
@@ -140,56 +137,53 @@ module DataShift
       rescue => e
         puts e.inspect, e.backtrace
         logger.error("Failed to map header row to set of database operators : #{e.inspect}")
-        raise MappingDefinitionError, "Failed to map header row to set of database operators"
+        raise MappingDefinitionError, 'Failed to map header row to set of database operators'
       end
 
       unless(binder.missing_bindings.empty?)
         logger.warn("Following headings couldn't be mapped to #{load_object_class} \n#{binder.missing_bindings.inspect}")
-        raise MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(",")}" if(strict)
+        fail MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}" if(strict)
       end
 
       unless(mandatory.empty? || binder.contains_mandatory?(mandatory) )
         binder.missing_mandatory(mandatory).each { |er| puts "ERROR: Mandatory column missing - expected column '#{er}'" }
-        raise MissingMandatoryError, "Mandatory columns missing  - please fix and retry."
+        fail MissingMandatoryError, 'Mandatory columns missing  - please fix and retry.'
       end
 
       binder
     end
 
-
-=begin
-    # Process columns with a default value specified
-    def process_defaults()
-      @populator.process_defaults
-    end
-
-
-    # Core API - Given a single free text column name from a file, search method mapper for
-    # associated operator on base object class.
-    # 
-    # If suitable association found, process row data and then assign to current load_object
-    def find_and_process(column_name, data)
-
-      puts "WARNING: MethodDictionary empty for class #{load_object_class}" unless(MethodDictionary.for?(load_object_class))
-
-      method_detail = MethodDictionary.find_method_detail( load_object_class, column_name )
-
-      if(method_detail)
-        process(method_detail, data)
-      else
-        puts "No matching method found for column #{column_name}"
-        @load_object.errors.add(:base, "No matching method found for column #{column_name}")
-      end
-    end
-=end
+    #     # Process columns with a default value specified
+    #     def process_defaults()
+    #       @populator.process_defaults
+    #     end
+    #
+    #
+    #     # Core API - Given a single free text column name from a file, search method mapper for
+    #     # associated operator on base object class.
+    #     #
+    #     # If suitable association found, process row data and then assign to current load_object
+    #     def find_and_process(column_name, data)
+    #
+    #       puts "WARNING: MethodDictionary empty for class #{load_object_class}" unless(MethodDictionary.for?(load_object_class))
+    #
+    #       method_detail = MethodDictionary.find_method_detail( load_object_class, column_name )
+    #
+    #       if(method_detail)
+    #         process(method_detail, data)
+    #       else
+    #         puts "No matching method found for column #{column_name}"
+    #         @load_object.errors.add(:base, "No matching method found for column #{column_name}")
+    #       end
+    #     end
 
     # Any Config under key 'LoaderBase' is merged over existing options - taking precedence.
-    #  
+    #
     # Any Config under a key equal to the full name of the Loader class (e.g DataShift::SpreeEcom::ImageLoader)
     # is merged over existing options - taking precedence.
-    # 
+    #
     #  Format :
-    #  
+    #
     #    LoaderClass:
     #     option: value
     #
@@ -197,25 +191,18 @@ module DataShift
 
       logger.info("Reading Datashift loader config from: #{yaml_file.inspect}")
 
-      data = YAML::load( ERB.new( IO.read(yaml_file) ).result )
+      data = YAML.load( ERB.new( IO.read(yaml_file) ).result )
 
       logger.info("Read Datashift config: #{data.inspect}")
 
-      if(data['LoaderBase'])
-        @config.merge!(data['LoaderBase'])
-      end
+      @config.merge!(data['LoaderBase']) if data['LoaderBase']
 
-      if(data[self.class.name])
-        @config.merge!(data[self.class.name])
-      end
+      @config.merge!(data[self.class.name]) if data[self.class.name]
 
       ContextFactory.configure(load_object_class, yaml_file)
 
       logger.info("Loader Options : #{@config.inspect}")
     end
-
-
-
 
     protected
 
@@ -223,9 +210,8 @@ module DataShift
     # Supported Syntax :
     #  assoc_find_name:value | assoc2_find_name:value | etc
     def get_each_assoc
-      current_value = @populator.value.to_s.split( Delimiters::multi_assoc_delim )
+      current_value = @populator.value.to_s.split( Delimiters.multi_assoc_delim )
     end
-
 
   end
 

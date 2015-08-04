@@ -26,7 +26,7 @@ module DataShift
     def self.get_files(path, options = {})
       return [path] if(File.file?(path))
       glob = options[:glob] ? options[:glob] : '*.*'
-      glob = (options['recursive'] || options[:recursive])  ? "**/#{glob}" : glob
+      glob = (options['recursive'] || options[:recursive]) ? "**/#{glob}" : glob
 
       Dir.glob("#{path}/#{glob}", File::FNM_CASEFOLD)
     end
@@ -35,11 +35,11 @@ module DataShift
 
       unless File.exist?(attachment_path) && File.readable?(attachment_path)
         logger.error("Cannot process Image from #{Dir.pwd}: Invalid Path #{attachment_path}")
-        raise PathError.new("Cannot process Image : Invalid Path #{attachment_path}")
+        fail PathError.new("Cannot process Image : Invalid Path #{attachment_path}")
       end
 
       file = begin
-        File.new(attachment_path, "rb")
+        File.new(attachment_path, 'rb')
       rescue => e
         puts e.inspect
         raise PathError.new("ERROR : Failed to read image from #{attachment_path}")
@@ -86,7 +86,7 @@ module DataShift
       paperclip_attributes.merge!(options[:attributes]) if(options[:attributes])
 
       begin
-        @attachment = klass.new(paperclip_attributes, :without_protection => true)
+        @attachment = klass.new(paperclip_attributes, without_protection: true)
       rescue => e
         logger.error( e.backtrace)
         logger.error("Failed to create PaperClip Attachment for cl;ass #{klass} : #{e.inspect}")
@@ -101,7 +101,7 @@ module DataShift
           puts "Success: Created Attachment #{@attachment.id} : #{@attachment.attachment_file_name}"
 
           if(attach_to_record_field.is_a? ModelMethod)
-            DataShift::Populator.new().prepare_and_assign(attach_to_record_field, record, @attachment)
+            DataShift::Populator.new.prepare_and_assign(attach_to_record_field, record, @attachment)
           else
             # assume its not a has_many and try basic send
             record.send("#{attach_to_record_field}=", @attachment)
@@ -116,7 +116,7 @@ module DataShift
       rescue => e
         logger.error("Problem saving Paperclip Attachment: #{e.inspect}")
         puts e.inspect
-        raise CreateAttachmentFailed.new("PaperClip error - Problem saving Attachment")
+        raise CreateAttachmentFailed.new('PaperClip error - Problem saving Attachment')
       ensure
         attachment_file.close unless attachment_file.closed?
       end

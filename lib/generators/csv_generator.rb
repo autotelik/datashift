@@ -28,11 +28,11 @@ module DataShift
       ModelMethodsManager.find_methods( klass )
       @headers = MethodDictionary.assignments[klass]
 
-      @headers.delete_if{|h| @remove_list.include?( h.to_sym ) }
+      @headers.delete_if { |h| @remove_list.include?( h.to_sym ) }
 
       logger.info("CSVGenerator saving generated template #{@filename}")
 
-      CSV.open(@filename, "w") do |csv|
+      CSV.open(@filename, 'w') do |csv|
         csv << @headers
       end
     end
@@ -67,26 +67,24 @@ module DataShift
 
       logger.info("CSVGenerator saving generated with associations template #{@filename}")
 
-      CSV.open(@filename, "w") do |csv|
+      CSV.open(@filename, 'w') do |csv|
         csv << @headers
       end
     end
 
-
     # Create an CSV file representing supplied Model
 
-    def export(items, options = {})
+    def export(_items, _options = {})
     end
-
 
     private
 
     # Take options and create a list of symbols to remove from headers
     #
     def prep_remove_list( options )
-      @remove_list = [ *options[:remove] ].compact.collect{|x| x.to_s.downcase.to_sym }
+      @remove_list = [ *options[:remove] ].compact.collect { |x| x.to_s.downcase.to_sym }
 
-      @remove_list += GeneratorBase::rails_columns if(options[:remove_rails])
+      @remove_list += GeneratorBase.rails_columns if(options[:remove_rails])
     end
 
   end

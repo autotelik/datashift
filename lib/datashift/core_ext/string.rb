@@ -11,16 +11,16 @@ class String
 
     h = {}
 
-    self.gsub(/[{}]/,'').split(',').each do |e|
+    gsub(/[{}]/, '').split(',').each do |e|
       e.strip!
 
-      k,v = if(e.include?('=>'))
-              e.split('=>')
-            else
-              e.split(': ')
+      k, v = if(e.include?('=>'))
+               e.split('=>')
+             else
+               e.split(': ')
             end
 
-      k = k.gsub(/[:']/,'').strip  # easier to treat all keys as strings
+      k = k.gsub(/[:']/, '').strip  # easier to treat all keys as strings
       v = v.to_s.strip
 
       if( v.match(/['"]/) )

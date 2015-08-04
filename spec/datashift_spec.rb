@@ -8,48 +8,43 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
 describe 'DataShift' do
-
   before(:each) do
   end
-  
-  it "should provide gem version" do
-    DataShift::gem_version
+
+  it 'should provide gem version' do
+    DataShift.gem_version
   end
 
-  it "should provide gem name" do
-    DataShift::gem_name.should == 'datashift'
+  it 'should provide gem name' do
+    DataShift.gem_name.should == 'datashift'
   end
-  
-  it "should provide root_path" do
+
+  it 'should provide root_path' do
     DataShift.root_path.should_not be_empty
   end
 
-  it "should provide a log" do
+  it 'should provide a log' do
     class Blah
       include DataShift::Logging
-      
+
       def try_me
-        logger.info "hello datashift spec"
+        logger.info 'hello datashift spec'
       end
     end
-    
-    
-    b = Blah.new()
-    
-    b.logger.info "try me"
-    
+
+    b = Blah.new
+
+    b.logger.info 'try me'
+
     b.try_me
-    
-    
   end
 
-  it "should provide quick way to create exception class" do
-    DataShift::DataShiftException.generate( "BadRspecError")
+  it 'should provide quick way to create exception class' do
+    DataShift::DataShiftException.generate( 'BadRspecError')
 
-    e = DataShift::BadRspecError.new("my new exception  class")
+    e = DataShift::BadRspecError.new('my new exception  class')
 
     expect(e).to be
-    expect(e.message).to eq "my new exception  class"
+    expect(e.message).to eq 'my new exception  class'
   end
-  
 end

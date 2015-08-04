@@ -1,95 +1,100 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Aug 2011
 # License::   MIT
 #
-# Details::   Specs for Excel aspect of Active Record Loader
+# Details::   Specs around Transforming inbound data
 #
 require File.dirname(__FILE__) + '/spec_helper'
-
 
 module  DataShift
 
   describe 'Transforms' do
+    include_context 'ClearAllCatalogues'
 
-    include_context "ClearAllCatalogues"
+    context 'over-rides' do
+      let(:model_method)    { project_collection.search('value_as_string') }
 
-    context 'external configuration of loader' do
+      let(:method_binding)  { MethodBinding.new('value_as_string', 1, model_method) }
 
-      it "should provide facility to set default values", :focus => true do
+      let(:populator)       { DataShift::Populator.new }
 
-        populator.set_default_value('value_as_string', 'some default text' )
-        populator.set_default_value('value_as_double', 45.467 )
-        populator.set_default_value('value_as_boolean', true )
+      let(:data)            { 'some text for the string' }
 
-        texpected = Time.now.to_s(:db)
-
-        populator.set_default_value('value_as_datetime', texpected )
+      before(:each) do
+        DataShift::Transformer.factory.clear
       end
 
-      it "should provide facility to set pre and post fix values" do
-        loader = ExcelLoader.new(Project)
+      it 'over-ride should always over-ride value regardless of real value' do
+        DataShift::Transformer.factory do |factory|
+          factory.set_override(method_binding, 'override text')
+        end
 
-        loader.populator.set_prefix('value_as_string', 'myprefix' )
-        loader.populator.set_postfix('value_as_string', 'my post fix' )
+        value, _attributes = populator.prepare_data(method_binding, data)
 
-        #value_as_string	Value as Text	value as datetime	value_as_boolean	value_as_double	category
-
-        loader.perform_load( ifixture_file('ProjectsSingleCategories.xls'))
-
-        p = Project.find_by_title( '001' )
-
-        p.should_not be_nil
-
-        p.value_as_string.should == 'myprefixDemo stringmy post fix'
+        expect(value).to eq 'override text'
       end
 
-      it "should provide facility to set default values via YAML configuration", :excel => true do
-        loader = ExcelLoader.new(Project)
+      context 'DefaultValues for Columns' do
+        it 'should use default value when nil' do
+          DataShift::Transformer.factory do |factory|
+            factory.set_default(method_binding, 'default text')
+          end
 
-        loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
+          value, _attributes = populator.prepare_data(method_binding, nil)
+          expect(value).to eq 'default text'
+        end
 
+        it 'should use default value when empty string' do
+          DataShift::Transformer.factory do |factory|
+            factory.set_default(method_binding, 'default text')
+          end
 
-        loader.perform_load( ifixture_file('ProjectsSingleCategories.xls') )
-
-        p = Project.find_by_title( '099' )
-
-        p.should_not be_nil
-
-        p.value_as_string.should == "Default Project Value"
-      end
-
-
-      it "should provide facility to over ride values via YAML configuration", :excel => true do
-        loader = ExcelLoader.new(Project)
-
-        loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
-
-        loader.perform_load( ifixture_file('ProjectsSingleCategories.xls') )
-
-        Project.all.each {|p| p.value_as_double.should == 99.23546 }
-      end
-
-
-      it "should provide facility to over ride values via YAML configuration", :yaml => true do
-        loader = ExcelLoader.new(Project)
-
-        expect(Project.count).to eq 0
-
-        loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
-
-
-        loader.perform_load( ifixture_file('ProjectsSingleCategories.xls') )
-
-        Project.all.each do |p|
-          expect(p.value_as_double).to be_a BigDecimal
-          expect(p.value_as_double).to eq 99.23546
+          value = populator.prepare_data(method_binding, '')
+          expect(value).to eq 'default text'
         end
       end
 
+      it 'should use substitution when relevant' do
+        DataShift::Transformer.factory do |factory|
+          factory.set_substitution(method_binding, 'text', ' replaced with me')
+        end
 
+        value = populator.prepare_data(method_binding, data)
+        expect(value).to eq 'some  replaced with me for the string'
+      end
+
+      it 'should add a prefix' do
+        DataShift::Transformer.factory do |factory|
+          factory.set_prefix(method_binding, 'added me before')
+        end
+
+        value = populator.prepare_data(method_binding, data)
+        expect(value).to eq 'added me before' + data
+      end
+
+      it 'should add a postfix' do
+        DataShift::Transformer.factory do |factory|
+          factory.set_postfix(method_binding, 'added me after')
+        end
+
+        value = populator.prepare_data(method_binding, data)
+        expect(value).to eq data + 'added me after'
+      end
     end
 
+    context 'Configuration of Transformations' do
+      it 'should provide facility to set default values via YAML configuration' do
+        pending 'refactoring this out of loader'
+
+        # ????.configure_from( ifixture_file('ProjectsDefaults.yml') )
+      end
+
+      it 'should provide facility to over ride values via YAML configuration' do
+        pending 'refactoring this out of loader'
+
+        # ????.configure_from( ifixture_file('ProjectsDefaults.yml') )
+      end
+    end
   end
 
 end

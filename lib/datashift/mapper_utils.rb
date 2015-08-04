@@ -12,18 +12,17 @@ module DataShift
     def self.class_from_string_or_raise( klass )
 
       ruby_klass = begin
-                     # support modules e.g "Spree::Property")
-        MapperUtils::class_from_string(klass)  #Kernel.const_get(model)
+        # support modules e.g "Spree::Property")
+        MapperUtils.class_from_string(klass)  # Kernel.const_get(model)
       rescue NameError => e
         puts e
         raise Thor::Error.new("ERROR: No such Class [#{klass}] found - check valid model supplied")
       end
 
-      raise NoSuchClassError.new("ERROR: No such Model [#{klass}] found - check valid model supplied") unless(ruby_klass)
+      fail NoSuchClassError.new("ERROR: No such Model [#{klass}] found - check valid model supplied") unless(ruby_klass)
 
       ruby_klass
     end
-
 
     # Helper to deal with string versions of modules/namespaced classes
     # Find and return the base class from a string.
@@ -36,17 +35,16 @@ module DataShift
       end
     end
 
-
     # Similar to const_get_from_string except this version
     # returns nil if no such class found
     # Support modules e.g "Spree::Property"
     #
     def self.class_from_string( str )
-      begin
-        MapperUtils::const_get_from_string(str.to_s)  #Kernel.const_get(model)
-      rescue
-        return nil
-      end
+
+      MapperUtils.const_get_from_string(str.to_s)  # Kernel.const_get(model)
+    rescue
+      return nil
+
     end
 
   end

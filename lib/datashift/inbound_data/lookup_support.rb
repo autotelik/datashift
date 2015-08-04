@@ -18,7 +18,7 @@ module DataShift
       attr_reader :klass,  :field, :where_value
 
       def initialize(klass, in_name, where_value)
-        @klass= klass
+        @klass = klass
         @field = in_name
         @where_value = where_value
       end

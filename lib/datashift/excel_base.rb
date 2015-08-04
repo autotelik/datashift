@@ -25,21 +25,20 @@ module DataShift
       @excel
     end
 
-
     def parse_headers( sheet,  header_row_idx = 0 )
 
       headers = DataShift::Headers.new(:excel, header_row_idx)
 
       header_row = sheet.row(header_row_idx)
 
-      raise MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{header_row_idx} contains headers" unless(header_row)
+      fail MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{header_row_idx} contains headers" unless(header_row)
 
-      # TODO - make more robust - currently end on first empty column
+      # TODO: - make more robust - currently end on first empty column
       # There is no actual max columns in Excel .. you will run out of memory though at some point
       (0..ExcelBase.max_columns).each do |column|
         cell = header_row[column]
         break unless cell
-        header = "#{cell.to_s}".strip
+        header = "#{cell}".strip
         break if header.empty?
         headers << header
       end
@@ -47,11 +46,9 @@ module DataShift
       headers
     end
 
-
     def sanitize_sheet_name( name )
       name.gsub(/[\[\]:\*\/\\\?]/, '')
     end
-
 
     # Helpers for dealing with Active Record models and collections
     # Specify array of operators/associations to include - possible values are :
@@ -60,7 +57,7 @@ module DataShift
     def ar_to_headers( records, associations = nil )
       return if( !records.first.is_a?(ActiveRecord::Base) || records.empty?)
 
-      headers =[]
+      headers = []
 
       if associations
         details_mgr = DataShift::MethodDictionary.method_details_mgrs[records.first.class]
@@ -76,10 +73,9 @@ module DataShift
       set_headers( headers )
     end
 
-
     # Pass a set of AR records
     def ar_to_xls(records, options = {})
-      return if( ! records.first.is_a?(ActiveRecord::Base) || records.empty?)
+      return if( !records.first.is_a?(ActiveRecord::Base) || records.empty?)
 
       row_index =
           if(options[:no_headers])
@@ -96,7 +92,6 @@ module DataShift
       end
     end
 
-
     # Save data from an AR record to the current row, based on the record's columns [c1,c2,c3]
     # Returns the number of the final column written to
     def ar_to_xls_row(row, start_column, record)
@@ -111,14 +106,14 @@ module DataShift
     end
 
     def ar_to_xls_cell(row, column, record, connection_column)
-      begin
-        datum = record.send(connection_column.name)
 
-        self[row, column] = datum
-      rescue => e
-        puts "Failed to export #{datum} from #{connection_column.inspect} to column #{column}"
-        puts e, e.backtrace
-      end
+      datum = record.send(connection_column.name)
+
+      self[row, column] = datum
+    rescue => e
+      puts "Failed to export #{datum} from #{connection_column.inspect} to column #{column}"
+      puts e, e.backtrace
+
     end
   end
 

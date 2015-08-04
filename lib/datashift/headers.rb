@@ -19,7 +19,7 @@ module DataShift
 
     attr_reader :idx
 
-    def_delegators :@headers, *Array.instance_methods.delete_if {|i| i.match(/__.*|class|object_id/)}
+    def_delegators :@headers, *Array.instance_methods.delete_if { |i| i.match(/__.*|class|object_id/) }
 
     def initialize(source, idx = 0, headers = [])
       @source = source
@@ -28,7 +28,6 @@ module DataShift
       @previous_headers = []
       @mapped = false
     end
-
 
     # swap any raw column headers for their mapped equivalent
     # Excel => 'Customer', is mapped to 'user' which, correctly binds to domain operator 'user'

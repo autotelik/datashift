@@ -22,7 +22,7 @@ module DataShift
       @current_row_index = row_idx
       @data = data
 
-      @populator = ContextFactory::get_populator(method_binding)
+      @populator = ContextFactory.get_populator(method_binding)
     end
 
     def set_node( method_binding  )
@@ -35,27 +35,25 @@ module DataShift
 
     def next_update?
       false   # for now create only
-      #TODO :
+      # TODO :
       # next = ProcessingRules.next_action(method_binding )
       # next == :update
     end
 
-
     def process
 
-       begin
-         populator.prepare_and_assign(self, doc_context.load_object, data)
-       rescue => x
+      populator.prepare_and_assign(self, doc_context.load_object, data)
+    rescue => x
 
-         puts "FAILED FAILED"
-         doc_context.failure("Failed to process node : #{method_binding.pp}")
+      puts 'FAILED FAILED'
+      doc_context.failure("Failed to process node : #{method_binding.pp}")
 
-         logger.error(doc_context.errors.last)
-         logger.error("#{x.backtrace.first} : #{x.message}")
+      logger.error(doc_context.errors.last)
+      logger.error("#{x.backtrace.first} : #{x.message}")
 
-         puts x.backtrace.first, x.message
-         raise x
-       end
+      puts x.backtrace.first, x.message
+      raise x
+
     end
 
   end
@@ -63,7 +61,7 @@ module DataShift
   class EmptyContext < Context
 
     def initialize
-     super(NilClass, DataShift::NoMethodBinding.new , -1, [])
+      super(NilClass, DataShift::NoMethodBinding.new, -1, [])
     end
   end
 

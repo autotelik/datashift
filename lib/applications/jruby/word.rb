@@ -22,55 +22,55 @@
 # WORD_OLE_CONST.const_get( 'LesCR' ) or WORD_OLE_CONST::LesCR
 #   => 1
 
-if(Guards::windows?)
+if(Guards.windows?)
 
-require 'win32ole'
+  require 'win32ole'
 
-# Module for constants to be loaded int
+  # Module for constants to be loaded int
 
-module WORD_OLE_CONST
-end
-
-class Word
-    
-  attr_reader :wd, :doc
-
-  def initialize( visible )
-    @wd = WIN32OLE.new('Word.Application')
-
-    WIN32OLE.const_load(@wd, WORD_OLE_CONST) if WORD_OLE_CONST.constants.empty?
-
-    @wd.Visible = visible
+  module WORD_OLE_CONST
   end
 
-  def open(file)
-    @doc = @wd.Documents.Open(file)
-    @doc
-  end
+  class Word
 
-  def save()
-    @doc.Save()
-    @doc
-  end
+    attr_reader :wd, :doc
 
-  # Format : From WORD_OLE_CONST e.g WORD_OLE_CONST::WdFormatHTML
-  #
-  def save_as(name, format)
-    @doc.SaveAs(name, format)
-    return @doc
-  end
+    def initialize( visible )
+      @wd = WIN32OLE.new('Word.Application')
 
-  # WdFormatFilteredHTML
-  # WdFormatHTML
-  def save_as_html(name)
-    @doc.SaveAs(name, WORD_OLE_CONST::WdFormatHTML)
-    return @doc
-  end
+      WIN32OLE.const_load(@wd, WORD_OLE_CONST) if WORD_OLE_CONST.constants.empty?
 
-  def quit
-    @wd.quit()
+      @wd.Visible = visible
+    end
+
+    def open(file)
+      @doc = @wd.Documents.Open(file)
+      @doc
+    end
+
+    def save
+      @doc.Save()
+      @doc
+    end
+
+    # Format : From WORD_OLE_CONST e.g WORD_OLE_CONST::WdFormatHTML
+    #
+    def save_as(name, format)
+      @doc.SaveAs(name, format)
+      @doc
+    end
+
+    # WdFormatFilteredHTML
+    # WdFormatHTML
+    def save_as_html(name)
+      @doc.SaveAs(name, WORD_OLE_CONST::WdFormatHTML)
+      @doc
+    end
+
+    def quit
+      @wd.quit
+    end
   end
-end
 
 else
 

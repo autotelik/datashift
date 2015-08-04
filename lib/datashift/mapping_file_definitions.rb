@@ -29,7 +29,7 @@ class ValueMapFromFile < Hash
     @file = file_path unless file_path.nil?
     @delim = delim
 
-    raise ArgumentError.new("Can not read map file: #{@file}") unless File.readable?(@file)
+    fail ArgumentError.new("Can not read map file: #{@file}") unless File.readable?(@file)
 
     File.open(@file).each_line do |line|
       next unless(line && line.chomp!)
@@ -37,18 +37,17 @@ class ValueMapFromFile < Hash
       values = line.split(@delim)
 
       case values.nitems
-        when 2 then self.store(values[0], values[1])
-        when 3 then self.store([values[0], values[1]], values[2])
-        when 4 then self.store([values[0], values[1]],[values[2], values[3]])
-      else
-        raise ArgumentError.new("Bad key,value row in #{@file}: #{values.nitems} number of columns not supported")
+        when 2 then store(values[0], values[1])
+        when 3 then store([values[0], values[1]], values[2])
+        when 4 then store([values[0], values[1]], [values[2], values[3]])
+        else
+          fail ArgumentError.new("Bad key,value row in #{@file}: #{values.nitems} number of columns not supported")
       end
     end
 
-    return self
+    self
   end
 end
-
 
 # Expects file of format [TradeType,LDN_TradeId,HUB_TradeId,LDN_AssetId,HUB_AssetId,LDN_StrutureId,HUB_StructureId,LDN_ProductType,HUB_ProductType]
 # Convets in to and araya containing rows [LDN_TradeId, LDN_AssetId, HUB_TradeId, HUB_AssetId]
@@ -64,7 +63,7 @@ class AssetMapFromFile < Array
     @file = file_path unless file_path.nil?
     @delim = delim
 
-    raise ArgumentError.new("Can not read asset map file: #{@file}") unless File.readable?(@file)
+    fail ArgumentError.new("Can not read asset map file: #{@file}") unless File.readable?(@file)
 
     File.open(@file).each_line do |line|
       next unless(line && line.chomp!)
@@ -73,16 +72,16 @@ class AssetMapFromFile < Array
 
       values = line.split(@delim)
 
-      self.push(Array[values[1], values[3], values[2], values[4]])
+      push(Array[values[1], values[3], values[2], values[4]])
     end
 
-    return self
+    self
   end
 
   def write_map(file_path = nil, delim = ',')
     mapfile = File.open( file_path, 'w')
 
-    self.each{|row| mapfile.write(row.join(delim)+"\n")}
+    each { |row| mapfile.write(row.join(delim) + "\n") }
   end
 
 end

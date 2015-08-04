@@ -31,18 +31,17 @@ module DataShift
       records = [*export_records]
 
       unless(records && records.size > 0)
-        logger.warn("No objects supplied for export")
+        logger.warn('No objects supplied for export')
         return
       end
 
       first = records[0]
 
-      raise ArgumentError.new('Please supply set of ActiveRecord objects to export') unless(first.is_a?(ActiveRecord::Base))
+      fail ArgumentError.new('Please supply set of ActiveRecord objects to export') unless(first.is_a?(ActiveRecord::Base))
 
       Delimiters.text_delim = options[:text_delim] if(options[:text_delim])
 
-      CSV.open( (options[:filename] || filename), "w" ) do |csv|
-
+      CSV.open( (options[:filename] || filename), 'w' ) do |csv|
         csv.ar_to_headers( records )
 
         records.each do |r|
@@ -66,21 +65,18 @@ module DataShift
       # and create headers, then for each record call those operators
       operators = options[:with] || ModelMethod.supported_types_enum
 
-      CSV.open( (options[:filename] || filename), "w" ) do |csv|
-
+      CSV.open( (options[:filename] || filename), 'w' ) do |csv|
         csv.ar_to_headers( records, operators)
 
         row = []
 
         records.each do |obj|
-
           operators.each do |op_type|
-
             operators_for_type = collection.by_optype(op_type)
 
             next if(operators_for_type.empty?)
 
-            operators_for_type.each do |mm|
+            operators_for_type.each do |_mm|
               if(ModelMethod.is_association_type?(op_type))
                 row << record_to_column( obj.send( md.operator ))    # pack association into single column
               else

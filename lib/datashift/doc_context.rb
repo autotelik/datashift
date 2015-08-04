@@ -35,7 +35,6 @@ module DataShift
       @reporter = DataShift::Reporter.new
     end
 
-
     def klass=( klass )
       @klass = klass
       reset
@@ -51,23 +50,20 @@ module DataShift
       @load_object = LoadObject.new(object || new_load_object)
     end
 
-
-    def new_load_object()
-      @load_object = klass.new()
+    def new_load_object
+      @load_object = klass.new
       @load_object
     end
-
 
     def create_context(method_binding, row_idx, data)
       @context = DataShift::Context.new(self, method_binding, row_idx, data)
       @context
     end
 
-
     # Only save object if all columns ok, or allow errors in individual columns
     def all_or_nothing?
       true
-      # TODO - read in from configration
+      # TODO: - read in from configration
     end
 
     def current_errors
@@ -77,7 +73,7 @@ module DataShift
     # We have our own error list available too
     def errors?
       puts errors.inspect, load_object.errors.inspect
-      return !errors.empty? || !load_object.errors.empty?
+      !errors.empty? || !load_object.errors.empty?
     end
 
     def success
@@ -89,14 +85,13 @@ module DataShift
       reporter.processed_object_count += 1
     end
 
-
     # Loading failed. Store a failed object and if requested roll back (destroy) the current load object
     # For use case where object saved early but subsequent required columns fail to process
     # so the load object is invalid
 
-    def failure( error_messages, delete_object = true)
+    def failure( error_messages, _delete_object = true)
 
-      [*error_messages].each {|e| errors << e }
+      [*error_messages].each { |e| errors << e }
 
       if(load_object)
         reporter.add_failed_object(load_object)
@@ -115,13 +110,11 @@ module DataShift
       logger.error error_messages.join(' ; ')
     end
 
-
-
     # This method usually called during processing to avoid errors with associations like
     #   <ActiveRecord::RecordNotSaved: You cannot call create unless the parent is saved>
     # If the object is still invalid at this point probably indicates compulsory
     # columns on model have not been processed before associations on that model
-    # TODO smart ordering of columns dynamically ourselves rather than relying on incoming data order
+    # TODO: smart ordering of columns dynamically ourselves rather than relying on incoming data order
     #
     def save_if_new
       return unless(load_object.new_record?)
@@ -129,10 +122,9 @@ module DataShift
       if(load_object.valid?)
         save
       else
-        raise DataShift::SaveError.new("Cannot Save Invalid #{load_object.class} Record : #{current_errors}")
+        fail DataShift::SaveError.new("Cannot Save Invalid #{load_object.class} Record : #{current_errors}")
       end
     end
-
 
     def save_and_report
 

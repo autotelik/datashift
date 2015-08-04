@@ -23,9 +23,8 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
-
 # Details::   Active Record Loader
-# 
+#
 # To pull DataShift commands into your main application :
 #
 #     require 'datashift'
@@ -33,13 +32,13 @@
 #     DataShift::load_commands
 #
 require 'rbconfig'
-  
+
 module DataShift
 
   module Guards
 
     def self.jruby?
-      return RUBY_PLATFORM == "java"
+      RUBY_PLATFORM == 'java'
     end
     def self.mac?
       RbConfig::CONFIG['target_os'] =~ /darwin/i

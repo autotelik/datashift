@@ -30,7 +30,7 @@ module DataShift
     #
     def self.where_field_and_values(method_binding, inbound_data)
 
-      part1, part2 = inbound_data.split(Delimiters::name_value_delim)
+      part1, part2 = inbound_data.split(Delimiters.name_value_delim)
 
       heading_lookups = method_binding.inbound_column.lookup_list
 
@@ -39,10 +39,10 @@ module DataShift
         # Column completely empty - check for lookup supplied via the
         # inbound column headers/config
 
-        #TODO - how best to support multipel lookup fields?
+        # TODO: - how best to support multipel lookup fields?
         # part1 = heading_lookups.collect {|lookup| lookup.field }
         part1 = heading_lookups.find_by_operator
-        part2 = heading_lookups.collect {|lookup| lookup.value }
+        part2 = heading_lookups.collect(&:value)
 
       elsif((part2.nil? || part2.empty?))
 
@@ -50,17 +50,17 @@ module DataShift
 
         puts("DEBUG: No part2e [#{part1}][#{part1.class}] - [#{part2}][#{part2.class}]")
 
-        part2 = part1.split(Delimiters::multi_value_delim)
+        part2 = part1.split(Delimiters.multi_value_delim)
         part1 = method_binding.inbound_column.find_by_operator
 
       else
-        part2 = part2.split(Delimiters::multi_value_delim)
+        part2 = part2.split(Delimiters.multi_value_delim)
 
       end
 
       puts("DEBUG: Where clause [#{part1}][#{part1.class}] - [#{part2}][#{part2.class}]")
 
-      return part1, [*part2]
+      [part1, [*part2]]
     end
 
     # Options:
@@ -100,48 +100,46 @@ module DataShift
     # Returns nil if no record found
     def get_record_by(klazz, field, search_term, split_on = ' ', options = {})
 
-      begin
+      split_on_prefix = options[:add_prefix]
 
-        split_on_prefix = options[:add_prefix]
+      z = (split_on_prefix) ? "#{split_on_prefix}#{search_term}" : search_term
 
-        z = (split_on_prefix) ? "#{split_on_prefix}#{search_term}": search_term
+      logger.info("Scanning for record where #{klazz}.#{field} ~=  #{z}")
 
-        logger.info("Scanning for record where #{klazz}.#{field} ~=  #{z}")
+      record = search_for_record(klazz, field, z)
 
-        record = search_for_record(klazz, field, z)
+      # try individual portions of search_term, front -> back i.e "A_B_C_D" => A, B, C etc
+      search_term.split(split_on).each do |str|
+        z = (split_on_prefix) ? "#{split_on_prefix}#{str}" : str
+        record = search_for_record(klazz, field, z, options)
+        break if record
+      end unless(record)
 
-        # try individual portions of search_term, front -> back i.e "A_B_C_D" => A, B, C etc
-        search_term.split(split_on).each do |str|
-          z = (split_on_prefix) ? "#{split_on_prefix}#{str}": str
-          record = search_for_record(klazz, field, z, options)
-          break if record
-        end unless(record)
+      # this time try incrementally scanning i.e "A_B_C_D" => A, A_B, A_B_C etc
+      search_term.split(split_on).inject('') do |str, term|
+        z = (split_on_prefix) ? "#{split_on_prefix}#{str}#{split_on}#{term}" : "#{str}#{split_on}#{term}"
+        record = search_for_record(klazz, field, z, options)
+        break if record
+        term
+      end unless(record)
 
-        # this time try incrementally scanning i.e "A_B_C_D" => A, A_B, A_B_C etc
-        search_term.split(split_on).inject("") do |str, term|
-          z = (split_on_prefix) ? "#{split_on_prefix}#{str}#{split_on}#{term}": "#{str}#{split_on}#{term}"
-          record = search_for_record(klazz, field, z, options)
-          break if record
-          term
-        end unless(record)
-
-        if(record && record.respond_to?(field))
-          logger.info("Record found for #{klazz}.#{field} : #{record.send(field)}" )
-        end
-
-        return record
-      rescue => e
-        logger.error("Exception attempting to find a record for [#{search_term}] on #{klazz}.#{field}")
-        logger.error e.backtrace
-        logger.error e.inspect
-        return nil
+      if(record && record.respond_to?(field))
+        logger.info("Record found for #{klazz}.#{field} : #{record.send(field)}" )
       end
+
+      return record
+    rescue => e
+      logger.error("Exception attempting to find a record for [#{search_term}] on #{klazz}.#{field}")
+      logger.error e.backtrace
+      logger.error e.inspect
+      return nil
+
     end
 
     def get_record_by!(klazz, field, search_terms, split_on = ' ', options = {} )
       x = get_record_by(klazz, field, search_terms, split_on, options)
 
-      raise RecordNotFound, "No #{klazz} record found for [#{search_terms}] on #{field}" unless(x)
+      fail RecordNotFound, "No #{klazz} record found for [#{search_terms}] on #{field}" unless(x)
 
       x
     end

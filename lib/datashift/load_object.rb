@@ -27,7 +27,7 @@ module DataShift
       if(@subject.valid?)
         @subject.save
       else
-        raise DataShift::SaveError.new("Cannot Save Invalid #{subject.class} Record : #{subject.errors.full_messages.inspect}")
+        fail DataShift::SaveError.new("Cannot Save Invalid #{subject.class} Record : #{subject.errors.full_messages.inspect}")
       end
     end
 
@@ -38,5 +38,5 @@ module DataShift
     end
 
   end
-  
+
 end

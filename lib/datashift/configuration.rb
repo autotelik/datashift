@@ -21,7 +21,7 @@ module DataShift
     # N.B @mappings is an OpenStruct data structure
     #
 
-    attr_reader   :key
+    attr_reader :key
     attr_accessor :yaml_data, :key_config
 
     def initialize( key = nil)
@@ -34,7 +34,7 @@ module DataShift
 
       unless(File.exist?(file))
         logger.error "Cannot open configuration file - #{file} - file does not exist."
-        raise FileNotFound.new("Cannot open mapping file - #{file}")
+        fail FileNotFound.new("Cannot open mapping file - #{file}")
       end
 
       begin
@@ -50,7 +50,7 @@ module DataShift
     end
 
     # OpenStruct not a hash .. supports form ... config.path, config.full_name etc
-    def method_missing(method, *args, &block)
+    def method_missing(method, *_args, &_block)
       @config.send(method)
     end
 
@@ -64,13 +64,13 @@ module DataShift
     # Restrict searches/config entries to single set via key e.g 'A'
     #
     def set_key_config!( key )
-      raise MissingConfigOptionError.new("No config entry found for key [#{key}]") unless(yaml_data && yaml_data[key].is_a?(Hash))
+      fail MissingConfigOptionError.new("No config entry found for key [#{key}]") unless(yaml_data && yaml_data[key].is_a?(Hash))
       @key_config  = OpenStruct.new(  yaml_config[key]  )  # Argument HAS to be a hash
     end
 
     # Merge another YAML section (identified by key) into @key_config
     def merge_key_config!( key )
-      raise Beeline::MissingConfigOptionError.new("No config entry found for key [#{key}]") unless(yaml_data && yaml_data[key].is_a?(Hash))
+      fail Beeline::MissingConfigOptionError.new("No config entry found for key [#{key}]") unless(yaml_data && yaml_data[key].is_a?(Hash))
 
       temp =  yaml_data[key].merge(@key_config.instance_variable_get('@table') || {})
 

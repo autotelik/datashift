@@ -30,7 +30,6 @@ module DataShift
       @file_name   = file_name
     end
 
-
     #  Options
     #
     #   [:allow_empty_rows]  : Default is to stop processing once we hit a completely empty row. Over ride.
@@ -47,12 +46,11 @@ module DataShift
     #   [:force_inclusion] : Array of inbound column names to force into mapping
     #   [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
 
-
     def perform_load( options = {} )
 
-      raise "Cannot load - failed to create a #{klass}" unless(load_object)
+      fail "Cannot load - failed to create a #{klass}" unless(load_object)
 
-      raise MissingHeadersError, "Minimum row for Headers is 0 - passed #{options[:header_row]}" if(options[:header_row] && options[:header_row].to_i < 0)
+      fail MissingHeadersError, "Minimum row for Headers is 0 - passed #{options[:header_row]}" if(options[:header_row] && options[:header_row].to_i < 0)
 
       allow_empty_rows = options[:allow_empty_rows]
 
@@ -61,16 +59,13 @@ module DataShift
       start(file_name, options)
 
       # maps list of headers into suitable calls on the Active Record class
-      bind_headers(headers, options.merge({strict: @strict}) )
-
+      bind_headers(headers, options.merge({ strict: @strict }) )
 
       begin
-        puts "Dummy Run - Changes will be rolled back" if options[:dummy]
+        puts 'Dummy Run - Changes will be rolled back' if options[:dummy]
 
         load_object_class.transaction do
-
           sheet.each_with_index do |row, i|
-
             current_row_idx = i
 
             doc_context.current_row = row
@@ -91,13 +86,12 @@ module DataShift
             # Iterate over the bindings, creating a context from data in associated Excel column
 
             @binder.bindings.each_with_index do |method_binding, i|
-
               unless(method_binding.valid?)
                 logger.warn("No binding was found for column (#{i})") if(verbose)
                 next
               end
 
-              value = row[method_binding.inbound_index]   #binding contains column number
+              value = row[method_binding.inbound_index]   # binding contains column number
 
               context = doc_context.create_context(method_binding, i, value)
 
@@ -111,12 +105,11 @@ module DataShift
               rescue => x
 
                 if(doc_context.all_or_nothing?)
-                  logger.error("Node failed so Current Row aborted")
+                  logger.error('Node failed so Current Row aborted')
                   break
                 end
 
               end
-
             end
 
             # manually have to detect when actual data ends
@@ -129,17 +122,13 @@ module DataShift
             end
 
             # unless next operation is update, reset the loader object
-            unless(doc_context.context.next_update?)
-              doc_context.reset
-            end
-
+            doc_context.reset unless doc_context.context.next_update?
           end   # all rows processed
 
           if(options[:dummy])
-            puts "Excel loading stage done - Dummy run so Rolling Back."
-            raise ActiveRecord::Rollback # Don't actually create/upload to DB if we are doing dummy run
+            puts 'Excel loading stage done - Dummy run so Rolling Back.'
+            fail ActiveRecord::Rollback # Don't actually create/upload to DB if we are doing dummy run
           end
-
         end   # TRANSACTION N.B ActiveRecord::Rollback does not propagate outside of the containing transaction block
 
       rescue => e
@@ -149,7 +138,7 @@ module DataShift
         report
       end
 
-      puts "Excel loading stage Complete."
+      puts 'Excel loading stage Complete.'
     end
 
     private
@@ -168,7 +157,7 @@ module DataShift
 
       set_headers( parse_headers(sheet, options[:header_row] || 0) )
 
-      raise MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{headers.idx} contains headers" if(headers.empty?)
+      fail MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{headers.idx} contains headers" if(headers.empty?)
 
       puts headers.inspect
 

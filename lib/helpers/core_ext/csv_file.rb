@@ -1,7 +1,7 @@
 # Copyright:: Autotelik Media Ltd
 # Author ::   Tom Statter
 # Date ::     July 2010
-# License::   
+# License::
 #
 # Details::   Simple internal representation of Csv File
 
@@ -13,37 +13,37 @@ class CSV
   include DataShift::ColumnPacker
 
   # Helpers for dealing with Active Record models and collections
-    # Specify array of operators/associations to include - possible values are :
-    #     [:assignment, :belongs_to, :has_one, :has_many]
+  # Specify array of operators/associations to include - possible values are :
+  #     [:assignment, :belongs_to, :has_one, :has_many]
 
-    def ar_to_headers( records, associations = nil )
-      return if( !records.first.is_a?(ActiveRecord::Base) || records.empty?)
+  def ar_to_headers( records, associations = nil )
+    return if( !records.first.is_a?(ActiveRecord::Base) || records.empty?)
 
-      headers =[]
+    headers = []
 
-      if associations
-        details_mgr = DataShift::MethodDictionary.method_details_mgrs[records.first.class]
+    if associations
+      details_mgr = DataShift::MethodDictionary.method_details_mgrs[records.first.class]
 
-        associations.each do |a|
-          details_mgr.for_type(a).each { |md| headers << "#{md.operator}" }
-        end if(details_mgr)
+      associations.each do |a|
+        details_mgr.for_type(a).each { |md| headers << "#{md.operator}" }
+      end if(details_mgr)
 
-      else
-        headers = records.first.class.columns.collect( &:name )
-      end
-
-      add_row(headers)
+    else
+      headers = records.first.class.columns.collect( &:name )
     end
 
-    # Convert an AR instance to a set of CSV columns
-    # Additional non instance data can be included by supplying list of methods to call
-    # on the record
-    def ar_to_csv(record, options = {})
-      csv_data = record.serializable_hash.values.collect { |c| escape_for_csv(c) }
+    add_row(headers)
+  end
 
-      [*options[:methods]].each { |x| csv_data << escape_for_csv(record.send(x)) if(record.respond_to?(x)) } if(options[:methods])
+  # Convert an AR instance to a set of CSV columns
+  # Additional non instance data can be included by supplying list of methods to call
+  # on the record
+  def ar_to_csv(record, options = {})
+    csv_data = record.serializable_hash.values.collect { |c| escape_for_csv(c) }
 
-      add_row(csv_data)
-    end
+    [*options[:methods]].each { |x| csv_data << escape_for_csv(record.send(x)) if(record.respond_to?(x)) } if(options[:methods])
+
+    add_row(csv_data)
+  end
 
 end

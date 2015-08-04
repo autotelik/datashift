@@ -1,6 +1,5 @@
 # Copyright:: (c) Autotelik Media Ltd 2011
 # Author ::   Tom Statter
-# Date ::     Aug 2010
 # License::   MIT
 #
 # Details::   Binds incoming string headers to domain model's
@@ -12,7 +11,7 @@
 #             and return details of real has_many association 'product_properties'.
 #
 #             This real association can then be used to send spreadsheet row data to the AR object.
-#             
+#
 module DataShift
 
   class Binder
@@ -28,9 +27,9 @@ module DataShift
     end
 
     def reset
-      @bindings, @missing_bindings = [], []
+      @bindings = []
+      @missing_bindings = []
     end
-
 
     def missing_bindings?
       !missing_bindings.empty?
@@ -47,7 +46,7 @@ module DataShift
     # Build complete picture of the methods whose names listed in columns
     # Handles method names as defined by a user, from spreadsheets or file headers where the names
     # specified may not be exactly as required e.g handles capitalisation, white space, _ etc
-    # 
+    #
     # The header can also contain the fields to use in lookups, separated with Delimiters ::column_delim
     # For example specify that lookups on has_one association called 'product', be performed using name'
     #   product:name
@@ -59,22 +58,22 @@ module DataShift
     #   user:email:test@blah.com
     #
     # Returns: Array of matching method_details, including nils for non matched items
-    # 
+    #
     # N.B Columns that could not be mapped are left in the array as NIL
-    # 
+    #
     # This is to support clients that need to map via the index on @method_details
-    # 
+    #
     # Other callers can simply call compact on the results if the index not important.
-    # 
+    #
     # The MethodDetails instance will contain a pointer to the column index from which it was mapped.
-    # 
+    #
     # Options:
-    # 
+    #
     #   [:force_inclusion]  : List of columns that do not map to any operator but should be included in processing.
-    #                     
+    #
     #       This provides the opportunity for loaders to provide specific methods to handle these fields
     #       when no direct operator is available on the model or it's associations
-    #       
+    #
     #   [:include_all]      : Include all headers in processing - takes precedence of :force_inclusion
     #
     #   [:model_classes]    : Also ensure these classes are included in ModelMethods Dictionary
@@ -88,7 +87,7 @@ module DataShift
       model_method_mgr =  ModelMethods::Manager.catalog_class(klass)
 
       [*options[:model_classes]].each do |c|
-        ModelMethods::Manager.catalog_class(c) unless(ModelMethods::Manager::for?(c))
+        ModelMethods::Manager.catalog_class(c) unless(ModelMethods::Manager.for?(c))
       end if(options[:model_classes])
 
       forced = [*options[:force_inclusion]].compact.collect { |f| f.to_s.downcase }
@@ -96,23 +95,22 @@ module DataShift
       reset
 
       columns.each_with_index do |col_data, col_index|
-
         raw_col_data = col_data.to_s
 
-        if(raw_col_data.nil? or raw_col_data.empty?)
+        if(raw_col_data.nil? || raw_col_data.empty?)
           logger.warn("Column list contains empty or null column at index #{col_index}")
           bindings << NoMethodBinding.new(raw_col_data, col_index)
           next
         end
 
-        raw_col_name, where_field, where_value, *data = raw_col_data.split(Delimiters::column_delim)
+        raw_col_name, where_field, where_value, *data = raw_col_data.split(Delimiters.column_delim)
 
         # Find the domain model method details
         model_method = model_method_mgr.search(raw_col_name)
 
         # if not found via raw name, try various alternatives
         unless(model_method)
-          Binder::substitutions(raw_col_name).each do |n|
+          Binder.substitutions(raw_col_name).each do |n|
             model_method = model_method_mgr.search(n)
             break if(model_method)
           end
@@ -128,7 +126,7 @@ module DataShift
           binding = MethodBinding.new(raw_col_name, col_index, model_method)
 
           # we slurped up all possible data in split, turn it back into original string
-          binding.add_column_data(data.join(Delimiters::column_delim))
+          binding.add_column_data(data.join(Delimiters.column_delim))
 
           if(where_field)
             logger.info("Lookup query field [#{where_field}] - specified for association #{model_method.operator}")
@@ -149,12 +147,10 @@ module DataShift
         else
           add_missing(raw_col_data, col_index, "No operator or association found for Header #{raw_col_name}")
         end
-
       end
 
       bindings
     end
-
 
     def add_missing(col_data, col_index, reason)
       logger.warn(reason)
@@ -165,38 +161,37 @@ module DataShift
       bindings << missing
     end
 
-    # TODO - check out regexp to do this work better plus Inflections ??
+    # TODO: - check out regexp to do this work better plus Inflections ??
     # Want to be able to handle any of ["Count On hand", 'count_on_hand', "Count OnHand", "COUNT ONHand" etc]
     def self.substitutions(external_name)
       name = external_name.to_s
 
       [
-          name.downcase,
-          name.tableize,
-          name.gsub(' ', '_'),
-          name.gsub(' ', '_').downcase,
-          name.gsub(/(\s+)/, '_').downcase,
-          name.gsub(' ', ''),
-          name.gsub(' ', '').downcase,
-          name.gsub(' ', '_').underscore
+        name.downcase,
+        name.tableize,
+        name.gsub(' ', '_'),
+        name.gsub(' ', '_').downcase,
+        name.gsub(/(\s+)/, '_').downcase,
+        name.gsub(' ', ''),
+        name.gsub(' ', '').downcase,
+        name.gsub(' ', '_').underscore
       ]
     end
 
     # The raw client supplied names
-    def method_names()
+    def method_names
       bindings.collect( &:inbound_name )
     end
 
     # The true operator names discovered from model
-    def operator_names()
+    def operator_names
       bindings.collect( &:operator )
     end
 
-
     # Returns true if discovered methods contain every operator in mandatory_list
     def contains_mandatory?( mandatory_list )
-      a = [*mandatory_list].collect { |f| f.downcase }
-      b = operator_names.collect { |f| f.downcase }
+      a = [*mandatory_list].collect(&:downcase)
+      b = operator_names.collect(&:downcase)
       (a - b).empty?
     end
 

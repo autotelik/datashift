@@ -5,7 +5,7 @@
 #
 # Details::   Stores complete collection of ModelMethod instances per mapped class.
 #             Provides high level find facilities to find a ModelMethod and to list out
-#             operators per type (has_one, has_many, belongs_to, instance_method etc) 
+#             operators per type (has_one, has_many, belongs_to, instance_method etc)
 #             and all possible operators,
 #
 module DataShift
@@ -62,7 +62,7 @@ module DataShift
 
       # Search for  matching ModelMethod for given name across all types in supported_types_enum order
       def search(name)
-        ModelMethod::supported_types_enum.each do |type|
+        ModelMethod.supported_types_enum.each do |type|
           model_method = find(name, type)
           return model_method if(model_method)
         end
@@ -79,7 +79,7 @@ module DataShift
 
       # Search for  matching ModelMethod for given name across Association types
       def find_association(name)
-        ModelMethod::association_types_enum.each do |type|
+        ModelMethod.association_types_enum.each do |type|
           model_method = find(name, type)
           return model_method if(model_method)
         end
@@ -103,7 +103,7 @@ module DataShift
 
       # Get list of Rails model operators
       def get_operators(type)
-        for_type(type).collect { |mm| mm.operator }
+        for_type(type).collect(&:operator)
       end
 
       alias_method(:get_list_of_operators, :get_operators)
@@ -115,11 +115,11 @@ module DataShift
       # A reverse map  showing all operators with their associated 'type'
       def available_operators_with_type
         h = {}
-        by_optype.each { |t, mms| mms.each do |v| h[v.operator] = t end }
+        by_optype.each { |t, mms| mms.each { |v| h[v.operator] = t } }
 
         # this is meant to be more efficient that Hash[h.sort]
         sh = {}
-        h.keys.sort.each do |k| sh[k] = h[k] end
+        h.keys.sort.each { |k| sh[k] = h[k] }
         sh
       end
     end

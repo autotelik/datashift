@@ -1,4 +1,4 @@
-# Copyright:: (c) Autotelik Media Ltd 2010 - 2012 Tom Statter
+# Copyright:: (c) Autotelik Media Ltd 2010 - 2015 Tom Statter
 # Author ::   Tom Statter
 # Date ::     Aug 2010
 # License::   Free, Open Source.
@@ -23,7 +23,6 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
-
 # Details::   Active Record Import/Export for .xls or CSV
 #
 # To pull DataShift commands into your main application :
@@ -33,13 +32,15 @@
 #     DataShift::load_commands
 #
 
+require_relative 'datashift/logging'
+
 module DataShift
 
   def self.gem_version
     unless(@gem_version)
       if(File.exist?('VERSION'))
         File.read( File.join('VERSION') ).match(/.*(\d+.\d+.\d+)/)
-        @gem_version = $1
+        @gem_version = Regexp.last_match(1)
       else
         @gem_version = '1.0.0'
       end
@@ -48,7 +49,7 @@ module DataShift
   end
 
   def self.gem_name
-    "datashift"
+    'datashift'
   end
 
   def self.root_path
@@ -61,21 +62,19 @@ module DataShift
 
   def self.require_libraries
 
-    loader_libs = %w{ lib  }
+    loader_libs = %w(lib)
 
     # Base search paths - these will be searched recursively
     loader_paths = []
 
-    loader_libs.each {|l| loader_paths << File.join(root_path(), l) }
+    loader_libs.each { |l| loader_paths << File.join(root_path, l) }
 
     # Define require search paths, any dir in here will be added to LOAD_PATH
 
     loader_paths.each do |base|
-      $:.unshift base  if File.directory?(base)
+      $LOAD_PATH.unshift base  if File.directory?(base)
       Dir[File.join(base, '**', '**')].each do |p|
-        if File.directory? p
-          $:.unshift p
-        end
+        $LOAD_PATH.unshift p if File.directory? p
       end
     end
 
@@ -89,7 +88,7 @@ module DataShift
     require_libs.each do |base|
       Dir[File.join(library_path, base, '*.rb')].each do |rb|
         unless File.directory? rb
-          #puts rb
+          # puts rb
           require_relative rb
         end
       end
@@ -103,7 +102,6 @@ module DataShift
     base = File.join(root_path, 'tasks', '**')
     Dir["#{base}/*.rake"].sort.each { |ext| load ext }
   end
-
 
   # Load all the datashift Thor commands and make them available throughout app
 
@@ -122,7 +120,7 @@ require_relative 'datashift/delimiters'
 require_relative 'datashift/guards'
 require_relative 'loaders/file_loader'
 
-DataShift::require_libraries
+DataShift.require_libraries
 
 require_relative 'applications/excel'
 
@@ -134,12 +132,12 @@ require_relative 'datashift/binder'
 require_relative 'datashift/mapper_utils'
 
 module DataShift
-  if(Guards::jruby?)
+  if(Guards.jruby?)
     require 'java'
 
     class Object
       def add_to_classpath(path)
-        $CLASSPATH << File.join( DataShift.root_path, 'lib', path.gsub("\\", "/") )
+        $CLASSPATH << File.join( DataShift.root_path, 'lib', path.gsub('\\', '/') )
       end
     end
   end
