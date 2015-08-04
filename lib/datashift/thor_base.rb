@@ -1,12 +1,10 @@
 # Copyright:: (c) Autotelik Media Ltd 2012
 # Author ::   Tom Statter
-# Date ::     Dec 2014
 # License::   MIT.
 #
 require 'thor'
 
-# Note, not DataShift, case sensitive, create namespace for command line : datashift
-module Datashift
+module DataShift
 
   class DSThorBase < Thor
 

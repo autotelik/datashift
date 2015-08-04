@@ -9,7 +9,8 @@ require File.dirname(__FILE__) + '/spec_helper'
 module  DataShift
 
   describe 'Transforms' do
-    include_context 'ClearAllCatalogues'
+
+    include_context 'ClearThenManageProject'
 
     context 'over-rides' do
       let(:model_method)    { project_collection.search('value_as_string') }
@@ -49,7 +50,7 @@ module  DataShift
             factory.set_default(method_binding, 'default text')
           end
 
-          value = populator.prepare_data(method_binding, '')
+          value, _attributes = populator.prepare_data(method_binding, '')
           expect(value).to eq 'default text'
         end
       end
@@ -59,7 +60,7 @@ module  DataShift
           factory.set_substitution(method_binding, 'text', ' replaced with me')
         end
 
-        value = populator.prepare_data(method_binding, data)
+        value, _attributes = populator.prepare_data(method_binding, data)
         expect(value).to eq 'some  replaced with me for the string'
       end
 
@@ -68,7 +69,7 @@ module  DataShift
           factory.set_prefix(method_binding, 'added me before')
         end
 
-        value = populator.prepare_data(method_binding, data)
+        value, _attributes = populator.prepare_data(method_binding, data)
         expect(value).to eq 'added me before' + data
       end
 
@@ -77,7 +78,7 @@ module  DataShift
           factory.set_postfix(method_binding, 'added me after')
         end
 
-        value = populator.prepare_data(method_binding, data)
+        value, _attributes = populator.prepare_data(method_binding, data)
         expect(value).to eq data + 'added me after'
       end
     end
@@ -86,13 +87,13 @@ module  DataShift
       it 'should provide facility to set default values via YAML configuration' do
         pending 'refactoring this out of loader'
 
-        # ????.configure_from( ifixture_file('ProjectsDefaults.yml') )
+        sometransformer.configure_from( ifixture_file('ProjectsDefaults.yml') )
       end
 
       it 'should provide facility to over ride values via YAML configuration' do
         pending 'refactoring this out of loader'
 
-        # ????.configure_from( ifixture_file('ProjectsDefaults.yml') )
+        sometransformer.configure_from( ifixture_file('ProjectsDefaults.yml') )
       end
     end
   end

@@ -19,7 +19,6 @@ require 'thor_base'
   
 # Note, for thor not DataShift, case sensitive, want namespace for cmd line to be : datashift
 module Datashift
-
           
   class Export < DataShift::DSThorBase
 
