@@ -1,6 +1,5 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Aug 2011
 # License::   MIT
 #
 # Details::   Specific loader to support Excel files.

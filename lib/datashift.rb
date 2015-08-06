@@ -22,16 +22,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
-
-# Details::   Active Record Import/Export for .xls or CSV
 #
-# To pull DataShift commands into your main application :
-#
-#     require 'datashift'
-#
-#     DataShift::load_commands
-#
-
 require_relative 'datashift/logging'
 
 module DataShift
@@ -123,9 +114,6 @@ require_relative 'loaders/file_loader'
 DataShift.require_libraries
 
 require_relative 'applications/excel'
-
-require_relative 'helpers/core_ext/to_b'
-require_relative 'helpers/core_ext/csv_file'
 
 require_relative 'datashift/method_binding'
 require_relative 'datashift/binder'

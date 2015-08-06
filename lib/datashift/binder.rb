@@ -87,7 +87,7 @@ module DataShift
       model_method_mgr =  ModelMethods::Manager.catalog_class(klass)
 
       [*options[:model_classes]].each do |c|
-        ModelMethods::Manager.catalog_class(c) unless(ModelMethods::Manager.for?(c))
+        ModelMethods::Manager.catalog_class(c)
       end if(options[:model_classes])
 
       forced = [*options[:force_inclusion]].compact.collect { |f| f.to_s.downcase }

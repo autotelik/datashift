@@ -1,23 +1,38 @@
 # Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     March 2015
 # License::   MIT
 #
-# Details::   Stores defaults, substitutions, over rides etc
-#             that can be applied to incoming data while being Populated
+# Details::   Maps transformations to internal Class methods.
 #
-# Usage::     DataShift::transformer.factory do |factory|
-#                 factory.set_default  columns_name, 'some text'
-#             end
-
-# Yields a singleton instance of Transformations::Factory
-# so you can specify additional transforms in .rb config
-# If passed an optional locale, rules for other
-# languages can be specified. If not specified, defaults to <tt>:en</tt>.
+#             Stores :
+#               substitutions
+#               over rides
+#               prefixes
+#               postfixes
 #
-# Only rules for English are provided.
+# These are keyed on the associated method binding operator, which is
+# essentially the method call/active record column on the class.
 #
-
+# Clients can decide exactly how these can be applied to incoming data.
+#
+# Usage::
+#
+#   Provides a singleton instance of Transformations::Factory
+#   so you can specify additional transforms in .rb config as follows :
+#
+# IN : my_transformations.rb
+#
+#     DataShift::transformer.factory do |factory|
+#        factory.set_default_on(Project, 'value_as_string', 'default text' )
+#     end
+#
+#   This global factory is automatically utilised by the default Populator
+#   during data load.
+#
+#   If passed an optional locale, rules for other
+#   languages can be specified. If not specified, defaults to <tt>:en</tt>.
+#
+#
 # WORK In PROGRESS
 
 require 'thread_safe'
@@ -129,7 +144,8 @@ module DataShift
       end
 
       def set_substitution( method_binding, rule, replacement )
-        substitutions_for(method_binding.klass)[method_binding.operator] =  Struct.new('Substitution', :pattern, :replacement)[rule, replacement]
+        substitutions_for(method_binding.klass)[method_binding.operator] =
+          Struct.new('Substitution', :pattern, :replacement)[rule, replacement]
       end
 
       def set_prefix( method_binding, value)
@@ -152,7 +168,8 @@ module DataShift
       end
 
       def set_substitution_on(klass, operator, rule, replacement )
-        substitutions_for(klass)[operator] =  Struct.new('Substitution', :pattern, :replacement)[rule, replacement]
+        substitutions_for(klass)[operator] =
+          Struct.new('Substitution', :pattern, :replacement)[rule, replacement]
       end
 
       def set_prefix_on(klass, operator, value)
@@ -172,9 +189,6 @@ module DataShift
     #
     # Only rules for English are provided.
     #
-    # DataShift::transformer.factory do |factory|
-    #   factory.set_default  columns_name, 'some text'
-    # end
 
     def factory(locale = :en)
       if block_given?
@@ -215,6 +229,7 @@ module DataShift
         defaults.each do |_operator, default_value|
           DataShift::Transformer.factory.defaults_for(klass)[method_binding.operator] = default_value
         end if(defaults & defaults.is_a(Hash))
+
         #         overrides = keyed_on_class['datashift_overrides']
         #
         #         subs = keyed_on_class['datashift_substitutions']
@@ -224,7 +239,14 @@ module DataShift
         #           sub.each { |tuple| set_substitution(o, tuple) }
         #         end if(subs)
       end
-    end
+
+      proteced
+
+      def get_method_name( binding )
+        (binding.is_a?(MethodBinding)) ? method_binding.operator : binding
+      end
+
+    end  ## class
 
   end
 end

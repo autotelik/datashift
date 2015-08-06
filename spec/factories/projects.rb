@@ -22,7 +22,7 @@ FactoryGirl.define do
     value_as_datetime Time.now
     value_as_integer 23
 
-    factory :project_user do
+    factory :project_with_user do
       user
       owner
 

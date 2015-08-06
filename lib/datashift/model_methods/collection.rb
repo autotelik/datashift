@@ -19,10 +19,13 @@ module DataShift
 
       attr_reader :managed_class
 
-      # Helper list of all available by type  [:belongs_to]
+      # Hash of all available methods by type
+      #   [:belongs_to] => [:user, :address]
       attr_accessor :by_optype
 
-      # Hash of hash, keyed on : [type][operator]  e.g model_method = [:belongs_to][:title]
+      # Map of operator => model_method
+      # Grouped by :optype - [type][operator] = model_method
+      #   e.g model_method = [:has_many][:projects]
       attr_accessor :by_optype_and_operator
 
       def initialize( klass )
@@ -87,19 +90,20 @@ module DataShift
         nil
       end
 
-      # type is expected to be one of ModelMethod::supported_types_enum
-      # Returns all ModelMethod(s) for supplied type e.g :belongs_to
+
       def get( klass )
         @by_optype_and_operator[klass.to_sym]
       end
 
-      alias_method(:get_model_methods_by_type, :get)
+      alias_method(:get_model_methods_by_class, :get)
 
+      # Returns all ModelMethod(s) for supplied type e.g :belongs_to
+      # type is expected to be one of ModelMethod::supported_types_enum
       def for_type( type )
         by_optype[type.to_sym] || []
       end
 
-      alias_method :get_list_of_model_methods, :for_type
+      alias_method :get_model_methods_by_type, :for_type
 
       # Get list of Rails model operators
       def get_operators(type)

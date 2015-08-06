@@ -1,13 +1,11 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Aug 2011
 # License::   MIT
 #
 # Details::   Export a model to CSV
 #
 #
 require 'exporter_base'
-require 'csv_file'
 
 module DataShift
 
@@ -59,7 +57,7 @@ module DataShift
 
       Delimiters.text_delim = options[:text_delim] if(options[:text_delim])
 
-      collection = ModelMethods::Catalogue.populate( klass )
+      collection = ModelMethods::Manager.catalog_class(klass)
 
       # For each type belongs has_one, has_many etc find the operators
       # and create headers, then for each record call those operators
@@ -72,15 +70,13 @@ module DataShift
 
         records.each do |obj|
           operators.each do |op_type|
-            operators_for_type = collection.by_optype(op_type)
+            operators_for_type = collection.for_type(op_type)
 
-            next if(operators_for_type.empty?)
-
-            operators_for_type.each do |_mm|
+            operators_for_type.each do |mm|
               if(ModelMethod.is_association_type?(op_type))
-                row << record_to_column( obj.send( md.operator ))    # pack association into single column
+                row << record_to_column( obj.send( mm.operator ))    # pack association into single column
               else
-                row << escape_for_csv( obj.send( md.operator ) )
+                row << escape_for_csv( obj.send( mm.operator ) )
               end
             end
           end

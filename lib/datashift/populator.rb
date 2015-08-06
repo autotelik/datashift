@@ -30,8 +30,11 @@ module DataShift
 
     attr_accessor :previous_value, :original_data
 
-    def initialize
-      reset
+    def initialize(transformer = nil)
+      #reset
+      @transformer = transformer || Transformer.factory
+
+      @attribute_hash = {}
     end
 
     # Main client hook :
@@ -108,7 +111,7 @@ module DataShift
     #   prepend any provided prefixes
     #   add any provided postfixes
     #
-    # Rtns : tuple of [:value, :attribute_hash
+    # Rtns : tuple of [:value, :attribute_hash]
     #
     def prepare_data(method_binding, data)
 
