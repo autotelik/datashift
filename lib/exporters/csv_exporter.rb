@@ -66,24 +66,26 @@ module DataShift
       CSV.open( (options[:filename] || filename), 'w' ) do |csv|
         csv.ar_to_headers( records, operators)
 
-        row = []
-
         records.each do |obj|
-          operators.each do |op_type|
-            operators_for_type = collection.for_type(op_type)
 
-            operators_for_type.each do |mm|
+          row = []
+
+          # group columns by operator type
+          operators.each do |op_type|
+
+            collection.for_type(op_type).each do |mm|
+              # pack association instances into single column
               if(ModelMethod.is_association_type?(op_type))
-                row << record_to_column( obj.send( mm.operator ))    # pack association into single column
+                row << record_to_column( obj.send( mm.operator ))
               else
                 row << escape_for_csv( obj.send( mm.operator ) )
               end
             end
           end
-
           csv << row # next record
         end
-      end
+
+      end # end write file
 
     end
   end

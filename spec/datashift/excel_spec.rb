@@ -38,8 +38,8 @@ describe 'Excel Proxy' do
   end
 
   it 'can sanitize worksheet names as per Excel spec' do
-    include ExcelBase
-    extend ExcelBase
+    include DataShift::ExcelBase
+    extend DataShift::ExcelBase
 
     #    name.gsub(/[\[\]:\*\/\\\?]/, '
 

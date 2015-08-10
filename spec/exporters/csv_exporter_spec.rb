@@ -138,7 +138,7 @@ describe 'CSV Exporter' do
       expect(user_inx).to be > -1
     end
 
-    it 'should export model & associations to single row' do
+    it 'should export model & associations to single row', fail: true do
       gen = DataShift::CsvExporter.new(expected)
 
       items = Project.all
@@ -147,16 +147,14 @@ describe 'CSV Exporter' do
 
       csv = CSV.read(expected)
 
-      csv.shift # headers
+      user_header_inx = csv[0].index 'user'
+      csv.shift # shift off headers
 
       expected_ids = items.collect {|p| p.id.to_s }
       ids = csv.collect {|r| r[0][0] }
-      puts ids.inspect
       expect(ids).to eq expected_ids
 
-      user_inx = csv[0].index 'user'
-
-      expect( csv[1][user_inx] ).to include "title => #{@user.title},first_name => #{@user.first_name}"
+      expect( csv[0][user_header_inx] ).to include "title => #{@user.title},first_name => #{@user.first_name}"
     end
   end
 end
