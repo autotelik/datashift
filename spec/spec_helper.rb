@@ -22,12 +22,8 @@ require File.expand_path("../../lib/datashift", __FILE__)
 RSpec.configure do |config|
 
   config.before(:suite) do
-
     # make sure we have dir for result files
     FileUtils.mkdir_p(results_path()) unless File.exist?(results_path)
-
-    DatabaseCleaner.strategy = :truncation
-    DatabaseCleaner.clean
   end
 
   config.include FactoryGirl::Syntax::Methods

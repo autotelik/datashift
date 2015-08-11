@@ -1,9 +1,11 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Feb 2015
 # License::   MIT
 #
 # Details::   Stores complete collection of ModelMethod instances per mapped class.
+#
+#             Mapped to association types as defined by ModelMethod::supported_types_enum
+
 #             Provides high level find facilities to find a ModelMethod and to list out
 #             operators per type (has_one, has_many, belongs_to, instance_method etc)
 #             and all possible operators,

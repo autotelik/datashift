@@ -9,28 +9,17 @@ class CSV
   include DataShift::ColumnPacker
 
   # Helpers for dealing with Active Record models and collections
-  # Specify array of operators/associations to include - possible values are :
-  #     [:assignment, :belongs_to, :has_one, :has_many]
-
-  def ar_to_headers( records, associations = nil )
-    return if( !records.first.is_a?(ActiveRecord::Base) || records.empty?)
-
-    headers = []
-
-    if associations
-      #collection = DataShift::ModelMethods::Collection.new( records.first.class )
-      collection = DataShift::ModelMethods::Manager.collections[records.first.class]
-      #details_mgr = DataShift::MethodDictionary.method_details_mgrs[records.first.class]
-
-      associations.each do |a|
-        collection.for_type(a).each { |md| headers << "#{md.operator}" }
-      end if(collection)
-
-    else
-      headers = records.first.class.columns.collect( &:name )
-    end
-
-    add_row(headers)
+  #
+  # options[:with] => [SYMBOLS]
+  #     Specify array of operators/associations to include - possible values :
+  #         [:assignment, :belongs_to, :has_one, :has_many]
+  #
+  # options[:remove] - List of headers to remove from generated template
+  #
+  # options[:remove_rails] - Remove standard Rails cols like id, created_at etc
+  #
+  def ar_to_headers(klass, options = {})
+    add_row( to_headers(klass, options) )
   end
 
   # Convert an AR instance to a set of CSV columns

@@ -9,167 +9,173 @@ require File.dirname(__FILE__) + '/../spec_helper'
 require 'erb'
 require 'excel_generator'
 
-include DataShift
+module DataShift
 
-describe 'Excel Generator' do
+  describe 'Excel Generator' do
 
-  include_context 'ClearThenManageProject'
+    include_context 'ClearThenManageProject'
+    
+    before(:all) do
+      results_clear( '*_template.xls' )
+    end
 
 
-  it 'should be able to create a new excel generator' do
-    generator = ExcelGenerator.new( 'gen_dummy.xls' )
+    it 'should be able to create a new excel generator' do
+      generator = ExcelGenerator.new( 'gen_dummy_template.xls' )
 
-    generator.should_not be_nil
-  end
+      generator.should_not be_nil
+    end
 
-  it 'should generate template .xls file from model' do
-    expected = result_file('gen_project_template_spec.xls')
+    it 'should generate template .xls file from model', fail: true do
+      expected = result_file('gen_project_template.xls')
 
-    gen = ExcelGenerator.new( expected )
+      gen = ExcelGenerator.new( expected )
 
-    gen.generate(Project)
+      gen.generate(Project)
 
-    expect(File.exist?(expected)).to eq true
+      expect(File.exist?(expected)).to eq true
 
-    puts "Can manually check file @ #{expected}"
+      puts "Can manually check file @ #{expected}"
 
-    excel = Excel.new
-    excel.open(expected)
+      excel = Excel.new
+      excel.open(expected)
 
-    expect(excel.worksheets.size).to eq 1
+      expect(excel.worksheets.size).to eq 1
 
-    excel.worksheet(0).name.should == 'Project'
+      excel.worksheet(0).name.should == 'Project'
 
-    headers = excel.worksheets[0].row(0)
+      headers = excel.worksheets[0].row(0)
 
-    %w(title value_as_string value_as_text value_as_boolean value_as_datetime value_as_integer value_as_double).each do |check|
-      headers.include?(check).should == true
+      %w(title value_as_string value_as_text value_as_boolean value_as_datetime value_as_integer value_as_double).each do |check|
+        expect(headers).to include(check)
+      end
+    end
+
+    # has_one  :owner
+    # has_many :milestones
+    # has_many :loader_releases
+    # has_many :versions, :through => :loader_releases
+    # has_and_belongs_to_many :categories
+
+    it 'should include all associations in template .xls file from model' do
+      expected = result_file('gen_project_plus_assoc_template.xls')
+
+      gen = ExcelGenerator.new(expected)
+
+      gen.generate_with_associations(Project)
+
+      expect( File.exist?(expected)).to eq true
+
+      excel = Excel.new
+      excel.open(expected)
+
+      expect(excel.worksheets.size).to eq 1
+
+      excel.worksheet(0).name.should == 'Project'
+
+      headers = excel.worksheets[0].row(0)
+
+      %w(owner milestones loader_releases versions categories).each do |check|
+        headers.include?(check).should == true
+      end
+    end
+
+    it 'should enable us to exclude associations by type in template .xls file' do
+      expected = result_file('gen_project_plus_some_assoc_template.xls')
+
+      gen = ExcelGenerator.new(expected)
+
+      options = { exclude: :has_many }
+
+      gen.generate_with_associations(Project, options)
+
+      expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
+
+      excel = Excel.new
+      excel.open(expected)
+
+      expect(excel.worksheets.size).to eq 1
+
+      excel.worksheet(0).name.should == 'Project'
+
+      headers = excel.worksheets[0].row(0)
+
+      headers.include?('title').should == true
+      headers.include?('owner').should == true
+
+      %w(milestones loader_releases versions categories).each do |check|
+        headers.should_not include check
+      end
+    end
+
+    it 'should enable us to exclude certain associations in template .xls file ' do
+      expected = result_file('gen_project_plus_some_assoc_template.xls')
+
+      gen = ExcelGenerator.new(expected)
+
+      options = { remove: [:milestones, :versions] }
+
+      gen.generate_with_associations(Project, options)
+
+      expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
+
+      excel = Excel.new
+      excel.open(expected)
+
+      expect(excel.worksheets.size).to eq 1
+
+      excel.worksheet(0).name.should == 'Project'
+
+      headers = excel.worksheets[0].row(0)
+
+      %w(title loader_releases owner categories).each do |check|
+        headers.should include check
+      end
+
+      %w(milestones versions).each do |check|
+        headers.should_not include check
+      end
+    end
+
+    it 'should enable us to remove standard rails feilds from template .xls file ' do
+      expected = result_file('gen_project_plus_some_assoc_template.xls')
+
+      gen = ExcelGenerator.new(expected)
+
+      options = { remove_rails: true }
+
+      gen.generate_with_associations(Project, options)
+
+      expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
+
+      excel = Excel.new
+      excel.open(expected)
+
+      expect(excel.worksheets.size).to eq 1
+
+      excel.worksheet(0).name.should == 'Project'
+
+      headers = excel.worksheets[0].row(0)
+
+      %w(id updated_at created_at).each do |check|
+        headers.should_not include check
+      end
+    end
+
+    it 'should enable us to autosize columns in the .xls file' do
+      expected = result_file('gen_project_autosized_template.xls')
+
+      gen = ExcelGenerator.new(expected)
+
+      options = { autosize: true, exclude: :milestones }
+
+      gen.generate_with_associations(Project, options)
+
+      expect( File.exist?(expected)).to eq true
+
+      excel = Excel.new
+      excel.open(expected)
     end
   end
 
-  # has_one  :owner
-  # has_many :milestones
-  # has_many :loader_releases
-  # has_many :versions, :through => :loader_releases
-  # has_and_belongs_to_many :categories
-
-  it 'should include all associations in template .xls file from model' do
-    expected = result_file('gen_project_plus_assoc_template_spec.xls')
-
-    gen = ExcelGenerator.new(expected)
-
-    gen.generate_with_associations(Project)
-
-    expect( File.exist?(expected)).to eq true
-
-    excel = Excel.new
-    excel.open(expected)
-
-    expect(excel.worksheets.size).to eq 1
-
-    excel.worksheet(0).name.should == 'Project'
-
-    headers = excel.worksheets[0].row(0)
-
-    %w(owner milestones loader_releases versions categories).each do |check|
-      headers.include?(check).should == true
-    end
-  end
-
-  it 'should enable us to exclude associations by type in template .xls file' do
-    expected = result_file('gen_project_plus_some_assoc_template_spec.xls')
-
-    gen = ExcelGenerator.new(expected)
-
-    options = { exclude: :has_many }
-
-    gen.generate_with_associations(Project, options)
-
-    expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
-
-    excel = Excel.new
-    excel.open(expected)
-
-    expect(excel.worksheets.size).to eq 1
-
-    excel.worksheet(0).name.should == 'Project'
-
-    headers = excel.worksheets[0].row(0)
-
-    headers.include?('title').should == true
-    headers.include?('owner').should == true
-
-    %w(milestones loader_releases versions categories).each do |check|
-      headers.should_not include check
-    end
-  end
-
-  it 'should enable us to exclude certain associations in template .xls file ' do
-    expected = result_file('gen_project_plus_some_assoc_template_spec.xls')
-
-    gen = ExcelGenerator.new(expected)
-
-    options = { remove: [:milestones, :versions] }
-
-    gen.generate_with_associations(Project, options)
-
-    expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
-
-    excel = Excel.new
-    excel.open(expected)
-
-    expect(excel.worksheets.size).to eq 1
-
-    excel.worksheet(0).name.should == 'Project'
-
-    headers = excel.worksheets[0].row(0)
-
-    %w(title loader_releases owner categories).each do |check|
-      headers.should include check
-    end
-
-    %w(milestones versions).each do |check|
-      headers.should_not include check
-    end
-  end
-
-  it 'should enable us to remove standard rails feilds from template .xls file ' do
-    expected = result_file('gen_project_plus_some_assoc_template_spec.xls')
-
-    gen = ExcelGenerator.new(expected)
-
-    options = { remove_rails: true }
-
-    gen.generate_with_associations(Project, options)
-
-    expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
-
-    excel = Excel.new
-    excel.open(expected)
-
-    expect(excel.worksheets.size).to eq 1
-
-    excel.worksheet(0).name.should == 'Project'
-
-    headers = excel.worksheets[0].row(0)
-
-    %w(id updated_at created_at).each do |check|
-      headers.should_not include check
-    end
-  end
-
-  it 'should enable us to autosize columns in the .xls file' do
-    expected = result_file('gen_project_autosized_template_spec.xls')
-
-    gen = ExcelGenerator.new(expected)
-
-    options = { autosize: true, exclude: :milestones }
-
-    gen.generate_with_associations(Project, options)
-
-    expect( File.exist?(expected)).to eq true
-
-    excel = Excel.new
-    excel.open(expected)
-  end
 end

@@ -1,7 +1,6 @@
 
 FactoryGirl.define do
 
-
   factory :project do
     title 'project 1'
     value_as_text  "some text\n<storing>nonsense</storing>"

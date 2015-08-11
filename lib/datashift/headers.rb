@@ -1,11 +1,11 @@
 # Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Jan 2015
 # License::   MIT
 #
 # Details::   Holds the current headers amd any pre-processing
 #             mapping done on them
 #
+require 'forwardable'
 
 module DataShift
 
@@ -29,9 +29,13 @@ module DataShift
       @mapped = false
     end
 
-    # swap any raw column headers for their mapped equivalent
-    # Excel => 'Customer', is mapped to 'user' which, correctly binds to domain operator 'user'
-    def map( mapping )
+    # Swap any raw inbound column headers for their mapped equivalent
+    # mapping = {'Customer' => 'user'}
+    #
+    # In Excel/csv header is 'Customer',
+    # this is now swapped for 'user' which is correct domain operator.
+    #
+    def swap_inbound( mapping )
       @previous_headers = @headers.dup
       mapping.each do |m, v|
         @headers.index_at(m)

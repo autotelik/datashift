@@ -1,6 +1,5 @@
 # Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Mar 2015
 # License::   MIT
 #
 require File.join(File.dirname(__FILE__), '/../spec_helper')
@@ -26,7 +25,7 @@ module DataShift
       end
 
       context 'lookups' do
-        let(:create_project) { Project.create(title: 'my title') }
+        let(:create_project) { create(:project, title: 'my title') }
 
         let(:lookup) { LookupSupport.new( Project, :title, 'my title') }
 
@@ -36,11 +35,11 @@ module DataShift
           expect(result).to be_a Project
         end
 
-        it 'should provide shortcut to return active record relation' do
-          create_project
+        it 'should provide shortcut to return active record relation', fail: true do
+          id = create_project.id
           result = lookup.find
           expect(result).to be_a ActiveRecord::Relation
-          expect(result.first.id).to eq create_project.id
+          expect(result.first.id).to eq id
         end
       end
     end

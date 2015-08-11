@@ -20,7 +20,7 @@ module DataShift
     include DataShift::ColumnPacker
 
     def initialize(filename)
-      @filename = filename
+      super(filename)
     end
 
     # Create an Excel file from list of ActiveRecord objects
@@ -29,79 +29,87 @@ module DataShift
       records = [*export_records]
 
       unless(records && records.size > 0)
-        logger.warn('No objects supplied for export')
+        logger.warn('Excel Export - No objects supplied for export - no file written')
         return
       end
 
       first = records[0]
 
-      logger.info("Exporting #{records.size} #{first.class} to Excel")
-
       fail ArgumentError.new('Please supply set of ActiveRecord objects to export') unless(first.is_a?(ActiveRecord::Base))
 
       fail ArgumentError.new('Please supply array of records to export') unless records.is_a? Array
 
-      excel = Excel.new
+      logger.info("Exporting #{records.size} #{first.class} to Excel")
 
-      if(options[:sheet_name] )
-        excel.create_worksheet( name: options[:sheet_name] )
-      else
-        excel.create_worksheet( name: records.first.class.name )
-      end
+      @filename = options[:filename] if options[:filename]
 
-      excel.ar_to_headers(records)
+      excel = prepare_excel(first.class, options)
+
+      to_headers(first.class, options)
+
+      excel.set_headers( headers )
 
       excel.ar_to_xls(records)
+
+      logger.info("Writing Excel to file [#{filename}]")
 
       excel.write( filename )
     end
 
     # Create an Excel file from list of ActiveRecord objects, includes relationships
     #
-    #   Options
+    # Options
     #
-    #     with:         Specify which association types to export :with
-    #                   Possible values are : [:assignment, :belongs_to, :has_one, :has_many]
-    #     sheet_name    Else uses Class name
-    #     json:         Export association data in single column in JSON format
+    # [:filename] => Filename for generated template
+    #
+    # [:with] => List of association Types to include (:has_one etc)
+    #
+    #   Otherwise, defaults to including all association types defined by
+    #   ModelMethod.supported_types_enum - which can be further refined by
+    #
+    # [:exclude] => List of association Types to include (:has_one etc)
+    #
+    # [:remove] => List of headers to remove from generated template
+    #
+    # [:remove_rails] => Remove standard Rails cols like :id, created_at etc
+    #
+    # [sheet_name:] - Name for worksheet, otherwise uses Class name
+    #
+    # [json:] - Export association data in single column in JSON format
     #
     def export_with_associations(klass, records, options = {})
 
-      excel = Excel.new
+      excel = prepare_excel(klass, options)
 
-      if(options[:sheet_name] )
-        excel.create_worksheet( name: options[:sheet_name] )
-      else
-        excel.create_worksheet( name: records.first.class.name )
-      end
+      collection = ModelMethods::Manager.catalog_class(klass)
 
-      ModelMethodsManager.find_methods( klass )
+      options[:with] ||= op_types_in_scope( options )
 
-      MethodDictionary.build_method_details( klass )
+      to_headers(klass, options)
 
-      # For each type belongs has_one, has_many etc find the operators
-      # and create headers, then for each record call those operators
-      operators = options[:with] || ModelMethod.supported_types_enum
+      excel.set_headers( headers )
 
-      excel.ar_to_headers( records, operators)
-
-      details_mgr = MethodDictionary.method_details_mgrs[klass]
+      logger.info("Wrote headers for #{klass} to Excel")
 
       row = 1
 
+      logger.info("Processing #{records.size} records to Excel")
+
       records.each do |obj|
+
         column = 0
 
-        operators.each do |op_type|     # belongs_to, has_one, has_many etc
-          operators_for_type = details_mgr.for_type(op_type)
+        # group columns by operator type
+        op_types_in_scope( options ).each do |op_type|
 
-          next if(operators_for_type.nil? || operators_for_type.empty?)
+          collection.for_type(op_type).each do |model_method|
 
-          operators_for_type.each do |md|     # actual associations on obj
+            # pack association instances into single column
             if(ModelMethod.is_association_type?(op_type))
-              excel[row, column] = record_to_column( obj.send( md.operator ), options )    # pack association into single column
+              logger.info("Processing #{model_method.inspect} associations")
+              excel[row, column] = record_to_column( obj.send( model_method.operator ), options )
             else
-              excel[row, column] = obj.send( md.operator )
+              excel[row, column] = obj.send( model_method.operator )
             end
             column += 1
           end
@@ -110,9 +118,11 @@ module DataShift
         row += 1
       end
 
+      logger.info("Writing Excel to file [#{filename}]")
       excel.write( filename )
 
     end
+
   end # ExcelGenerator
 
 end # DataShift

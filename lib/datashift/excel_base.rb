@@ -11,16 +11,26 @@ module DataShift
     #  Options  :
     #
     #
-    def start_excel( file_name, sheet_number)
+    def start_excel( file_name, sheet_number, options = {})
 
-      @excel = Excel.new
+      @excel = DataShift::Excel.new
 
-      excel.open(file_name)
+      @excel.open(file_name)
 
-      @sheet = excel.worksheet( sheet_number )
+      if(options[:sheet_name])
+
+        sheet = @excel.create_worksheet( name: options[:sheet_name] )
+
+        unless sheet
+          logger.error("Excel failed to create WorkSheet for #{name}")
+
+          fail "Failed to create Excel WorkSheet for #{name}"
+        end
+      end
 
       @excel
     end
+
 
     def parse_headers( sheet,  header_row_idx = 0 )
 
@@ -47,40 +57,12 @@ module DataShift
       name.gsub(/[\[\]:\*\/\\\?]/, '')
     end
 
-    # Helpers for dealing with Active Record models and collections
-    # Specify array of operators/associations to include - possible values are :
-    #     [:assignment, :belongs_to, :has_one, :has_many]
-
-    def ar_to_headers( records, associations = nil )
-      return if( !records.first.is_a?(ActiveRecord::Base) || records.empty?)
-
-      headers = []
-
-      if associations
-        details_mgr = DataShift::MethodDictionary.method_details_mgrs[records.first.class]
-
-        associations.each do |a|
-          details_mgr.for_type(a).each { |md| headers << "#{md.operator}" }
-        end if(details_mgr)
-
-      else
-        headers = records.first.class.columns.collect( &:name )
-      end
-
-      set_headers( headers )
-    end
-
     # Pass a set of AR records
     def ar_to_xls(records, options = {})
       return if( !records.first.is_a?(ActiveRecord::Base) || records.empty?)
 
-      row_index =
-          if(options[:no_headers])
-            0
-          else
-            ar_to_headers( records )
-            1
-          end
+      # assume headers present
+      row_index = (options[:start_row]) ? (options[:start_row]) : 1
 
       records.each do |record|
         ar_to_xls_row(row_index, 0, record)

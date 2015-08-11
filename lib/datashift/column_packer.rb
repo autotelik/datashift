@@ -6,6 +6,8 @@
 # Details::   Helper for creating consistent import/export format
 #             of model's attributes/associations
 #
+require 'datashift/delimiters'
+
 module DataShift
 
   module ColumnPacker

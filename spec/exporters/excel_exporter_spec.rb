@@ -1,4 +1,4 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
 # License::   MIT
 #
@@ -9,21 +9,20 @@ require File.dirname(__FILE__) + '/../spec_helper'
 require 'erb'
 require 'excel_exporter'
 
-include DataShift
+module  DataShift
 
-describe 'Excel Exporter' do
+  describe 'Excel Exporter' do
 
-  include_context 'ClearThenManageProject'
+    include_context 'ClearThenManageProject'
 
-  context 'simple project' do
-    before(:each) do
-      create( :project )
+    before(:all) do
+      results_clear( '*.xls' )
     end
 
     it 'should be able to create a new excel exporter' do
       generator = ExcelExporter.new( 'exp_dummy.xls' )
 
-      generator.should_not be_nil
+      expect(generator).to_not be_nil
     end
 
     it 'should handle bad params to export' do
@@ -38,131 +37,168 @@ describe 'Excel Exporter' do
       puts "Can manually check file @ #{expect}"
     end
 
-    it 'should export model object to .xls file' do
-      expected = result_file('exp_project_first_export_spec.xls')
+    context 'export model only' do
 
-      gen = ExcelExporter.new( expected )
+      let(:expected_projects)   { 7 }
 
-      gen.export(Project.all.first)
+      before(:each) do
+        create_list(:project, expected_projects)
+      end
 
-      expect(File.exist?(expected)).to eq true
+      it 'should export model object to .xls file' do
+        expected = result_file('exp_project_first_export.xls')
 
-      puts "Can manually check file @ #{expected}"
+        gen = ExcelExporter.new( expected )
+
+        gen.export(Project.all.first)
+
+        expect(File.exist?(expected)).to eq true
+
+        puts "Can manually check file @ #{expected}"
+      end
+
+      it 'should export collection of model objects to .xls file' do
+
+        expected = result_file('exp_project_export.xls')
+
+        gen = ExcelExporter.new( expected )
+
+        gen.export(Project.all)
+
+        expect( File.exist?(expected)).to eq true
+
+        excel = Excel.new
+        excel.open(expected)
+
+        expect(excel.num_rows).to eq expected_projects + 1
+      end
     end
-  end
 
-  it 'should export collection of model objects to .xls file' do
-    create_list(:project, 7)
+    context 'project with associations' do
 
-    expected = result_file('exp_project_export_spec.xls')
+      let(:expected_projects)   { 7 }
 
-    gen = ExcelExporter.new( expected )
+      before(:each) do
+        create_list(:project, expected_projects)
+      end
 
-    gen.export(Project.all)
+      it 'should include associations in headers' do
+        create( :project_with_user )
 
-    expect( File.exist?(expected)).to eq true
+        expected = result_file('exp_project_plus_assoc.xls')
 
-    excel = Excel.new
-    excel.open(expected)
+        gen = ExcelExporter.new(expected)
 
-    expect(excel.num_rows).to eq 8
-  end
+        items = Project.all
 
-  it 'should export a model and associations to .xls file' do
-    create( :project_with_user )
-    create_list(:project, 7)
+        gen.export_with_associations(Project, items)
 
-    expected = result_file('exp_project_plus_assoc.xls')
+        expect(File.exist?(expected)).to eq true
 
-    gen = ExcelExporter.new(expected)
+        excel = Excel.new
+        excel.open(expected)
 
-    items = Project.all
+        expect(excel.row(0)).to include 'owner'
+        expect(excel.row(0)).to include 'user'
+      end
 
-    gen.export_with_associations(Project, items)
+      it 'should export a model and associations to .xls file' do
+        create( :project_with_user )
 
-    expect(File.exist?(expected)).to eq true
+        expected = result_file('exp_project_plus_assoc.xls')
 
-    excel = Excel.new
-    excel.open(expected)
+        gen = ExcelExporter.new(expected)
 
-    expect(excel.row(0)).to include 'owner'
-    expect(excel.row(0)).to include 'user'
+        items = Project.all
 
-    expect(excel.num_rows).to eq Project.count + 1
+        gen.export_with_associations(Project, items)
 
-    user_inx = excel.row(0).index 'user'
+        expect(File.exist?(expected)).to eq true
 
-    expect(user_inx).to be > -1
+        excel = Excel.new
+        excel.open(expected)
 
-    expect( excel[1, user_inx] ).to include 'mr'
+        expected_rows = Project.count + 1
+        last_idx = Project.count
 
-    inx = excel.row(0).index 'owner'
+        expect(excel.num_rows).to eq expected_rows
 
-    expect(inx).to be > -1
+        user_inx = excel.row(0).index 'user'
 
-    expect( excel[1, inx] ).to include '10000.23'
-  end
+        expect(user_inx).to be > -1
 
-  it 'should export a model and has_many assocs to .xls file' do
-    create( :project_with_user )
-    create( :project_with_milestones )
-    # create( :project_with_milestones, milestones_count: 4 )
-    create_list(:project, 7)
+        expect( excel[1, user_inx] ).to be_nil
 
-    expected = result_file('exp_project_plus_has_many_assoc.xls')
+        # project_with_user has real associated user data
+        expect( excel[last_idx, user_inx] ).to include 'mr'
 
-    gen = ExcelExporter.new(expected)
+        owner_idx= excel.row(0).index 'owner'
 
-    items = Project.all
+        expect(owner_idx).to be > -1
 
-    gen.export_with_associations(Project, items)
+        expect( excel[last_idx, owner_idx] ).to include '10000.23'
+      end
 
-    expect(File.exist?(expected)).to eq true
+      it 'should export a model and has_many assocs to .xls file', fail: true do
+        create( :project_with_user )
+        create( :project_with_milestones, milestones_count: 4 )
 
-    excel = Excel.new
-    excel.open(expected)
+        expected = result_file('project_and_has_many_assoc_export.xls')
 
-    expect(excel.row(0)).to include 'owner'
-    expect(excel.row(0)).to include 'user'
+        gen = ExcelExporter.new(expected)
 
-    expect(excel.num_rows).to eq Project.count + 1
+        items = Project.all
 
-    milestone_inx = excel.row(0).index 'milestones'
+        gen.export_with_associations(Project, items)
 
-    expect(milestone_inx).to be > -1
+        expect(File.exist?(expected)).to eq true
 
-    puts excel[2, milestone_inx].inspect
+        excel = Excel.new
+        excel.open(expected)
 
-    expect( excel[2, milestone_inx].to_s ).to include Delimiters.multi_assoc_delim
-    expect( excel[2, milestone_inx].to_s ).to include 'milestone 1'
-  end
+        expect(excel.row(0)).to include 'owner'
+        expect(excel.row(0)).to include 'user'
 
-  it 'should export a model and  assocs in json to .xls file' do
-    create( :project_with_user )
-    create( :project_with_milestones )
-    # create( :project_with_milestones, milestones_count: 4 )
-    create_list(:project, 7)
+        expect(excel.num_rows).to eq Project.count + 1
 
-    expected = result_file('exp_project_plus_has_many_assoc.xls')
+        milestone_inx = excel.row(0).index 'milestones'
 
-    gen = ExcelExporter.new(expected)
+        expect(milestone_inx).to be > -1
 
-    items = Project.all
+        # These tests very flakey - better way to find row rather than rely on idx??
+        last_idx = Project.count
 
-    gen.export_with_associations(Project, items, json: true)
+        # project_with_milestones has real associated user data
+        expect( excel[last_idx, milestone_inx].to_s ).to include Delimiters.multi_assoc_delim
+        expect( excel[last_idx, milestone_inx].to_s ).to include 'milestone 1'
+      end
 
-    expect(File.exist?(expected)).to eq true
+      it 'should export a model and  assocs in json to .xls file' do
+        create( :project_with_user )
+        create( :project_with_milestones )
 
-    excel = Excel.new
-    excel.open(expected)
+        expected = result_file('project_and_has_many_json_export.xls')
 
-    expect(excel.num_rows).to eq Project.count + 1
+        gen = ExcelExporter.new(expected)
 
-    milestone_inx = excel.row(0).index 'milestones'
+        items = Project.all
 
-    puts excel[2, milestone_inx].inspect
+        gen.export_with_associations(Project, items, json: true)
 
-    expect( excel[2, milestone_inx].to_s ).to include '['
-    expect( excel[2, milestone_inx].to_s ).to include '"name":"milestone 1"'
+        expect(File.exist?(expected)).to eq true
+
+        excel = Excel.new
+        excel.open(expected)
+
+        expect(excel.num_rows).to eq Project.count + 1
+
+        milestone_inx = excel.row(0).index 'milestones'
+
+        last_idx = Project.count
+        expect( excel[last_idx, milestone_inx].to_s ).to include '['
+        expect( excel[last_idx, milestone_inx].to_s ).to match /name\":\"milestone/
+      end
+    end
+
   end
 end

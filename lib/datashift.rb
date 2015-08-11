@@ -74,7 +74,7 @@ module DataShift
                     'datashift/model_methods',
                     'datashift/transformer',
                     'datashift/inbound_data',
-                    'loaders', 'generators', 'helpers' ]
+                    'loaders', 'exporters', 'generators', 'helpers' ]
 
     require_libs.each do |base|
       Dir[File.join(library_path, base, '*.rb')].each do |rb|
@@ -107,9 +107,9 @@ module DataShift
 
 end
 
-require_relative 'datashift/delimiters'
-require_relative 'datashift/guards'
-require_relative 'loaders/file_loader'
+#require_relative 'datashift/delimiters'
+#require_relative 'datashift/guards'
+#require_relative 'loaders/file_loader'
 
 DataShift.require_libraries
 

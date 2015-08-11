@@ -71,14 +71,6 @@ RSpec.configure do |config|
 
   alias :clear_results_dir :results_clear
 
-  def set_logger( name = 'datashift_spec.log')
-
-    require 'logger'
-    logdir = File.join(File.dirname(__FILE__), 'log')
-    FileUtils.mkdir_p(logdir) unless File.exist?(logdir)
-    ActiveRecord::Base.logger = Logger.new( File.join(logdir, name) )
-  end
-
   def bundler_setup(gemfile = File.join(DataShift::root_path, 'spec', 'Gemfile') )
 
     $stderr.puts "No Such Gemfile #{gemfile}" unless File.exist?(gemfile)

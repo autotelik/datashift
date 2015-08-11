@@ -26,6 +26,8 @@ module DataShift
     #
     def export(export_records, options = {})
 
+      @filename = options[:filename] if options[:filename]
+
       records = [*export_records]
 
       unless(records && records.size > 0)
@@ -39,8 +41,10 @@ module DataShift
 
       Delimiters.text_delim = options[:text_delim] if(options[:text_delim])
 
+      to_headers(first.class, options)
+
       CSV.open( (options[:filename] || filename), 'w' ) do |csv|
-        csv.ar_to_headers( records )
+        csv << headers
 
         records.each do |r|
           next unless(r.is_a?(ActiveRecord::Base))
@@ -49,29 +53,41 @@ module DataShift
       end
     end
 
-    # Create an Excel file from list of ActiveRecord objects
-    # Specify which associations to export via :with or :exclude
-    # Possible values are : [:assignment, :belongs_to, :has_one, :has_many]
+    # Create CSV file from list of ActiveRecord objects
+    #
+    # Options
+    # [:filename] => Filename for generated template
+    #
+    # [:with] => List of association Types to include (:has_one etc)
+    #
+    #   Otherwise, defaults to including all association types defined by
+    #   ModelMethod.supported_types_enum - which can be further refined by
+    #
+    # [:exclude] => List of association Types to include (:has_one etc)
+    #
+    # [:remove] => List of headers to remove from generated template
+    #
+    # [:remove_rails] => Remove standard Rails cols like :id, created_at etc
     #
     def export_with_associations(klass, records, options = {})
+
+      @filename = options[:filename] if options[:filename]
 
       Delimiters.text_delim = options[:text_delim] if(options[:text_delim])
 
       collection = ModelMethods::Manager.catalog_class(klass)
 
-      # For each type belongs has_one, has_many etc find the operators
-      # and create headers, then for each record call those operators
-      operators = options[:with] || ModelMethod.supported_types_enum
+      to_headers(klass, options)
 
       CSV.open( (options[:filename] || filename), 'w' ) do |csv|
-        csv.ar_to_headers( records, operators)
+        csv << headers
 
         records.each do |obj|
 
           row = []
 
           # group columns by operator type
-          operators.each do |op_type|
+          op_types_in_scope( options ).each do |op_type|
 
             collection.for_type(op_type).each do |mm|
               # pack association instances into single column
