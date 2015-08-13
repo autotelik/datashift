@@ -67,7 +67,7 @@ module DataShift
     #   Otherwise, defaults to including all association types defined by
     #   ModelMethod.supported_types_enum - which can be further refined by
     #
-    # [:exclude] => List of association Types to include (:has_one etc)
+    # [:exclude] => List of association Types to EXCLUDE (:has_one etc)
     #
     # [:remove] => List of headers to remove from generated template
     #
@@ -83,7 +83,11 @@ module DataShift
 
       collection = ModelMethods::Manager.catalog_class(klass)
 
-      options[:with] ||= op_types_in_scope( options )
+      # with_associations - so over ride to default to :all if nothing specified
+      options[:with] = :all if(options[:with].nil?)
+
+      # sort out exclude etc
+      options[:with] = op_types_in_scope( options )
 
       to_headers(klass, options)
 
@@ -100,7 +104,7 @@ module DataShift
         column = 0
 
         # group columns by operator type
-        op_types_in_scope( options ).each do |op_type|
+        options[:with].each do |op_type|
 
           collection.for_type(op_type).each do |model_method|
 

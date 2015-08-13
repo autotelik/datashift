@@ -60,8 +60,10 @@ module DataShift
     #
     def generate_with_associations(klass, options = {})
 
-      # For each type belongs has_one, has_many etc find the operators
-      # and create headers, then for each record call those operators
+      # with_associations - so over ride to default to :all if nothing specified
+      options[:with] = :all if(options[:with].nil?)
+
+      # sort out exclude etc
       options[:with] = op_types_in_scope( options )
 
       generate(klass, options)

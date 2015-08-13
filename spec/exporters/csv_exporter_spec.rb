@@ -120,7 +120,7 @@ module DataShift
         count.should == basic_projects + 2
       end
 
-      it 'should include headers and association names in row 0', fail: true do
+      it 'should include headers and association names in row 0' do
         gen = DataShift::CsvExporter.new(expected)
 
         gen.export_with_associations(Project, Project.all)

@@ -1,6 +1,5 @@
 # Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Feb 2015
 # License::   MIT
 #
 # Details::   Specs for Mapping aspects
@@ -29,11 +28,13 @@ module DataShift
 
     let(:mapping_service) {  DataShift::MappingServices.new(Project) }
 
+    # TODO split into two - with and without associations
+
     context 'reading' do
       let(:mfile) { result_file('mapping_service_project.yaml') }
 
       before(:each) do
-        mapper.generate(Project, { file: mfile } )
+        mapper.generate(Project, { file: mfile, with: :all } )
 
         expect(File.exist?(mfile)).to be true
 

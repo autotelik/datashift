@@ -30,18 +30,21 @@ module DataShift
     #
     # * <tt>:title</tt> - Top level YAML node
     #
-    # * <tt>:model_as_dest</tt> - Place model operators as the DESTINATION. Override default treatment using model for SOURCE
+    # * <tt>:model_as_dest</tt> - Place model operators as the DESTINATION.
+    #                             Override default treatment using model for SOURCE
     #
     # Rails columns like id, created_at etc are added to the remove list by default
     #
-    # * <tt>:include_rails</tt> - Specify to keep Rails columns in mappings
+    # Options:
     #
-    # * <tt>:associations</tt> - Additionally include all Associations
+    # * <tt>[:with]</tt> => [SYMBOLS]
+    #     Array of association types to include as defined by
+    #     ModelMethod.supported_types_enum e.g
+    #         [:assignment, :belongs_to, :has_one, :has_many]
     #
-    # * <tt>:exclude</tt> - Association TYPE(s) to exclude.
+    # * <tt>[:exclude]</tt> - List of headers to remove from generated template
     #
-    #     Possible association_type values are given by ModelMethod.supported_types_enum
-    #       ... [:assignment, :belongs_to, :has_one, :has_many]
+    # * <tt>[:remove_rails]</tt> - Remove standard Rails cols like id, created_at etc
     #
     # * <tt>:file</tt> - Write mappings direct to file name provided
     #
@@ -55,9 +58,9 @@ module DataShift
 
         mappings = options[:title] || "#{klass.name}:" + "\n"
 
-        collection = ModelMethods::Manager.catalog_class(klass)
+        options[:with] = op_types_in_scope( options )
 
-        prepare_model_headers(collection, options)
+        to_headers(klass, options)
 
         if(options[:model_as_dest])
           headers.each_with_index { |s, i|  mappings += "       #srcs_column_heading_#{i}: #{s}\n" }
