@@ -38,7 +38,7 @@ Gem::Specification.new do |s|
 
   s.summary = "Shift data betwen Excel/CSV and any Ruby app"
 
-  s.add_dependency 'rails', '4.1.8'
+  s.add_dependency 'rails', '> 4.1'
 
   s.add_dependency 'paperclip'
   s.add_dependency 'spreadsheet'
