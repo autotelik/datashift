@@ -10,7 +10,8 @@ module DataShift
 
     #  Options  :
     #
-    #
+    #     :sheet_name : Create a new worksheet and assign to @sheet
+
     def start_excel( file_name, sheet_number, options = {})
 
       @excel = DataShift::Excel.new
@@ -19,13 +20,15 @@ module DataShift
 
       if(options[:sheet_name])
 
-        sheet = @excel.create_worksheet( name: options[:sheet_name] )
+        @sheet = @excel.create_worksheet( name: options[:sheet_name] )
 
         unless sheet
           logger.error("Excel failed to create WorkSheet for #{name}")
 
           fail "Failed to create Excel WorkSheet for #{name}"
         end
+      else
+        @sheet = @excel.worksheets.first
       end
 
       @excel

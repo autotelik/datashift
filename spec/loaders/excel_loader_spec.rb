@@ -42,7 +42,7 @@ module  DataShift
 
       let(:loader) { ExcelLoader.new(simple_xls) }
 
-      it 'should parse the headers' do
+      it 'should parse the headers', fail: true do
         loader.run(Project)
 
         expect(loader.headers.class).to eq Headers

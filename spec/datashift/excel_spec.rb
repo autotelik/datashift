@@ -13,10 +13,15 @@ module DataShift
       @excel = Excel.new
     end
 
+    it 'should reject .xlsx until spreedsheet gem supports it' do
+      expect { @excel.open( ifixture_file('ProjectsSingleCategories.xlsx') )
+      }.to raise (Ole::Storage::FormatError)
+    end
+
     it 'can open an existing spreadsheet' do
       sheet = @excel.open( ifixture_file('ProjectsSingleCategories.xls') )
 
-      sheet.should_not be_nil
+      expect(sheet).to_not be_nil
     end
 
     it 'can create new un-named worksheet' do
