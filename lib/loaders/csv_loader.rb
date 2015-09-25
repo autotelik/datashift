@@ -23,7 +23,7 @@ module DataShift
     def initialize( file_name, options = {} )
       super( options )
 
-      @file_name   = file_name
+      @file_name = file_name
     end
 
     #  Options
@@ -91,17 +91,16 @@ module DataShift
 
             @binder.bindings.each_with_index do |method_binding, i|
               unless(method_binding.valid?)
-                logger.warn("No binding was found for column (#{i})") if(verbose)
+                logger.warn("No binding was found for column (#{i})")
                 next
               end
 
-              value = row[method_binding.inbound_index]  # binding contains column number
+              value = row[method_binding.inbound_index] # binding contains column number
 
               context = doc_context.create_context(method_binding, i, value)
 
               contains_data ||= context.contains_data?
 
-              puts "Processing Column #{method_binding.inbound_index} (#{method_binding.pp})"
               logger.info "Processing Column #{method_binding.inbound_index} (#{method_binding.pp})"
 
               begin
@@ -122,13 +121,13 @@ module DataShift
             end
 
             doc_context.reset unless doc_context.context.next_update?
-          end   # all rows processed
+          end # all rows processed
 
           if(options[:dummy])
             puts 'CSV loading stage done - Dummy run so Rolling Back.'
             fail ActiveRecord::Rollback # Don't actually create/upload to DB if we are doing dummy run
           end
-        end   # TRANSACTION N.B ActiveRecord::Rollback does not propagate outside of the containing transaction block
+        end # TRANSACTION N.B ActiveRecord::Rollback does not propagate outside of the containing transaction block
 
       rescue => e
         puts "ERROR: CSV loading failed : #{e.inspect}"

@@ -15,14 +15,14 @@ module DataShift
     end
 
     it 'should process a DSL string into a real hash' do
-      str1  = "{:name => 'the_fox' }"
+      str1 = "{:name => 'the_fox' }"
 
       x = DataShift::Populator.string_to_hash( str1 )
 
       expect(x).to be_a Hash
       expect(x.size).to eq 1
 
-      str2 =  "{:name => 'the_fox', 'occupation' => 'fantastic', :food => 'duck soup' }"
+      str2 = "{:name => 'the_fox', 'occupation' => 'fantastic', :food => 'duck soup' }"
 
       x = DataShift::Populator.string_to_hash( str2 )
 
@@ -31,7 +31,7 @@ module DataShift
     end
 
     it 'should process simplified syntax string into a real hash' do
-      str3 =  "{cost_price: '13.45', price: 23,  sale_price: 4.23 }"
+      str3 = "{cost_price: '13.45', price: 23,  sale_price: 4.23 }"
 
       x = DataShift::Populator.string_to_hash( str3 )
 
@@ -42,7 +42,7 @@ module DataShift
     end
 
     it 'should process mixed hash syntax string into a real hash' do
-      str =  "{:cost_price => '13.45', price: 23,  :sale_price => 4.23 }"
+      str = "{:cost_price => '13.45', price: 23,  :sale_price => 4.23 }"
 
       x = DataShift::Populator.string_to_hash( str )
 

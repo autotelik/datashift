@@ -1,10 +1,9 @@
 
 class Sandbox
 
-
   def self.sandbox_gem_list
     add_gem 'datashift', path: rspec_datashift_root
-    add_gem 'awesome_print'#, github: 'michaeldv/awesome_print', branch: 'master'
+    add_gem 'awesome_print' # , github: 'michaeldv/awesome_print', branch: 'master'
     add_gem 'active_scaffold'
   end
 
@@ -45,7 +44,6 @@ class Sandbox
       end
 
       run_in(rails_sandbox_path) do
-
         sandbox_gem_list
 
         system("cat #{File.join(rails_sandbox_path, 'Gemfile')}")

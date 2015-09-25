@@ -89,12 +89,10 @@ module DataShift
         csv << headers
 
         records.each do |obj|
-
           row = []
 
           # group columns by operator type
           op_types_in_scope( options ).each do |op_type|
-
             collection.for_type(op_type).each do |mm|
               # pack association instances into single column
               if(ModelMethod.is_association_type?(op_type))
@@ -106,7 +104,6 @@ module DataShift
           end
           csv << row # next record
         end
-
       end # end write file
 
     end

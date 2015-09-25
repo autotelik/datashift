@@ -26,9 +26,9 @@ module DataShift
 
     let(:mapper) { DataShift::MappingGenerator.new }
 
-    let(:mapping_service) {  DataShift::MappingServices.new(Project) }
+    let(:mapping_service) { DataShift::MappingServices.new(Project) }
 
-    # TODO split into two - with and without associations
+    # TODO: split into two - with and without associations
 
     context 'reading' do
       let(:mfile) { result_file('mapping_service_project.yaml') }

@@ -33,8 +33,8 @@ module DataShift
 
       logger.debug("ImageLoading::create_attachment on Class #{klass}")
 
-      image_attributes = { attributes:                             { alt: (options[:alt] || ''),
-                                                                     position: (!options[:position] && record && record.respond_to?(:images)) ? record.images.length : 0
+      image_attributes = { attributes: { alt: (options[:alt] || ''),
+                                         position: (!options[:position] && record && record.respond_to?(:images)) ? record.images.length : 0
                             }
       }
 

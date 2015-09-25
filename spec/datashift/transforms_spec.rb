@@ -9,7 +9,6 @@ require File.dirname(__FILE__) + '/../spec_helper'
 module  DataShift
 
   describe 'Transforms' do
-
     include_context 'ClearThenManageProject'
 
     context 'over-rides' do

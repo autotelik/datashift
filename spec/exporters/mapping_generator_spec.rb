@@ -50,7 +50,7 @@ module DataShift
         end
 
         it 'should generate a mapping doc with pre supplied title' do
-          result = mapping_generator.generate(nil,  { file: map_file, title: 'rspec_mappings:' } )
+          result = mapping_generator.generate(nil, { file: map_file, title: 'rspec_mappings:' } )
 
           expect(File.exist?(map_file)).to be true
 
@@ -64,13 +64,13 @@ module DataShift
         let(:map_file) { result_file('project_mapper.yaml') }
 
         it 'should generate a populated mapping doc for a class' do
-          result = mapping_generator.generate( Project,  { file: map_file } )
+          result = mapping_generator.generate( Project, { file: map_file } )
 
           expect(File.exist?(map_file)).to be true
           expect( File.read(map_file) ).to include 'Project:'
         end
 
-        it 'should be able to extract headers from_excel', fail: true  do
+        it 'should be able to extract headers from_excel', fail: true do
           mapping_generator.generate_from_excel(ifixture_file('SimpleProjects.xls'), file: map_file )
 
           expect(mapping_generator.headers.empty?).to eq false
@@ -88,7 +88,7 @@ module DataShift
           expect(mapping_generator.headers[4]).to eq 'value_as_double'
         end
 
-        it 'should be able to generate a mapping from_excel'  do
+        it 'should be able to generate a mapping from_excel' do
           mapping_generator.generate_from_excel(ifixture_file('SimpleProjects.xls'), file: map_file )
 
           expect(File.exist?(map_file)).to be true

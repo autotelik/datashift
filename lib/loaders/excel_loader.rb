@@ -86,17 +86,16 @@ module DataShift
 
             @binder.bindings.each_with_index do |method_binding, i|
               unless(method_binding.valid?)
-                logger.warn("No binding was found for column (#{i})") if(verbose)
+                logger.warn("No binding was found for column (#{i})")
                 next
               end
 
-              value = row[method_binding.inbound_index]   # binding contains column number
+              value = row[method_binding.inbound_index] # binding contains column number
 
               context = doc_context.create_context(method_binding, i, value)
 
               contains_data ||= context.contains_data?
 
-              puts "Processing Column #{method_binding.inbound_index} (#{method_binding.pp})"
               logger.info "Processing Column #{method_binding.inbound_index} (#{method_binding.pp})"
 
               begin
@@ -122,13 +121,13 @@ module DataShift
 
             # unless next operation is update, reset the loader object
             doc_context.reset unless doc_context.context.next_update?
-          end   # all rows processed
+          end # all rows processed
 
           if(options[:dummy])
             puts 'Excel loading stage done - Dummy run so Rolling Back.'
             fail ActiveRecord::Rollback # Don't actually create/upload to DB if we are doing dummy run
           end
-        end   # TRANSACTION N.B ActiveRecord::Rollback does not propagate outside of the containing transaction block
+        end # TRANSACTION N.B ActiveRecord::Rollback does not propagate outside of the containing transaction block
 
       rescue => e
         puts "ERROR: Excel loading failed : #{e.inspect}"
@@ -149,16 +148,13 @@ module DataShift
     #
     def start( file_name, options = {} )
 
-      puts "\n\nStarting Load from Excel file: #{file_name}"
-      logger.info("\nStarting Load from Excel file: #{file_name}")
+      logger.info("STARTING - Loading from Excel file: #{file_name}")
 
       start_excel(file_name, options[:sheet_number] || 0 )
 
       set_headers( parse_headers(sheet, options[:header_row] || 0) )
 
       fail MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{headers.idx} contains headers" if(headers.empty?)
-
-      puts headers.inspect
 
       excel
     end

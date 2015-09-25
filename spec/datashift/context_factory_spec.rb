@@ -13,7 +13,7 @@ module DataShift
       ContextFactory.clear_populators
     end
 
-    let(:model_method)  { project_collection.search('value_as_string') }
+    let(:model_method) { project_collection.search('value_as_string') }
 
     let(:method_binding) { MethodBinding.new('column_for_value_as_string', 0, model_method) }
 

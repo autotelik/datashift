@@ -31,7 +31,7 @@ module DataShift
     attr_accessor :previous_value, :original_data
 
     def initialize(transformer = nil)
-      #reset
+      # reset
       @transformer = transformer || Transformer.factory
 
       @attribute_hash = {}
@@ -127,7 +127,7 @@ module DataShift
         elsif(data.class.ancestors.include?(ActiveRecord::Base) || data.is_a?(Array))
           @value = data
 
-        elsif(data.is_a?(Spreadsheet::Formula))   # TOFIX jruby/apache poi equivalent ?
+        elsif(data.is_a?(Spreadsheet::Formula)) # TOFIX jruby/apache poi equivalent ?
           @value = data.value
 
         else
@@ -202,7 +202,6 @@ module DataShift
         end
 
       else
-        puts "WARNING: No assignment possible on #{record.inspect} using [#{operator}]"
         logger.error("WARNING: No assignment possible on #{record.inspect} using [#{operator}]")
       end
     end
@@ -293,7 +292,6 @@ module DataShift
             break
           rescue => e
             if f == Populator.insistent_method_list.last
-              puts "I'm sorry I have failed to assign [#{value}] to #{operator}"
               raise "I'm sorry I have failed to assign [#{value}] to #{operator}" unless value.nil?
             end
           end

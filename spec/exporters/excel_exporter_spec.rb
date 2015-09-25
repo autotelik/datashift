@@ -12,7 +12,6 @@ require 'excel_exporter'
 module  DataShift
 
   describe 'Excel Exporter' do
-
     include_context 'ClearThenManageProject'
 
     before(:all) do
@@ -38,7 +37,6 @@ module  DataShift
     end
 
     context 'export model only' do
-
       let(:expected_projects)   { 7 }
 
       before(:each) do
@@ -58,7 +56,6 @@ module  DataShift
       end
 
       it 'should export collection of model objects to .xls file' do
-
         expected = result_file('exp_project_export.xls')
 
         gen = ExcelExporter.new( expected )
@@ -75,8 +72,7 @@ module  DataShift
     end
 
     context 'project with associations' do
-
-      let(:expected_projects)   { 7 }
+      let(:expected_projects) { 7 }
 
       before(:each) do
         create_list(:project, expected_projects)
@@ -132,7 +128,7 @@ module  DataShift
         # project_with_user has real associated user data
         expect( excel[last_idx, user_inx] ).to include 'mr'
 
-        owner_idx= excel.row(0).index 'owner'
+        owner_idx = excel.row(0).index 'owner'
 
         expect(owner_idx).to be > -1
 
@@ -196,9 +192,8 @@ module  DataShift
 
         last_idx = Project.count
         expect( excel[last_idx, milestone_inx].to_s ).to include '['
-        expect( excel[last_idx, milestone_inx].to_s ).to match /name\":\"milestone/
+        expect( excel[last_idx, milestone_inx].to_s ).to match(/name\":\"milestone/)
       end
     end
-
   end
 end

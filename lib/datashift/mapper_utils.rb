@@ -13,9 +13,9 @@ module DataShift
 
       ruby_klass = begin
         # support modules e.g "Spree::Property")
-        MapperUtils.class_from_string(klass)  # Kernel.const_get(model)
+        MapperUtils.class_from_string(klass) # Kernel.const_get(model)
       rescue NameError => e
-        puts e
+        logger.error( e.message )
         raise Thor::Error.new("ERROR: No such Class [#{klass}] found - check valid model supplied")
       end
 
@@ -41,7 +41,7 @@ module DataShift
     #
     def self.class_from_string( str )
 
-      MapperUtils.const_get_from_string(str.to_s)  # Kernel.const_get(model)
+      MapperUtils.const_get_from_string(str.to_s) # Kernel.const_get(model)
     rescue
       return nil
 

@@ -9,7 +9,6 @@ require File.dirname(__FILE__) + '/../spec_helper'
 module DataShift
 
   describe 'CSV Exporter' do
-
     before(:all) do
       results_clear( '*.csv' )
     end
@@ -96,9 +95,7 @@ module DataShift
       end
     end
 
-
     context 'with associations' do
-
       let(:basic_projects) { 7 }
 
       let(:expected) { result_file('exp_project_plus_assoc_export_spec.csv') }
@@ -150,8 +147,8 @@ module DataShift
         user_header_inx = csv[0].index 'user'
         csv.shift # shift off headers
 
-        expected_ids = items.collect {|p| p.id.to_s }
-        ids = csv.collect {|r| r[0][0] }
+        expected_ids = items.collect { |p| p.id.to_s }
+        ids = csv.collect { |r| r[0][0] }
         expect(ids).to eq expected_ids
 
         expect( csv[0][user_header_inx] ).to include "title => #{@user.title},first_name => #{@user.first_name}"

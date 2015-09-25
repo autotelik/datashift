@@ -72,7 +72,6 @@ module DataShift
 
     # We have our own error list available too
     def errors?
-      puts errors.inspect, load_object.errors.inspect
       !errors.empty? || !load_object.errors.empty?
     end
 
@@ -102,10 +101,6 @@ module DataShift
           reset
         end
       end
-
-      puts "Load failed while processing [#{context.method_binding.pp}]"
-      puts error_messages.join(' ; ')
-
       logger.error "Load failed while processing [#{context.method_binding.pp}]"
       logger.error error_messages.join(' ; ')
     end
@@ -140,15 +135,14 @@ module DataShift
     def save
       return false unless( load_object )
 
-      puts "DEBUG: SAVING #{load_object.class} : #{load_object.inspect}"
+      logger.debug("SAVING #{load_object.class} : #{load_object.inspect}")
       begin
-        return load_object.save
+        load_object.save
       rescue => e
         logger.error( "Save Error : #{e.inspect} on #{load_object.class}")
         logger.error(e.backtrace)
+        false
       end
-
-      false
     end
 
   end

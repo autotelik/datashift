@@ -6,11 +6,9 @@
 #
 require File.dirname(__FILE__) + '/../spec_helper'
 
-
 module  DataShift
 
   describe 'CSV Generator' do
-
     before(:all) do
       results_clear( '*_template.csv' )
     end

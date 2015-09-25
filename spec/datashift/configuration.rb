@@ -14,7 +14,7 @@ module DataShift
       { project:
             { value_as_string: 'Default Project Value',
               category: 'reference:category_002',
-              value_as_datetime:  Time.now.to_s(:db)
+              value_as_datetime: Time.now.to_s(:db)
             }
       }
     }

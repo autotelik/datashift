@@ -19,7 +19,7 @@ module  DataShift
         expect(CsvLoader.new( simple_csv)).to be
       end
 
-      let(:loader)  { CsvLoader.new( simple_csv) }
+      let(:loader) { CsvLoader.new( simple_csv) }
 
       it 'should provide access to a context for the whole document' do
         expect(loader.doc_context).to be_a DocContext

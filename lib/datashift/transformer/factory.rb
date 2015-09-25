@@ -246,7 +246,7 @@ module DataShift
         (binding.is_a?(MethodBinding)) ? method_binding.operator : binding
       end
 
-    end  ## class
+    end ## class
 
   end
 end

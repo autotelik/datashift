@@ -14,7 +14,7 @@ module DataShift
   describe Binder do
     include_context 'ClearThenManageProject'
 
-    let(:binder)   { Binder.new }
+    let(:binder) { Binder.new }
 
     context 'errors binding headers' do
       let(:headers) { [:value_as_string, :owner, :bad_no_such_column, :value_as_boolean, :value_as_double, :more_rubbish_as_nil] }

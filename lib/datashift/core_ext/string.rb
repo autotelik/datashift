@@ -1,5 +1,4 @@
 String.class_eval do
-
   # Convert DSL string forms into a hash
   # e.g
   #
@@ -20,7 +19,7 @@ String.class_eval do
                e.split(': ')
              end
 
-      k = k.gsub(/[:']/, '').strip  # easier to treat all keys as strings
+      k = k.gsub(/[:']/, '').strip # easier to treat all keys as strings
       v = v.to_s.strip
 
       if( v.match(/['"]/) )
@@ -35,7 +34,6 @@ String.class_eval do
 
     h
   end
-
 
   TRUE_REGEXP = /^(yes|true|on|t|1|\-1)$/i.freeze
   FALSE_REGEXP = /^(no|false|off|f|0)$/i.freeze

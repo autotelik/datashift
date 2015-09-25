@@ -13,26 +13,44 @@ module DataShift
 
     class MultiIO
 
-      def initialize(*targets)
-        @targets = []
-        targets.each { |t| @targets << Logger.new(t) }
+      include Singleton
+
+      attr_reader :targets
+
+      def initialize
+        @targets, @names = [], []
       end
 
-      def add(target)
-        @targets << Logger.new(target)
-      end
 
-      def method_missing(method, *args, &block)
-        @targets.each { |t| t.send(method, *args, &block) }
+      def add_file(target)
+        unless(@names.include?(target))
+          puts "Logging going to target [#{target}]"
+          add( File.open(target, 'a') )
+          @names << target
+        end
       end
 
       def verbose
         add(STDOUT)
       end
 
+      def method_missing(method, *args, &block)
+        @targets.each { |t| t.send(method, *args, &block) }
+      end
+
+      private
+
+      def add(target)
+        @targets << Logger.new(target)
+      end
+
     end
 
     require 'logger'
+
+    def logdir=(x)
+      @logdir = x
+    end
 
     def logdir
       @logdir ||= 'log'
@@ -40,27 +58,24 @@ module DataShift
     end
 
     def logger
-      @logger ||= open
-      @logger
+      @mutli_logger ||= open
+      @mutli_logger
+    end
+
+    def verbose
+      logger.add(STDOUT)
     end
 
     private
 
     def open( log = 'datashift.log')
-
       FileUtils.mkdir(logdir) unless File.directory?(logdir)
 
-      logname = File.join(logdir, log)
+      MultiIO.instance.add_file(File.join(logdir, log))
 
-      log_file = File.open(logname, 'a')
+      ActiveRecord::Base.logger = MultiIO.instance if(defined?(ActiveRecord) && ActiveRecord::Base.logger)
 
-      puts "Opened datashift log @ #{logname}"
-
-      multi_logger = MultiIO.new(log_file)
-
-      #return ActiveRecord::Base.logger if(defined?(ActiveRecord) && ActiveRecord::Base.logger)
-      ActiveRecord::Base.logger = multi_logger if(defined?(ActiveRecord) && ActiveRecord::Base.logger)
-
+      MultiIO.instance
     end
   end
 

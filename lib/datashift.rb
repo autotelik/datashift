@@ -1,6 +1,6 @@
 # Copyright:: (c) Autotelik Media Ltd 2010 - 2015 Tom Statter
 # Author ::   Tom Statter
-# Date ::     Aug 2010
+# Date ::     Aug 2015
 # License::   Free, Open Source.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -79,14 +79,13 @@ module DataShift
     require_libs.each do |base|
       Dir[File.join(library_path, base, '*.rb')].each do |rb|
         unless File.directory? rb
-          # puts rb
           require_relative rb
         end
       end
     end
   end
 
-  # Load all the datashift rake tasks and make them available throughout app
+  # Load all the datashift  tasks and make them available throughout app
   def self.load_tasks
     # Long parameter lists so ensure rake -T produces nice wide output
     ENV['RAKE_COLUMNS'] = '180'
@@ -97,7 +96,7 @@ module DataShift
   # Load all the datashift Thor commands and make them available throughout app
 
   def self.load_commands
-    base = File.join(library_path, 'thor', '**')
+    base = File.join(library_path, 'tasks', '**')
 
     Dir["#{base}/*.thor"].each do |f|
       next unless File.file?(f)

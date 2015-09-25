@@ -51,7 +51,7 @@ module DataShift
 
         set_key_config!( key ) if key
       rescue => e
-        puts e.inspect
+        logger.error e.inspect
         logger.error "Failed to parse config file #{map_file_name} - bad YAML ?"
         raise e
       end
@@ -72,10 +72,8 @@ module DataShift
       erb = begin
         Erubis::Eruby.new(raw_data).result
       rescue => e
-        puts "Failed to parse erb template #{file} error: #{e.inspect}"
-
-        logger.error "Config template error: #{e.inspect}"
-
+        logger.error "Failed to parse erb template #{file} "
+        logger.error "template error: #{e.inspect}"
         raise e
       end
 
@@ -85,7 +83,6 @@ module DataShift
         logger.info "Loaded YAML config from [#{file}]"
 
       rescue => e
-        puts "YAML parse error: #{e.inspect}"
         logger.error "YAML parse error: #{e.inspect}"
         raise e
       end

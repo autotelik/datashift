@@ -86,14 +86,12 @@ module Datashift
       # TODO - We're assuming run from a rails app/top level dir...
       # ...can we make this more robust ? e.g what about when using active record but not in Rails app, 
       require File.expand_path('config/environment.rb')
-   
+
       require 'excel_loader'
 
       model = options[:model]
 
       klass = DataShift::MapperUtils.class_from_string_or_raise( model )
-
-      loader_options = { :instance_methods => true }
 
       loader_klass = if(options[:loader])
         begin
@@ -105,6 +103,8 @@ module Datashift
         logger.info("No Loader specified - using generic ExcelLoader")
         DataShift::ExcelLoader
       end
+
+      loader_options = { instance_methods: true, verbose: options[:verbose] }
 
       loader = loader_klass.new(options[:input], loader_options)
 

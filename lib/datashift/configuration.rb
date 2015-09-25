@@ -43,7 +43,7 @@ module DataShift
 
         set_key_config!( key ) if key
       rescue => e
-        puts e.inspect
+        logger.error e.inspect
         logger.error "Failed to parse config file #{map_file_name} - bad YAML ?"
         raise e
       end
@@ -65,14 +65,14 @@ module DataShift
     #
     def set_key_config!( key )
       fail MissingConfigOptionError.new("No config entry found for key [#{key}]") unless(yaml_data && yaml_data[key].is_a?(Hash))
-      @key_config  = OpenStruct.new(  yaml_config[key]  )  # Argument HAS to be a hash
+      @key_config = OpenStruct.new( yaml_config[key] ) # Argument HAS to be a hash
     end
 
     # Merge another YAML section (identified by key) into @key_config
     def merge_key_config!( key )
       fail Beeline::MissingConfigOptionError.new("No config entry found for key [#{key}]") unless(yaml_data && yaml_data[key].is_a?(Hash))
 
-      temp =  yaml_data[key].merge(@key_config.instance_variable_get('@table') || {})
+      temp = yaml_data[key].merge(@key_config.instance_variable_get('@table') || {})
 
       key_config = OpenStruct.new(temp)
     end
@@ -88,10 +88,7 @@ module DataShift
       erb = begin
         Erubis::Eruby.new( File.read(file )).result
       rescue => e
-        puts "Failed to parse erb template #{file} error: #{e.inspect}"
-
-        logger.error "Config template error: #{e.inspect}"
-
+        logger.error "Failed to parse erb template #{file} error: #{e.inspect}"
         raise e
       end
 
@@ -101,7 +98,6 @@ module DataShift
         logger.info "Loaded YAML config from [#{file}]"
 
       rescue => e
-        puts "YAML parse error: #{e.inspect}"
         logger.error "YAML parse error: #{e.inspect}"
         raise e
       end

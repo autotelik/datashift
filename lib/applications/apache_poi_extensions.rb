@@ -29,7 +29,7 @@ if(DataShift::Guards.jruby?)
     include Enumerable
 
     def []( column)
-      cell_value( get_or_create_cell( column )  )
+      cell_value( get_or_create_cell( column ) )
     end
 
     def []=( column, value )

@@ -55,7 +55,7 @@ module DataShift
 
         super( attachment_klazz, attachment, options.dup )
 
-        puts "Attachment Class is #{load_object_class}" if(@verbose)
+        logger.info("Attachment Class is #{load_object_class}")
 
         fail 'Failed to create Attachment for loading' unless @load_object
       end
@@ -66,7 +66,7 @@ module DataShift
       #
       def init_from_options( options )
 
-        @attach_to_klass  = options[:attach_to_klass] || @attach_to_klass || nil
+        @attach_to_klass = options[:attach_to_klass] || @attach_to_klass || nil
 
         unless(@attach_to_klass.nil? || (MethodDictionary.for?(@attach_to_klass) && options[:reload] == false))
           # puts "Building Method Dictionary for class #{object_class}"
@@ -77,8 +77,8 @@ module DataShift
           DataShift::MethodDictionary.build_method_details(@attach_to_klass)
         end
 
-        @attach_to_find_by_field  = options[:attach_to_find_by_field] || @attach_to_find_by_field || nil
-        @attach_to_field  = options[:attach_to_field] || @attach_to_field || nil
+        @attach_to_find_by_field = options[:attach_to_find_by_field] || @attach_to_find_by_field || nil
+        @attach_to_field = options[:attach_to_field] || @attach_to_field || nil
 
         unless(@attach_to_klass.nil? && @attach_to_field.nil? )
           @attach_to_method_detail = MethodDictionary.find_method_detail(@attach_to_klass, @attach_to_field)
@@ -118,7 +118,7 @@ module DataShift
         missing_records = []
 
         # try splitting up filename in various ways looking for the attachment owqner
-        split_on  = @config['split_file_name_on'] || options[:split_file_name_on]
+        split_on = @config['split_file_name_on'] || options[:split_file_name_on]
 
         @loading_files_cache = DataShift::Paperclip.get_files(path, options)
 
@@ -151,7 +151,9 @@ module DataShift
 
             create_paperclip_attachment(@load_object_class, file_name, record, attach_to_field, options)
 
-            puts "Added Attachment #{File.basename(file_name)} to #{record.send(attach_to_find_by_field)}(id : #{record.id})" if(@verbose)
+            fname = File.basename(file_name)
+
+            logger.info "Added Attachment #{fname} to #{record.send(attach_to_find_by_field)}(id : #{record.id})"
           end
         end
 
@@ -161,8 +163,8 @@ module DataShift
           puts "WARNING : #{missing_records.size} of #{loading_files_cache.size} files could not be attached to a #{@load_object_class}"
           puts "For your convenience copying files with MISSING #{attach_to_klass} to : MissingAttachmentRecords"
           missing_records.each do |i|
-            FileUtils.cp( i, 'MissingAttachmentRecords')  unless(options[:dummy] == 'true')
-            puts "Copyied #{i} to MissingAttachmentRecords folder" if(options[:verbose])
+            FileUtils.cp( i, 'MissingAttachmentRecords') unless(options[:dummy] == 'true')
+            logger.info("Copied #{i} to MissingAttachmentRecords folder")
           end
         end
 

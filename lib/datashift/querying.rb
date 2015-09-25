@@ -48,7 +48,7 @@ module DataShift
 
         # Only **value(s)** in column, so use field from header/config field
 
-        puts("DEBUG: No part2e [#{part1}][#{part1.class}] - [#{part2}][#{part2.class}]")
+        logger.debug("No part2e [#{part1}][#{part1.class}] - [#{part2}][#{part2.class}]")
 
         part2 = part1.split(Delimiters.multi_value_delim)
         part1 = method_binding.inbound_column.find_by_operator
@@ -58,7 +58,7 @@ module DataShift
 
       end
 
-      puts("DEBUG: Where clause [#{part1}][#{part1.class}] - [#{part2}][#{part2.class}]")
+      logger.debug("Where clause [#{part1}][#{part1.class}] - [#{part2}][#{part2.class}]")
 
       [part1, [*part2]]
     end
@@ -81,7 +81,6 @@ module DataShift
         end
 
       rescue => e
-        puts e.inspect
         logger.error("Exception attempting to find a record for [#{search_term}] on #{klazz}.#{field}")
         logger.error e.backtrace
         logger.error e.inspect

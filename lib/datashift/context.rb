@@ -41,19 +41,14 @@ module DataShift
     end
 
     def process
-
       populator.prepare_and_assign(self, doc_context.load_object, data)
     rescue => x
-
-      puts 'FAILED FAILED'
       doc_context.failure("Failed to process node : #{method_binding.pp}")
 
       logger.error(doc_context.errors.last)
       logger.error("#{x.backtrace.first} : #{x.message}")
 
-      puts x.backtrace.first, x.message
       raise x
-
     end
 
   end

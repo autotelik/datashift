@@ -102,7 +102,7 @@ class File_definitions < Test::Unit::TestCase
 
     assert_equal %w(ccy date value), AFixed.field_definition.sort
 
-    assert_equal AFixed.field_definition.sort,  AFixed.fixed_definition.keys.sort
+    assert_equal AFixed.field_definition.sort, AFixed.fixed_definition.keys.sort
 
     assert_instance_of Range, AFixed.fixed_definition.values[0]
 
@@ -132,7 +132,7 @@ class File_definitions < Test::Unit::TestCase
 
         create_field_attr_accessors
       end
-      flunk    # We should never get here
+      flunk # We should never get here
     rescue => e
       assert e
     end

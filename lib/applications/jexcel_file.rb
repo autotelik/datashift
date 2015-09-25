@@ -98,7 +98,7 @@ if(DataShift::Guards.jruby?)
 
         name = sanitize_sheet_name( sheet_name )
 
-        if @workbook.getSheetIndex(name) < 0  # Check sheet doesn't already exist
+        if @workbook.getSheetIndex(name) < 0 # Check sheet doesn't already exist
           return create_sheet_and_set_styles( name )
         else
           activate_sheet(name)
@@ -167,7 +167,7 @@ if(DataShift::Guards.jruby?)
     # Get the enriched value of the Cell at row, column.
     def cell(row, column)
       row = row(row)
-      cell_value( row.get_or_create_cell( column )  )
+      cell_value( row.get_or_create_cell( column ) )
     end
 
     # Get the enriched value of the Cell at row, column.

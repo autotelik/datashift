@@ -4,14 +4,14 @@
 # License::   MIT
 #
 
-RSpec.configure do |config|
+RSpec.configure do |_config|
 
-  def rspec_datashift_root()
-    @rspec_datashift_root ||= File.expand_path("../..", __FILE__)
+  def rspec_datashift_root
+    @rspec_datashift_root ||= File.expand_path('../..', __FILE__)
   end
 
   def run_in(dir)
-    puts "RSpec .. running test in path [#{dir}]"
+    puts "RSpec .. switching context to run tests in path [#{dir}]"
     original_dir = Dir.pwd
     begin
       Dir.chdir dir
@@ -36,18 +36,16 @@ RSpec.configure do |config|
 
   alias :silence :capture
 
-
-  def fixtures_path()
-    File.join(rspec_datashift_root,'fixtures')
+  def fixtures_path
+    File.join(rspec_datashift_root, 'fixtures')
   end
 
   def ifixture_file( name )
-    File.join(fixtures_path(), name)
+    File.join(fixtures_path, name)
   end
 
-
   def results_path
-    File.join(fixtures_path(), 'results')
+    File.join(fixtures_path, 'results')
   end
 
   # Return location of an expected results file and ensure tree clean before test
@@ -65,31 +63,31 @@ RSpec.configure do |config|
     else
       begin FileUtils.rm_rf(results_path); rescue; end
 
-      FileUtils.mkdir(results_path) unless File.exist?(results_path);
+      FileUtils.mkdir(results_path) unless File.exist?(results_path)
     end
   end
 
   alias :clear_results_dir :results_clear
 
-  def bundler_setup(gemfile = File.join(DataShift::root_path, 'spec', 'Gemfile') )
+  def bundler_setup(gemfile = File.join(DataShift.root_path, 'spec', 'Gemfile') )
 
     $stderr.puts "No Such Gemfile #{gemfile}" unless File.exist?(gemfile)
 
     ENV['BUNDLE_GEMFILE'] = gemfile
-    #Bundler.setup
+    # Bundler.setup
     begin
-      #Bundler.setup(:default, :development)
+      # Bundler.setup(:default, :development)
       Bundler.setup(:default, :test)
     rescue Bundler::BundlerError => e
       $stderr.puts e.message
-      $stderr.puts "Run `bundle install` to install missing gems"
+      $stderr.puts 'Run `bundle install` to install missing gems'
       exit e.status_code
     end
   end
 
   def db_clear_connections
-    # We have multiple schemas and hence connections tested in single spec directory   
-    ActiveRecord::Base.clear_active_connections!()
+    # We have multiple schemas and hence connections tested in single spec directory
+    ActiveRecord::Base.clear_active_connections!
   end
 
   def database_yml_path
@@ -104,39 +102,37 @@ RSpec.configure do |config|
 
     puts "Load DB Config for Env : #{env}"
 
-    # We have multiple schemas and hence connections tested in single spec directory   
+    # We have multiple schemas and hence connections tested in single spec directory
     db_clear_connections
 
     configuration = {}
 
-    configuration[:database_configuration] = YAML::load( ERB.new( IO.read(database_yml_path) ).result )
+    configuration[:database_configuration] = YAML.load( ERB.new( IO.read(database_yml_path) ).result )
     db = configuration[:database_configuration][ env ]
 
     set_logger
 
-    puts "Connecting to DB", db.inspect
+    puts 'Connecting to DB', db.inspect
 
     ActiveRecord::Base.establish_connection( db )
   end
 
   # These are our test models with associations
   def db_clear
-    [Project, Milestone, Category, Version, LoaderRelease].each {|x| x.delete_all}
+    [Project, Milestone, Category, Version, LoaderRelease].each(&:delete_all)
   end
 
   def load_in_memory
     load "#{Rails.root}/db/schema.rb"
   end
 
-  def migrate_up( rails_root = fixtures_path )
+  def migrate_up( _rails_root = fixtures_path )
     p = File.join(fixtures_path, 'db/migrate')
-    raise "Cannot migrate DB - no such path #{p}" unless File.exist?(p)
+    fail "Cannot migrate DB - no such path #{p}" unless File.exist?(p)
     ActiveRecord::Migrator.up(p)
   end
 
   def rails_sandbox_path
     Sandbox.rails_sandbox_path
   end
-
-
 end

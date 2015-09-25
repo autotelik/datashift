@@ -28,7 +28,7 @@ describe 'Thor high level command line tasks' do
     end
 
     it 'should provide tasks to generate a mapping doc' do
-      opts  = { model: 'Project', result: "#{results_path}" }
+      opts = { model: 'Project', result: "#{results_path}" }
 
       run_in(rails_sandbox_path) do
         output = capture(:stdout) { Datashift::Mapping.new.invoke(:template, [], opts) }

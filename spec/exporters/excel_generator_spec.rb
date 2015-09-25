@@ -12,13 +12,11 @@ require 'excel_generator'
 module DataShift
 
   describe 'Excel Generator' do
-
     include_context 'ClearThenManageProject'
-    
+
     before(:all) do
       results_clear( '*_template.xls' )
     end
-
 
     it 'should be able to create a new excel generator' do
       generator = ExcelGenerator.new( 'gen_dummy_template.xls' )

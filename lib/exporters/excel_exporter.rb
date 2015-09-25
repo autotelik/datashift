@@ -100,14 +100,11 @@ module DataShift
       logger.info("Processing #{records.size} records to Excel")
 
       records.each do |obj|
-
         column = 0
 
         # group columns by operator type
         options[:with].each do |op_type|
-
           collection.for_type(op_type).each do |model_method|
-
             # pack association instances into single column
             if(ModelMethod.is_association_type?(op_type))
               logger.info("Processing #{model_method.inspect} associations")

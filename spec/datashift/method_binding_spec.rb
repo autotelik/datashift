@@ -14,7 +14,7 @@ module DataShift
   describe 'Method Binding' do
     include_context 'ClearThenManageProject'
 
-    let( :model_method)  { project_collection.search('value_as_string') }
+    let( :model_method) { project_collection.search('value_as_string') }
 
     it 'should bind details of inbound header to domain model' do
       binding = MethodBinding.new('value_as_string', 1, model_method)

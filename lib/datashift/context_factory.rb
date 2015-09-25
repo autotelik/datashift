@@ -40,7 +40,7 @@ module DataShift
       @@config = YAML.load( ERB.new( IO.read(yaml_file) ).result )
 
       @@config[:datashift_populators].each do |_operator, type|
-        populator =  ::Object.const_get(type).new
+        populator = ::Object.const_get(type).new
 
         populator.configure_from(load_object_class, yaml_file)
 

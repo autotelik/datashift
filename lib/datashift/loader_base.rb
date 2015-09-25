@@ -22,7 +22,7 @@ module DataShift
 
     attr_reader :file_name
 
-    attr_reader :strict, :verbose
+    attr_reader :strict
 
     attr_accessor :doc_context
     attr_accessor :binder
@@ -40,7 +40,8 @@ module DataShift
       @doc_context = DocContext.new(NilClass)
       @binder      = Binder.new
 
-      @verbose = (options[:verbose] == true)
+      logger.verbose if(options[:verbose])
+
       @strict  = (options[:strict] == true)
     end
 
@@ -50,7 +51,7 @@ module DataShift
 
       @doc_context = DocContext.new(object_class)
 
-      logger.info("Loading objects of type #{load_object_class} (#{object})")
+      logger.info("Loading objects of type #{load_object_class}")
 
       doc_context.reset(object)
 
@@ -86,7 +87,7 @@ module DataShift
     end
 
     def set_headers(column_headings)
-      logger.info("Setting doc headers to #{column_headings.inspect}")
+      logger.info("Setting parsed headers to [#{column_headings.inspect}]")
 
       doc_context.headers = column_headings
     end
@@ -135,18 +136,22 @@ module DataShift
       begin
         binder.map_inbound_headers(load_object_class, headers, options )
       rescue => e
-        puts e.inspect, e.backtrace
         logger.error("Failed to map header row to set of database operators : #{e.inspect}")
+        logger.error( e.backtrace )
         raise MappingDefinitionError, 'Failed to map header row to set of database operators'
       end
 
       unless(binder.missing_bindings.empty?)
-        logger.warn("Following headings couldn't be mapped to #{load_object_class} \n#{binder.missing_bindings.inspect}")
+        logger.warn("Following headings couldn't be mapped to #{load_object_class}")
+        binder.missing_bindings.each { |m| logger.warn("#{m.name} - Index (#{m.index})") }
+
         fail MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}" if(strict)
       end
 
       unless(mandatory.empty? || binder.contains_mandatory?(mandatory) )
-        binder.missing_mandatory(mandatory).each { |er| puts "ERROR: Mandatory column missing - expected column '#{er}'" }
+        binder.missing_mandatory(mandatory).each do |er|
+          logger.error "Mandatory column missing - expected column '#{er}'"
+        end
         fail MissingMandatoryError, 'Mandatory columns missing  - please fix and retry.'
       end
 

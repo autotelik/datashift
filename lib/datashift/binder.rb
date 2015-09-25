@@ -84,7 +84,7 @@ module DataShift
 
       # If klass not in Dictionary yet, add to dictionary all possible operators on klass
       # which can be used to map headers and populate an object of type klass
-      model_method_mgr =  ModelMethods::Manager.catalog_class(klass)
+      model_method_mgr = ModelMethods::Manager.catalog_class(klass)
 
       [*options[:model_classes]].each do |c|
         ModelMethods::Manager.catalog_class(c)
@@ -116,9 +116,9 @@ module DataShift
           end
         end
 
-        model_method =  if(options[:include_all] || forced.include?(raw_col_name.downcase))
-                          logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :method")
-                          model_method_mgr.insert(raw_col_name, :method)
+        model_method = if(options[:include_all] || forced.include?(raw_col_name.downcase))
+                         logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :method")
+                         model_method_mgr.insert(raw_col_name, :method)
                         end if(model_method.nil?)
 
         if(model_method)
@@ -169,12 +169,12 @@ module DataShift
       [
         name.downcase,
         name.tableize,
-        name.gsub(' ', '_'),
-        name.gsub(' ', '_').downcase,
+        name.tr(' ', '_'),
+        name.tr(' ', '_').downcase,
         name.gsub(/(\s+)/, '_').downcase,
-        name.gsub(' ', ''),
-        name.gsub(' ', '').downcase,
-        name.gsub(' ', '_').underscore
+        name.delete(' '),
+        name.delete(' ').downcase,
+        name.tr(' ', '_').underscore
       ]
     end
 

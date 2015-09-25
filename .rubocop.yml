@@ -18,6 +18,7 @@ AllCops:
     - 'spec/factories/**/*'
     - 'spec/rails_sandbox/**/*'
     - 'spec/fixtures/db/migrate/**/*'
+    - 'spec/support/**/*'
 
 
 LineLength:
@@ -34,6 +35,8 @@ Style/EmptyLinesAroundModuleBody:
 Style/EmptyLinesAroundMethodBody:
     Enabled: false
 Style/EmptyLinesAroundClassBody:
+    Enabled: false
+Style/EmptyLinesAroundBlockBody:
     Enabled: false
 
 # we ain't doing python round here
@@ -85,6 +88,7 @@ Metrics/LineLength:
 
 # Specs can get large and with good reason, no benefit splitting them up
 Metrics/ModuleLength:
+  Max: 500
   Exclude:
     - spec/**/*_spec.rb
 

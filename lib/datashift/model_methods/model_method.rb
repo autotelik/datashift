@@ -81,15 +81,15 @@ module DataShift
     # Return the operator's expected class name, if can be derived, else nil
     def operator_class_name
       @operator_class_name ||=
-          if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))
+        if(operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one))
 
-            get_operator_class.name
+          get_operator_class.name
 
-          elsif(@col_type)
-            @col_type.type.to_s.classify
-          else
-            ''
-          end
+        elsif(@col_type)
+          @col_type.type.to_s.classify
+        else
+          ''
+        end
 
       @operator_class_name
     end
@@ -102,11 +102,16 @@ module DataShift
 
     def pp
       x = <<-EOS
-      klass         [#{klass.name}]
-      operator_type [#{operator_type}]
-      operator      [#{operator}]
-      col_type      [#{col_type.inspect}]
+      Class         [#{klass.name}]
+      Operator Type [#{operator_type}]
+      Operator      [#{operator}]
       EOS
+
+      if(col_type.respond_to?(:cast_type))
+        x +=<<-EOS
+      Col/SqlType   [#{col_type.class} - #{col_type.cast_type.class.name}]
+        EOS
+      end
       x
     end
 
@@ -140,10 +145,10 @@ module DataShift
       elsif(@col_type)
         begin
           Kernel.const_get(@col_type.type.to_s.classify)
-        rescue; nil; end
-            end
+        rescue;
+          nil;
+        end
+      end
     end
-
   end
-
 end

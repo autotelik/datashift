@@ -35,8 +35,6 @@ module DataShift
       #
       def self.populate(klass, options = {} )
 
-        puts "DEBUG: find_methods for [#{klass}]"
-
         fail "Cannot find operators supplied klass nil #{klass}" if(klass.nil?)
 
         register(klass)

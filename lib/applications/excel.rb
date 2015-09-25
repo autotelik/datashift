@@ -18,7 +18,7 @@ else
   require 'spreadsheet_extensions'
 end
 
-module  DataShift
+module DataShift
   module ExcelProxy
     # Returns the current proxy class
     def self.proxy_class
@@ -51,7 +51,7 @@ module  DataShift
 
       if(@excel.respond_to?(method))
         @excel.send(method, *args, &block)
-      elsif(@excel.worksheets.last.respond_to?(method))  # active_worksheet doesn't work so use the latest
+      elsif(@excel.worksheets.last.respond_to?(method)) # active_worksheet doesn't work so use the latest
         @excel.worksheets.last.send(method, *args, &block)
       elsif(@excel_class.respond_to?(method))
         if(method == :open || method == 'open')

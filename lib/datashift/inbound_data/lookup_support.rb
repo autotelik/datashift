@@ -15,7 +15,7 @@ module DataShift
 
     class LookupSupport
 
-      attr_reader :klass,  :field, :where_value
+      attr_reader :klass, :field, :where_value
 
       def initialize(klass, in_name, where_value)
         @klass = klass

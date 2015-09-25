@@ -57,7 +57,7 @@ module DataShift
           Manager.catalog_class(Project)
           Manager.catalog_class(Milestone)
 
-          manager =  Manager.for(Project)
+          manager = Manager.for(Project)
 
           expect(manager.managed_class).to eq Project
 

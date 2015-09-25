@@ -5,7 +5,6 @@ module DataShift
   module ExcelBase
 
     describe 'ExcelBase' do
-
       before(:each) do
         include DataShift::ExcelBase
         extend DataShift::ExcelBase
@@ -28,7 +27,6 @@ module DataShift
       end
 
       context 'Once opened' do
-
         before(:each) do
           start_excel(filename, 0)
         end

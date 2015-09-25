@@ -8,7 +8,6 @@ require File.dirname(__FILE__) + '/../spec_helper'
 module  DataShift
 
   describe 'Excel Loader' do
-
     include_context 'ClearAllCatalogues'
 
     before(:each) do
@@ -22,7 +21,7 @@ module  DataShift
         expect(ExcelLoader.new( simple_xls)).to be
       end
 
-      let(:loader)  { ExcelLoader.new( simple_xls) }
+      let(:loader) { ExcelLoader.new( simple_xls) }
 
       it 'should provide access to a context for the whole document' do
         expect(loader.doc_context).to be_a DocContext
@@ -70,9 +69,9 @@ module  DataShift
     context 'creates new records' do
       let(:simple_xls) { ifixture_file('SimpleProjects.xls') }
 
-      let(:loader)  { ExcelLoader.new( simple_xls ) }
+      let(:loader) { ExcelLoader.new( simple_xls ) }
 
-      it 'should process a simple .xls spreedsheet', fail: true  do
+      it 'should process a simple .xls spreedsheet', fail: true do
         count = Project.count
 
         loader.run(Project)
@@ -172,7 +171,7 @@ module  DataShift
         expect { loader.run(Project) }.to raise_error(MappingDefinitionError)
       end
 
-      it 'should raise an error when mandatory columns missing'  do
+      it 'should raise an error when mandatory columns missing' do
         loader = ExcelLoader.new(ifixture_file('ProjectsMultiCategories.xls') )
 
         expect { loader.run(Project, nil, mandatory: %w(not_an_option must_be_there)) }.to raise_error(DataShift::MissingMandatoryError)

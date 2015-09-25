@@ -21,7 +21,7 @@ module DataShift
     end
 
     it 'should be able to set the filename ot load' do
-      file_loader =  LoaderBase.new file_name: 'Test.csv'
+      file_loader = LoaderBase.new file_name: 'Test.csv'
       expect(file_loader.file_name).to eq 'Test.csv'
     end
   end

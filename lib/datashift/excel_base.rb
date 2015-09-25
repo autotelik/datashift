@@ -12,7 +12,7 @@ module DataShift
     #
     #     :sheet_name : Create a new worksheet and assign to @sheet
 
-    def start_excel( file_name, sheet_number, options = {})
+    def start_excel( file_name, _sheet_number, options = {})
 
       @excel = DataShift::Excel.new
 
@@ -34,8 +34,7 @@ module DataShift
       @excel
     end
 
-
-    def parse_headers( sheet,  header_row_idx = 0 )
+    def parse_headers( sheet, header_row_idx = 0 )
 
       headers = DataShift::Headers.new(:excel, header_row_idx)
 
@@ -93,8 +92,9 @@ module DataShift
 
       self[row, column] = datum
     rescue => e
-      puts "Failed to export #{datum} from #{connection_column.inspect} to column #{column}"
-      puts e, e.backtrace
+      logger.error("Failed to export #{datum} from #{connection_column.inspect} to column #{column}")
+      logger.error( e.message )
+      logger.error(e.backtrace)
 
     end
   end
