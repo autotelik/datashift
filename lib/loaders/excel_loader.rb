@@ -102,6 +102,8 @@ module DataShift
                 context.process
               rescue => x
 
+                logger.error("Process failed with #{x.inspect} #{x.backtrace}")
+
                 if(doc_context.all_or_nothing?)
                   logger.error('Node failed so Current Row aborted')
                   break

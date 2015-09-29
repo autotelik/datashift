@@ -171,6 +171,8 @@ module DataShift
 
       operator = model_method.operator
 
+      klass = model_method.klass
+
       if( model_method.operator_for(:belongs_to) )
 
         insistent_belongs_to(method_binding, record, value)
@@ -185,15 +187,39 @@ module DataShift
           record.send(operator + '=', value)
         else
           logger.error("Cannot assign value [#{value.inspect}]")
-          logger.error("Value was Type (#{value.class}) - Required Type for has_one #{operator} is [#{model_method.klass}]")
+          logger.error("Value was Type (#{value.class}) - Required Type for has_one #{operator} is [#{klass}]")
         end
 
       elsif( model_method.operator_for(:assignment) )
 
         if(model_method.col_type)
-          logger.debug("Assignment via [#{operator}] to [#{value}] (CAST TYPE [#{model_method.col_type.type_cast(value).inspect}])")
 
-          record.send( operator + '=', model_method.col_type.type_cast( value ) )
+          # TOFIX .. enum section probably belongs in prepare_data
+
+          if(klass.respond_to?(operator.pluralize))
+
+            enums = klass.send(operator.pluralize)
+
+            if(enums.is_a?(Hash) && enums.keys.include?(value.parameterize.underscore))
+              # ENUM
+              logger.debug("[#{operator}] Appears to be an ENUM - setting to [#{value}])")
+
+              record.send( operator + '=', value.parameterize.underscore)
+              return
+            end
+          end
+
+          if(model_method.col_type.respond_to? :type_cast)
+            logger.debug("Assignment via [#{operator}] to [#{value}] (CAST TYPE [#{model_method.col_type.type_cast(value).inspect}])")
+
+            record.send( operator + '=', model_method.col_type.type_cast( value ) )
+          else
+            logger.debug("Assignment via [#{operator}] to [#{value}] (CAST [#{model_method.col_type.cast_type.inspect}])")
+
+            #TODO - investigate what we can do with model_method.col_type.sql_type
+            record.send( operator + '=', value)
+          end
+
         else
           logger.debug("Brute force assignment of value  #{value} => [#{operator}]")
           # brute force case for assignments without a column type (which enables us to do correct type_cast)
@@ -205,6 +231,7 @@ module DataShift
         logger.error("WARNING: No assignment possible on #{record.inspect} using [#{operator}]")
       end
     end
+
 
     def insistent_assignment(record, value, operator)
 

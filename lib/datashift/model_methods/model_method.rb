@@ -19,7 +19,7 @@ module DataShift
     # List of supported operator types e.g :assignment, :belongs_to, :has_one, :has_many etc
 
     def self.supported_types_enum
-      @type_enum ||= Set[:assignment, :belongs_to, :has_one, :has_many, :method]
+      @type_enum ||= Set[:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
       @type_enum
     end
 

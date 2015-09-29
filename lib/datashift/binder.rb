@@ -145,7 +145,7 @@ module DataShift
           bindings << binding
 
         else
-          add_missing(raw_col_data, col_index, "No operator or association found for Header #{raw_col_name}")
+          add_missing(raw_col_data, col_index, "No operator or association found for Header [#{raw_col_name}]")
         end
       end
 

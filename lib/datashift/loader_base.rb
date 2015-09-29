@@ -142,8 +142,8 @@ module DataShift
       end
 
       unless(binder.missing_bindings.empty?)
-        logger.warn("Following headings couldn't be mapped to #{load_object_class}")
-        binder.missing_bindings.each { |m| logger.warn("#{m.name} - Index (#{m.index})") }
+        logger.warn("Following headings couldn't be mapped to #{load_object_class}:")
+        binder.missing_bindings.each { |m| logger.warn("Heading [#{m.inbound_name}] - Index (#{m.inbound_index})") }
 
         fail MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}" if(strict)
       end

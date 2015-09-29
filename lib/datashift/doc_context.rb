@@ -33,6 +33,8 @@ module DataShift
 
       @headers  = DataShift::Headers.new(:na)
       @reporter = DataShift::Reporter.new
+
+      @errors = []
     end
 
     def klass=( klass )
@@ -95,14 +97,15 @@ module DataShift
       if(load_object)
         reporter.add_failed_object(load_object)
 
-        if(rollback && load_object.respond_to?('destroy') && !load_object.new_record?)
+        # TODO - make this behaviour configurable with soem ind of rollback setting/funciton
+        if(load_object.respond_to?('destroy') && !load_object.new_record?)
           klass = load_object.class
           load_object.destroy
           reset
         end
       end
       logger.error "Load failed while processing [#{context.method_binding.pp}]"
-      logger.error error_messages.join(' ; ')
+
     end
 
     # This method usually called during processing to avoid errors with associations like

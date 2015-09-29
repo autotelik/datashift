@@ -114,6 +114,11 @@ module DataShift
     def valid?
       false
     end
+
+    def pp
+      "No Binding Found : Row [#{inbound_index}] : Header [#{inbound_name}]"
+    end
+
   end
 
 end

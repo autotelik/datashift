@@ -12,6 +12,8 @@ module DataShift
 
   class Context
 
+    include DataShift::Logging
+
     attr_accessor :current_row_index, :populator, :doc_context
 
     attr_reader :data, :method_binding
