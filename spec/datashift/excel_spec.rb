@@ -8,7 +8,7 @@ module DataShift
     let(:excel) { Excel.new }
 
     it 'should reject .xlsx until spreedsheet gem supports it' do
-      expect { excel.open( ifixture_file('ProjectsSingleCategories.xlsx') ) }.to fail (Ole::Storage::FormatError)
+      expect { excel.open( ifixture_file('ProjectsSingleCategories.xlsx') ) }.to raise_error (Ole::Storage::FormatError)
     end
 
     it 'can open an existing spreadsheet' do

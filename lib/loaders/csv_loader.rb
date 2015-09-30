@@ -6,6 +6,8 @@
 # Details::   Specific loader to support CSV files.
 #
 #
+require_relative 'file_loader'
+
 module DataShift
 
   class CsvLoader < LoaderBase

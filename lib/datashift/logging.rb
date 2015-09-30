@@ -1,4 +1,4 @@
-# Copyright:: (c) Autotelik Media Ltd 2012
+# Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
 # Date ::     Aug 2012
 # License::   Free, Open Source. MIT.
@@ -6,6 +6,7 @@
 # Details::   Logging facilities for datashift.
 #
 require 'fileutils'
+require 'singleton'
 
 module DataShift
 

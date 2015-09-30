@@ -9,6 +9,8 @@
 #             Iterates over all the rows using mapped operations to assign row data to a database object,
 #             i.e pulls data from each column and sends to object.
 #
+require_relative 'file_loader'
+
 module DataShift
 
   class ExcelLoader < LoaderBase
