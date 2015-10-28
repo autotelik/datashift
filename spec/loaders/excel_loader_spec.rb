@@ -174,7 +174,7 @@ module  DataShift
       it 'should raise an error when mandatory columns missing' do
         loader = ExcelLoader.new(ifixture_file('ProjectsMultiCategories.xls') )
 
-        expect { loader.run(Project, nil, mandatory: %w(not_an_option must_be_there)) }.to raise_error(DataShift::MissingMandatoryError)
+        expect { loader.run(Project,  mandatory: %w(not_an_option must_be_there)) }.to raise_error(DataShift::MissingMandatoryError)
       end
     end
 

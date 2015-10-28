@@ -1,9 +1,7 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Aug 2011
+# Date ::     Aug 2015
 # License::   MIT
-#
-# Details::   Specs for CSV aspect of Active Record Loader
 #
 require File.dirname(__FILE__) + '/../spec_helper'
 
@@ -48,15 +46,15 @@ module  DataShift
         expect(loader.headers.idx).to eq 0
       end
 
-      it 'should process multiple associations from single column', fail: true do
-        expect(Project.find_by_title('001')).to be_nil
+      it 'should process multiple associations from single column' do
+        expect(Project.where(title: '001').first).to be_nil
         count = Project.count
 
         loader = CsvLoader.new( ifixture_file('csv/ProjectsSingleCategories.csv'))
 
         loader.run(Project)
 
-        expect(loader.loaded_count).to eq 3
+        expect(loader.loaded_count).to eq 4
         expect(loader.loaded_count).to eq (Project.count - count)
 
         { '001' => 2, '002' => 1, '003' => 3, '099' => 0 }.each do|title, expected|
@@ -76,10 +74,9 @@ module  DataShift
         loader.loaded_count.should == (Project.count - count)
 
         { '004' => 3, '005' => 1, '006' => 0, '007' => 1 }.each do|title, expected|
-          project = Project.where(title: title)
+          project = Project.where(title: title).first
 
-          project.should_not be_nil
-
+          expect(project).to_not be_nil
           expect(project.categories.size).to eq expected
         end
       end
@@ -94,7 +91,7 @@ module  DataShift
         loader.loaded_count.should > 3
 
         { '004' => 4, '005' => 1, '006' => 0, '007' => 1 }.each do|title, expected|
-          project = Project.where(title: title)
+          project = Project.where(title: title).first
 
           project.should_not be_nil
 
@@ -104,17 +101,19 @@ module  DataShift
 
       it 'should process excel spreedsheet with extra undefined columns' do
         loader = CsvLoader.new(ifixture_file('csv/BadAssociationName.csv') )
-        lambda { loader.loader.run(Project) }.should_not raise_error
+        expect { loader.run(Project) }.to_not raise_error
       end
 
       it 'should NOT process excel spreedsheet with extra undefined columns when strict mode' do
         loader = CsvLoader.new( ifixture_file('csv/BadAssociationName.csv'), strict: true)
-        expect { loader.loader.run(Project) }.to raise_error(MappingDefinitionError)
+        expect { loader.run(Project) }.to raise_error(MappingDefinitionError)
       end
 
-      it 'should raise an error when mandatory columns missing' do
-        loader = CsvLoader.new(ifixture_file('csv/ProjectsMultiCategories.csv'), mandatory: %w(not_an_option must_be_there))
-        expect { loader.loader.run(Project) }.to raise_error(DataShift::MissingMandatoryError)
+      it 'should raise an error when mandatory columns missing', fail: true do
+        loader = CsvLoader.new(ifixture_file('csv/ProjectsMultiCategories.csv'))
+        expect {
+          loader.run(Project, mandatory: %w(not_an_option must_be_there))
+        }.to raise_error(DataShift::MissingMandatoryError)
       end
 
       #       it "should provide facility to set default values", :focus => true do

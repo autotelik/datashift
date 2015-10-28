@@ -25,6 +25,7 @@ public/**
 MissingAttachmentRecords
 MissingAttachmentRecords/*
 spec/logs
+spec/logs/**
 spec/fixtures/results
 spec/private
 spec/rails_sandbox

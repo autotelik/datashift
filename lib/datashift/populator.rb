@@ -41,10 +41,15 @@ module DataShift
     # Prepare the data to be populated, then assign to the Db record
 
     def prepare_and_assign(context, record, data)
-      prepare_data(context.method_binding, data)
-
-      assign(context, record)
+      prepare_and_assign_method_binding(context.method_binding, record, data)
     end
+
+    def prepare_and_assign_method_binding(method_binding, record, data)
+      prepare_data(method_binding, data)
+
+      assign(method_binding, record)
+    end
+
 
     def reset
       @value = nil
@@ -163,9 +168,7 @@ module DataShift
       [value, attribute_hash]
     end
 
-    def assign(context, record)
-
-      method_binding = context.method_binding
+    def assign(method_binding, record)
 
       model_method = method_binding.model_method
 
@@ -179,7 +182,7 @@ module DataShift
 
       elsif( model_method.operator_for(:has_many) )
 
-        assign_has_many(context, record)
+        assign_has_many(method_binding, record)
 
       elsif( model_method.operator_for(:has_one) )
 
@@ -334,9 +337,7 @@ module DataShift
 
     attr_writer :value, :attribute_hash
 
-    def assign_has_many(context, load_object)
-
-      method_binding = context.method_binding
+    def assign_has_many(method_binding, load_object)
 
       # there are times when we need to save early, for example before assigning to
       # has_and_belongs_to associations which require the load_object has an id for the join table

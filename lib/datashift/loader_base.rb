@@ -1,6 +1,6 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
-# Date ::     Aug 2010
+# Date ::     Aug 2015
 # License::   MIT
 #
 #  Details::  Base class for loaders, providing a process hook which populates a model,
@@ -25,35 +25,43 @@ module DataShift
     attr_reader :strict
 
     attr_accessor :doc_context
-    attr_accessor :binder
+    attr_accessor :binder, :mandatory
 
     # Options
     #
     #  :file_name       : Filename that will be loaded
     #  :verbose         : Verbose logging and to STDOUT
-    #  :strict          : Raise exceptions when no mapping found for non mandatory column headings
+    #  :strict          : Raise exceptions when issues like missing mandatory columns
     #
     def initialize( options = {} )
 
       @file_name   = options[:file_name] || ''
 
       @doc_context = DocContext.new(NilClass)
+
       @binder      = Binder.new
+      @mandatory   = Mandatory.new
 
       logger.verbose if(options[:verbose])
 
-      @strict  = (options[:strict] == true)
+      @strict = (options[:strict] == true)
     end
 
     # Options
+    #    [:object]    : Process against an existing object, otherwise new objects created
+    #    [:mandatory] : List of columns that must be present in headers
     #
-    def run(object_class, object = nil, options = {})
+    def run(object_class, options = {})
+
+      logger.info("Loading options objects of type #{load_object_class}")
 
       @doc_context = DocContext.new(object_class)
 
+      @mandatory = Mandatory.new(options[:mandatory]) if(options[:mandatory])
+
       logger.info("Loading objects of type #{load_object_class}")
 
-      doc_context.reset(object)
+      doc_context.reset(options[:object])
 
       # no implementation - derived classes must implement
       perform_load( options )
@@ -63,7 +71,6 @@ module DataShift
     #
     def reset(object = nil)
       doc_context.reset(object)
-      @binder = Binder.new
     end
 
     def abort_on_failure?
@@ -112,7 +119,6 @@ module DataShift
     # Options:
     #    [:strict]          : Raise an exception of any headers can't be mapped to an attribute/association
     #    [:ignore]          : List of column headers to ignore when building operator map
-    #    [:mandatory]       : List of columns that must be present in headers
     #
     #    [:force_inclusion] : List of columns that do not map to any operator but should be includeed in processing.
     #
@@ -127,11 +133,11 @@ module DataShift
     #
     def bind_headers( headers, options = {} )
 
-      mandatory = options[:mandatory] || []
+      logger.info("Binding #{headers.size} inbound headers to #{load_object_class.name}")
 
-      strict = (options[:strict] == true)
+      @strict = options[:strict] if(options[:strict])
 
-      @binder = DataShift::Binder.new
+      @binder ||= DataShift::Binder.new
 
       begin
         binder.map_inbound_headers(load_object_class, headers, options )
@@ -148,15 +154,20 @@ module DataShift
         fail MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}" if(strict)
       end
 
-      unless(mandatory.empty? || binder.contains_mandatory?(mandatory) )
-        binder.missing_mandatory(mandatory).each do |er|
+      unless(mandatory.contains_all?(binder) )
+        mandatory.missing_columns.each do |er|
           logger.error "Mandatory column missing - expected column '#{er}'"
         end
+
         fail MissingMandatoryError, 'Mandatory columns missing  - please fix and retry.'
       end
 
       binder
     end
+
+    # We can bind inbound 'fields' to associatde model columns, from any source, not just headers
+    alias_method :bind_fields, :bind_headers
+
 
     #     # Process columns with a default value specified
     #     def process_defaults()

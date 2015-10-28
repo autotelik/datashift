@@ -78,12 +78,8 @@ module DataShift
     end
 
     def success
-
       reporter.add_loaded_object(load_object)
-
-      reporter.success_inbound_count += 1
-
-      reporter.processed_object_count += 1
+      logger.info("Successfully processed #{reporter.success_inbound_count}")
     end
 
     # Loading failed. Store a failed object and if requested roll back (destroy) the current load object
@@ -104,8 +100,6 @@ module DataShift
           reset
         end
       end
-      logger.error "Load failed while processing [#{context.method_binding.pp}]"
-
     end
 
     # This method usually called during processing to avoid errors with associations like
@@ -128,6 +122,7 @@ module DataShift
 
       unless(save)
         failure( current_errors )
+        logger.error "Load failed while processing [#{context.method_binding.pp}]"
       else
         logger.info("Successfully SAVED Object [#{load_object.id}] for [#{context.method_binding.pp}]")
         success

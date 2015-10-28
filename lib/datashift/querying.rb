@@ -16,6 +16,9 @@ module DataShift
 
   module  Querying
 
+    include DataShift::Logging
+    extend DataShift::Logging
+
     # Return arrays 'where' clause field(s), and the value(s) to search for
     #
     # If not contained within inbound_data, check the Inbound Column headings
@@ -101,38 +104,41 @@ module DataShift
 
       split_on_prefix = options[:add_prefix]
 
-      z = (split_on_prefix) ? "#{split_on_prefix}#{search_term}" : search_term
+      find_search_term = (split_on_prefix) ? "#{split_on_prefix}#{search_term}" : search_term
 
-      logger.info("Scanning for record where #{klazz}.#{field} ~=  #{z}")
+      logger.info("Scanning for record where #{klazz}.#{field} ~=  #{find_search_term}")
 
-      record = search_for_record(klazz, field, z)
+      begin
 
-      # try individual portions of search_term, front -> back i.e "A_B_C_D" => A, B, C etc
-      search_term.split(split_on).each do |str|
-        z = (split_on_prefix) ? "#{split_on_prefix}#{str}" : str
-        record = search_for_record(klazz, field, z, options)
-        break if record
-      end unless(record)
+        record = search_for_record(klazz, field, find_search_term)
 
-      # this time try incrementally scanning i.e "A_B_C_D" => A, A_B, A_B_C etc
-      search_term.split(split_on).inject('') do |str, term|
-        z = (split_on_prefix) ? "#{split_on_prefix}#{str}#{split_on}#{term}" : "#{str}#{split_on}#{term}"
-        record = search_for_record(klazz, field, z, options)
-        break if record
-        term
-      end unless(record)
+        unless(record)
+          logger.info("Nothing found - trying split filename to terms on [#{split_on}]")
 
-      if(record && record.respond_to?(field))
-        logger.info("Record found for #{klazz}.#{field} : #{record.send(field)}" )
+          # try individual portions of search_term, front -> back i.e "A_B_C_D" => A, B, C etc
+          search_term.split(split_on).each do |str|
+            find_search_term = (split_on_prefix) ? "#{split_on_prefix}#{str}" : str
+            logger.info("Scanning by term for record where #{field} ~=  #{find_search_term}")
+            record = search_for_record(klazz, field, find_search_term, options)
+            break if record
+          end
+        end
+
+        # this time try incrementally scanning i.e "A_B_C_D" => A, A_B, A_B_C etc
+        search_term.split(split_on).inject('') do |str, term|
+          z = (split_on_prefix) ? "#{split_on_prefix}#{str}#{split_on}#{term}" : "#{str}#{split_on}#{term}"
+          record = search_for_record(klazz, field, z, options)
+          break if record
+          term
+        end unless(record)
+
+        return record
+      rescue => e
+        logger.error("Exception attempting to find a record for [#{search_term}] on #{klazz}.#{field}")
+        logger.error e.backtrace
+        logger.error e.inspect
+        return nil
       end
-
-      return record
-    rescue => e
-      logger.error("Exception attempting to find a record for [#{search_term}] on #{klazz}.#{field}")
-      logger.error e.backtrace
-      logger.error e.inspect
-      return nil
-
     end
 
     def get_record_by!(klazz, field, search_terms, split_on = ' ', options = {} )

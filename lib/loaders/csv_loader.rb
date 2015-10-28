@@ -35,11 +35,9 @@ module DataShift
     #
     #   [:dummy]           : Perform a dummy run - attempt to load everything but then roll back
     #
-    #   [:sheet_number]    : Default is 0. The index of the Excel Worksheet to use.
     #
     #  Options passed through  to :  populate_method_mapper_from_headers
     #
-    #   [:mandatory]       : Array of mandatory column names
     #   [:force_inclusion] : Array of inbound column names to force into mapping
     #   [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
 
@@ -59,7 +57,11 @@ module DataShift
 
       parsed_file = CSV.read(file_name)
 
-      set_headers( DataShift::Headers.new(:csv, 0, parsed_file.shift ) )
+      # assume headers are row 0
+      header_idx = 0
+      header_row = parsed_file.shift
+
+      set_headers( DataShift::Headers.new(:csv, header_idx, header_row) )
 
       # maps list of headers into suitable calls on the Active Record class
       bind_headers(headers, options.merge({ strict: @strict }) )
@@ -68,26 +70,14 @@ module DataShift
         puts 'Dummy Run - Changes will be rolled back' if options[:dummy]
 
         load_object_class.transaction do
-          puts "\n\n\nLoading from CSV file: #{file_name}"
-          puts "Processing #{parsed_file.size} rows"
+          logger.info "Processing #{parsed_file.size} rows"
 
           parsed_file.each_with_index do |row, i|
             current_row_idx = i
 
             doc_context.current_row = row
 
-            next if(current_row_idx == headers.idx)
-
-            # Excel num_rows seems to return all 'visible' rows, which appears to be greater than the actual data rows
-            # (TODO - write spec to process .xls with a huge number of rows)
-            #
-            # manually have to detect when actual data ends, this isn't very smart but
-            # got no better idea than ending once we hit the first completely empty row
-            break if(!allow_empty_rows && (row.nil? || row.empty?))
-
             logger.info "Processing Row #{i} : #{@current_row}"
-
-            contains_data = false
 
             # Iterate over the bindings, creating a context from data in associated Excel column
 
@@ -101,8 +91,6 @@ module DataShift
 
               context = doc_context.create_context(method_binding, i, value)
 
-              contains_data ||= context.contains_data?
-
               logger.info "Processing Column #{method_binding.inbound_index} (#{method_binding.pp})"
 
               begin
@@ -115,10 +103,9 @@ module DataShift
               end
             end
 
-            # manually have to detect when actual data ends
-            break if(!allow_empty_rows && contains_data == false)
-
-            unless(doc_context.errors? && doc_context.all_or_nothing?)
+            if(doc_context.errors? && doc_context.all_or_nothing?)
+              logger.warn "Row #{current_row_idx} contained errors and has been skipped"
+            else
               doc_context.save_and_report
             end
 

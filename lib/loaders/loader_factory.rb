@@ -39,19 +39,6 @@ module DataShift
         end
       end
 
-      # OPTIONS :
-      #
-      #  [:dummy]         : Perform a dummy run - attempt to load everything but then roll back
-      #
-      #  strict           : Raise an exception of any headers can't be mapped to an attribute/association
-      #  ignore           : List of column headers to ignore when building operator map
-      #  mandatory        : List of columns that must be present in headers
-      #
-      #  force_inclusion  : List of columns that do not map to any operator but should be includeed in processing.
-      #                     This provides the opportunity for loaders to provide specific methods to handle these fields
-      #                     when no direct operator is available on the model or it's associations
-      #
-
     end
   end
 end

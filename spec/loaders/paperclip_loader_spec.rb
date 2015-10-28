@@ -1,8 +1,7 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
 # License::   MIT
 #
-# Details::   Specs for base class Loader
 #
 require File.dirname(__FILE__) + '/../spec_helper'
 
@@ -23,62 +22,67 @@ describe 'PaperClip Bulk Loader' do
     end
   end
 
-  before(:each) do
-    @attachment_klass = Digital
+  let(:path) { File.join(fixtures_path, 'images') }
+  let(:common_options) { { verbose: true } }
 
-    @common_options = { verbose: true }
-
-    @attachment_path = File.join(fixtures_path, 'images')
+  # Owner.where(:name = 'jeff mills').first.digitals << DigitalAttachmentLoadedFromPath
+  let(:attachment_options) do
+    {
+      attach_to_klass: Owner,
+      attach_to_find_by_field: :name,
+      attach_to_field: :digitals
+    }
   end
 
-  it 'should create a new paperclip loader and define attachment class' do
-    loader = DataShift::Paperclip::AttachmentLoader.new(@attachment_klass, nil, @common_options)
+  let(:paper_clip_attachment_class) { Digital }
 
-    loader.load_object_class.should == Digital
-    loader.load_object.should be_a Digital
-
-    loader.attach_to_klass.should.nil?
+  it 'should create a new paperclip loader to load a directory of attachments' do
+    loader = DataShift::Paperclip::AttachmentLoader.new(path, common_options)
+    expect(loader.file_name).to eq path
+    expect(loader.attach_to_klass).to be_nil
+    expect(loader.attach_to_find_by_field).to be_nil
+    expect(loader.attach_to_field).to be_nil
   end
 
-  it 'should create loader,define attachment class and define class to attach to' do
-    opts = { attach_to_klass: Owner }.merge(@common_options)
+  it 'should create loader and define class to attach to' do
+    loader = DataShift::Paperclip::AttachmentLoader.new(path, attachment_options.merge(common_options))
 
-    loader = DataShift::Paperclip::AttachmentLoader.new(@attachment_klass, nil, opts)
-
-    loader.attach_to_klass.should == Owner
+    expect(loader.attach_to_klass).to eq Owner
+    expect(loader.attach_to_find_by_field).to  eq :name
+    expect(loader.attach_to_field).to eq :digitals
   end
 
-  it 'should bulk load from a directory file system' do
-    # these names should be included in the attachment file name somewhere
-    %w(DEMO_001 DEMO_002 DEMO_003 DEMO_004).each do |n|
-      Owner.create( name: n )
+  context("Loading attachments") do
+
+    let(:owner_names) { %w(DEMO_001 DEMO_002 DEMO_003 DEMO_004) }
+
+    before(:each) do
+      # these names should be included in the attachment file name somewhere
+      owner_names.each do |n|
+        Owner.create( name: n )
+      end
     end
 
-    opts = {  attach_to_klass: Owner,
-              attach_to_find_by_field: :name,
-              attach_to_field: :digitals,
-              split_file_name_on: '_'
-    }.merge(@common_options)
+    it 'should bulk load from a directory file system' do
 
-    loader = DataShift::Paperclip::AttachmentLoader.new(@attachment_klass, nil, opts)
+      loader = DataShift::Paperclip::AttachmentLoader.new(path, attachment_options.merge(common_options))
 
-    loader.process_from_filesystem(@attachment_path, opts)
-  end
+      loader.run(Digital, split_file_name_on: '_')
 
-  it 'should handle not beign able to find matching record' do
-    # these names should be included in the attachment file name somewhere
-    names = %w(DEMO_001 DEMO_002 DEMO_003 DEMO_004)
+      puts Owner.all.collect(&:digitals).inspect
 
-    names.each do |n|
-      Owner.create( name: n )
     end
 
-    opts = { attach_to_klass: Owner, attach_to_find_by_field: :name }.merge(@common_options)
+    it 'should handle not being able to find matching record' do
 
-    loader = DataShift::Paperclip::AttachmentLoader.new(@attachment_klass, nil, opts)
+      opts = { attach_to_klass: Owner, attach_to_find_by_field: :name }.merge(common_options)
 
-    loader.process_from_filesystem(@attachment_path, opts)
+      loader = DataShift::Paperclip::AttachmentLoader.new(path, opts)
 
-    expect(Dir.glob('MissingAttachmentRecords/*.jpeg', File::FNM_CASEFOLD).size).to eq names.size
+      loader.run(Digital, split_file_name_on: '_')
+
+      expect(Dir.glob('MissingAttachmentRecords/*.jpeg', File::FNM_CASEFOLD).size).to eq owner_names.size
+    end
   end
+
 end

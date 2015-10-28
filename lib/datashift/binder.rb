@@ -94,7 +94,7 @@ module DataShift
 
       reset
 
-      columns.each_with_index do |col_data, col_index|
+      [*columns].each_with_index do |col_data, col_index|
         raw_col_data = col_data.to_s
 
         if(raw_col_data.nil? || raw_col_data.empty?)
@@ -145,12 +145,17 @@ module DataShift
           bindings << binding
 
         else
+          logger.debug("No operator or association found for Header [#{raw_col_name}]")
+
           add_missing(raw_col_data, col_index, "No operator or association found for Header [#{raw_col_name}]")
         end
       end
 
       bindings
     end
+
+    # Essentially we map any string collection of field names, not just headers from files
+    alias_method :map_inbound_fields, :map_inbound_headers
 
     def add_missing(col_data, col_index, reason)
       logger.warn(reason)
@@ -186,17 +191,6 @@ module DataShift
     # The true operator names discovered from model
     def operator_names
       bindings.collect( &:operator )
-    end
-
-    # Returns true if discovered methods contain every operator in mandatory_list
-    def contains_mandatory?( mandatory_list )
-      a = [*mandatory_list].collect(&:downcase)
-      b = operator_names.collect(&:downcase)
-      (a - b).empty?
-    end
-
-    def missing_mandatory( mandatory_list )
-      [ [*mandatory_list] - operator_names].flatten
     end
 
   end

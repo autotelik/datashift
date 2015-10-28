@@ -29,15 +29,22 @@ module DataShift
       @processed_object_count = 0
       @loaded_objects = []
       @failed_objects = []
+
       @success_inbound_count = 0
       @failed_inbound_count = 0
     end
 
     def add_loaded_object(object)
+      @success_inbound_count += 1
+      @processed_object_count += 1
+
       @loaded_objects << object.id unless(object.nil? || @loaded_objects.include?(object))
     end
 
     def add_failed_object(object)
+      @failed_inbound_count += 1
+      @processed_object_count += 1
+
       @failed_objects << object unless( object.nil? || @failed_objects.include?(object))
     end
 
@@ -50,9 +57,12 @@ module DataShift
       puts "#{loaded_objects.size}\tdatabase objects were successfully processed."
       puts "#{success_inbound_count}\tinbound rows were successfully processed."
 
-      puts 'There were NO failures.' if failed_objects.empty?
-
-      puts "WARNING : Check logs : #{failed_objects.size} rows contained errors" unless failed_objects.empty?
+      if(failed_inbound_count == 0)
+        puts 'There were NO failures.'
+      else
+        puts "WARNING : There were Failures - Check logs\n#{failed_inbound_count} rows contained errors"
+        puts "#{failed_objects.size} objects could not be saved to DB"
+      end
     end
 
   end

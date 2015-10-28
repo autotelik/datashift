@@ -42,7 +42,12 @@ module DataShift
 
       logger.debug("Adding Attachment for #{klass.inspect}")
 
-      create_paperclip_attachment(klass, attachment_path, record, attach_to_record_field, attachment_options)
+      attachment = create_paperclip_attachment(klass, attachment_path, attachment_options)
+
+      if(attachment && attach_to_record_field)
+        DataShift::Populator.new.prepare_and_assign(attach_to_record_field, record, attachment)
+      end
+
     end
 
     # Set of file extensions ImageMagik can process so default glob

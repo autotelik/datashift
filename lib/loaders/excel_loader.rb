@@ -28,7 +28,7 @@ module DataShift
     def initialize( file_name, options = {} )
       super( options )
 
-      @file_name   = file_name
+      @file_name = file_name
     end
 
     #  Options
@@ -43,7 +43,6 @@ module DataShift
     #
     #  Options passed through  to :  populate_method_mapper_from_headers
     #
-    #   [:mandatory]       : Array of mandatory column names
     #   [:force_inclusion] : Array of inbound column names to force into mapping
     #   [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
 

@@ -34,7 +34,11 @@ module DataShift
     private
 
     def method_missing(method, *args, &block)
-      @subject.send(method, *args, &block)
+      if(@subject.respond_to? method)
+        @subject.send(method, *args, &block)
+      else
+        fail RuntimeError.new("Cannot call [#{method}] on : #{subject.class.name}")
+      end
     end
 
   end
