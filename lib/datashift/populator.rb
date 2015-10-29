@@ -50,7 +50,6 @@ module DataShift
       assign(method_binding, record)
     end
 
-
     def reset
       @value = nil
       @previous_value = nil
@@ -219,7 +218,7 @@ module DataShift
           else
             logger.debug("Assignment via [#{operator}] to [#{value}] (CAST [#{model_method.col_type.cast_type.inspect}])")
 
-            #TODO - investigate what we can do with model_method.col_type.sql_type
+            # TODO: - investigate what we can do with model_method.col_type.sql_type
             record.send( operator + '=', value)
           end
 
@@ -234,7 +233,6 @@ module DataShift
         logger.error("WARNING: No assignment possible on #{record.inspect} using [#{operator}]")
       end
     end
-
 
     def insistent_assignment(record, value, operator)
 

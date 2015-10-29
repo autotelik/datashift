@@ -21,7 +21,8 @@ module DataShift
 
     # Return arrays 'where' clause field(s), and the value(s) to search for
     #
-    # If not contained within inbound_data, check the Inbound Column headings
+    # If not contained
+    # within inbound_data, check the Inbound Column headings
     # .
     # Where field embedded in row ,takes precedence over field in column heading
     #

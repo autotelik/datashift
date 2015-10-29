@@ -16,11 +16,11 @@ describe 'DataShift' do
   end
 
   it 'should provide gem name' do
-    DataShift.gem_name.should == 'datashift'
+    expect(DataShift.gem_name).to eq 'datashift'
   end
 
   it 'should provide root_path' do
-    DataShift.root_path.should_not be_empty
+    expect(DataShift.root_path).to_not be_empty
   end
 
   it 'should provide a log' do

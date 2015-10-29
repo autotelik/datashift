@@ -15,7 +15,6 @@ module DataShift
       @remove_list = []
     end
 
-
     # Helpers for dealing with Active Record models and collections
     #
     # Options:
@@ -135,8 +134,6 @@ module DataShift
 
       remove_list
     end
-
-
 
   end
 

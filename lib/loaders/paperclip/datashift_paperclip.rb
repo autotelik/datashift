@@ -100,9 +100,9 @@ module DataShift
 
         @attachment
       else
-        logger.error("Problem creating and saving Paperclip Attachment")
+        logger.error('Problem creating and saving Paperclip Attachment')
         logger.error(@attachment.errors.messages.inspect)
-        raise CreateAttachmentFailed.new('PaperClip error - Problem saving Attachment')
+        fail CreateAttachmentFailed.new('PaperClip error - Problem saving Attachment')
       end
     end
 

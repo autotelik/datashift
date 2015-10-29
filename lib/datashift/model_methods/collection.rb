@@ -92,7 +92,6 @@ module DataShift
         nil
       end
 
-
       def get( klass )
         @by_optype_and_operator[klass.to_sym]
       end

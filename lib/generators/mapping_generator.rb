@@ -50,17 +50,19 @@ module DataShift
     #
     def generate(klass_or_name = nil, options = {})
 
+      config = options.dup
+
       klass = klass_or_name.is_a?(String) ? MapperUtils.class_from_string_or_raise( klass_or_name ) : klass_or_name
 
       mappings = ''
 
       if(klass)
 
-        mappings = options[:title] || "#{klass.name}:" + "\n"
+        mappings = config[:title] || "#{klass.name}:" + "\n"
 
-        options[:with] = op_types_in_scope( options )
+        config[:with] = op_types_in_scope( config )
 
-        to_headers(klass, options)
+        to_headers(klass, config)
 
         if(options[:model_as_dest])
           headers.each_with_index { |s, i|  mappings += "       #srcs_column_heading_#{i}: #{s}\n" }
@@ -69,7 +71,7 @@ module DataShift
         end
       else
 
-        mappings = options[:title] || MappingGenerator.title
+        mappings = config[:title] || MappingGenerator.title
         mappings += <<EOS
     # source_column_heading_0: dest_column_heading_0
     # source_column_heading_1: dest_column_heading_1
@@ -78,10 +80,10 @@ module DataShift
 EOS
       end
 
-      if(options[:file])
-        logger.info("Generating Mapping File [#{options[:file]}]")
+      if(config[:file])
+        logger.info("Generating Mapping File [#{config[:file]}]")
 
-        File.open(options[:file], 'w')  { |f| f << mappings  }
+        File.open(config[:file], 'w') { |f| f << mappings }
       end
 
       mappings
@@ -119,7 +121,7 @@ EOS
         headers.each_with_index { |s, i|  mappings += "       #{s}: #dest_column_heading_#{i}\n" }
       end
 
-      File.open(options[:file], 'w')  { |f| f << mappings  } if(options[:file])
+      File.open(options[:file], 'w') { |f| f << mappings } if(options[:file])
 
       mappings
 

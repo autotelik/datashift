@@ -1,0 +1,4 @@
+value_as_string,Value as Text,value as datetime,value_as_boolean,value_as_double
+001 Demo string,blah blah,2011-02-14,1.00,320.00
+002 Loads via Jruby,,2011-03-23,0.00,30.00
+003 Can handle different column naming styles,,2011-05-19,TRUE,520.00

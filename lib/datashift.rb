@@ -63,7 +63,7 @@ module DataShift
     # Define require search paths, any dir in here will be added to LOAD_PATH
 
     loader_paths.each do |base|
-      $LOAD_PATH.unshift base  if File.directory?(base)
+      $LOAD_PATH.unshift base if File.directory?(base)
       Dir[File.join(base, '**', '**')].each do |p|
         $LOAD_PATH.unshift p if File.directory? p
       end
@@ -78,9 +78,7 @@ module DataShift
 
     require_libs.each do |base|
       Dir[File.join(library_path, base, '*.rb')].each do |rb|
-        unless File.directory? rb
-          require_relative rb
-        end
+        require_relative rb unless File.directory? rb
       end
     end
   end
@@ -106,9 +104,9 @@ module DataShift
 
 end
 
-#require_relative 'datashift/delimiters'
-#require_relative 'datashift/guards'
-#require_relative 'loaders/file_loader'
+# require_relative 'datashift/delimiters'
+# require_relative 'datashift/guards'
+# require_relative 'loaders/file_loader'
 
 DataShift.require_libraries
 
@@ -124,7 +122,7 @@ module DataShift
 
     class Object
       def add_to_classpath(path)
-        $CLASSPATH << File.join( DataShift.root_path, 'lib', path.gsub('\\', '/') )
+        $CLASSPATH << File.join( DataShift.root_path, 'lib', path.tr('\\', '/') )
       end
     end
   end

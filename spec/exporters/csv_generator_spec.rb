@@ -37,7 +37,7 @@ module  DataShift
       headers = csv[0]
 
       %w(title value_as_string value_as_text value_as_boolean value_as_datetime value_as_integer value_as_double).each do |check|
-        headers.include?(check).should == true
+        expect(headers.include?(check)).to eq  true
       end
     end
 
@@ -61,7 +61,7 @@ module  DataShift
       headers = csv[0]
 
       %w(owner milestones loader_releases versions categories).each do |check|
-        headers.include?(check).should == true
+        expect(headers.include?(check)).to eq  true
       end
     end
 

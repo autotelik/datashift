@@ -41,7 +41,7 @@ module DataShift
 
         Project.create( value_as_string: 'Value as String', value_as_boolean: true,	value_as_double: 75.672)
 
-        Project.count.should == count + 1
+        expect(Project.count).to eq  count + 1
 
         exporter.export(Project.all)
 
@@ -51,7 +51,7 @@ module DataShift
 
         File.foreach(expected) {}
         count = $INPUT_LINE_NUMBER
-        count.should == Project.count + 1
+        expect(count).to eq Project.count + 1
       end
 
       it 'should handle bad params to export' do
@@ -91,7 +91,7 @@ module DataShift
 
         File.foreach(expected) {}
         count = $INPUT_LINE_NUMBER
-        count.should == Project.count + 1
+        expect(count).to eq  Project.count + 1
       end
     end
 
@@ -114,7 +114,7 @@ module DataShift
 
         File.foreach(expected) {}
         count = $INPUT_LINE_NUMBER
-        count.should == basic_projects + 2
+        expect(count).to eq  basic_projects + 2
       end
 
       it 'should include headers and association names in row 0' do

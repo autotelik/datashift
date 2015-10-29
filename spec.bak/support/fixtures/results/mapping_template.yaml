@@ -1,0 +1,15 @@
+Project:
+       title: #dest_column_heading_0
+       value_as_string: #dest_column_heading_1
+       value_as_text: #dest_column_heading_2
+       value_as_boolean: #dest_column_heading_3
+       value_as_datetime: #dest_column_heading_4
+       value_as_integer: #dest_column_heading_5
+       value_as_double: #dest_column_heading_6
+       user_id: #dest_column_heading_7
+       user: #dest_column_heading_8
+       owner: #dest_column_heading_9
+       milestones: #dest_column_heading_10
+       loader_releases: #dest_column_heading_11
+       versions: #dest_column_heading_12
+       categories: #dest_column_heading_13

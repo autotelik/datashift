@@ -40,7 +40,6 @@ module DataShift
 
     end
 
-
     # Create CSV file representing supplied Model
     #
     # Options

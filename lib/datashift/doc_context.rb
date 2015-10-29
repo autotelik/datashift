@@ -41,6 +41,7 @@ module DataShift
       @klass = klass
       reset
     end
+
     # Reset the database object to be populated
     #
     def reset(object = nil)
@@ -93,7 +94,7 @@ module DataShift
       if(load_object)
         reporter.add_failed_object(load_object)
 
-        # TODO - make this behaviour configurable with soem ind of rollback setting/funciton
+        # TODO: - make this behaviour configurable with soem ind of rollback setting/funciton
         if(load_object.respond_to?('destroy') && !load_object.new_record?)
           klass = load_object.class
           load_object.destroy

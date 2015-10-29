@@ -40,7 +40,7 @@ module DataShift
 
       expect(excel.worksheets.size).to eq 1
 
-      excel.worksheet(0).name.should == 'Project'
+      expect(excel.worksheet(0).name).to eq  'Project'
 
       headers = excel.worksheets[0].row(0)
 
@@ -69,12 +69,12 @@ module DataShift
 
       expect(excel.worksheets.size).to eq 1
 
-      excel.worksheet(0).name.should == 'Project'
+      expect(excel.worksheet(0).name).to eq  'Project'
 
       headers = excel.worksheets[0].row(0)
 
       %w(owner milestones loader_releases versions categories).each do |check|
-        headers.include?(check).should == true
+        expect(headers.include?(check)).to eq  true
       end
     end
 
@@ -94,12 +94,12 @@ module DataShift
 
       expect(excel.worksheets.size).to eq 1
 
-      excel.worksheet(0).name.should == 'Project'
+      expect( excel.worksheet(0).name).to eq  'Project'
 
       headers = excel.worksheets[0].row(0)
 
-      headers.include?('title').should == true
-      headers.include?('owner').should == true
+      expect(headers.include?('title')).to eq  true
+      expect(headers.include?('owner')).to eq  true
 
       %w(milestones loader_releases versions categories).each do |check|
         headers.should_not include check
@@ -122,16 +122,16 @@ module DataShift
 
       expect(excel.worksheets.size).to eq 1
 
-      excel.worksheet(0).name.should == 'Project'
+      expect(excel.worksheet(0).name).to eq  'Project'
 
       headers = excel.worksheets[0].row(0)
 
       %w(title loader_releases owner categories).each do |check|
-        headers.should include check
+        expect(headers).to include check
       end
 
       %w(milestones versions).each do |check|
-        headers.should_not include check
+        expect(headers).to_not include check
       end
     end
 
@@ -151,7 +151,7 @@ module DataShift
 
       expect(excel.worksheets.size).to eq 1
 
-      excel.worksheet(0).name.should == 'Project'
+      expect(excel.worksheet(0).name).to eq  'Project'
 
       headers = excel.worksheets[0].row(0)
 

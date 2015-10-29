@@ -40,6 +40,7 @@ module DataShift
     def self.jruby?
       RUBY_PLATFORM == 'java'
     end
+
     def self.mac?
       RbConfig::CONFIG['target_os'] =~ /darwin/i
     end

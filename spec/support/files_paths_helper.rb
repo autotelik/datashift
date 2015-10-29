@@ -21,7 +21,7 @@ RSpec.configure do |_config|
     end
   end
 
-  def capture(stream)
+  def capture_stream(stream)
     begin
       stream = stream.to_s
       eval "$#{stream} = StringIO.new"
@@ -34,8 +34,6 @@ RSpec.configure do |_config|
     result
   end
 
-  alias :silence :capture
-
   def fixtures_path
     File.join(rspec_datashift_root, 'fixtures')
   end
@@ -46,6 +44,11 @@ RSpec.configure do |_config|
 
   def results_path
     File.join(fixtures_path, 'results')
+  end
+
+
+  def datashift_thor_root
+    @datashift_thor_root ||= File.expand_path('../../../lib/tasks', __FILE__)
   end
 
   # Return location of an expected results file and ensure tree clean before test

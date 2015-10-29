@@ -71,7 +71,7 @@ module  DataShift
         count = Project.count
         loader.run(Project)
 
-        loader.loaded_count.should == (Project.count - count)
+        expect(loader.loaded_count).to eq  (Project.count - count)
 
         { '004' => 3, '005' => 1, '006' => 0, '007' => 1 }.each do|title, expected|
           project = Project.where(title: title).first
@@ -137,10 +137,10 @@ module  DataShift
       #
       #         p.should_not be_nil
       #
-      #         p.value_as_string.should == 'some default text'
-      #         p.value_as_double.should == 45.467
-      #         p.value_as_boolean.should == true
-      #         p.value_as_datetime.to_s(:db).should == texpected
+      #         p.value_as_string).to eq  'some default text'
+      #         p.value_as_double).to eq  45.467
+      #         p.value_as_boolean).to eq  true
+      #         p.value_as_datetime.to_s(:db)).to eq  texpected
       #
       #         # expected: "2012-09-17 10:00:52"
       #         # got: Mon Sep 17 10:00:52 +0100 2012 (using ==)
@@ -167,7 +167,7 @@ module  DataShift
       #
       #         p.should_not be_nil
       #
-      #         p.value_as_string.should == 'myprefixDemo stringmy post fix'
+      #         p.value_as_string).to eq  'myprefixDemo stringmy post fix'
       #       end
       #
       #       it "should provide facility to set default values via YAML configuration" do
@@ -181,7 +181,7 @@ module  DataShift
       #
       #         p.should_not be_nil
       #
-      #         p.value_as_string.should == "Default Project Value"
+      #         p.value_as_string).to eq  "Default Project Value"
       #       end
       #
       #

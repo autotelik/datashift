@@ -19,9 +19,9 @@ module DataShift
       attr_reader :targets
 
       def initialize
-        @targets, @names = [], []
+        @targets = []
+        @names = []
       end
-
 
       def add_file(target)
         unless(@names.include?(target))

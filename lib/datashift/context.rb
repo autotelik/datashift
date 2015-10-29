@@ -27,7 +27,7 @@ module DataShift
       @populator = ContextFactory.get_populator(method_binding)
     end
 
-    def set_node( method_binding  )
+    def set_node( method_binding )
       @method_binding = method_binding
     end
 
@@ -36,7 +36,7 @@ module DataShift
     end
 
     def next_update?
-      false   # for now create only
+      false # for now create only
       # TODO :
       # next = ProcessingRules.next_action(method_binding )
       # next == :update

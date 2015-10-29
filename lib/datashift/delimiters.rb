@@ -129,6 +129,7 @@ module DataShift
     def self.csv_delim=(x)
       set_csv_delim(x)
     end
+
     def self.set_csv_delim(x)
       @csv_delim = x
     end
@@ -147,7 +148,7 @@ module DataShift
     # seperator for identifying normal key value pairs
 
     def self.key_value_sep
-      @key_value_sep ||= '=>'   # TODO: check Ruby version and use appropriate has style ?
+      @key_value_sep ||= '=>' # TODO: check Ruby version and use appropriate has style ?
     end
 
     class << self

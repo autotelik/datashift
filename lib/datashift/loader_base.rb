@@ -168,7 +168,6 @@ module DataShift
     # We can bind inbound 'fields' to associatde model columns, from any source, not just headers
     alias_method :bind_fields, :bind_headers
 
-
     #     # Process columns with a default value specified
     #     def process_defaults()
     #       @populator.process_defaults

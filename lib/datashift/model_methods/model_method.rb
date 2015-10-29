@@ -108,7 +108,7 @@ module DataShift
       EOS
 
       if(col_type.respond_to?(:cast_type))
-        x +=<<-EOS
+        x += <<-EOS
       Col/SqlType   [#{col_type.class} - #{col_type.cast_type.class.name}]
         EOS
       end
@@ -145,8 +145,8 @@ module DataShift
       elsif(@col_type)
         begin
           Kernel.const_get(@col_type.type.to_s.classify)
-        rescue;
-          nil;
+        rescue
+          nil
         end
       end
     end

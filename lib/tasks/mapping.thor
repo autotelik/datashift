@@ -53,9 +53,9 @@ module Datashift
       mappings = String.new
 
       # if not from Excel and no model, still generate most basic mapping possible
-      mappings += mapper.generate(model, options) unless(model.nil? && options[:excel])
+      mappings += mapper.generate(model, options.dup) unless(model.nil? && options[:excel])
 
-      mappings += mapper.generate_from_excel(options[:excel], options) if(options[:excel])
+      mappings += mapper.generate_from_excel(options[:excel], options.dup) if(options[:excel])
 
       File.open(result, 'w') { |f| f << mappings }
 

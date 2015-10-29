@@ -61,8 +61,8 @@ module FileDefinitions
   # Set the delimiter to use when splitting a line - can be either a String, or a Regexp
   attr_writer :field_delim
 
-  def initialize( line  = nil )
-    @key   = ''
+  def initialize( line = nil )
+    @key = ''
     parse(line) unless line.nil?
   end
 
@@ -251,7 +251,7 @@ module FileDefinitions
             next unless(line && line.chomp!)
             x = new(line)
 
-            value = x.send( field.to_sym )    # the actual field value from the specified field column
+            value = x.send( field.to_sym ) # the actual field value from the specified field column
             next if value.nil?
 
             if( regex.nil? || value.match(regex) )
@@ -322,7 +322,7 @@ module FileDefinitions
 
       [lines, objects]
     end
-  end   # END class methods
+  end # END class methods
 
   # Open and parse a file, replacing a value in the specfied field.
   # Does not update the file itself. Does not write a new output file.

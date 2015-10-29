@@ -126,7 +126,7 @@ module DataShift
         @keep_only_pure_setters ||= Regexp.new(/^[a-zA-Z]\w+=/)
 
         setters = klass.instance_methods.grep(@keep_only_pure_setters).sort.collect( &:to_s )
-        setters.uniq    # TOFIX is this really required ?
+        setters.uniq # TOFIX is this really required ?
       end
 
       def self.column_types

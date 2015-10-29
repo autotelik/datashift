@@ -16,13 +16,9 @@ describe 'Thor high level command line tasks' do
     DataShift.load_commands
   end
 
-  before(:each) do
-    db_clear_connections
-  end
-
   context 'Mapping CLI' do
     before(:each) do
-      load File.join( rspec_datashift_root, 'lib/thor/mapping.thor')
+      load File.join( datashift_thor_root, 'mapping.thor')
 
       results_clear
     end
@@ -31,7 +27,7 @@ describe 'Thor high level command line tasks' do
       opts = { model: 'Project', result: "#{results_path}" }
 
       run_in(rails_sandbox_path) do
-        output = capture(:stdout) { Datashift::Mapping.new.invoke(:template, [], opts) }
+        output = capture_stream(:stdout) { Datashift::Mapping.new.invoke(:template, [], opts) }
 
         puts output
 
@@ -51,7 +47,7 @@ describe 'Thor high level command line tasks' do
   it 'should list available datashift thor tasks' do
     skip 'better understanding of testign thor'
 
-    # x = capture(:stdout){ Thor::Runner.start(["list"]) }
+    # x = capture_stream(:stdout){ Thor::Runner.start(["list"]) }
     # x.should start_with("datashift\n--------")
     # x.should =~ / csv -i/
     # x.should =~ / excel -i/
@@ -65,7 +61,7 @@ describe 'Thor high level command line tasks' do
 
     x = Thread.new {
       run_in(rails_sandbox) do
-        stdout = capture(:stdout){
+        stdout = capture_stream(:stdout){
           Thor::Runner.start(['datashift:import:excel', '-m', 'Project', '-i', ifixture_file('ProjectsSingleCategories.xls')])
         }
         puts stdout
@@ -95,7 +91,7 @@ describe 'Thor high level command line tasks' do
 
     puts "Running attach with: #{args}"
 
-    x = capture(:stdout) { Thor::Runner.start(['datashift:paperclip:attach', [], args]) }
+    x = capture_stream(:stdout) { Thor::Runner.start(['datashift:paperclip:attach', [], args]) }
 
     expect(x).to include ("datashift\n--------")
     # x.should =~ / csv -i/

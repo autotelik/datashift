@@ -46,7 +46,6 @@ module DataShift
       @excel.write( @filename )
     end
 
-
   end # ExcelGenerator
 
 end # DataShift
