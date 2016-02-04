@@ -32,22 +32,23 @@ module DataShift
         expect { exporter.export([123.45]) }.to raise_error(ArgumentError)
       end
 
-      it 'should export collection of model objects to csv file' do
+      it 'should export collection of model objects to csv file', fail: true do
         expected = result_file('exp_project_collection_spec.csv')
 
         exporter = DataShift::CsvExporter.new( expected )
-
-        count = Project.count
-
-        Project.create( value_as_string: 'Value as String', value_as_boolean: true,	value_as_double: 75.672)
-
-        expect(Project.count).to eq  count + 1
 
         exporter.export(Project.all)
 
         expect(File.exist?(expected)).to eq true
 
         puts "Can manually check file @ #{expected}"
+
+        csv = CSV.read(expected)
+
+        expect(csv[1]).to include Project.first.title
+
+        expect(csv[0].index 'title').to_not be_nil
+        expect(csv[0].index 'value_as_string').to_not be_nil
 
         File.foreach(expected) {}
         count = $INPUT_LINE_NUMBER
@@ -93,6 +94,27 @@ module DataShift
         count = $INPUT_LINE_NUMBER
         expect(count).to eq  Project.count + 1
       end
+
+      it 'should enable removal of certain columns', duff: true do
+        expected = result_file('project_remove_export_spec.csv')
+
+        options = { remove: [:title, :value_as_integer] }
+
+        exporter = DataShift::CsvExporter.new( expected )
+
+        exporter.export(Project.all, options)
+
+        expect(File.exist?(expected)).to eq true
+
+        csv = CSV.read(expected)
+
+        expect(csv[1]).to_not include Project.first.title
+
+        expect(csv[0].index 'title').to be_nil
+        expect(csv[0].index 'value_as_integer').to be_nil
+        expect(csv[0].index 'value_as_string').to_not be_nil
+      end
+
     end
 
     context 'with associations' do
@@ -135,7 +157,7 @@ module DataShift
         expect(user_inx).to be > -1
       end
 
-      it 'should export model & associations to single row', fail: true do
+      it 'should export model & associations to single row' do
         gen = DataShift::CsvExporter.new(expected)
 
         items = Project.all

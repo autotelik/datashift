@@ -30,17 +30,29 @@ module DataShift
     def to_headers(klass, options = {})
 
       # default to generating just klass columns
-      associations = options[:with] || [:assignment]
+      associations = if(options[:with])
+                       options[:with].dup
+                     else
+                       [:assignment]
+                     end
 
       @headers = Headers.new(klass)
 
       collection = ModelMethods::Manager.catalog_class(klass)
 
-      associations.each do |a|
-        collection.for_type(a).each { |md| @headers << "#{md.operator}" }
-      end if(collection)
+      if(collection)
 
-      remove_headers(options)
+        # make sure models columns are first, then other association types
+        if(associations.delete(:assignment))
+          collection.for_type(:assignment).each { |md| @headers << "#{md.operator}" }
+        end
+
+        associations.each do |a|
+          collection.for_type(a).each { |md| @headers << "#{md.operator}" }
+        end
+
+        remove_headers(options)
+      end
 
       headers
     end
@@ -78,21 +90,28 @@ module DataShift
     end
 
     # Prepare the operators types in scope based on options
-    # Supports :  {with: :all} -> all op types
+    # Default is assignment only
     #
-    #   DEFAULT : assignment only
+    # Options
+    #   with: [:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
+    #
+    #   with: :all -> all op types
+    #
+    #   exclude: - Remove any of [::assignment, :enum, :belongs_to, :has_one, :has_many, :method]
     #
     def op_types_in_scope( options = {} )
 
+      types_in_scope = []
+
       if(options[:with].nil?)
-        options[:with] = [:assignment]
+        types_in_scope << :assignment
       elsif options[:with] == :all
-        options[:with] = ModelMethod.supported_types_enum
+        types_in_scope += ModelMethod.supported_types_enum.to_a
       end
 
-      options[:with] -= [ *options[:exclude] ]
+      types_in_scope -= [ *options[:exclude] ]
 
-      options[:with]
+      types_in_scope
     end
 
     def self.rails_columns

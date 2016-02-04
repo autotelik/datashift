@@ -20,9 +20,10 @@ module DataShift
 
     # Create CSV file from set of ActiveRecord objects
     # Options :
-    # => :filename
-    # => :text_delim => Char to use to delim columns, useful when data contain embedded ','
-    # => ::methods => List of methods to additionally call on each record
+    # :filename
+    # :text_delim   => Char to use to delim columns, useful when data contain embedded ','
+    # :methods      => List of methods to additionally call on each record
+    # :remove       => List of columns to remove from generated template
     #
     def export(export_records, options = {})
 
@@ -43,12 +44,14 @@ module DataShift
 
       to_headers(first.class, options)
 
+      remove = options[:remove] || []
+
       CSV.open( (options[:filename] || filename), 'w' ) do |csv|
         csv << headers
 
         records.each do |r|
           next unless(r.is_a?(ActiveRecord::Base))
-          csv.ar_to_csv(r, options)
+          csv.ar_to_row(r, remove, options)
         end
       end
     end
@@ -65,7 +68,7 @@ module DataShift
     #
     # [:exclude] => List of association Types to exclude (:has_one etc)
     #
-    # [:remove] => List of headers to remove from generated template
+    # [:remove] => List of columns to remove from generated template
     #
     # [:remove_rails] => Remove standard Rails cols like :id, created_at etc
     #
@@ -77,32 +80,37 @@ module DataShift
 
       collection = ModelMethods::Manager.catalog_class(klass)
 
-      # with_associations - so over ride to default to :all if nothing specified
-      options[:with] = :all if(options[:with].nil?)
+      # We need to default to :all if nothing specified
+      options[:with] ||= :all
 
-      # sort out exclude etc
-      options[:with] = op_types_in_scope( options )
+      types_in_scope = op_types_in_scope( options )
 
-      to_headers(klass, options)
+      logger.info("Association Types in scope for export #{types_in_scope.inspect}")
+
+      to_headers(klass, { with: types_in_scope, remove: options[:remove] })
+
+      # do the main model first, as per to_headers
+      assignment = types_in_scope.delete(:assignment)
+
+      remove_list = options[:remove] || []
 
       CSV.open( (options[:filename] || filename), 'w' ) do |csv|
         csv << headers
 
-        records.each do |obj|
+        records.each do |record|
           row = []
 
+          row += csv.ar_to_csv(record, remove_list, options) if(assignment)
+
           # group columns by operator type
-          op_types_in_scope( options ).each do |op_type|
-            collection.for_type(op_type).each do |mm|
-              # pack association instances into single column
-              if(ModelMethod.is_association_type?(op_type))
-                row << record_to_column( obj.send( mm.operator ))
-              else
-                row << escape_for_csv( obj.send( mm.operator ) )
-              end
+          types_in_scope.each do |op_type|
+
+            # now find all related columns (wrapped in ModelMethod) by operator type
+            collection.for_type(op_type).each do |model_method|
+              row << csv.ar_association_to_csv(record, model_method, options)
             end
           end
-          csv << row # next record
+          csv.add_row(row)
         end
       end # end write file
 
