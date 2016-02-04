@@ -51,7 +51,7 @@ class CSV
     if(DataShift::ModelMethod.is_association_type?(model_method.operator_type))
       csv_data = record_to_column( record.send(model_method.operator) )
     else
-      csv_data =  escape_for_csv( record.send(model_method.operator) )
+      csv_data = escape_for_csv( record.send(model_method.operator) )
     end
 
     csv_data

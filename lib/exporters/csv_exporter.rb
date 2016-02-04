@@ -107,9 +107,20 @@ module DataShift
 
             # now find all related columns (wrapped in ModelMethod) by operator type
             collection.for_type(op_type).each do |model_method|
-              row << csv.ar_association_to_csv(record, model_method, options)
+
+              next if(remove_list.include?(model_method.operator.to_sym))
+
+              #row << csv.ar_association_to_csv(record, model_method, options)
+
+              if(DataShift::ModelMethod.is_association_type?(model_method.operator_type))
+                row << record_to_column( record.send(model_method.operator) )
+              else
+                row << escape_for_csv( record.send(model_method.operator) )
+              end
+
             end
           end
+
           csv.add_row(row)
         end
       end # end write file
