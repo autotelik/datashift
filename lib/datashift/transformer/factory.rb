@@ -159,6 +159,7 @@ module DataShift
       # Class based versions
 
       def set_default_on(klass, operator, default_value )
+       # puts "In set_default_on ", klass, operator, default_value
         defaults_for(klass)[operator] = default_value
       end
 

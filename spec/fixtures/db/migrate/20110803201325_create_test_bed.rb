@@ -25,7 +25,7 @@ class CreateTestBed < ActiveRecord::Migration
       t.boolean :value_as_boolean, default: false
       t.datetime :value_as_datetime, default: nil
       t.integer :value_as_integer, default: 0
-      t.decimal :value_as_double, precision: 8, scale: 2, default: 0.0
+      t.decimal :value_as_double, precision: 10, scale: 4, default: 0.0
       t.references :user
       t.timestamps
     end

@@ -220,7 +220,12 @@ module DataShift
             logger.debug("Assignment via [#{operator}] to [#{value}] (CAST [#{model_method.col_type.cast_type.inspect}])")
 
             # TODO: - investigate what we can do with model_method.col_type.sql_type
+           # if(value.is_a? Float)
+            #  puts "ASSIGN B", value, value.class
+            #  record.send( operator + '=', value.to_f)
+            #else
             record.send( operator + '=', value)
+             # end
           end
 
         else
