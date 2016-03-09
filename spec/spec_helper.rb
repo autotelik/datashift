@@ -12,7 +12,7 @@ Dir[File.join(File.dirname(__FILE__), "support/**/*.rb")].each { |f| require f }
 # Need an active record DB to test against, so we manage own Rails sandbox
 Sandbox.gen_rails_sandbox
 
-require File.expand_path("../rails_sandbox/config/environment.rb",  __FILE__)
+require File.join( File.dirname(__FILE__), "rails_sandbox/config/environment.rb")
 
 require 'factory_girl_rails'
 require 'database_cleaner'

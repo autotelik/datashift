@@ -16,7 +16,6 @@ require 'datashift'
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
 module Datashift
 
-
   class Mapping < Thor
 
     include DataShift::Logging

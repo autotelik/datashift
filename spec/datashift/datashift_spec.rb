@@ -12,7 +12,7 @@ describe 'DataShift' do
   end
 
   it 'should provide gem version' do
-    DataShift.gem_version
+    DataShift.VERSION
   end
 
   it 'should provide gem name' do

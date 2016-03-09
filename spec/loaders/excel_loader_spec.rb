@@ -188,7 +188,7 @@ module  DataShift
         DataShift::Transformer.factory.clear
       end
 
-      it 'should use global transforms to set default values' do
+      it 'should use global transforms to set default values', duff: true do
         texpected = Time.now.to_s(:db)
 
         DataShift::Transformer.factory do |factory|

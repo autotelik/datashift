@@ -20,49 +20,50 @@
 
 require 'thor'
 
-lib = File.expand_path('../lib/', __FILE__)
-
-$:.unshift '.' 
-$:.unshift lib unless $:.include?(lib)
+$:.push File.expand_path("lib", __FILE__)
 
 require 'datashift'
 
-class Datashift < Thor
+module Datashift
 
-  desc "build", 'Build gem and install in one step'
+  class Utils < Thor
 
-  method_option :version, :aliases => '-v',  :desc => "New version"
-  method_option :push, :aliases => '-p', :desc => "Push resulting gem to rubygems.org"
-  method_option :install, :aliases => '-i', :desc => "Install freshly built gem locally"
+    desc "build", 'Build gem and install in one step'
 
-  def build
+    method_option :version, :aliases => '-v',  :desc => "New version"
+    method_option :push, :aliases => '-p', :desc => "Push resulting gem to rubygems.org"
+    method_option :install, :aliases => '-i', :desc => "Install freshly built gem locally"
 
-    v = options[:version] 
+    def build
 
-    # Bump the VERSION file in library
-    File.open( File.join('VERSION'), 'w') do |f|
-      f << "#{v}\n"
-    end if v
-    
-    build_cmd =  "gem build datashift.gemspec"
+      # Bump the VERSION file in library
+      File.open( File.join('lib/datashift/version.rb'), 'w') do |f|
+        f << "#{v}\n"
+      end if(options[:version])
 
-    puts "\n*** Running build cmd [#{build_cmd}]"
-    
-    system(build_cmd)
+      load "datashift/version.rb"
 
-    version = DataShift.gem_version
-    puts "Installing version #{version}"
-  
-    if(options[:install])         
-        gem = "#{DataShift.gem_name}-#{version}.gem"
+      v = DataShift::VERSION
+
+      build_cmd =  "gem build datashift.gemspec"
+
+      puts "\n*** Running build cmd [#{build_cmd}]"
+
+      system(build_cmd)
+
+      puts "Installing version #{v}"
+
+      if(options[:install])
+        gem = "#{DataShift.gem_name}-#{v}.gem"
         cmd = "gem install --no-ri --no-rdoc #{gem}"
         system(cmd)
+      end
+
+      if(options[:push])
+        cmd = "gem push #{gem}"
+        system(cmd)
+      end
     end
 
-    if(options[:push])
-      cmd = "gem push #{gem}"
-      system(cmd)
-    end
   end
-
 end

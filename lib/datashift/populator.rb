@@ -74,6 +74,7 @@ module DataShift
       end
     end
 
+    # Checks Transformer for a substitution for column defined in method_binding
     def substitute( method_binding )
       sub = Transformer.factory.substitution(method_binding)
 

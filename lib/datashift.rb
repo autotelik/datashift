@@ -27,18 +27,6 @@ require_relative 'datashift/logging'
 
 module DataShift
 
-  def self.gem_version
-    unless(@gem_version)
-      if(File.exist?('VERSION'))
-        File.read( File.join('VERSION') ).match(/.*(\d+.\d+.\d+)/)
-        @gem_version = Regexp.last_match(1)
-      else
-        @gem_version = '1.0.0'
-      end
-    end
-    @gem_version
-  end
-
   def self.gem_name
     'datashift'
   end
