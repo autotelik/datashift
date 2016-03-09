@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.authors = ["Thomas Statter"]
 
   s.description = "Comprehensive import/export tools between Excel/CSV & ActiveRecord Databases, Rails apps, and any Ruby project."
-  s.email = "rubygems@autotelik.co.uk"
+  s.email = "datashift@autotelik.co.uk"
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.markdown",
@@ -36,7 +36,7 @@ Gem::Specification.new do |s|
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
 
-  s.summary = "Shift data betwen Excel/CSV and any Ruby app"
+  s.summary = "Shift data between Excel/CSV and any Ruby app"
 
   s.add_dependency 'rails', '> 4.1'
 
