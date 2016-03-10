@@ -2,7 +2,7 @@ language: ruby
 cache: bundler
 rvm:
   - 2.2.3
-  - jruby-19mode
+  - jruby-head
 
 script: 'cd ./spec && bundle exec rspec -c .'
 
