@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   s.add_runtime_dependency 'rails', '~> 4.2'
-  s.add_runtime_dependency 'paperclip', '~> 4.3'
+  s.add_runtime_dependency 'paperclip', '~> 4'
   s.add_runtime_dependency 'spreadsheet', '~> 1.1'
   s.add_runtime_dependency 'rubyzip', '~> 1.2'
   s.add_runtime_dependency 'thread_safe', '~> 0.3', '>= 0.3'
@@ -34,7 +34,7 @@ Gem::Specification.new do |s|
 
   # for the dummy rails sandbox used in testing
   s.add_development_dependency 'rubocop', '~> 0.38'
-  s.add_development_dependency 'sqlite3', '~> 1.3'
+
   s.add_development_dependency 'rspec', '~> 3.4'
   s.add_development_dependency 'factory_girl_rails', '~> 4.5'
   s.add_development_dependency 'database_cleaner', '~> 1.5'
