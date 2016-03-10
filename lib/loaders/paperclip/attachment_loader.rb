@@ -140,8 +140,6 @@ module DataShift
           search_term = File.basename(file_name, '.*')
           search_term.strip!
 
-          owner_record = nil
-
           logger.info("Attempting to find matching owner Record for file name : #{search_term}")
 
           owner_record = get_record_by(attach_to_klass, attach_to_find_by_field, search_term, split_on, options)
