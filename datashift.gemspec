@@ -16,6 +16,8 @@ Gem::Specification.new do |s|
   s.description = 'Comprehensive import/export tools between Excel/CSV & ActiveRecord Databases, Rails apps, and any Ruby project.'
   s.license     = 'Open Source - MIT'
 
+  s.required_ruby_version = '~> 2.0'
+
   s.required_rubygems_version = Gem::Requirement.new('>= 0') if s.respond_to? :required_rubygems_version=
 
   s.files = Dir['{lib}/**/*', 'spec/factories/**/*', 'LICENSE', 'Rakefile', 'README.markdown', 'datashift.thor']
