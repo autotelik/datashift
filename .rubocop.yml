@@ -1,62 +1,37 @@
 AllCops:
-  Include:
-    - '**/Rakefile'
-    - '**/config.ru'
+  TargetRubyVersion: 2.2
   Exclude:
-    - 'db/**/*'
-    - 'config/**/*'
-    - 'script/**/*'
-    - !ruby/regexp /old_and_unused\.rb$/
-    # Bin contains standard files created when Rails is initialised and
-    # therefore they should be left as is
-    - 'bin/**/*'
+    - 'spec/private/**/*'
+    - 'spec/rails_sandbox/**/*'
+    - 'spec/factories/*.rb'
+    - 'spec/fixtures/**/*'
+    - 'fixtures/**/*'
+    - 'MissingAttachmentRecords/**/*'
     # Rakefile is generated when Rails is initialised and therefore should be
     # left as is
     - 'Rakefile'
-    # Pragmatic spec stuff
+    # spec_helper is generated when rspec is initialised and therefore should be
+    # left as is
     - 'spec/spec_helper.rb'
-    - 'spec/factories/**/*'
-    - 'spec/rails_sandbox/**/*'
-    - 'spec/fixtures/db/migrate/**/*'
-    - 'spec/support/**/*'
+    - 'spec/dummy/**/*'
 
+Style/SpaceInsideParens:
+    Enabled: false
 
-LineLength:
-  Description: Limit lines to 140 characters.
-  Enabled: true
-  Max: 140
-MethodLength:
-  Description: 'Avoid methods longer than 10 lines of code.'
-  Enabled: false
-
-# I like extra lines - otherwise looks cluttered/ugly
+# Looks ugly having your first method directly after the module/class declaration
 Style/EmptyLinesAroundModuleBody:
     Enabled: false
-Style/EmptyLinesAroundMethodBody:
-    Enabled: false
 Style/EmptyLinesAroundClassBody:
+    Enabled: false
+Style/EmptyLinesAroundMethodBody:
     Enabled: false
 Style/EmptyLinesAroundBlockBody:
     Enabled: false
 
-# we ain't doing python round here
-Style/SpaceInsideParens:
-    Enabled: false
-Style/SpaceInsideBrackets:
-    Enabled: false
-Style/SpaceAfterControlKeyword:
-    Enabled: false
-ParenthesesAsGroupedExpression:
-  Description: >-
-      Checks for method calls with a space before the opening
-      parenthesis.
-  Enabled: false
-
-
 NumericLiterals:
-  Enabled: false
-BracesAroundHashParameters:
-  Description: 'Enforce braces style inside hash parameters.'
+  Description: >-
+    Add underscores to large numeric literals to improve their
+    readability.
   Enabled: false
 
 # Rubymine disagrees and not sure how to fix Rubymine indentation right now
@@ -64,13 +39,21 @@ CaseIndentation:
     Description: Indentation of when in a case/when/[else/]end.
     Enabled: false
 
+ClassLength:
+  Description: 'Avoid classes longer than 100 lines of code.'
+  Enabled: false
+
+RaiseArgs:
+  Description: 'Checks the arguments passed to raise/fail.'
+  Enabled: true
+
 Metrics/AbcSize:
   # The ABC size is a calculated magnitude, so this number can be a Fixnum or
   # a Float.
-  Max: 35
+  Max: 60
 
 Metrics/PerceivedComplexity:
-  Max: 10
+  Max: 15
 
 #RSPEC SPECIFIC
 
@@ -78,22 +61,47 @@ Metrics/PerceivedComplexity:
 Style/BlockDelimiters:
   Exclude:
     - spec/**/*_spec.rb
+Style/ClassVars:
+  Exclude:
+    - lib/waste_exemptions/permitted_attributes.rb
 MethodCalledOnDoEndBlock:
   Exclude:
     - spec/**/*_spec.rb
 Metrics/LineLength:
   Exclude:
     - spec/features/*_spec.rb
-    - spec/routing/*_spec.rb
+    - spec/factories/*.rb
+    - spec/routing/**/*.rb
 
 # Specs can get large and with good reason, no benefit splitting them up
 Metrics/ModuleLength:
-  Max: 500
   Exclude:
     - spec/**/*_spec.rb
+
+# The default size seems very restrictive bumping to something more usable
+Metrics/ModuleLength:
+  Max: 500
+
+Metrics/CyclomaticComplexity:
+  Max: 20
+
+Metrics/MethodLength:
+  Description: 'Avoid methods longer than 10 lines of code.'
+  Enabled: true
+  Max: 30
 
 # As a web app, as long as the team commit to using well named classes for
 # controllers, models etc it should not be necessary to add top-level class
 # documentation.
 Documentation:
   Enabled: false
+
+# We shouldn't be committing code with debug statements left in (e.g. byebug or save_and_open_page),
+# we don't understand the GDS rationale for disabling this check
+Debugger:
+  Enabled: true
+
+LineLength:
+  Description: Limit lines to 140 characters.
+  Enabled: true
+  Max: 140

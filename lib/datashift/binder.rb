@@ -88,7 +88,7 @@ module DataShift
 
       [*options[:model_classes]].each do |c|
         ModelMethods::Manager.catalog_class(c)
-      end if(options[:model_classes])
+      end if options[:model_classes]
 
       forced = [*options[:force_inclusion]].compact.collect { |f| f.to_s.downcase }
 
@@ -97,7 +97,7 @@ module DataShift
       [*columns].each_with_index do |col_data, col_index|
         raw_col_data = col_data.to_s
 
-        if(raw_col_data.nil? || raw_col_data.empty?)
+        if raw_col_data.nil? || raw_col_data.empty?
           logger.warn("Column list contains empty or null column at index #{col_index}")
           bindings << NoMethodBinding.new(raw_col_data, col_index)
           next
@@ -109,26 +109,26 @@ module DataShift
         model_method = model_method_mgr.search(raw_col_name)
 
         # if not found via raw name, try various alternatives
-        unless(model_method)
+        unless model_method
           Binder.substitutions(raw_col_name).each do |n|
             model_method = model_method_mgr.search(n)
-            break if(model_method)
+            break if model_method
           end
         end
 
-        model_method = if(options[:include_all] || forced.include?(raw_col_name.downcase))
+        model_method = if options[:include_all] || forced.include?(raw_col_name.downcase)
                          logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :method")
                          model_method_mgr.insert(raw_col_name, :method)
-                        end if(model_method.nil?)
+                        end if model_method.nil?
 
-        if(model_method)
+        if model_method
 
           binding = MethodBinding.new(raw_col_name, col_index, model_method)
 
           # we slurped up all possible data in split, turn it back into original string
           binding.add_column_data(data.join(Delimiters.column_delim))
 
-          if(where_field)
+          if where_field
             logger.info("Lookup query field [#{where_field}] - specified for association #{model_method.operator}")
 
             begin
@@ -155,7 +155,7 @@ module DataShift
     end
 
     # Essentially we map any string collection of field names, not just headers from files
-    alias_method :map_inbound_fields, :map_inbound_headers
+    alias map_inbound_fields map_inbound_headers
 
     def add_missing(col_data, col_index, reason)
       logger.warn(reason)

@@ -74,12 +74,12 @@ module DataShift
       association = klass.reflect_on_association(model_method.operator)
 
       # TODO: - this is instance methods .. what about class methods ?
-      if(association && association.klass.new.respond_to?(field))
+      if association && association.klass.new.respond_to?(field)
         inbound_column.add_lookup(association.klass, field, value)
         logger.info("Complex Lookup specified for [#{model_method.operator}] : on field [#{field}] (optional value [#{value}])")
       else
         logger.error("Check MethodBinding [#{inbound_name}](#{inbound_index}) - Association field names are case sensitive")
-        fail NoSuchOperator.new("Field [#{field}] Not Found on Association [#{model_method.operator}] within Class #{klass.name}")
+        raise NoSuchOperator.new("Field [#{field}] Not Found on Association [#{model_method.operator}] within Class #{klass.name}")
       end
     end
 

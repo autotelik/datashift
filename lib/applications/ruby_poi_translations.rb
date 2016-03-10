@@ -4,7 +4,7 @@
 # License::
 #
 #
-if(DataShift::Guards.jruby?)
+if DataShift::Guards.jruby?
 
   require 'java'
 
@@ -33,7 +33,7 @@ if(DataShift::Guards.jruby?)
     # Cell.CELL_TYPE_BLANK, Cell.CELL_TYPE_BOOLEAN, Cell.CELL_TYPE_ERROR
 
     def cell_value(cell)
-      case (cell.getCellType)
+      case cell.getCellType
       when HSSFCell::CELL_TYPE_FORMULA  then return cell.getCellFormula
       when HSSFCell::CELL_TYPE_NUMERIC  then return cell.getNumericCellValue
       when HSSFCell::CELL_TYPE_STRING   then return cell.getStringCellValue
@@ -49,7 +49,7 @@ if(DataShift::Guards.jruby?)
 
     # TODO: - properly
     def poi_cell_value(data)
-      case(data)
+      case data
       when BigDecimal
         data.to_f
       when Numeric, TrueClass, FalseClass
@@ -62,11 +62,11 @@ if(DataShift::Guards.jruby?)
     # Return the suitable type for a HSSFCell from a Ruby data type
     def poi_cell_type(data)
 
-      if(data.is_a?(Numeric))
+      if data.is_a?(Numeric)
         HSSFCell::CELL_TYPE_NUMERIC
-      elsif(data.nil?)
+      elsif data.nil?
         HSSFCell::CELL_TYPE_BLANK
-      elsif(data.is_a?(TrueClass) || data.is_a?(FalseClass))
+      elsif data.is_a?(TrueClass) || data.is_a?(FalseClass)
         HSSFCell::CELL_TYPE_BOOLEAN
       else
         HSSFCell::CELL_TYPE_STRING

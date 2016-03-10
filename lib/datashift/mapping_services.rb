@@ -40,9 +40,9 @@ module DataShift
 
       @map_file_name = file
 
-      unless(map_file_name && File.exist?(map_file_name))
+      unless map_file_name && File.exist?(map_file_name)
         logger.error "Cannot open mapping file - #{map_file_name} - file does not exist."
-        fail FileNotFound.new("Cannot open mapping file - #{map_file_name}")
+        raise FileNotFound.new("Cannot open mapping file - #{map_file_name}")
       end
 
       begin

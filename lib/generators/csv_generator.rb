@@ -60,7 +60,7 @@ module DataShift
     def generate_with_associations(klass, options = {})
 
       # with_associations - so over ride to default to :all if nothing specified
-      options[:with] = :all if(options[:with].nil?)
+      options[:with] = :all if options[:with].nil?
 
       # sort out exclude etc
       options[:with] = op_types_in_scope( options )

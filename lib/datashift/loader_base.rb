@@ -42,7 +42,7 @@ module DataShift
       @binder      = Binder.new
       @mandatory   = Mandatory.new
 
-      logger.verbose if(options[:verbose])
+      logger.verbose if options[:verbose]
 
       @strict = (options[:strict] == true)
     end
@@ -57,7 +57,7 @@ module DataShift
 
       @doc_context = DocContext.new(object_class)
 
-      @mandatory = Mandatory.new(options[:mandatory]) if(options[:mandatory])
+      @mandatory = Mandatory.new(options[:mandatory]) if options[:mandatory]
 
       logger.info("Loading objects of type #{load_object_class}")
 
@@ -135,7 +135,7 @@ module DataShift
 
       logger.info("Binding #{headers.size} inbound headers to #{load_object_class.name}")
 
-      @strict = options[:strict] if(options[:strict])
+      @strict = options[:strict] if options[:strict]
 
       @binder ||= DataShift::Binder.new
 
@@ -147,26 +147,26 @@ module DataShift
         raise MappingDefinitionError, 'Failed to map header row to set of database operators'
       end
 
-      unless(binder.missing_bindings.empty?)
+      unless binder.missing_bindings.empty?
         logger.warn("Following headings couldn't be mapped to #{load_object_class}:")
         binder.missing_bindings.each { |m| logger.warn("Heading [#{m.inbound_name}] - Index (#{m.inbound_index})") }
 
-        fail MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}" if(strict)
+        raise MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}" if strict
       end
 
-      unless(mandatory.contains_all?(binder) )
+      unless mandatory.contains_all?(binder)
         mandatory.missing_columns.each do |er|
           logger.error "Mandatory column missing - expected column '#{er}'"
         end
 
-        fail MissingMandatoryError, 'Mandatory columns missing  - please fix and retry.'
+        raise MissingMandatoryError, 'Mandatory columns missing  - please fix and retry.'
       end
 
       binder
     end
 
     # We can bind inbound 'fields' to associatde model columns, from any source, not just headers
-    alias_method :bind_fields, :bind_headers
+    alias bind_fields bind_headers
 
     #     # Process columns with a default value specified
     #     def process_defaults()

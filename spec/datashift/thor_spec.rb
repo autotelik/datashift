@@ -24,7 +24,7 @@ describe 'Thor high level command line tasks' do
     end
 
     it 'should provide tasks to generate a mapping doc' do
-      opts = { model: 'Project', result: "#{results_path}" }
+      opts = { model: 'Project', result: results_path.to_s }
 
       run_in(rails_sandbox_path) do
         output = capture_stream(:stdout) { Datashift::Mapping.new.invoke(:template, [], opts) }
@@ -93,7 +93,7 @@ describe 'Thor high level command line tasks' do
 
     x = capture_stream(:stdout) { Thor::Runner.start(['datashift:paperclip:attach', [], args]) }
 
-    expect(x).to include ("datashift\n--------")
+    expect(x).to include "datashift\n--------"
     # x.should =~ / csv -i/
     # x.should =~ / excel -i/
   end

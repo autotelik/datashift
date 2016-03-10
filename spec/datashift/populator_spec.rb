@@ -27,7 +27,7 @@ module DataShift
       x = DataShift::Populator.string_to_hash( str2 )
 
       expect(x.size).to eq 3
-      expect(x).to eq({ 'name' => 'the_fox', 'occupation' => 'fantastic', 'food' => 'duck soup' })
+      expect(x).to eq('name' => 'the_fox', 'occupation' => 'fantastic', 'food' => 'duck soup')
     end
 
     it 'should process simplified syntax string into a real hash' do

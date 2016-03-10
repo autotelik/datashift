@@ -60,10 +60,10 @@ module DataShift
 
       it 'uses NoMethodBinding object methods when operator has no such lookup field', fail: true do
         # Owner  has_many :digitals which has field attachment_file_name
-        headers = [ 'digitals:attachment_file_name',
-                    'Digitals:nonsense_lookup_field',
-                    'Digitals:nonsense:with a value',
-                    'Digitals:nonsense:with a value:and random data']
+        headers = ['digitals:attachment_file_name',
+                   'Digitals:nonsense_lookup_field',
+                   'Digitals:nonsense:with a value',
+                   'Digitals:nonsense:with a value:and random data']
 
         binder.map_inbound_headers( Owner, headers)
 
@@ -111,7 +111,7 @@ module DataShift
     end
 
     it 'should map between user name and domain model attribute' do
-      headers = [ 'Value as string', :value_as_string, 'value_as boolean', 'Value_As_Double']
+      headers = ['Value as string', :value_as_string, 'value_as boolean', 'Value_As_Double']
 
       operators = %w(value_as_string value_as_string value_as_boolean value_as_double)
 
@@ -129,7 +129,7 @@ module DataShift
 
     it 'should map between user name and domain model has_one association' do
       # Project has_one  :owner
-      headers = [ 'owner', 'Owner', :owner]
+      headers = ['owner', 'Owner', :owner]
 
       operators = %w(owner owner owner)
 
@@ -147,7 +147,7 @@ module DataShift
 
     it 'should map between user name and domain model has_many association' do
       # Project has_many :loader_releases
-      headers = [ 'loader_releases', 'Loader Releases', :loader_releases]
+      headers = ['loader_releases', 'Loader Releases', :loader_releases]
 
       operators = %w(loader_releases loader_releases loader_releases)
 
@@ -184,7 +184,7 @@ module DataShift
 
     it 'should parse header for where clause field' do
       # Owner has a name and belongs_to Project which has a title i.e lookup on title
-      headers = [ 'project:title', 'Project:title']
+      headers = ['project:title', 'Project:title']
 
       bindings = binder.map_inbound_headers( Owner, headers )
 
@@ -200,7 +200,7 @@ module DataShift
 
     it 'should parse header for where clause field & value belongs_to' do
       # Owner has a name and belongs_to Project
-      headers = [ 'project:title:my first project', 'Project:title:my first project']
+      headers = ['project:title:my first project', 'Project:title:my first project']
 
       bindings = binder.map_inbound_headers( Owner, headers )
 
@@ -217,7 +217,7 @@ module DataShift
     it 'should parse header for where clause field & value has_one' do
       # class Version < ActiveRecord::Base has_many :releases
       # has_one :long_and_complex_table_linked_to_version
-      headers = [ 'long_and_complex_table_linked_to_version:price:10.2', 'Long_And Complex Table_linked_to_version:price:10.2']
+      headers = ['long_and_complex_table_linked_to_version:price:10.2', 'Long_And Complex Table_linked_to_version:price:10.2']
 
       bindings = binder.map_inbound_headers( Version, headers )
 
@@ -233,8 +233,8 @@ module DataShift
 
     it 'should parse header for where clause field & value & global data has_many' do
       # Owner  has_many :digitals which has field attachment_file_name
-      headers = [ 'digitals:attachment_file_name:my pdf:random data for a loader',
-                  'Digitals:attachment_file_name:my pdf:random data for a loader']
+      headers = ['digitals:attachment_file_name:my pdf:random data for a loader',
+                 'Digitals:attachment_file_name:my pdf:random data for a loader']
 
       bindings = binder.map_inbound_headers( Owner, headers )
 
@@ -251,7 +251,7 @@ module DataShift
     end
 
     it 'should enable us to sort bindings into arbitrary processing order' do
-      headers = [ 'Value as string', :value_as_string, 'value_as boolean', 'Value_As_Double']
+      headers = ['Value as string', :value_as_string, 'value_as boolean', 'Value_As_Double']
 
       operators = %w(value_as_string value_as_string value_as_boolean value_as_double)
 

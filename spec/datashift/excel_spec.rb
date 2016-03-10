@@ -8,7 +8,7 @@ module DataShift
     let(:excel) { Excel.new }
 
     it 'should reject .xlsx until spreedsheet gem supports it' do
-      expect { excel.open( ifixture_file('ProjectsSingleCategories.xlsx') ) }.to raise_error (Ole::Storage::FormatError)
+      expect { excel.open( ifixture_file('ProjectsSingleCategories.xlsx') ) }.to raise_error Ole::Storage::FormatError
     end
 
     it 'can open an existing spreadsheet' do
@@ -146,10 +146,10 @@ module DataShift
       expect(excel[3, 1]).to eq 4
     end
 
-    it 'can iterate over the cells in a row'do
+    it 'can iterate over the cells in a row' do
       sheet = excel.create_worksheet
 
-      values = [ 'hello world', 12.30, '', 4 ]
+      values = ['hello world', 12.30, '', 4]
 
       values.each_with_index do |v, i|
         excel[0, i] = v

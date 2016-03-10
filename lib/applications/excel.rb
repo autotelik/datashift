@@ -11,7 +11,7 @@
 #
 require 'guards'
 
-if(DataShift::Guards.jruby?)
+if DataShift::Guards.jruby?
   require 'jexcel_file'
 else
   require 'spreadsheet'
@@ -22,7 +22,7 @@ module DataShift
   module ExcelProxy
     # Returns the current proxy class
     def self.proxy_class
-      if(DataShift::Guards.jruby?)
+      if DataShift::Guards.jruby?
         JExcelFile
       else
         Spreadsheet
@@ -30,7 +30,7 @@ module DataShift
     end
 
     def self.proxy_object
-      if(DataShift::Guards.jruby?)
+      if DataShift::Guards.jruby?
         ExcelProxy.proxy_class.new
       else
         ExcelProxy.proxy_class::Workbook.new
@@ -49,12 +49,12 @@ module DataShift
     def method_missing(method, *args, &block)
       # puts @excel.class, method, args.inspect
 
-      if(@excel.respond_to?(method))
+      if @excel.respond_to?(method)
         @excel.send(method, *args, &block)
-      elsif(@excel.worksheets.last.respond_to?(method)) # active_worksheet doesn't work so use the latest
+      elsif @excel.worksheets.last.respond_to?(method) # active_worksheet doesn't work so use the latest
         @excel.worksheets.last.send(method, *args, &block)
-      elsif(@excel_class.respond_to?(method))
-        if(method == :open || method == 'open')
+      elsif @excel_class.respond_to?(method)
+        if method == :open || method == 'open'
           @excel = @excel_class.send(method, *args, &block)
         else
           @excel_class.send(method, *args, &block)

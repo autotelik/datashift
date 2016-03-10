@@ -9,7 +9,7 @@
 #
 # jar added to class path in manifest - 'poi-3.5-beta4-20081128.jar'
 #
-if(DataShift::Guards.jruby?)
+if DataShift::Guards.jruby?
 
   require 'java'
 
@@ -87,14 +87,7 @@ if(DataShift::Guards.jruby?)
 
       @workbook = HSSFWorkbook.new if @workbook.nil?
 
-      unless(sheet_name)
-        i = 0
-        begin
-          sheet_name = "Worksheet#{i += 1}"
-        end while(@workbook.getSheetIndex(sheet_name) >= 0) # there is no hard limit to no of sheets in Excel but at some point you will run out of memory!
-
-        return create_sheet_and_set_styles( sheet_name )
-      else
+      if sheet_name
 
         name = sanitize_sheet_name( sheet_name )
 
@@ -103,6 +96,13 @@ if(DataShift::Guards.jruby?)
         else
           activate_sheet(name)
         end
+      else
+        i = 0
+        begin
+          sheet_name = "Worksheet#{i += 1}"
+        end while(@workbook.getSheetIndex(sheet_name) >= 0) # there is no hard limit to no of sheets in Excel but at some point you will run out of memory!
+
+        return create_sheet_and_set_styles( sheet_name )
       end
     end
 
@@ -110,11 +110,11 @@ if(DataShift::Guards.jruby?)
     # If no such sheet return current sheet
     def activate_sheet(term)
 
-      if(@workbook)
+      if @workbook
         x = term.is_a?(String) ? @workbook.getSheetIndex(term.to_java(java.lang.String)) : term
         @sheet = worksheet(x)
 
-        if( @sheet )
+        if @sheet
           @current_sheet_index = x
           @workbook.setActiveSheet(@current_sheet_index)
           @sheet = @workbook.getSheetAt(@current_sheet_index)
@@ -126,7 +126,7 @@ if(DataShift::Guards.jruby?)
 
     # Return a sheet by index
     def worksheet( index )
-      if(@workbook)
+      if @workbook
         x = index.is_a?(String) ? @workbook.getSheetIndex(index.to_java(java.lang.String)) : index
         return @workbook.getSheetAt(x)
       end
@@ -140,7 +140,7 @@ if(DataShift::Guards.jruby?)
     # Create new row (indexing in line with POI usage, start 0)
     def create_row(index)
       return nil if @sheet.nil?
-      fail 'BAD INDEX: Row indexing starts at 0' if(index < 0)
+      raise 'BAD INDEX: Row indexing starts at 0' if index < 0
       @row = @sheet.createRow(index)
       @row
     end
@@ -186,13 +186,13 @@ if(DataShift::Guards.jruby?)
     end
 
     def write( filename = nil )
-      filename.nil? ? file = @filepath : file = filename
+      file = filename.nil? ? @filepath : filename
       out = FileOutputStream.new(file)
       @workbook.write(out) unless @workbook.nil?
       out.close
     end
 
-    alias_method :save, :write
+    alias save write
 
     def save_to_text( filename )
       File.open( filename, 'w') { |f| f.write(to_s) }

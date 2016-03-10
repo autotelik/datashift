@@ -62,7 +62,7 @@ module DataShift
                     'datashift/model_methods',
                     'datashift/transformer',
                     'datashift/inbound_data',
-                    'loaders', 'exporters', 'generators', 'helpers' ]
+                    'loaders', 'exporters', 'generators', 'helpers']
 
     require_libs.each do |base|
       Dir[File.join(library_path, base, '*.rb')].each do |rb|
@@ -105,7 +105,7 @@ require_relative 'datashift/binder'
 require_relative 'datashift/mapper_utils'
 
 module DataShift
-  if(Guards.jruby?)
+  if Guards.jruby?
     require 'java'
 
     class Object

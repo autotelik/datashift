@@ -15,7 +15,7 @@ module DataShift
 
       @mandatory_columns = columns
 
-      logger.info("Mandatory columns set to #{@mandatory_columns.inspect}") unless(@mandatory_columns.empty?)
+      logger.info("Mandatory columns set to #{@mandatory_columns.inspect}") unless @mandatory_columns.empty?
 
       @comparable_mandatory_columns = @mandatory_columns.collect(&:downcase)
       missing_columns = []

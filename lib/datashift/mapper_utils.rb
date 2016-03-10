@@ -19,7 +19,7 @@ module DataShift
         raise Thor::Error.new("ERROR: No such Class [#{klass}] found - check valid model supplied")
       end
 
-      fail NoSuchClassError.new("ERROR: No such Model [#{klass}] found - check valid model supplied") unless(ruby_klass)
+      raise NoSuchClassError.new("ERROR: No such Model [#{klass}] found - check valid model supplied") unless ruby_klass
 
       ruby_klass
     end

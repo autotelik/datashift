@@ -28,16 +28,16 @@ module DataShift
 
       records = [*export_records]
 
-      unless(records && records.size > 0)
+      unless records && records.size > 0
         logger.warn('Excel Export - No objects supplied for export - no file written')
         return
       end
 
       first = records[0]
 
-      fail ArgumentError.new('Please supply set of ActiveRecord objects to export') unless(first.is_a?(ActiveRecord::Base))
+      raise ArgumentError.new('Please supply set of ActiveRecord objects to export') unless first.is_a?(ActiveRecord::Base)
 
-      fail ArgumentError.new('Please supply array of records to export') unless records.is_a? Array
+      raise ArgumentError.new('Please supply array of records to export') unless records.is_a? Array
 
       logger.info("Exporting #{records.size} #{first.class} to Excel")
 
@@ -84,7 +84,7 @@ module DataShift
       collection = ModelMethods::Manager.catalog_class(klass)
 
       # with_associations - so over ride to default to :all if nothing specified
-      options[:with] = :all if(options[:with].nil?)
+      options[:with] = :all if options[:with].nil?
 
       # sort out exclude etc
       options[:with] = op_types_in_scope( options )
@@ -106,7 +106,7 @@ module DataShift
         options[:with].each do |op_type|
           collection.for_type(op_type).each do |model_method|
             # pack association instances into single column
-            if(ModelMethod.is_association_type?(op_type))
+            if ModelMethod.is_association_type?(op_type)
               logger.info("Processing #{model_method.inspect} associations")
               excel[row, column] = record_to_column( obj.send( model_method.operator ), options )
             else

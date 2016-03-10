@@ -29,10 +29,10 @@ class ValueMapFromFile < Hash
     @file = file_path unless file_path.nil?
     @delim = delim
 
-    fail ArgumentError.new("Can not read map file: #{@file}") unless File.readable?(@file)
+    raise ArgumentError.new("Can not read map file: #{@file}") unless File.readable?(@file)
 
     File.open(@file).each_line do |line|
-      next unless(line && line.chomp!)
+      next unless line && line.chomp!
 
       values = line.split(@delim)
 
@@ -41,7 +41,7 @@ class ValueMapFromFile < Hash
         when 3 then store([values[0], values[1]], values[2])
         when 4 then store([values[0], values[1]], [values[2], values[3]])
         else
-          fail ArgumentError.new("Bad key,value row in #{@file}: #{values.nitems} number of columns not supported")
+          raise ArgumentError.new("Bad key,value row in #{@file}: #{values.nitems} number of columns not supported")
       end
     end
 
@@ -63,10 +63,10 @@ class AssetMapFromFile < Array
     @file = file_path unless file_path.nil?
     @delim = delim
 
-    fail ArgumentError.new("Can not read asset map file: #{@file}") unless File.readable?(@file)
+    raise ArgumentError.new("Can not read asset map file: #{@file}") unless File.readable?(@file)
 
     File.open(@file).each_line do |line|
-      next unless(line && line.chomp!)
+      next unless line && line.chomp!
       # skip the header row
       next if line.include?('TradeType')
 

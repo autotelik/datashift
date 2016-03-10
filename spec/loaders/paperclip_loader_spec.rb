@@ -73,9 +73,10 @@ describe 'PaperClip Bulk Loader' do
 
     end
 
-    it 'should handle not being able to find matching record' do
+    it 'should save failed images to folder when unable to find matching record' do
 
-      opts = { attach_to_klass: Owner, attach_to_find_by_field: :name }.merge(common_options)
+      # use a non existent field to cause error
+      opts = { attach_to_klass: Owner, attach_to_find_by_field: :junk }.merge(common_options)
 
       loader = DataShift::Paperclip::AttachmentLoader.new(path, opts)
 

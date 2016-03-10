@@ -24,7 +24,7 @@ module DataShift
       end
 
       def add_file(target)
-        unless(@names.include?(target))
+        unless @names.include?(target)
           puts "Logging going to target [#{target}]"
           add( File.open(target, 'a') )
           @names << target
@@ -74,7 +74,7 @@ module DataShift
 
       MultiIO.instance.add_file(File.join(logdir, log))
 
-      ActiveRecord::Base.logger = MultiIO.instance if(defined?(ActiveRecord) && ActiveRecord::Base.logger)
+      ActiveRecord::Base.logger = MultiIO.instance if defined?(ActiveRecord) && ActiveRecord::Base.logger
 
       MultiIO.instance
     end

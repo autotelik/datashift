@@ -30,7 +30,7 @@ module DataShift
     def to_headers(klass, options = {})
 
       # default to generating just klass columns
-      associations = if(options[:with])
+      associations = if options[:with]
                        options[:with].dup
                      else
                        [:assignment]
@@ -40,15 +40,15 @@ module DataShift
 
       collection = ModelMethods::Manager.catalog_class(klass)
 
-      if(collection)
+      if collection
 
         # make sure models columns are first, then other association types
-        if(associations.delete(:assignment))
-          collection.for_type(:assignment).each { |md| @headers << "#{md.operator}" }
+        if associations.delete(:assignment)
+          collection.for_type(:assignment).each { |md| @headers << md.operator.to_s }
         end
 
         associations.each do |a|
-          collection.for_type(a).each { |md| @headers << "#{md.operator}" }
+          collection.for_type(a).each { |md| @headers << md.operator.to_s }
         end
 
         remove_headers(options)
@@ -57,7 +57,7 @@ module DataShift
       headers
     end
 
-    alias_method :collection_to_headers, :to_headers
+    alias collection_to_headers to_headers
 
     # Prepare to generate with associations but then
     # calls a **derived generate** method i.e abstract to this base class
@@ -81,7 +81,7 @@ module DataShift
     def generate_with_associations(klass, options = {})
 
       # with_associations - so over ride to default to :all if nothing specified
-      options[:with] = :all if(options[:with].nil?)
+      options[:with] = :all if options[:with].nil?
 
       # sort out exclude etc
       options[:with] = op_types_in_scope( options )
@@ -103,13 +103,13 @@ module DataShift
 
       types_in_scope = []
 
-      if(options[:with].nil?)
+      if options[:with].nil?
         types_in_scope << :assignment
       elsif options[:with] == :all
         types_in_scope += ModelMethod.supported_types_enum.to_a
       end
 
-      types_in_scope -= [ *options[:exclude] ]
+      types_in_scope -= [*options[:exclude]]
 
       types_in_scope
     end
@@ -136,7 +136,7 @@ module DataShift
       # comparable_association = md.operator.to_s.downcase.to_sym
       # i = remove_list.index { |r| r == comparable_association }
       # (i) ? remove_list.delete_at(i) : @headers << "#{md.operator}"
-      headers.delete_if { |h| remove_list.include?( h.to_sym ) } unless(remove_list.empty?)
+      headers.delete_if { |h| remove_list.include?( h.to_sym ) } unless remove_list.empty?
     end
 
     protected
@@ -147,9 +147,9 @@ module DataShift
     # Specify option :remove_rails to remove them from output
     #
     def prep_remove_list( options )
-      @remove_list = [ *options[:remove] ].compact.collect { |x| x.to_s.downcase.to_sym }
+      @remove_list = [*options[:remove]].compact.collect { |x| x.to_s.downcase.to_sym }
 
-      @remove_list += GeneratorBase.rails_columns if(options[:remove_rails])
+      @remove_list += GeneratorBase.rails_columns if options[:remove_rails]
 
       remove_list
     end

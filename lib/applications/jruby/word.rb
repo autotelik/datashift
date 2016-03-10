@@ -22,7 +22,7 @@
 # WORD_OLE_CONST.const_get( 'LesCR' ) or WORD_OLE_CONST::LesCR
 #   => 1
 
-if(Guards.windows?)
+if Guards.windows?
 
   require 'win32ole'
 

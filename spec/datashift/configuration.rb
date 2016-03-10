@@ -10,14 +10,14 @@ require File.dirname(__FILE__) + '/../spec_helper'
 module DataShift
 
   describe '#configure' do
-    let(:defaults) {
+    let(:defaults) do
       { project:
             { value_as_string: 'Default Project Value',
               category: 'reference:category_002',
               value_as_datetime: Time.now.to_s(:db)
             }
       }
-    }
+    end
 
     before do
       DataShift.configure do |config|

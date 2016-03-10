@@ -18,14 +18,14 @@ module DataShift
 
       @excel.open(file_name)
 
-      if(options[:sheet_name])
+      if options[:sheet_name]
 
         @sheet = @excel.create_worksheet( name: options[:sheet_name] )
 
         unless sheet
           logger.error("Excel failed to create WorkSheet for #{name}")
 
-          fail "Failed to create Excel WorkSheet for #{name}"
+          raise "Failed to create Excel WorkSheet for #{name}"
         end
       else
         @sheet = @excel.worksheets.first
@@ -40,14 +40,14 @@ module DataShift
 
       header_row = sheet.row(header_row_idx)
 
-      fail MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{header_row_idx} contains headers" unless(header_row)
+      raise MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{header_row_idx} contains headers" unless header_row
 
       # TODO: - make more robust - currently end on first empty column
       # There is no actual max columns in Excel .. you will run out of memory though at some point
       (0..ExcelBase.max_columns).each do |column|
         cell = header_row[column]
         break unless cell
-        header = "#{cell}".strip
+        header = cell.to_s.strip
         break if header.empty?
         headers << header
       end
@@ -61,7 +61,7 @@ module DataShift
 
     # Pass a set of AR records
     def ar_to_xls(records, options = {})
-      return if( !records.first.is_a?(ActiveRecord::Base) || records.empty?)
+      return if !records.first.is_a?(ActiveRecord::Base) || records.empty?
 
       # assume headers present
       row_index = (options[:start_row]) ? (options[:start_row]) : 1
@@ -76,7 +76,7 @@ module DataShift
     # Save data from an AR record to the current row, based on the record's columns [c1,c2,c3]
     # Returns the number of the final column written to
     def ar_to_xls_row(row, start_column, record)
-      return unless( record.is_a?(ActiveRecord::Base))
+      return unless record.is_a?(ActiveRecord::Base)
 
       column = start_column
       record.class.columns.each do |connection_column|

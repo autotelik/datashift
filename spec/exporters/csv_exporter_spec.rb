@@ -84,7 +84,7 @@ module DataShift
 
         exporter = DataShift::CsvExporter.new( expected )
 
-        exporter.export(Project.all, { methods: [:multiply] })
+        exporter.export(Project.all, methods: [:multiply])
 
         expect(File.exist?(expected)).to eq true
 
@@ -92,7 +92,7 @@ module DataShift
 
         File.foreach(expected) {}
         count = $INPUT_LINE_NUMBER
-        expect(count).to eq  Project.count + 1
+        expect(count).to eq Project.count + 1
       end
 
       it 'should enable removal of certain columns', duff: true do
@@ -136,7 +136,7 @@ module DataShift
 
         File.foreach(expected) {}
         count = $INPUT_LINE_NUMBER
-        expect(count).to eq  basic_projects + 2
+        expect(count).to eq basic_projects + 2
       end
 
       it 'should include headers and association names in row 0' do

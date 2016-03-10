@@ -19,7 +19,7 @@ class Sandbox
 
     puts "RSPEC - checking for Rails sandbox [#{sandbox}]"
 
-    if(File.exist?(sandbox))
+    if File.exist?(sandbox)
       puts "RSPEC - Found and using existing Rails sandbox [#{sandbox}]"
     else
 

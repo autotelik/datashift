@@ -38,7 +38,7 @@ module DataShift
       #
       def self.catalog_class( klass, options = {} )
 
-        return collections[klass] if(collections[klass] && !options[:reload])
+        return collections[klass] if collections[klass] && !options[:reload]
 
         ModelMethods::Catalogue.populate(klass, options) unless ModelMethods::Catalogue.catalogued?(klass)
 

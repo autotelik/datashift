@@ -127,7 +127,7 @@ module FileDefinitions
     def add_field(field, add_accessor = true)
       @field_definition ||= []
       @field_definition << field.to_s
-      attr_accessor field  if(add_accessor)
+      attr_accessor field  if add_accessor
     end
 
     # Helper to generate methods that return the complete list of fixed width fields
@@ -135,7 +135,7 @@ module FileDefinitions
     # e.g create_field_definition %w{ trade_id  drOrCr ccy costCentre postingDate amount }
     #
     def create_fixed_definition( field_range_map )
-      fail ArgumentError.new('Please supply hash to create_fixed_definition') unless field_range_map.is_a? Hash
+      raise ArgumentError.new('Please supply hash to create_fixed_definition') unless field_range_map.is_a? Hash
 
       keys = field_range_map.keys.collect(&:to_s)
       string_map = Hash[*keys.zip(field_range_map.values).flatten]
@@ -211,7 +211,7 @@ module FileDefinitions
       unless filtered.empty?
         log :info, "Writing seperate streams to #{path}"
 
-        filtered.each { |strm, objects| RecsBase.write( { "keys_#{field}_#{strm}.csv" => objects.collect(&:key).join("\n") }, path) } if(options.key?(:keys))
+        filtered.each { |strm, objects| RecsBase.write( { "keys_#{field}_#{strm}.csv" => objects.collect(&:key).join("\n") }, path) } if options.key?(:keys)
 
         filtered.each { |strm, objects| RecsBase.write( { "#{field}_#{strm}.csv" => objects.collect(&:current_line).join("\n") }, path) }
       end
@@ -242,19 +242,19 @@ module FileDefinitions
 
       filtered = {}
 
-      if( new.respond_to?(field) )
+      if new.respond_to?(field)
 
         log :info, "Splitting on #{field}"
 
         File.open( file_name ) do |t|
           t.each do |line|
-            next unless(line && line.chomp!)
+            next unless line && line.chomp!
             x = new(line)
 
             value = x.send( field.to_sym ) # the actual field value from the specified field column
             next if value.nil?
 
-            if( regex.nil? || value.match(regex) )
+            if regex.nil? || value.match(regex)
               filtered[value] ? filtered[value] << x : filtered[value] = [x]
             end
           end
@@ -263,7 +263,7 @@ module FileDefinitions
         log :warn, "Field [#{field}] nor defined for file definition #{self.class.name}"
       end
 
-      if( options[:sort])
+      if options[:sort]
         filtered.values.each( &:sort )
         return filtered
       end
@@ -289,14 +289,14 @@ module FileDefinitions
       lines = []
       objects = []
 
-      if fields.is_a?(Array)
-        attribs = fields
-      else
-        attribs = "#{fields}".split(',')
-      end
+      attribs = if fields.is_a?(Array)
+                  fields
+                else
+                  fields.to_s.split(',')
+                end
 
       attribs.collect! do |attrib|
-        fail ArgumentError.new("Field: #{attrib} is not a field on #{self.class.name}") unless new.respond_to?(attrib)
+        raise ArgumentError.new("Field: #{attrib} is not a field on #{self.class.name}") unless new.respond_to?(attrib)
       end
 
       log :info, "#{self.class.name} - updating field(s) #{fields} in #{file_name}"

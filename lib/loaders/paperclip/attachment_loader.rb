@@ -73,7 +73,7 @@ module DataShift
 
         @attach_to_klass = options[:attach_to_klass] || attach_to_klass
 
-        if(attach_to_klass)
+        if attach_to_klass
           ModelMethods::Manager.catalog_class(@attach_to_klass, reload: options[:reload], instance_methods: true)
         end
 
@@ -94,11 +94,11 @@ module DataShift
       #
       def perform_load(options = {} )
 
-        fail 'The class that attachments belongs to has not been set (:attach_to_klass)' unless(@attach_to_klass)
+        raise 'The class that attachments belongs to has not been set (:attach_to_klass)' unless @attach_to_klass
 
-        fail "The field to search for attachment's owner has not been set (:attach_to_find_by_field)" unless(@attach_to_find_by_field)
+        raise "The field to search for attachment's owner has not been set (:attach_to_find_by_field)" unless @attach_to_find_by_field
 
-        @load_object = options[:attachment] if(options[:attachment])
+        @load_object = options[:attachment] if options[:attachment]
 
         missing_records = []
 
@@ -121,7 +121,7 @@ module DataShift
           raise MappingDefinitionError, 'Failed to map #{attach_to_field} to database operator'
         end
 
-        attach_to_method_binding = if(bindings.size != 1)
+        attach_to_method_binding = if bindings.size != 1
                                      logger.warn("Failed to map #{attach_to_field} to database operator")
                                      nil
                                    else
@@ -146,7 +146,7 @@ module DataShift
 
           owner_record = get_record_by(attach_to_klass, attach_to_find_by_field, search_term, split_on, options)
 
-          if(owner_record)
+          if owner_record
             logger.info("#{owner_record.class} (id : #{owner_record.id}) found with matching :#{attach_to_find_by_field} ")
           else
             logger.error("No matching owner found for file name : #{search_term}")
@@ -154,19 +154,18 @@ module DataShift
             missing_records << file_name
           end
 
-          next if(options[:dummy]) # Don't actually create/upload to DB if we are doing dummy run
+          next if options[:dummy] # Don't actually create/upload to DB if we are doing dummy run
 
           attachment = create_paperclip_attachment(load_object_class, file_name, options)
 
           # Check if attachment must have an associated owner_record
-          if(attachment && owner_record && attach_to_method_binding)
-            reset
+          next unless attachment && owner_record && attach_to_method_binding
+          reset
 
-            # TOFIX - what about has_one etc ? - indicates that Context etc are still too complex and Excel/CSV focused
-            owner_record.send(attach_to_method_binding.operator) << attachment
+          # TOFIX - what about has_one etc ? - indicates that Context etc are still too complex and Excel/CSV focused
+          owner_record.send(attach_to_method_binding.operator) << attachment
 
-            logger.info "Added Attachment to #{owner_record.class} (id : #{owner_record.id})"
-          end
+          logger.info "Added Attachment to #{owner_record.class} (id : #{owner_record.id})"
         end
 
         unless missing_records.empty?
@@ -175,14 +174,14 @@ module DataShift
           puts "WARNING : #{missing_records.size} of #{loading_files_cache.size} files could not be attached to a #{load_object_class}"
           puts "For your convenience copying files with MISSING #{attach_to_klass} to : MissingAttachmentRecords"
           missing_records.each do |i|
-            FileUtils.cp( i, 'MissingAttachmentRecords') unless(options[:dummy] == 'true')
+            FileUtils.cp( i, 'MissingAttachmentRecords') unless options[:dummy] == 'true'
             logger.info("Copied #{i} to MissingAttachmentRecords folder")
           end
         end
 
         puts "Created #{loading_files_cache.size - missing_records.size} of #{loading_files_cache.size} #{load_object_class} attachments and succesfully attached to a #{@attach_to_klass}"
 
-        puts 'Dummy Run Complete- if happy run without -d' if(options[:dummy])
+        puts 'Dummy Run Complete- if happy run without -d' if options[:dummy]
 
       end
 

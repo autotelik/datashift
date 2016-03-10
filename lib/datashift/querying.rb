@@ -38,7 +38,7 @@ module DataShift
 
       heading_lookups = method_binding.inbound_column.lookup_list
 
-      if((part1.nil? || part1.empty?) && (part2.nil? || part2.empty?))
+      if (part1.nil? || part1.empty?) && (part2.nil? || part2.empty?)
 
         # Column completely empty - check for lookup supplied via the
         # inbound column headers/config
@@ -48,7 +48,7 @@ module DataShift
         part1 = heading_lookups.find_by_operator
         part2 = heading_lookups.collect(&:value)
 
-      elsif((part2.nil? || part2.empty?))
+      elsif part2.nil? || part2.empty?
 
         # Only **value(s)** in column, so use field from header/config field
 
@@ -76,18 +76,18 @@ module DataShift
 
       begin
 
-        if(options[:case_sensitive])
+        if options[:case_sensitive]
           return klazz.send("find_by_#{field}", search_term)
-        elsif(options[:use_like])
+        elsif options[:use_like]
           return klazz.where("#{field} like ?", "#{search_term}%").first
         else
           return klazz.where("lower(#{field}) = ?", search_term.downcase).first
         end
 
       rescue => e
-        logger.error("Exception attempting to find a record for [#{search_term}] on #{klazz}.#{field}")
-        logger.error e.backtrace
+        logger.error("Querying - Failed to find a record for [#{search_term}] on #{klazz}.#{field}")
         logger.error e.inspect
+        logger.error e.backtrace.last
       end
 
       nil
@@ -105,7 +105,7 @@ module DataShift
 
       split_on_prefix = options[:add_prefix]
 
-      find_search_term = (split_on_prefix) ? "#{split_on_prefix}#{search_term}" : search_term
+      find_search_term = split_on_prefix ? "#{split_on_prefix}#{search_term}" : search_term
 
       logger.info("Scanning for record where #{klazz}.#{field} ~=  #{find_search_term}")
 
@@ -113,12 +113,12 @@ module DataShift
 
         record = search_for_record(klazz, field, find_search_term)
 
-        unless(record)
+        unless record
           logger.info("Nothing found - trying split filename to terms on [#{split_on}]")
 
           # try individual portions of search_term, front -> back i.e "A_B_C_D" => A, B, C etc
           search_term.split(split_on).each do |str|
-            find_search_term = (split_on_prefix) ? "#{split_on_prefix}#{str}" : str
+            find_search_term = split_on_prefix ? "#{split_on_prefix}#{str}" : str
             logger.info("Scanning by term for record where #{field} ~=  #{find_search_term}")
             record = search_for_record(klazz, field, find_search_term, options)
             break if record
@@ -127,11 +127,11 @@ module DataShift
 
         # this time try incrementally scanning i.e "A_B_C_D" => A, A_B, A_B_C etc
         search_term.split(split_on).inject('') do |str, term|
-          z = (split_on_prefix) ? "#{split_on_prefix}#{str}#{split_on}#{term}" : "#{str}#{split_on}#{term}"
+          z = split_on_prefix ? "#{split_on_prefix}#{str}#{split_on}#{term}" : "#{str}#{split_on}#{term}"
           record = search_for_record(klazz, field, z, options)
           break if record
           term
-        end unless(record)
+        end unless record
 
         return record
       rescue => e
@@ -145,7 +145,7 @@ module DataShift
     def get_record_by!(klazz, field, search_terms, split_on = ' ', options = {} )
       x = get_record_by(klazz, field, search_terms, split_on, options)
 
-      fail RecordNotFound, "No #{klazz} record found for [#{search_terms}] on #{field}" unless(x)
+      raise RecordNotFound, "No #{klazz} record found for [#{search_terms}] on #{field}" unless x
 
       x
     end

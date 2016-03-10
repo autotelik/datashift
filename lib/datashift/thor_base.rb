@@ -15,7 +15,7 @@ module DataShift
 
         # TODO: - We're assuming run from a rails app/top level dir...
 
-        if(File.exist?(File.expand_path('config/environment.rb')))
+        if File.exist?(File.expand_path('config/environment.rb'))
           begin
             require File.expand_path('config/environment.rb')
           rescue => e
@@ -24,7 +24,7 @@ module DataShift
           end
 
         else
-          fail PathError.new('No config/environment.rb found - cannot initialise ActiveRecord')
+          raise PathError.new('No config/environment.rb found - cannot initialise ActiveRecord')
           # TODO: make this more robust ? e.g what about when using active record but not in Rails app, Sinatra etc
         end
       end

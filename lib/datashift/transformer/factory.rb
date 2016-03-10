@@ -78,7 +78,7 @@ module DataShift
       end
 
       def has_default?( method_binding )
-        (defaults_for(method_binding.klass).key?(method_binding.operator))
+        defaults_for(method_binding.klass).key?(method_binding.operator)
       end
 
       def substitutions_for( klass )
@@ -91,7 +91,7 @@ module DataShift
       end
 
       def has_substitution?( method_binding )
-        (substitution_for(method_binding.klass).key?(method_binding.operator))
+        substitution_for(method_binding.klass).key?(method_binding.operator)
       end
 
       def overrides_for(klass)
@@ -104,7 +104,7 @@ module DataShift
       end
 
       def has_override?( method_binding )
-        (overrides_for(method_binding.klass).key?(method_binding.operator))
+        overrides_for(method_binding.klass).key?(method_binding.operator)
       end
 
       def prefixs_for(klass)
@@ -117,7 +117,7 @@ module DataShift
       end
 
       def has_prefix?( method_binding )
-        (prefixs_for(method_binding.klass).key?(method_binding.operator))
+        prefixs_for(method_binding.klass).key?(method_binding.operator)
       end
 
       def postfixs_for(klass)
@@ -130,7 +130,7 @@ module DataShift
       end
 
       def has_postfix?( method_binding )
-        (postfixs_for(method_binding.klass).key?(method_binding.operator))
+        postfixs_for(method_binding.klass).key?(method_binding.operator)
       end
 
       # use when no inbound data supplied
@@ -159,7 +159,7 @@ module DataShift
       # Class based versions
 
       def set_default_on(klass, operator, default_value )
-       # puts "In set_default_on ", klass, operator, default_value
+        # puts "In set_default_on ", klass, operator, default_value
         defaults_for(klass)[operator] = default_value
       end
 
@@ -223,13 +223,13 @@ module DataShift
 
       keyed_on_class = data[klass]
 
-      if(keyed_on_class)
+      if keyed_on_class
 
         defaults = keyed_on_class['datashift_defaults']
 
         defaults.each do |_operator, default_value|
           DataShift::Transformer.factory.defaults_for(klass)[method_binding.operator] = default_value
-        end if(defaults & defaults.is_a(Hash))
+        end if defaults & defaults.is_a(Hash)
 
         #         overrides = keyed_on_class['datashift_overrides']
         #
@@ -244,7 +244,7 @@ module DataShift
       proteced
 
       def get_method_name( binding )
-        (binding.is_a?(MethodBinding)) ? method_binding.operator : binding
+        binding.is_a?(MethodBinding) ? method_binding.operator : binding
       end
 
     end ## class

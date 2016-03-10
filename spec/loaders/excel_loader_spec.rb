@@ -31,7 +31,7 @@ module  DataShift
         expect(loader.file_name).to eq simple_xls
       end
 
-      it 'should open an Excel file'do
+      it 'should open an Excel file' do
         expect( loader.start_excel( loader.file_name, 0 ) ).to be_a Excel
       end
     end
@@ -115,7 +115,7 @@ module  DataShift
 
         expect(loader.loaded_count).to eq (Project.count - count)
 
-        { '001' => 2, '002' => 1, '003' => 3, '099' => 0 }.each do|title, expected|
+        { '001' => 2, '002' => 1, '003' => 3, '099' => 0 }.each do |title, expected|
           project = Project.find_by_title(title)
 
           expect(project).to_not be_nil
@@ -132,7 +132,7 @@ module  DataShift
 
         expect(loader.loaded_count).to eq (Project.count - count)
 
-        { '004' => 3, '005' => 1, '006' => 0, '007' => 1 }.each do|title, expected|
+        { '004' => 3, '005' => 1, '006' => 0, '007' => 1 }.each do |title, expected|
           project = Project.find_by_title(title)
 
           expect(project).to_not be_nil
@@ -150,7 +150,7 @@ module  DataShift
         expect(loader.loaded_count).to eq 4
         expect(Project.count).to eq count + 4
 
-        { '004' => 4, '005' => 1, '006' => 0, '007' => 1 }.each do|title, expected|
+        { '004' => 4, '005' => 1, '006' => 0, '007' => 1 }.each do |title, expected|
           project = Project.find_by_title(title)
 
           expect(project).to_not be_nil

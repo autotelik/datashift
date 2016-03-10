@@ -4,7 +4,7 @@
 # License::
 #
 #
-if(DataShift::Guards.jruby?)
+if DataShift::Guards.jruby?
 
   require 'java'
   require 'poi-3.7-20101029.jar'
@@ -37,7 +37,7 @@ if(DataShift::Guards.jruby?)
     end
 
     def get_or_create_cell( column, value = nil )
-      if(value)
+      if value
         java_send(:getCell, [Java::int], column) || createCell(column, poi_cell_type(value))
       else
         java_send(:getCell, [Java::int], column) || java_send(:createCell, [Java::int], column)

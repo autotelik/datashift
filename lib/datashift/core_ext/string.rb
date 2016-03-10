@@ -13,7 +13,7 @@ String.class_eval do
     gsub(/[{}]/, '').split(',').each do |e|
       e.strip!
 
-      k, v = if(e.include?('=>'))
+      k, v = if e.include?('=>')
                e.split('=>')
              else
                e.split(': ')
@@ -22,21 +22,21 @@ String.class_eval do
       k = k.gsub(/[:']/, '').strip # easier to treat all keys as strings
       v = v.to_s.strip
 
-      if( v.match(/['"]/) )
-        h[k] = v.gsub(/["']/, '')
-      elsif( v.match(/^\d+$|^\d*\.\d+$|^\.\d+$/) )
-        h[k] = v.to_f
-      else
-        h[k] = v
-      end
+      h[k] = if v =~ /['"]/
+               v.gsub(/["']/, '')
+             elsif v =~ /^\d+$|^\d*\.\d+$|^\.\d+$/
+               v.to_f
+             else
+               v
+             end
       h
     end
 
     h
   end
 
-  TRUE_REGEXP = /^(yes|true|on|t|1|\-1)$/i.freeze
-  FALSE_REGEXP = /^(no|false|off|f|0)$/i.freeze
+  TRUE_REGEXP = /^(yes|true|on|t|1|\-1)$/i
+  FALSE_REGEXP = /^(no|false|off|f|0)$/i
 
   def to_b
     case self

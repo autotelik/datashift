@@ -7,12 +7,14 @@
 #
 require File.dirname(__FILE__) + '/../spec_helper'
 
+require 'datashift/version'
+
 describe 'DataShift' do
   before(:each) do
   end
 
   it 'should provide gem version' do
-    DataShift.VERSION
+    expect(DataShift::VERSION).to be_a String
   end
 
   it 'should provide gem name' do

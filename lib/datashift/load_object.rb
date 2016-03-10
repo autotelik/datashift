@@ -22,22 +22,22 @@ module DataShift
     # columns on model have not been processed before associations on that model
     #
     def save_if_new
-      return unless(@subject.new_record?)
+      return unless @subject.new_record?
 
-      if(@subject.valid?)
+      if @subject.valid?
         @subject.save
       else
-        fail DataShift::SaveError.new("Cannot Save Invalid #{subject.class} Record : #{subject.errors.full_messages.inspect}")
+        raise DataShift::SaveError.new("Cannot Save Invalid #{subject.class} Record : #{subject.errors.full_messages.inspect}")
       end
     end
 
     private
 
     def method_missing(method, *args, &block)
-      if(@subject.respond_to? method)
+      if @subject.respond_to? method
         @subject.send(method, *args, &block)
       else
-        fail RuntimeError.new("Cannot call [#{method}] on : #{subject.class.name}")
+        raise RuntimeError.new("Cannot call [#{method}] on : #{subject.class.name}")
       end
     end
 

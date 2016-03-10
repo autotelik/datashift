@@ -30,20 +30,23 @@ module Datashift
 
     desc "build", 'Build gem and install in one step'
 
-    method_option :version, :aliases => '-v',  :desc => "New version"
+    method_option :version, :aliases => '-v',  :desc => "New version", required: false
+
     method_option :push, :aliases => '-p', :desc => "Push resulting gem to rubygems.org"
-    method_option :install, :aliases => '-i', :desc => "Install freshly built gem locally"
+
+    method_option :install, :aliases => '-i',
+                  :desc => "Install freshly built gem locally", type: :boolean, default: false
 
     def build
 
+      version = options[:version] || DataShift::VERSION
+
       # Bump the VERSION file in library
       File.open( File.join('lib/datashift/version.rb'), 'w') do |f|
-        f << "#{v}\n"
-      end if(options[:version])
-
-      load "datashift/version.rb"
-
-      v = DataShift::VERSION
+        f << "module DataShift\n"
+        f << "    VERSION = '#{version}'.freeze\n"
+        f << "end\n"
+      end if(options[:version] != DataShift::VERSION)
 
       build_cmd =  "gem build datashift.gemspec"
 
@@ -51,15 +54,17 @@ module Datashift
 
       system(build_cmd)
 
-      puts "Installing version #{v}"
+      gem = "#{DataShift.gem_name}-#{version}.gem"
 
       if(options[:install])
-        gem = "#{DataShift.gem_name}-#{v}.gem"
+        puts "Installing : #{gem}"
+
         cmd = "gem install --no-ri --no-rdoc #{gem}"
         system(cmd)
       end
 
       if(options[:push])
+        puts "Pushing version #{version} to rubygems"
         cmd = "gem push #{gem}"
         system(cmd)
       end

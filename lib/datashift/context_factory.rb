@@ -45,7 +45,7 @@ module DataShift
         populator.configure_from(load_object_class, yaml_file)
 
         populators[@@config[:datashift_populators]]
-      end if(@@config[:datashift_populators])
+      end if @@config[:datashift_populators]
 
     end
 
@@ -64,8 +64,8 @@ module DataShift
 
     def self.get_populator(method_binding)
 
-      unless(method_binding.nil? || method_binding.invalid?)
-        return populators[method_binding.operator].new if(populators.key?(method_binding.operator))
+      unless method_binding.nil? || method_binding.invalid?
+        return populators[method_binding.operator].new if populators.key?(method_binding.operator)
       end
 
       DataShift::Populator.new

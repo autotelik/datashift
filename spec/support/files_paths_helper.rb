@@ -46,7 +46,6 @@ RSpec.configure do |_config|
     File.join(fixtures_path, 'results')
   end
 
-
   def datashift_thor_root
     @datashift_thor_root ||= File.expand_path('../../../lib/tasks', __FILE__)
   end
@@ -61,7 +60,7 @@ RSpec.configure do |_config|
   end
 
   def results_clear( glob = nil )
-    if(glob)
+    if glob
       begin FileUtils.rm_rf( File.join(results_path, glob) ); rescue; end
     else
       begin FileUtils.rm_rf(results_path); rescue; end
@@ -69,8 +68,6 @@ RSpec.configure do |_config|
       FileUtils.mkdir(results_path) unless File.exist?(results_path)
     end
   end
-
-  alias :clear_results_dir :results_clear
 
   def bundler_setup(gemfile = File.join(DataShift.root_path, 'spec', 'Gemfile') )
 
@@ -111,7 +108,7 @@ RSpec.configure do |_config|
     configuration = {}
 
     configuration[:database_configuration] = YAML.load( ERB.new( IO.read(database_yml_path) ).result )
-    db = configuration[:database_configuration][ env ]
+    db = configuration[:database_configuration][env]
 
     set_logger
 
@@ -131,7 +128,7 @@ RSpec.configure do |_config|
 
   def migrate_up( _rails_root = fixtures_path )
     p = File.join(fixtures_path, 'db/migrate')
-    fail "Cannot migrate DB - no such path #{p}" unless File.exist?(p)
+    raise "Cannot migrate DB - no such path #{p}" unless File.exist?(p)
     ActiveRecord::Migrator.up(p)
   end
 

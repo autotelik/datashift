@@ -91,11 +91,11 @@ module DataShift
 
       [*error_messages].each { |e| errors << e }
 
-      if(load_object)
+      if load_object
         reporter.add_failed_object(load_object)
 
         # TODO: - make this behaviour configurable with soem ind of rollback setting/funciton
-        if(load_object.respond_to?('destroy') && !load_object.new_record?)
+        if load_object.respond_to?('destroy') && !load_object.new_record?
           klass = load_object.class
           load_object.destroy
           reset
@@ -110,29 +110,29 @@ module DataShift
     # TODO: smart ordering of columns dynamically ourselves rather than relying on incoming data order
     #
     def save_if_new
-      return unless(load_object.new_record?)
+      return unless load_object.new_record?
 
-      if(load_object.valid?)
+      if load_object.valid?
         save
       else
-        fail DataShift::SaveError.new("Cannot Save Invalid #{load_object.class} Record : #{current_errors}")
+        raise DataShift::SaveError.new("Cannot Save Invalid #{load_object.class} Record : #{current_errors}")
       end
     end
 
     def save_and_report
 
-      unless(save)
-        failure( current_errors )
-        logger.error "Load failed while processing [#{context.method_binding.pp}]"
-      else
+      if save
         logger.info("Successfully SAVED Object [#{load_object.id}] for [#{context.method_binding.pp}]")
         success
+      else
+        failure( current_errors )
+        logger.error "Load failed while processing [#{context.method_binding.pp}]"
       end
 
     end
 
     def save
-      return false unless( load_object )
+      return false unless  load_object
 
       logger.debug("SAVING #{load_object.class} : #{load_object.inspect}")
       begin

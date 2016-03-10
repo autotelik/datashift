@@ -57,58 +57,56 @@ module DataShift
       @attribute_hash = {}
     end
 
-    def has_value?
-      !(value.nil?)
+    def value?
+      !value.nil?
     end
 
     def self.attribute_hash_const_regexp
       @attribute_hash_const_regexp ||= Regexp.new( Delimiters.attribute_list_start + '.*' + Delimiters.attribute_list_end)
     end
 
+    # Transformations
+
     def default( method_binding )
       default = Transformer.factory.default(method_binding)
 
-      if(default)
-        @previous_value = value
-        @value = default
-      end
+      return unless default
+
+      @previous_value = value
+      @value = default
     end
 
     # Checks Transformer for a substitution for column defined in method_binding
     def substitute( method_binding )
       sub = Transformer.factory.substitution(method_binding)
 
-      if(sub)
-        @previous_value = value
-        @value = previous_value.gsub(sub.pattern.to_s, sub.replacement.to_s)
-      end
+      return unless sub
+      @previous_value = value
+      @value = previous_value.gsub(sub.pattern.to_s, sub.replacement.to_s)
     end
 
     def override( method_binding )
       override = Transformer.factory.override(method_binding)
 
-      if(override)
-        @previous_value = value
-        @value = override
-      end
+      return unless override
+      @previous_value = value
+      @value = override
     end
 
     def prefix( method_binding )
       prefix = Transformer.factory.prefix(method_binding)
 
-      if(prefix)
-        @previous_value = value
-        @value = prefix + @value
-      end
+      return unless prefix
+      @previous_value = value
+      @value = prefix + @value
     end
 
     def postfix( method_binding )
       postfix = Transformer.factory.postfix(method_binding)
 
-      if(postfix)
-        @previous_value = value
-        @value += postfix
-      end
+      return unless postfix
+      @previous_value = value
+      @value += postfix
     end
 
     # Check supplied value, validate it, and if required :
@@ -120,28 +118,28 @@ module DataShift
     #
     def prepare_data(method_binding, data)
 
-      fail NilDataSuppliedError.new('No method_binding supplied for prepare_data') unless(method_binding)
+      raise NilDataSuppliedError, 'No method_binding supplied for prepare_data' unless method_binding
 
       @original_data = data
 
       begin
 
-        if(data.is_a? ActiveRecord::Relation) # Rails 4 - query no longer returns an array
+        if data.is_a? ActiveRecord::Relation # Rails 4 - query no longer returns an array
           @value = data.to_a
-
-        elsif(data.class.ancestors.include?(ActiveRecord::Base) || data.is_a?(Array))
+        elsif data.class.ancestors.include?(ActiveRecord::Base) || data.is_a?(Array)
           @value = data
-
-        elsif(data.is_a?(Spreadsheet::Formula)) # TOFIX jruby/apache poi equivalent ?
+        elsif ( )
+          @current_value = value.value
+        elsif !DataShift::Guards.jruby? &&
+              (data.is_a?(Spreadsheet::Formula) || value.class.ancestors.include?(Spreadsheet::Formula))
+          # TOFIX jruby/apache poi equivalent ?
           @value = data.value
-
         else
           @value = data.to_s
 
           @attribute_hash = @value.slice!( Populator.attribute_hash_const_regexp )
 
-          if(attribute_hash && !attribute_hash.empty?)
-            # @value.chop!    # the slice seems to add an extra space/eol
+          if attribute_hash && !attribute_hash.empty?
             @attribute_hash = Populator.string_to_hash( attribute_hash )
             logger.info "Populator found attribute hash :[#{attribute_hash.inspect}]"
           else
@@ -149,20 +147,12 @@ module DataShift
           end
         end
 
-        default( method_binding ) if(data.nil? || (data.respond_to?('empty?') && data.empty?))
-
-        override( method_binding )
-
-        substitute( method_binding )
-
-        prefix( method_binding )
-
-        postfix( method_binding )
+        run_transforms(method_binding)
 
       rescue => e
         logger.error(e.message)
         logger.error("Populator stacktrace: #{e.backtrace.first}")
-        raise DataProcessingError.new("Populator failed to prepare data [#{value}] for #{method_binding.pp}")
+        raise DataProcessingError, "Populator failed to prepare data [#{value}] for #{method_binding.pp}"
       end
 
       [value, attribute_hash]
@@ -176,57 +166,26 @@ module DataShift
 
       klass = model_method.klass
 
-      if( model_method.operator_for(:belongs_to) )
-
+      if model_method.operator_for(:belongs_to)
         insistent_belongs_to(method_binding, record, value)
-
-      elsif( model_method.operator_for(:has_many) )
-
+      elsif  model_method.operator_for(:has_many)
         assign_has_many(method_binding, record)
+      elsif  model_method.operator_for(:has_one)
 
-      elsif( model_method.operator_for(:has_one) )
-
-        if(value.is_a?(model_method.klass))
+        if value.is_a?(model_method.klass)
           record.send(operator + '=', value)
         else
           logger.error("Cannot assign value [#{value.inspect}]")
           logger.error("Value was Type (#{value.class}) - Required Type for has_one #{operator} is [#{klass}]")
         end
 
-      elsif( model_method.operator_for(:assignment) )
+      elsif  model_method.operator_for(:assignment)
 
-        if(model_method.col_type)
-
+        if model_method.col_type
           # TOFIX .. enum section probably belongs in prepare_data
+          return if check_process_enum(record, model_method )
 
-          if(klass.respond_to?(operator.pluralize))
-
-            enums = klass.send(operator.pluralize)
-
-            if(enums.is_a?(Hash) && enums.keys.include?(value.parameterize.underscore))
-              # ENUM
-              logger.debug("[#{operator}] Appears to be an ENUM - setting to [#{value}])")
-
-              record.send( operator + '=', value.parameterize.underscore)
-              return
-            end
-          end
-
-          if(model_method.col_type.respond_to? :type_cast)
-            logger.debug("Assignment via [#{operator}] to [#{value}] (CAST TYPE [#{model_method.col_type.type_cast(value).inspect}])")
-
-            record.send( operator + '=', model_method.col_type.type_cast( value ) )
-          else
-            logger.debug("Assignment via [#{operator}] to [#{value}] (CAST [#{model_method.col_type.cast_type.inspect}])")
-
-            # TODO: - investigate what we can do with model_method.col_type.sql_type
-           # if(value.is_a? Float)
-            #  puts "ASSIGN B", value, value.class
-            #  record.send( operator + '=', value.to_f)
-            #else
-            record.send( operator + '=', value)
-             # end
-          end
+          assignment(record, value, model_method)
 
         else
           logger.debug("Brute force assignment of value  #{value} => [#{operator}]")
@@ -240,9 +199,24 @@ module DataShift
       end
     end
 
+    def assignment(record, value, model_method)
+      operator = model_method.operator
+
+      if model_method.col_type.respond_to? :type_cast
+        logger.debug("Assignment via [#{operator}] to [#{value}] (CAST TYPE [#{model_method.col_type.type_cast(value).inspect}])")
+
+        record.send( operator + '=', model_method.col_type.type_cast( value ) )
+      else
+        logger.debug("Assignment via [#{operator}] to [#{value}] (CAST [#{model_method.col_type.cast_type.inspect}])")
+
+        # TODO: -investigate if we need cast here and if so what we can do with model_method.col_type.sql_type
+        record.send( operator + '=', value)
+      end
+    end
+
     def insistent_assignment(record, value, operator)
 
-      op = operator + '=' unless(operator.include?('='))
+      op = operator + '=' unless operator.include?('=')
 
       begin
         record.send(op, value)
@@ -256,7 +230,7 @@ module DataShift
             if f == Populator.insistent_method_list.last
               logger.error(e.inspect)
               logger.error("Failed to assign [#{value}] via operator #{operator}")
-              raise "Failed to assign [#{value}] to #{operator}" unless value.nil?
+              raise DataProcessingError, "Failed to assign [#{value}] to #{operator}" unless value.nil?
             end
           end
         end
@@ -268,44 +242,34 @@ module DataShift
 
       operator = method_binding.operator
 
-      if( value.class == method_binding.klass)
+      if value.class == method_binding.klass
         logger.info("Populator assigning #{value} to belongs_to association #{operator}")
         record.send(operator) << value
       else
 
-        # TODO: - DRY all this
-        if(method_binding.find_by_operator)
+        unless method_binding.klass.respond_to?('where')
+          raise CouldNotAssignAssociation,
+                "Populator failed to assign [#{value}] to belongs_to association [#{operator}]"
+        end
 
-          item = method_binding.klass.where(method_binding.find_by_operator => value).first_or_create
+        # try the default field names
+        ([method_binding.find_by_operator] + Populator.insistent_find_by_list).each do |find_by|
+          begin
 
-          if(item)
+            item = method_binding.klass.where(find_by => value).first_or_create
+
+            next unless item
+
             logger.info("Populator assigning #{item.inspect} to belongs_to association #{operator}")
             record.send(operator + '=', item)
-          else
-            logger.error("Could not find or create [#{value}] for belongs_to association [#{operator}]")
-            fail CouldNotAssignAssociation.new "Populator failed to assign [#{value}] to belongs_to association [#{operator}]"
-          end
+            break
 
-        else
-          # try the default field names
-          Populator.insistent_find_by_list.each do |x|
-            begin
-
-              next unless method_binding.klass.respond_to?('where')
-
-              item = method_binding.klass.where(x => value).first_or_create
-
-              if(item)
-                logger.info("Populator assigning #{item.inspect} to belongs_to association #{operator}")
-                record.send(operator + '=', item)
-                break
-              end
-            rescue => e
-              logger.error(e.inspect)
-              logger.error("Failed attempting to find belongs_to for #{method_binding.pp}")
-              if(x == Populator.insistent_method_list.last)
-                raise CouldNotAssignAssociation.new "Populator failed to assign [#{value}] to belongs_to association [#{operator}]" unless value.nil?
-              end
+          rescue => e
+            logger.error(e.inspect)
+            logger.error("Failed attempting to find belongs_to for #{method_binding.pp}")
+            if find_by == Populator.insistent_method_list.last
+              raise CouldNotAssignAssociation,
+                    "Populator failed to assign [#{value}] to belongs_to association [#{operator}]" unless value.nil?
             end
           end
         end
@@ -313,22 +277,21 @@ module DataShift
       end
     end
 
-    def assignment( operator, record, value )
+    def check_process_enum(record, model_method)
 
-      op = operator + '=' unless(operator.include?('='))
+      klass = model_method.klass
+      operator = model_method.operator
 
-      begin
-        record.send(op, value)
-      rescue => e
-        Populator.insistent_method_list.each do |f|
-          begin
-            record.send(op, value.send( f) )
-            break
-          rescue => e
-            if f == Populator.insistent_method_list.last
-              raise "I'm sorry I have failed to assign [#{value}] to #{operator}" unless value.nil?
-            end
-          end
+      if klass.respond_to?(operator.pluralize)
+
+        enums = klass.send(operator.pluralize)
+
+        if enums.is_a?(Hash) && enums.keys.include?(value.parameterize.underscore)
+          # ENUM
+          logger.debug("[#{operator}] Appears to be an ENUM - setting to [#{value}])")
+
+          record.send( operator + '=', value.parameterize.underscore)
+          return true
         end
       end
     end
@@ -341,6 +304,20 @@ module DataShift
 
     attr_writer :value, :attribute_hash
 
+    def run_transforms(method_binding)
+      default( method_binding ) if value.nil? || (value.respond_to?('empty?') && value.empty?)
+
+      override( method_binding )
+
+      substitute( method_binding )
+
+      prefix( method_binding )
+
+      postfix( method_binding )
+
+      # TODO: - enable clients to register their own transformation methods and call them here
+    end
+
     def assign_has_many(method_binding, load_object)
 
       # there are times when we need to save early, for example before assigning to
@@ -351,10 +328,10 @@ module DataShift
       collection = []
       columns = []
 
-      if(value.is_a?(Array))
+      if value.is_a?(Array)
 
         value.each do |record|
-          if(record.class.ancestors.include?(ActiveRecord::Base))
+          if record.class.ancestors.include?(ActiveRecord::Base)
             collection << record
           else
             columns << record
@@ -373,14 +350,15 @@ module DataShift
         # split into usable parts ; size:large or colour:red,green,blue
         field, find_by_values = Querying.where_field_and_values(method_binding, col_str )
 
-        fail "Cannot perform DB find by #{field}. Expected format key:value" unless(field && find_by_values)
+        raise "Cannot perform DB find by #{field}. Expected format key:value" unless field && find_by_values
 
         found_values = []
 
         # we are looking up an association so need the Class of the Association
         klass = method_binding.model_method.operator_class
 
-        fail CouldNotDeriveAssociationClass.new("Failed to find class for has_many Association : #{method_binding.pp}") unless(klass)
+        raise CouldNotDeriveAssociationClass,
+              "Failed to find class for has_many Association : #{method_binding.pp}" unless klass
 
         logger.info("Running where clause on #{klass} : [#{field} IN #{find_by_values.inspect}]")
 
@@ -396,11 +374,11 @@ module DataShift
 
         logger.info("Scan result #{found_values.inspect}")
 
-        unless(find_by_values.size == found_values.size)
+        unless find_by_values.size == found_values.size
           found = found_values.collect { |f| f.send(field) }
           load_object.errors.add( operator, "Association with key(s) #{(find_by_values - found).inspect} NOT found")
           logger.error "Association [#{operator}] with key(s) #{(find_by_values - found).inspect} NOT found - Not added."
-          next if(found_values.empty?)
+          next if found_values.empty?
         end
 
         logger.info("Assigning to has_many [#{operator}] : #{found_values.inspect} (#{found_values.class})")

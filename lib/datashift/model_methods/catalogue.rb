@@ -35,32 +35,32 @@ module DataShift
       #
       def self.populate(klass, options = {} )
 
-        fail "Cannot find operators supplied klass nil #{klass}" if(klass.nil?)
+        raise "Cannot find operators supplied klass nil #{klass}" if klass.nil?
 
         register(klass)
 
         logger.debug("Catalogue - building operators information for #{klass}")
 
         # Find the has_many associations which can be populated via <<
-        if( options[:reload] || has_many[klass].nil? )
+        if options[:reload] || has_many[klass].nil?
           has_many[klass] = klass.reflect_on_all_associations(:has_many).map { |i| i.name.to_s }
           klass.reflect_on_all_associations(:has_and_belongs_to_many).inject(has_many[klass]) { |x, i| x << i.name.to_s }
         end
 
         # Find the belongs_to associations which can be populated via  Model.belongs_to_name = OtherArModelObject
-        if( options[:reload] || belongs_to[klass].nil? )
+        if options[:reload] || belongs_to[klass].nil?
           belongs_to[klass] = klass.reflect_on_all_associations(:belongs_to).map { |i| i.name.to_s }
         end
 
         # Find the has_one associations which can be populated via  Model.has_one_name = OtherArModelObject
-        if( options[:reload] || has_one[klass].nil? )
+        if options[:reload] || has_one[klass].nil?
           has_one[klass] = klass.reflect_on_all_associations(:has_one).map { |i| i.name.to_s }
         end
 
         # Find the model's column associations which can be populated via xxxxxx= value
         # Note, not all reflections return method names in same style so we convert all to
         # the raw form i.e without the '='  for consistency
-        if( options[:reload] || assignments[klass].nil? )
+        if options[:reload] || assignments[klass].nil?
 
           begin
             assignments[klass] = klass.column_names
@@ -69,12 +69,12 @@ module DataShift
           end
 
           # get into consistent format with other assignments names i.e remove the = for now
-          assignments[klass] += setters(klass).map { |i| i.gsub(/=/, '') } if(options[:instance_methods])
+          assignments[klass] += setters(klass).map { |i| i.delete('=') } if options[:instance_methods]
 
           # Now remove all the associations
-          assignments[klass] -= has_many[klass]   if(has_many[klass])
-          assignments[klass] -= belongs_to[klass] if(belongs_to[klass])
-          assignments[klass] -= has_one[klass]    if(has_one[klass])
+          assignments[klass] -= has_many[klass]   if has_many[klass]
+          assignments[klass] -= belongs_to[klass] if belongs_to[klass]
+          assignments[klass] -= has_one[klass]    if has_one[klass]
 
           # TODO: remove assignments with id
           # assignments => tax_id  but already in belongs_to => tax

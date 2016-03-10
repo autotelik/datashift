@@ -48,9 +48,9 @@ module DataShift
 
     def perform_load( options = {} )
 
-      fail "Cannot load - failed to create a #{klass}" unless(load_object)
+      raise "Cannot load - failed to create a #{klass}" unless load_object
 
-      fail MissingHeadersError, "Minimum row for Headers is 0 - passed #{options[:header_row]}" if(options[:header_row] && options[:header_row].to_i < 0)
+      raise MissingHeadersError, "Minimum row for Headers is 0 - passed #{options[:header_row]}" if options[:header_row] && options[:header_row].to_i < 0
 
       allow_empty_rows = options[:allow_empty_rows]
 
@@ -59,7 +59,7 @@ module DataShift
       start(file_name, options)
 
       # maps list of headers into suitable calls on the Active Record class
-      bind_headers(headers, options.merge({ strict: @strict }) )
+      bind_headers(headers, options.merge(strict: @strict) )
 
       begin
         puts 'Dummy Run - Changes will be rolled back' if options[:dummy]
@@ -70,14 +70,14 @@ module DataShift
 
             doc_context.current_row = row
 
-            next if(current_row_idx == headers.idx)
+            next if current_row_idx == headers.idx
 
             # Excel num_rows seems to return all 'visible' rows, which appears to be greater than the actual data rows
             # (TODO - write spec to process .xls with a huge number of rows)
             #
             # manually have to detect when actual data ends, this isn't very smart but
             # got no better idea than ending once we hit the first completely empty row
-            break if(!allow_empty_rows && (row.nil? || row.empty?))
+            break if !allow_empty_rows && (row.nil? || row.empty?)
 
             logger.info "Processing Row #{i} : #{@current_row}"
 
@@ -86,7 +86,7 @@ module DataShift
             # Iterate over the bindings, creating a context from data in associated Excel column
 
             @binder.bindings.each_with_index do |method_binding, i|
-              unless(method_binding.valid?)
+              unless method_binding.valid?
                 logger.warn("No binding was found for column (#{i})")
                 next
               end
@@ -105,7 +105,7 @@ module DataShift
 
                 logger.error("Process failed with #{x.inspect} #{x.backtrace}")
 
-                if(doc_context.all_or_nothing?)
+                if doc_context.all_or_nothing?
                   logger.error('Node failed so Current Row aborted')
                   break
                 end
@@ -114,9 +114,9 @@ module DataShift
             end
 
             # manually have to detect when actual data ends
-            break if(!allow_empty_rows && contains_data == false)
+            break if !allow_empty_rows && contains_data == false
 
-            if(doc_context.errors? && doc_context.all_or_nothing?)
+            if doc_context.errors? && doc_context.all_or_nothing?
               logger.warn "Row #{current_row_idx} contained errors and has been skipped"
             else
               doc_context.save_and_report
@@ -126,9 +126,9 @@ module DataShift
             doc_context.reset unless doc_context.context.next_update?
           end # all rows processed
 
-          if(options[:dummy])
+          if options[:dummy]
             puts 'Excel loading stage done - Dummy run so Rolling Back.'
-            fail ActiveRecord::Rollback # Don't actually create/upload to DB if we are doing dummy run
+            raise ActiveRecord::Rollback # Don't actually create/upload to DB if we are doing dummy run
           end
         end # TRANSACTION N.B ActiveRecord::Rollback does not propagate outside of the containing transaction block
 
@@ -157,7 +157,7 @@ module DataShift
 
       set_headers( parse_headers(sheet, options[:header_row] || 0) )
 
-      fail MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{headers.idx} contains headers" if(headers.empty?)
+      raise MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{headers.idx} contains headers" if headers.empty?
 
       excel
     end

@@ -23,7 +23,7 @@ module DataShift
     protected
 
     def prepare_excel(klass, options = {})
-      @filename = options[:filename] if(options[:filename])
+      @filename = options[:filename] if options[:filename]
 
       excel = DataShift::Excel.new
 
@@ -34,7 +34,7 @@ module DataShift
       unless sheet
         logger.error("Excel failed to create WorkSheet called [#{name}]")
 
-        fail "Failed to create Excel WorkSheet called [#{name}]"
+        raise "Failed to create Excel WorkSheet called [#{name}]"
       end
 
       excel

@@ -44,13 +44,13 @@ module DataShift
         end
 
         it 'should generate a standard default mapping file' do
-          mapping_generator.generate(nil, { file: map_file } )
+          mapping_generator.generate(nil, file: map_file )
 
           expect(File.exist?(map_file)).to be true
         end
 
         it 'should generate a mapping doc with pre supplied title' do
-          result = mapping_generator.generate(nil, { file: map_file, title: 'rspec_mappings:' } )
+          result = mapping_generator.generate(nil, file: map_file, title: 'rspec_mappings:' )
 
           expect(File.exist?(map_file)).to be true
 
@@ -64,7 +64,7 @@ module DataShift
         let(:map_file) { result_file('project_mapper.yaml') }
 
         it 'should generate a populated mapping doc for a class' do
-          result = mapping_generator.generate( Project, { file: map_file } )
+          result = mapping_generator.generate( Project, file: map_file )
 
           expect(File.exist?(map_file)).to be true
           expect( File.read(map_file) ).to include 'Project:'

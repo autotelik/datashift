@@ -35,7 +35,7 @@ class CSV
     csv_data = serializable_hash.values.collect { |c| escape_for_csv(c) }
 
     [*options[:methods]].each do |x|
-      csv_data << escape_for_csv(record.send(x)) if(record.respond_to?(x))
+      csv_data << escape_for_csv(record.send(x)) if record.respond_to?(x)
     end
 
     csv_data
@@ -45,14 +45,13 @@ class CSV
     add_row( ar_to_csv(record, remove_list, options) )
   end
 
-
-  def ar_association_to_csv(record, model_method, options = {})
+  def ar_association_to_csv(record, model_method, _options = {})
     # pack association instances into single column
-    if(DataShift::ModelMethod.is_association_type?(model_method.operator_type))
-      csv_data = record_to_column( record.send(model_method.operator) )
-    else
-      csv_data = escape_for_csv( record.send(model_method.operator) )
-    end
+    csv_data = if DataShift::ModelMethod.is_association_type?(model_method.operator_type)
+                 record_to_column( record.send(model_method.operator) )
+               else
+                 escape_for_csv( record.send(model_method.operator) )
+               end
 
     csv_data
   end

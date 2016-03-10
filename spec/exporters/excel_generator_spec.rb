@@ -40,7 +40,7 @@ module DataShift
 
       expect(excel.worksheets.size).to eq 1
 
-      expect(excel.worksheet(0).name).to eq  'Project'
+      expect(excel.worksheet(0).name).to eq 'Project'
 
       headers = excel.worksheets[0].row(0)
 
@@ -69,12 +69,12 @@ module DataShift
 
       expect(excel.worksheets.size).to eq 1
 
-      expect(excel.worksheet(0).name).to eq  'Project'
+      expect(excel.worksheet(0).name).to eq 'Project'
 
       headers = excel.worksheets[0].row(0)
 
       %w(owner milestones loader_releases versions categories).each do |check|
-        expect(headers.include?(check)).to eq  true
+        expect(headers.include?(check)).to eq true
       end
     end
 
@@ -94,7 +94,7 @@ module DataShift
 
       expect(excel.worksheets.size).to eq 1
 
-      expect( excel.worksheet(0).name).to eq  'Project'
+      expect( excel.worksheet(0).name).to eq 'Project'
 
       headers = excel.worksheets[0].row(0)
 
@@ -122,7 +122,7 @@ module DataShift
 
       expect(excel.worksheets.size).to eq 1
 
-      expect(excel.worksheet(0).name).to eq  'Project'
+      expect(excel.worksheet(0).name).to eq 'Project'
 
       headers = excel.worksheets[0].row(0)
 
@@ -151,7 +151,7 @@ module DataShift
 
       expect(excel.worksheets.size).to eq 1
 
-      expect(excel.worksheet(0).name).to eq  'Project'
+      expect(excel.worksheet(0).name).to eq 'Project'
 
       headers = excel.worksheets[0].row(0)
 

@@ -57,7 +57,7 @@ module  DataShift
         expect(loader.loaded_count).to eq 4
         expect(loader.loaded_count).to eq (Project.count - count)
 
-        { '001' => 2, '002' => 1, '003' => 3, '099' => 0 }.each do|title, expected|
+        { '001' => 2, '002' => 1, '003' => 3, '099' => 0 }.each do |title, expected|
           project = Project.where(title: title).first
 
           expect(project).to_not be_nil
@@ -73,7 +73,7 @@ module  DataShift
 
         expect(loader.loaded_count).to eq  (Project.count - count)
 
-        { '004' => 3, '005' => 1, '006' => 0, '007' => 1 }.each do|title, expected|
+        { '004' => 3, '005' => 1, '006' => 0, '007' => 1 }.each do |title, expected|
           project = Project.where(title: title).first
 
           expect(project).to_not be_nil
@@ -90,7 +90,7 @@ module  DataShift
         expect(loader.loaded_count).to eq (Project.count - count)
         loader.loaded_count.should > 3
 
-        { '004' => 4, '005' => 1, '006' => 0, '007' => 1 }.each do|title, expected|
+        { '004' => 4, '005' => 1, '006' => 0, '007' => 1 }.each do |title, expected|
           project = Project.where(title: title).first
 
           project.should_not be_nil

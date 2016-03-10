@@ -6,7 +6,7 @@
 # Details::   A helper module providing shortcuts for manipulating Excel files.
 #
 
-if(DataShift::Guards.jruby?)
+if DataShift::Guards.jruby?
 
   JExcelFile.class_eval do
     include_class 'org.apache.poi.hssf.util.HSSFColor'
@@ -15,11 +15,11 @@ if(DataShift::Guards.jruby?)
     # If term supplied find sheet and set active
     #
     def active_worksheet(term = nil)
-      if( term.nil? )
+      if  term.nil?
         @sheet ||= @workbook.getSheetAt(@current_sheet_index)
       else
         activate_sheet(term)
-      end if(@workbook)
+      end if @workbook
       @sheet
     end
 
@@ -76,7 +76,7 @@ if(DataShift::Guards.jruby?)
     end
 
     def add_comment( cell, text )
-      fail 'Please supply valid HSSFCell' unless cell.respond_to?('setCellComment')
+      raise 'Please supply valid HSSFCell' unless cell.respond_to?('setCellComment')
       return if @sheet.nil?
 
       patriarch = @patriarchs[@sheet.getSheetName]
@@ -124,7 +124,7 @@ if(DataShift::Guards.jruby?)
       numrows = results.length
       sheet_name = sheet
 
-      if (numrows == 0)
+      if numrows == 0
         log :info, "WARNING - results are empty nothing written to sheet: #{sheet}"
         return
       end
@@ -135,7 +135,7 @@ if(DataShift::Guards.jruby?)
         while numrows > 0
           # Split the results and write to a new sheet
           next_results = results.slice(startrow, @@maxrows > numrows ? numrows : @@maxrows)
-          results_to_sheet(next_results, "#{sheet_name}", mappings, header) if next_results
+          results_to_sheet(next_results, sheet_name.to_s, mappings, header) if next_results
 
           # Increase counters
           numrows -= next_results.length
@@ -153,8 +153,8 @@ if(DataShift::Guards.jruby?)
           header_row = @sheet.createRow(row_index)
           cell_index = 0
           results[0].keys.each do |h|
-            header_row.createCell(cell_index).setCellValue("#{h}")
-            @sheet.setDefaultColumnStyle(cell_index, getPercentStyle) if "#{h}".include? '%'
+            header_row.createCell(cell_index).setCellValue(h.to_s)
+            @sheet.setDefaultColumnStyle(cell_index, getPercentStyle) if h.to_s.include? '%'
             cell_index += 1
           end
           # Freeze the header row
@@ -166,11 +166,11 @@ if(DataShift::Guards.jruby?)
         results.each do |row|
           sheet_row = @sheet.createRow(row_index)
           cell_index = 0
-          row.each do|_k, v|
+          row.each do |_k, v|
             celltype = v.is_a?(Numeric) ? HSSFCell::CELL_TYPE_NUMERIC : HSSFCell::CELL_TYPE_STRING
             cell = sheet_row.createCell(cell_index, celltype)
 
-            v.nil? ? value = '<NIL>' : value = v
+            value = v.nil? ? '<NIL>' : v
 
             cell.setCellValue(value)
 

@@ -22,10 +22,10 @@ require 'erb'
 
 namespace :datashift do
 
-  desc "Convert MS Word to HTML and seed_fu fixtures. help=true for detailed usage."
+  desc 'Convert MS Word to HTML and seed_fu fixtures. help=true for detailed usage.'
 
-  task :word2html, [:help] => [:environment] do |t, args|
-    x =<<-EOS
+  task :word2html, [:help] => [:environment] do |_t, args|
+    x = <<-EOS
 
   USAGE::
       Convert MS Word docs to HTML and seed_fu fixtures, by default searches for docs
@@ -45,7 +45,7 @@ namespace :datashift do
         rake db:seed FIXTURE_PATH=features/fixtures
     EOS
 
-    if(args[:help])
+    if args[:help]
       puts x
       exit(0)
     end
@@ -54,8 +54,8 @@ namespace :datashift do
 
     require File.join(site_extension_lib, 'word')
 
-    copy_path = ENV["COPY_PATH"] ? ENV["COPY_PATH"] : File.join(RAILS_ROOT, "doc", "copy")
-    fixtures_path = ENV["FIXTURES_PATH"] ? ENV["FIXTURES_PATH"] : File.join(RAILS_ROOT, "db", "fixtures")
+    copy_path = ENV['COPY_PATH'] ? ENV['COPY_PATH'] : File.join(RAILS_ROOT, 'doc', 'copy')
+    fixtures_path = ENV['FIXTURES_PATH'] ? ENV['FIXTURES_PATH'] : File.join(RAILS_ROOT, 'db', 'fixtures')
 
     copy_files = Dir[File.join(copy_path, '*.doc')]
 
@@ -77,11 +77,11 @@ namespace :datashift do
 
       tidy_config = File.join(site_extension_lib, 'tasks', 'tidy_config.txt')
 
-      puts "tidy cmd line:", "tidy -config #{tidy_config} -clean --show-body-only y --word-2000 y --indent-spaces 2 -output #{tidy_file} #{html_file}"
+      puts 'tidy cmd line:', "tidy -config #{tidy_config} -clean --show-body-only y --word-2000 y --indent-spaces 2 -output #{tidy_file} #{html_file}"
 
-      result = system("tidy", '-config', "#{tidy_config}", '-clean', '--show-body-only', 'y', '--word-2000', 'y', '--indent-spaces', '2', '-output', "#{tidy_file}", "#{html_file}")
+      result = system('tidy', '-config', tidy_config.to_s, '-clean', '--show-body-only', 'y', '--word-2000', 'y', '--indent-spaces', '2', '-output', tidy_file.to_s, html_file.to_s)
 
-      # TODO maybe report on result, $?
+      # TODO: maybe report on result, $?
 
       File.open( tidy_file ) do |f|
         puts f.read
@@ -91,14 +91,14 @@ namespace :datashift do
     end
   end
 
-  desc "Convert MS Word to HTML and seed_fu fixtures. help=true for detailed usage."
-  task :word2seedfu => :environment do
+  desc 'Convert MS Word to HTML and seed_fu fixtures. help=true for detailed usage.'
+  task word2seedfu: :environment do
     site_extension_lib = File.join(SiteExtension.root, 'lib')
 
     require File.join(site_extension_lib, 'word')
 
-    sku_id     = ENV["INITIAL_SKU_ID"] ? ENV["INITIAL_SKU_ID"] : 0
-    sku_prefix = ENV["SKU_PREFIX"] ? ENV["SKU_PREFIX"] : File.basename( RAILS_ROOT )
+    sku_id     = ENV['INITIAL_SKU_ID'] ? ENV['INITIAL_SKU_ID'] : 0
+    sku_prefix = ENV['SKU_PREFIX'] ? ENV['SKU_PREFIX'] : File.basename( RAILS_ROOT )
 
     seedfu_template = File.join(site_extension_lib, 'tasks', 'seed_fu_product_template.erb')
 
@@ -112,8 +112,8 @@ namespace :datashift do
       raise e
     end
 
-    copy_path = ENV["COPY_PATH"] ? ENV["COPY_PATH"] : File.join(RAILS_ROOT, "doc", "copy")
-    fixtures_path = ENV["FIXTURES_PATH"] ? ENV["FIXTURES_PATH"] : File.join(RAILS_ROOT, "db", "fixtures")
+    copy_path = ENV['COPY_PATH'] ? ENV['COPY_PATH'] : File.join(RAILS_ROOT, 'doc', 'copy')
+    fixtures_path = ENV['FIXTURES_PATH'] ? ENV['FIXTURES_PATH'] : File.join(RAILS_ROOT, 'db', 'fixtures')
 
     copy_files = Dir[File.join(copy_path, '*.doc')]
 
@@ -135,24 +135,24 @@ namespace :datashift do
 
       tidy_config = File.join(site_extension_lib, 'tasks', 'tidy_config.txt')
 
-      puts "tidy cmd line:", "tidy -config #{tidy_config} -clean --show-body-only y --word-2000 y --indent-spaces 2 -output #{tidy_file} #{html_file}"
+      puts 'tidy cmd line:', "tidy -config #{tidy_config} -clean --show-body-only y --word-2000 y --indent-spaces 2 -output #{tidy_file} #{html_file}"
 
-      result = system("tidy", '-config', "#{tidy_config}", '-clean', '--show-body-only', 'y', '--word-2000', 'y', '--indent-spaces', '2', '-output', "#{tidy_file}", "#{html_file}")
+      result = system('tidy', '-config', tidy_config.to_s, '-clean', '--show-body-only', 'y', '--word-2000', 'y', '--indent-spaces', '2', '-output', tidy_file.to_s, html_file.to_s)
 
-      # TODO maybe report on result, $?
+      # TODO: maybe report on result, $?
 
       File.open( tidy_file ) do |f|
         @description = f.read
       end
 
-      sku_id_str  = "%03d" % sku_id
+      sku_id_str = '%03d' % sku_id
 
-      seed_file = "#{sku_id_str}_#{name.gsub(' ', '_')}.rb"
+      seed_file = "#{sku_id_str}_#{name.tr(' ', '_')}.rb"
       puts "\n== Generate seed fu file #{seed_file} =="
 
       @sku  = "#{sku_prefix}_#{sku_id_str}"
       @name = 'TODO'
-  
+
       File.open( File.join(fixtures_path, seed_file), 'w' ) do |f|
         f.write @template.result(binding)
         puts "\nFile created: #{File.join(fixtures_path, seed_file)}"

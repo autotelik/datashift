@@ -32,9 +32,9 @@ module DataShift
 
     def read( file, key = nil )
 
-      unless(File.exist?(file))
+      unless File.exist?(file)
         logger.error "Cannot open configuration file - #{file} - file does not exist."
-        fail FileNotFound.new("Cannot open mapping file - #{file}")
+        raise FileNotFound.new("Cannot open mapping file - #{file}")
       end
 
       begin
@@ -64,13 +64,13 @@ module DataShift
     # Restrict searches/config entries to single set via key e.g 'A'
     #
     def set_key_config!( key )
-      fail MissingConfigOptionError.new("No config entry found for key [#{key}]") unless(yaml_data && yaml_data[key].is_a?(Hash))
+      raise MissingConfigOptionError.new("No config entry found for key [#{key}]") unless yaml_data && yaml_data[key].is_a?(Hash)
       @key_config = OpenStruct.new( yaml_config[key] ) # Argument HAS to be a hash
     end
 
     # Merge another YAML section (identified by key) into @key_config
     def merge_key_config!( key )
-      fail Beeline::MissingConfigOptionError.new("No config entry found for key [#{key}]") unless(yaml_data && yaml_data[key].is_a?(Hash))
+      raise Beeline::MissingConfigOptionError.new("No config entry found for key [#{key}]") unless yaml_data && yaml_data[key].is_a?(Hash)
 
       temp = yaml_data[key].merge(@key_config.instance_variable_get('@table') || {})
 

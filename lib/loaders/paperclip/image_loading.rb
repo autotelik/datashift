@@ -44,7 +44,7 @@ module DataShift
 
       attachment = create_paperclip_attachment(klass, attachment_path, attachment_options)
 
-      if(attachment && attach_to_record_field)
+      if attachment && attach_to_record_field
         DataShift::Populator.new.prepare_and_assign(attach_to_record_field, record, attachment)
       end
 

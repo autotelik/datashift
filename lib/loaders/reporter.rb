@@ -13,7 +13,7 @@ module DataShift
 
     # actual data rows/objects inbound
     attr_accessor :processed_object_count
-    alias_method :processed_inbound_count, :processed_object_count
+    alias processed_inbound_count processed_object_count
 
     # DB objects created, updated etc
     attr_accessor :loaded_objects, :failed_objects
@@ -38,18 +38,18 @@ module DataShift
       @success_inbound_count += 1
       @processed_object_count += 1
 
-      @loaded_objects << object.id unless(object.nil? || @loaded_objects.include?(object))
+      @loaded_objects << object.id unless object.nil? || @loaded_objects.include?(object)
     end
 
     def add_failed_object(object)
       @failed_inbound_count += 1
       @processed_object_count += 1
 
-      @failed_objects << object unless( object.nil? || @failed_objects.include?(object))
+      @failed_objects << object unless  object.nil? || @failed_objects.include?(object)
     end
 
     def report
-      loaded_objects.compact! if(loaded_objects)
+      loaded_objects.compact! if loaded_objects
 
       puts "\nProcessing Summary Report"
       puts ">>>>>>>>>>>>>>>>>>>>>>>>>\n"
@@ -57,7 +57,7 @@ module DataShift
       puts "#{loaded_objects.size}\tdatabase objects were successfully processed."
       puts "#{success_inbound_count}\tinbound rows were successfully processed."
 
-      if(failed_inbound_count == 0)
+      if failed_inbound_count == 0
         puts 'There were NO failures.'
       else
         puts "WARNING : There were Failures - Check logs\n#{failed_inbound_count} rows contained errors"

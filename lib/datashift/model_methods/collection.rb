@@ -40,7 +40,7 @@ module DataShift
         @managed_class.name
       end
 
-      alias_method :klass, :managed_class_name
+      alias klass managed_class_name
 
       def insert(operator, type)
         mm = ModelMethod.new(managed_class, operator, type)
@@ -69,7 +69,7 @@ module DataShift
       def search(name)
         ModelMethod.supported_types_enum.each do |type|
           model_method = find(name, type)
-          return model_method if(model_method)
+          return model_method if model_method
         end
 
         nil
@@ -86,7 +86,7 @@ module DataShift
       def find_association(name)
         ModelMethod.association_types_enum.each do |type|
           model_method = find(name, type)
-          return model_method if(model_method)
+          return model_method if model_method
         end
 
         nil
@@ -96,7 +96,7 @@ module DataShift
         @by_optype_and_operator[klass.to_sym]
       end
 
-      alias_method(:get_model_methods_by_class, :get)
+      alias get_model_methods_by_class get
 
       # Returns all ModelMethod(s) for supplied type e.g :belongs_to
       # type is expected to be one of ModelMethod::supported_types_enum
@@ -104,14 +104,14 @@ module DataShift
         by_optype[type.to_sym] || []
       end
 
-      alias_method :get_model_methods_by_type, :for_type
+      alias get_model_methods_by_type for_type
 
       # Get list of Rails model operators
       def get_operators(type)
         for_type(type).collect(&:operator)
       end
 
-      alias_method(:get_list_of_operators, :get_operators)
+      alias get_list_of_operators get_operators
 
       def available_operators
         by_optype.values.flatten.collect(&:operator)

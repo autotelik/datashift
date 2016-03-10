@@ -34,7 +34,7 @@ module DataShift
       let(:mfile) { result_file('mapping_service_project.yaml') }
 
       before(:each) do
-        mapper.generate(Project, { file: mfile, with: :all } )
+        mapper.generate(Project, file: mfile, with: :all )
 
         expect(File.exist?(mfile)).to be true
 
