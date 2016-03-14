@@ -19,17 +19,17 @@ module  DataShift
     end
 
     let(:exporter) { ExcelExporter.new }
-    
+
     it 'should be able to create a new excel exporter' do
       expect(exporter).to_not be_nil
     end
 
     it 'should handle bad params to export' do
       expect = result_file('project_first_export_spec.csv')
-      
-      expect { exporter.export(expect,nil) }.not_to raise_error
 
-      expect { exporter.export(expect,[]) }.not_to raise_error
+      expect { exporter.export(expect, nil) }.not_to raise_error
+
+      expect { exporter.export(expect, []) }.not_to raise_error
 
       puts "Can manually check file @ #{expect}"
     end
@@ -53,8 +53,8 @@ module  DataShift
 
       it 'should export collection of model objects to .xls file' do
         expected = result_file('exp_project_export.xls')
-        
-        exporter.export(expected ,Project.all)
+
+        exporter.export(expected, Project.all)
 
         expect( File.exist?(expected)).to eq true
 

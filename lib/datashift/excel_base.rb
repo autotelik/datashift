@@ -47,7 +47,7 @@ module DataShift
 
       @excel.open(file_name)
 
-      if(options[:sheet_name])
+      if options[:sheet_name]
 
         @sheet = @excel.create_worksheet( name: options[:sheet_name] )
 
@@ -57,7 +57,7 @@ module DataShift
           raise "Failed to create Excel WorkSheet for #{name}"
         end
 
-      elsif(options[:sheet_number])
+      elsif options[:sheet_number]
         @sheet = @excel.worksheet( options[:sheet_number] )
       else
         @sheet = @excel.worksheets.first
@@ -71,8 +71,10 @@ module DataShift
       headers = DataShift::Headers.new(:excel, header_row_idx)
 
       header_row = sheet.row(header_row_idx)
-
-      raise MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{header_row_idx} contains headers" unless header_row
+      unless header_row
+        raise MissingHeadersError,
+              "No headers found - Check Sheet #{sheet} is complete and Row #{header_row_idx} contains headers"
+      end
 
       # TODO: - make more robust - currently end on first empty column
       # There is no actual max columns in Excel .. you will run out of memory though at some point

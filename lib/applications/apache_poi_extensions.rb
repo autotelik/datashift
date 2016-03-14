@@ -11,52 +11,56 @@ if DataShift::Guards.jruby?
 
   # Extend the Poi classes with some syntactic sugar
 
-  class Java::OrgApachePoiHssfUsermodel::HSSFSheet
-    def name
-      getSheetName
-    end
+  module Java
 
-    def num_rows
-      getPhysicalNumberOfRows
-    end
+    module OrgApachePoiHssfUsermodel
+      class HSSFSheet
+        def name
+          getSheetName
+        end
 
-  end
+        def num_rows
+          getPhysicalNumberOfRows
+        end
 
-  class Java::OrgApachePoiHssfUsermodel::HSSFRow
+      end
 
-    include RubyPoiTranslations
+      class HSSFRow
 
-    include Enumerable
+        include RubyPoiTranslations
 
-    def []( column)
-      cell_value( get_or_create_cell( column ) )
-    end
+        include Enumerable
 
-    def []=( column, value )
-      get_or_create_cell(column, value).setCellValue( poi_cell_value(value) )
-    end
+        def []( column)
+          cell_value( get_or_create_cell( column ) )
+        end
 
-    def get_or_create_cell( column, value = nil )
-      if value
-        java_send(:getCell, [Java::int], column) || createCell(column, poi_cell_type(value))
-      else
-        java_send(:getCell, [Java::int], column) || java_send(:createCell, [Java::int], column)
+        def []=( column, value )
+          get_or_create_cell(column, value).setCellValue( poi_cell_value(value) )
+        end
+
+        def get_or_create_cell( column, value = nil )
+          if value
+            java_send(:getCell, [int], column) || createCell(column, poi_cell_type(value))
+          else
+            java_send(:getCell, [int], column) || java_send(:createCell, [int], column)
+          end
+        end
+
+        def idx
+          getRowNum
+        end
+
+        # Iterate over each column in the row and yield on the cell
+        def each(&_block)
+          cellIterator.each { |c| yield cell_value(c) }
+        end
+
+        # TODO
+        # for min, max and sort from enumerable need <=>
+        # def <=> end
+
       end
     end
-
-    def idx
-      getRowNum
-    end
-
-    # Iterate over each column in the row and yield on the cell
-    def each(&_block)
-      cellIterator.each { |c| yield cell_value(c) }
-    end
-
-    # TODO
-    # for min, max and sort from enumerable need <=>
-    # def <=> end
-
   end
-
 end

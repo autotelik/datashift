@@ -184,7 +184,7 @@ module  DataShift
     end
 
     context 'external configuration of loader' do
-      let(:expected)  { ifixture_file('ProjectsSingleCategories.xls')  }
+      let(:expected)  { ifixture_file('ProjectsSingleCategories.xls') }
 
       before(:each) do
         DataShift::Transformer.factory.clear

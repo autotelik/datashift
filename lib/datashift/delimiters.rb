@@ -13,7 +13,7 @@ module DataShift
   module Delimiters
 
     # I made these class methods, feeling delims are 'global'
-    # I dunno now if thats good pattern or not
+    # I dunno now if that's good pattern or not
 
     # As well as just the column name, support embedding find operators for that column
     # in the heading .. i.e Column header => 'BlogPosts:user_id'
@@ -27,7 +27,7 @@ module DataShift
       @column_delim
     end
 
-    def self.set_column_delim(x)
+    def self.column_delim=(x)
       @column_delim = x
     end
 
@@ -56,7 +56,7 @@ module DataShift
       @name_value_delim
     end
 
-    def self.set_name_value_delim(x)
+    def self.name_value_delim=(x)
       @name_value_delim = x
     end
 
@@ -68,7 +68,7 @@ module DataShift
       @multi_value_delim ||= ','
     end
 
-    def self.set_multi_value_delim(x)
+    def self.multi_value_delim=(x)
       @multi_value_delim = x
     end
 
@@ -99,7 +99,7 @@ module DataShift
       @multi_assoc_delim
     end
 
-    def self.set_multi_assoc_delim(x)
+    def self.multi_assoc_delim=(x)
       @multi_assoc_delim = x
     end
 
@@ -127,10 +127,6 @@ module DataShift
     end
 
     def self.csv_delim=(x)
-      set_csv_delim(x)
-    end
-
-    def self.set_csv_delim(x)
       @csv_delim = x
     end
 

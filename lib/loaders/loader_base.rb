@@ -32,7 +32,7 @@ module DataShift
     #  :strict          : Raise exceptions when issues like missing mandatory columns
     #
     def initialize
-      @file_name   =  ''
+      @file_name = ''
 
       @doc_context = DocContext.new(NilClass)
 
@@ -46,7 +46,7 @@ module DataShift
     #
     def run(file_name, object_class, options = {})
 
-      logger.verbose if(options[:verbose])
+      logger.verbose if options[:verbose]
 
       @strict = (options[:strict] == true)
 

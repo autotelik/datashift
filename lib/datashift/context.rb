@@ -27,10 +27,6 @@ module DataShift
       @populator = ContextFactory.get_populator(method_binding)
     end
 
-    def set_node( method_binding )
-      @method_binding = method_binding
-    end
-
     def contains_data?
       !(data.nil? || data.to_s.empty?)
     end

@@ -17,71 +17,81 @@
 #
 #  TODO allow mapping file to be an xml file
 #
-class ValueMapFromFile < Hash
+module DataShift
 
-  def intialize(file_path, delim = ',')
-    @delegate_to = {}
-    @delim = delim
-    load_map(file_path)
-  end
+  class ValueMapFromFile < Hash
 
-  def load_map(file_path = nil, delim = ',')
-    @file = file_path unless file_path.nil?
-    @delim = delim
+    def intialize(file_path, delim = ',')
+      @delegate_to = {}
+      @delim = delim
+      load_map(file_path)
+    end
 
-    raise ArgumentError.new("Can not read map file: #{@file}") unless File.readable?(@file)
+    def load_map(file_path = nil, delim = ',')
+      @file = file_path unless file_path.nil?
+      @delim = delim
 
-    File.open(@file).each_line do |line|
-      next unless line && line.chomp!
+      raise ArgumentError, "Can not read map file: #{@file}" unless File.readable?(@file)
 
-      values = line.split(@delim)
+      File.open(@file).each_line do |line|
+        next unless line && line.chomp!
 
-      case values.nitems
-        when 2 then store(values[0], values[1])
-        when 3 then store([values[0], values[1]], values[2])
-        when 4 then store([values[0], values[1]], [values[2], values[3]])
-        else
-          raise ArgumentError.new("Bad key,value row in #{@file}: #{values.nitems} number of columns not supported")
+        values = line.split(@delim)
+
+        case values.nitems
+          when 2 then store(values[0], values[1])
+          when 3 then store([values[0], values[1]], values[2])
+          when 4 then store([values[0], values[1]], [values[2], values[3]])
+          else
+            raise ArgumentError, "Bad key,value row in #{@file}: #{values.nitems} number of columns not supported"
+        end
       end
+
+      self
+    end
+  end
+
+=begin EXAMPLE USAGE
+
+  # Inbound file of format
+  #   [TradeType,LDN_TradeId,HUB_TradeId,LDN_AssetId,HUB_AssetId,LDN_StrutureId,HUB_StructureId]
+  #
+  # We require :
+  #   [LDN_TradeId, LDN_AssetId, HUB_TradeId, HUB_AssetId]
+  #
+  class AssetMapFromFile < Array
+
+    def intialize(file_path, delim = ',')
+      @delegate_to = {}
+      @delim = delim
+      load_map(file_path)
     end
 
-    self
-  end
-end
+    def load_map(file_path = nil, delim = ',')
+      @file = file_path unless file_path.nil?
+      @delim = delim
 
-# Expects file of format [TradeType,LDN_TradeId,HUB_TradeId,LDN_AssetId,HUB_AssetId,LDN_StrutureId,HUB_StructureId,LDN_ProductType,HUB_ProductType]
-# Convets in to and araya containing rows [LDN_TradeId, LDN_AssetId, HUB_TradeId, HUB_AssetId]
-class AssetMapFromFile < Array
+      raise ArgumentError, "Can not read asset map file: #{@file}" unless File.readable?(@file)
 
-  def intialize(file_path, delim = ',')
-    @delegate_to = {}
-    @delim = delim
-    load_map(file_path)
-  end
+      File.open(@file).each_line do |line|
+        next unless line && line.chomp!
+        # skip the header row
+        next if line.include?('TradeType')
 
-  def load_map(file_path = nil, delim = ',')
-    @file = file_path unless file_path.nil?
-    @delim = delim
+        values = line.split(@delim)
 
-    raise ArgumentError.new("Can not read asset map file: #{@file}") unless File.readable?(@file)
+        push(Array[values[1], values[3], values[2], values[4]])
+      end
 
-    File.open(@file).each_line do |line|
-      next unless line && line.chomp!
-      # skip the header row
-      next if line.include?('TradeType')
-
-      values = line.split(@delim)
-
-      push(Array[values[1], values[3], values[2], values[4]])
+      self
     end
 
-    self
-  end
+    def write_map(file_path = nil, delim = ',')
+      mapfile = File.open( file_path, 'w')
+      each { |row| mapfile.write(row.join(delim) + "\n") }
+    end
 
-  def write_map(file_path = nil, delim = ',')
-    mapfile = File.open( file_path, 'w')
-
-    each { |row| mapfile.write(row.join(delim) + "\n") }
   end
+=end
 
 end

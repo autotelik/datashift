@@ -1,6 +1,7 @@
 AllCops:
   TargetRubyVersion: 2.2
   Exclude:
+    - 'spec/**/*'
     - 'spec/private/**/*'
     - 'spec/rails_sandbox/**/*'
     - 'spec/factories/*.rb'
@@ -43,30 +44,26 @@ ClassLength:
   Description: 'Avoid classes longer than 100 lines of code.'
   Enabled: false
 
-RaiseArgs:
-  Description: 'Checks the arguments passed to raise/fail.'
+# As a web app, as long as the team commit to using well named classes for
+# controllers, models etc it should not be necessary to add top-level class
+# documentation.
+Documentation:
+  Enabled: false
+
+# We shouldn't be committing code with debug statements left in (e.g. byebug or save_and_open_page),
+# we don't understand the GDS rationale for disabling this check
+Debugger:
   Enabled: true
 
-Metrics/AbcSize:
-  # The ABC size is a calculated magnitude, so this number can be a Fixnum or
-  # a Float.
-  Max: 60
+LineLength:
+  Description: Limit lines to 140 characters.
+  Enabled: true
+  Max: 140
 
-Metrics/PerceivedComplexity:
-  Max: 15
-
-#RSPEC SPECIFIC
-
-# Turn these off as can totally mess with the expect{...}.to syntax
-Style/BlockDelimiters:
-  Exclude:
-    - spec/**/*_spec.rb
-Style/ClassVars:
-  Exclude:
-    - lib/waste_exemptions/permitted_attributes.rb
 MethodCalledOnDoEndBlock:
   Exclude:
     - spec/**/*_spec.rb
+
 Metrics/LineLength:
   Exclude:
     - spec/features/*_spec.rb
@@ -87,21 +84,50 @@ Metrics/CyclomaticComplexity:
 
 Metrics/MethodLength:
   Description: 'Avoid methods longer than 10 lines of code.'
-  Enabled: true
+  Enabled: false
   Max: 30
 
-# As a web app, as long as the team commit to using well named classes for
-# controllers, models etc it should not be necessary to add top-level class
-# documentation.
-Documentation:
+Metrics/AbcSize:
+  # The ABC size is a calculated magnitude, so this number can be a Fixnum or
+  # a Float.
+  Max: 60
+
+Metrics/PerceivedComplexity:
+  Max: 15
+
+RaiseArgs:
+  Description: 'Checks the arguments passed to raise/fail.'
+  Enabled: true
+
+Style/BlockComments:
+  Description: 'Do not use block comments.'
   Enabled: false
 
-# We shouldn't be committing code with debug statements left in (e.g. byebug or save_and_open_page),
-# we don't understand the GDS rationale for disabling this check
-Debugger:
-  Enabled: true
+# Turn these off as can totally mess with the expect{...}.to syntax
+Style/BlockDelimiters:
+  Exclude:
+    - spec/**/*_spec.rb
 
-LineLength:
-  Description: Limit lines to 140 characters.
-  Enabled: true
-  Max: 140
+Style/ClassAndModuleCamelCase:
+  Exclude:
+     - lib/applications/**/*.rb
+
+Style/ClassVars:
+  Exclude:
+    - lib/waste_exemptions/permitted_attributes.rb
+
+Style/MethodName:
+  Exclude:
+     - lib/applications/**/*.rb
+
+Style/RegexpLiteral:
+  Description: >-
+    Use %r for regular expressions matching more than
+    `MaxSlashes` '/' characters.
+    Use %r only for regular expressions matching more than
+    `MaxSlashes` '/' character.
+  Enabled: false
+
+Style/VariableName:
+  Exclude:
+     - lib/applications/**/*.rb

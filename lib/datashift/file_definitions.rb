@@ -135,7 +135,10 @@ module FileDefinitions
     # e.g create_field_definition %w{ trade_id  drOrCr ccy costCentre postingDate amount }
     #
     def create_fixed_definition( field_range_map )
-      raise ArgumentError.new('Please supply hash to create_fixed_definition') unless field_range_map.is_a? Hash
+
+      unless field_range_map.is_a?(Hash)
+        raise ArgumentError, 'Please supply hash to create_fixed_definition'
+      end
 
       keys = field_range_map.keys.collect(&:to_s)
       string_map = Hash[*keys.zip(field_range_map.values).flatten]
@@ -211,9 +214,13 @@ module FileDefinitions
       unless filtered.empty?
         log :info, "Writing seperate streams to #{path}"
 
-        filtered.each { |strm, objects| RecsBase.write( { "keys_#{field}_#{strm}.csv" => objects.collect(&:key).join("\n") }, path) } if options.key?(:keys)
+        filtered.each do |strm, objects|
+          RecsBase.write( { "keys_#{field}_#{strm}.csv" => objects.collect(&:key).join("\n") }, path)
+        end if options.key?(:keys)
 
-        filtered.each { |strm, objects| RecsBase.write( { "#{field}_#{strm}.csv" => objects.collect(&:current_line).join("\n") }, path) }
+        filtered.each do |strm, objects|
+          RecsBase.write( { "#{field}_#{strm}.csv" => objects.collect(&:current_line).join("\n") }, path)
+        end
       end
     end
 
@@ -296,7 +303,7 @@ module FileDefinitions
                 end
 
       attribs.collect! do |attrib|
-        raise ArgumentError.new("Field: #{attrib} is not a field on #{self.class.name}") unless new.respond_to?(attrib)
+        raise ArgumentError, "Field: #{attrib} is not a field on #{self.class.name}" unless new.respond_to?(attrib)
       end
 
       log :info, "#{self.class.name} - updating field(s) #{fields} in #{file_name}"
@@ -312,7 +319,9 @@ module FileDefinitions
 
           attribs.each do |a|
             old_value = x.instance_variable_get( "@#{a}" )
-            x.instance_variable_set( "@#{a}", value_map[old_value] ) if value_map[old_value] || (regex && old_value.keys.detect { |k| k.match(regx) })
+            if value_map[old_value] || (regex && old_value.keys.detect { |k| k.match(regx) })
+              x.instance_variable_set( "@#{a}", value_map[old_value] )
+            end
           end
 
           objects << x

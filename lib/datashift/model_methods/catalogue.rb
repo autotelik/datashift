@@ -1,4 +1,4 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
 # Date ::     Feb 2015
 # License::   MIT
@@ -44,7 +44,10 @@ module DataShift
         # Find the has_many associations which can be populated via <<
         if options[:reload] || has_many[klass].nil?
           has_many[klass] = klass.reflect_on_all_associations(:has_many).map { |i| i.name.to_s }
-          klass.reflect_on_all_associations(:has_and_belongs_to_many).inject(has_many[klass]) { |x, i| x << i.name.to_s }
+
+          klass.reflect_on_all_associations(:has_and_belongs_to_many).inject(has_many[klass]) do |x, i|
+            x << i.name.to_s
+          end
         end
 
         # Find the belongs_to associations which can be populated via  Model.belongs_to_name = OtherArModelObject
@@ -61,31 +64,7 @@ module DataShift
         # Note, not all reflections return method names in same style so we convert all to
         # the raw form i.e without the '='  for consistency
         if options[:reload] || assignments[klass].nil?
-
-          begin
-            assignments[klass] = klass.column_names
-          rescue => x
-            raise DataShiftException.new("Failed to process column_names for class #{klass} - #{x.message}")
-          end
-
-          # get into consistent format with other assignments names i.e remove the = for now
-          assignments[klass] += setters(klass).map { |i| i.delete('=') } if options[:instance_methods]
-
-          # Now remove all the associations
-          assignments[klass] -= has_many[klass]   if has_many[klass]
-          assignments[klass] -= belongs_to[klass] if belongs_to[klass]
-          assignments[klass] -= has_one[klass]    if has_one[klass]
-
-          # TODO: remove assignments with id
-          # assignments => tax_id  but already in belongs_to => tax
-
-          assignments[klass].uniq!
-
-          assignments[klass].each do |assign|
-            column_types[klass] ||= {}
-            column_def = klass.columns.find { |col| col.name == assign }
-            column_types[klass].merge!( assign => column_def) if column_def
-          end
+          build_assignments( klass, options[:instance_methods] )
         end
       end
 
@@ -97,6 +76,8 @@ module DataShift
         has_one.clear
         catalogued.clear
       end
+
+      # rubocop:disable Style/PredicateName
 
       def self.belongs_to
         @belongs_to ||= {}
@@ -154,15 +135,46 @@ module DataShift
         column_types[klass] ? column_types[klass][column] : []
       end
 
-      private
+      # rubocop:enable Style/PredicateName
 
-      def self.catalogued
-        @catalogued ||= []
-      end
+      class << self
+        private
 
-      def self.register(klass)
-        catalogued << klass
-        catalogued.uniq!
+        def build_assignments(klass, include_instance_methods)
+          begin
+            assignments[klass] = klass.column_names
+          rescue => x
+            raise DataShiftException, "Failed to process column_names for class #{klass} - #{x.message}"
+          end
+
+          # get into consistent format with other assignments names i.e remove the = for now
+          assignments[klass] += setters(klass).map { |i| i.delete('=') } if include_instance_methods
+
+          # Now remove all the associations
+          assignments[klass] -= has_many[klass]   if has_many[klass]
+          assignments[klass] -= belongs_to[klass] if belongs_to[klass]
+          assignments[klass] -= has_one[klass]    if has_one[klass]
+
+          # TODO: remove assignments with id
+          # assignments => tax_id  but already in belongs_to => tax
+
+          assignments[klass].uniq!
+
+          assignments[klass].each do |assign|
+            column_types[klass] ||= {}
+            column_def = klass.columns.find { |col| col.name == assign }
+            column_types[klass].merge!( assign => column_def) if column_def
+          end
+        end
+
+        def catalogued
+          @catalogued ||= []
+        end
+
+        def register(klass)
+          catalogued << klass
+          catalogued.uniq!
+        end
       end
 
     end

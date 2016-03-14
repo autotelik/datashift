@@ -104,7 +104,7 @@ module DataShift
         options[:with].each do |op_type|
           collection.for_type(op_type).each do |model_method|
             # pack association instances into single column
-            if ModelMethod.is_association_type?(op_type)
+            if ModelMethod.association_type?(op_type)
               logger.info("Processing #{model_method.inspect} associations")
               excel[row, column] = record_to_column( obj.send( model_method.operator ), options )
             else

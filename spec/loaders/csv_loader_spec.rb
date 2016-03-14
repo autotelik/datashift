@@ -104,7 +104,7 @@ module  DataShift
       end
 
       it 'should NOT process CSV with extra undefined columns when strict mode' do
-        expected =  ifixture_file('csv/BadAssociationName.csv')
+        expected = ifixture_file('csv/BadAssociationName.csv')
         expect { loader.run(expected, Project, strict: true) }.to raise_error(MappingDefinitionError)
       end
 

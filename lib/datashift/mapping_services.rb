@@ -42,12 +42,12 @@ module DataShift
 
       unless map_file_name && File.exist?(map_file_name)
         logger.error "Cannot open mapping file - #{map_file_name} - file does not exist."
-        raise FileNotFound.new("Cannot open mapping file - #{map_file_name}")
+        raise FileNotFound, "Cannot open mapping file - #{map_file_name}"
       end
 
       begin
         # Load application configuration
-        set_mapping( map_file_name )
+        mapping_from(map_file_name )
 
         set_key_config!( key ) if key
       rescue => e
@@ -65,7 +65,7 @@ module DataShift
 
     private
 
-    def set_mapping( file )
+    def mapping_from(file )
 
       @raw_data = File.read(file)
 

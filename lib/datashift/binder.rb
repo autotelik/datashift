@@ -36,11 +36,11 @@ module DataShift
     end
 
     def headers_missing_bindings
-      missing_bindings.collect &:inbound_name
+      missing_bindings.collect(&:inbound_name)
     end
 
     def indexes_missing_bindings
-      missing_bindings.collect &:inbound_index
+      missing_bindings.collect(&:inbound_index)
     end
 
     # Build complete picture of the methods whose names listed in columns
@@ -116,10 +116,10 @@ module DataShift
           end
         end
 
-        model_method = if options[:include_all] || forced.include?(raw_col_name.downcase)
+        model_method = if model_method.nil? && (options[:include_all] || forced.include?(raw_col_name.downcase))
                          logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :method")
                          model_method_mgr.insert(raw_col_name, :method)
-                        end if model_method.nil?
+                       end
 
         if model_method
 
@@ -133,8 +133,9 @@ module DataShift
 
             begin
               binding.add_lookup(model_method, where_field, where_value)
-            rescue => x
-              add_missing(raw_col_data, col_index, "Field [#{where_field}] Not Found for [#{raw_col_name}] (#{model_method.operator})")
+            rescue
+              add_missing(raw_col_data, col_index,
+                          "Field [#{where_field}] Not Found for [#{raw_col_name}] (#{model_method.operator})")
               next
             end
 

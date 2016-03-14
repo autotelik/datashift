@@ -23,7 +23,9 @@ module DataShift
       def initialize
         super
 
-        @attach_to_klass, @attach_to_find_by_field, @attach_to_field = nil, nil, nil
+        @attach_to_klass = nil
+        @attach_to_find_by_field = nil
+        @attach_to_field = nil
       end
 
       # => :attach_to_klass
@@ -49,7 +51,7 @@ module DataShift
       #         :attach_to_field => digitals  : Owner.digitals = attachment
       #         :attach_to_field => avatar    : User.avatar = attachment
       #
-      def init(attach_to_klass, attach_to_find_by_field, attach_to_field, options ={})
+      def init(attach_to_klass, attach_to_find_by_field, attach_to_field, options = {})
         @attach_to_klass = attach_to_klass
 
         ModelMethods::Manager.catalog_class(@attach_to_klass, reload: options[:reload], instance_methods: true)

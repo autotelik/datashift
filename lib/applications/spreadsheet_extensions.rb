@@ -10,21 +10,24 @@
 
 require 'excel_base'
 
-class Spreadsheet::Worksheet
+module Spreadshee
 
-  include DataShift::ExcelBase
+  class Worksheet
 
-  # Convert array into a header row
-  def set_headers(headers, _apply_style = nil)
-    return if headers.empty?
+    include DataShift::ExcelBase
 
-    headers.each_with_index do |datum, i|
-      self[0, i] = datum
+    # Convert array into a header row
+    def set_headers(headers, _apply_style = nil)
+      return if headers.empty?
+
+      headers.each_with_index do |datum, i|
+        self[0, i] = datum
+      end
     end
-  end
 
-  def num_rows
-    rows.size
-  end
+    def num_rows
+      rows.size
+    end
 
+  end
 end

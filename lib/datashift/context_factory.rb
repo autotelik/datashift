@@ -21,6 +21,8 @@
 module DataShift
   class ContextFactory
 
+    class << self; attr_accessor :config end
+
     # Clear out map of operators to populator Class
     def self.clear_populators
       populators.clear
@@ -37,15 +39,15 @@ module DataShift
     #
     def self.configure(load_object_class, yaml_file)
 
-      @@config = YAML.load( ERB.new( IO.read(yaml_file) ).result )
+      @config = YAML.load( ERB.new( IO.read(yaml_file) ).result )
 
-      @@config[:datashift_populators].each do |_operator, type|
+      @config[:datashift_populators].each do |_operator, type|
         populator = ::Object.const_get(type).new
 
         populator.configure_from(load_object_class, yaml_file)
 
-        populators[@@config[:datashift_populators]]
-      end if @@config[:datashift_populators]
+        populators[@config[:datashift_populators]]
+      end if @config[:datashift_populators]
 
     end
 

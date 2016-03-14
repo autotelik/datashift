@@ -47,7 +47,7 @@ class CSV
 
   def ar_association_to_csv(record, model_method, _options = {})
     # pack association instances into single column
-    csv_data = if DataShift::ModelMethod.is_association_type?(model_method.operator_type)
+    csv_data = if DataShift::ModelMethod.association_type?(model_method.operator_type)
                  record_to_column( record.send(model_method.operator) )
                else
                  escape_for_csv( record.send(model_method.operator) )

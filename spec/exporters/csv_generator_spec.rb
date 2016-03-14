@@ -23,11 +23,11 @@ module  DataShift
 
     it 'should generate template .csv file from model' do
       expected = result_file('project_template.csv')
-      
+
       generator.generate(expected, Project)
 
       expect(File.exist?(expected)).to eq true
-      
+
       csv = CSV.read(expected)
 
       headers = csv[0]

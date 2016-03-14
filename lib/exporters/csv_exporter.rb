@@ -111,7 +111,7 @@ module DataShift
 
               # row << csv.ar_association_to_csv(record, model_method, options)
 
-              row << if DataShift::ModelMethod.is_association_type?(model_method.operator_type)
+              row << if DataShift::ModelMethod.association_type?(model_method.operator_type)
                        record_to_column( record.send(model_method.operator) )
                      else
                        escape_for_csv( record.send(model_method.operator) )

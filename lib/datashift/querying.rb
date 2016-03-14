@@ -75,15 +75,11 @@ module DataShift
     def search_for_record(klazz, field, search_term, options = {})
 
       begin
+        return klazz.send("find_by_#{field}", search_term) if options[:case_sensitive]
 
-        if options[:case_sensitive]
-          return klazz.send("find_by_#{field}", search_term)
-        elsif options[:use_like]
-          return klazz.where("#{field} like ?", "#{search_term}%").first
-        else
-          return klazz.where("lower(#{field}) = ?", search_term.downcase).first
-        end
+        return klazz.where("#{field} like ?", "#{search_term}%").first if options[:use_like]
 
+        return klazz.where("lower(#{field}) = ?", search_term.downcase).first
       rescue => e
         logger.error("Querying - Failed to find a record for [#{search_term}] on #{klazz}.#{field}")
         logger.error e.inspect
@@ -152,11 +148,10 @@ module DataShift
 
     def find_or_new( klass, condition_hash = {} )
       records = klass.where(condition_hash).all
-      if records.any?
-        return records.first
-      else
-        return klass.new
-      end
+
+      return records.first if records.any?
+
+      klass.new
     end
 
   end

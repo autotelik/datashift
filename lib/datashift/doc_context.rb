@@ -96,7 +96,6 @@ module DataShift
 
         # TODO: - make this behaviour configurable with soem ind of rollback setting/funciton
         if load_object.respond_to?('destroy') && !load_object.new_record?
-          klass = load_object.class
           load_object.destroy
           reset
         end
@@ -112,11 +111,9 @@ module DataShift
     def save_if_new
       return unless load_object.new_record?
 
-      if load_object.valid?
-        save
-      else
-        raise DataShift::SaveError.new("Cannot Save Invalid #{load_object.class} Record : #{current_errors}")
-      end
+      return save if load_object.valid?
+
+      raise DataShift::SaveError, "Cannot Save Invalid #{load_object.class} Record : #{current_errors}"
     end
 
     def save_and_report

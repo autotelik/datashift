@@ -41,7 +41,7 @@ module DataShift
       context 'Once opened' do
 
         before(:each) do
-         open_excel(file_name, sheet_number: 0)
+          open_excel(file_name, sheet_number: 0)
         end
 
         it 'should provide fast access to current sheet' do

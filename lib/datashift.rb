@@ -51,9 +51,9 @@ module DataShift
     # Define require search paths, any dir in here will be added to LOAD_PATH
 
     loader_paths.each do |base|
-      $LOAD_PATH.unshift base if(File.directory?(base))
+      $LOAD_PATH.unshift base if File.directory?(base)
       Dir[File.join(base, '**', '**')].each do |p|
-        $LOAD_PATH.unshift p if(File.directory?(p))
+        $LOAD_PATH.unshift p if File.directory?(p)
       end
     end
 

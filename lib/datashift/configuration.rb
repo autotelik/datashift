@@ -9,27 +9,26 @@ require 'erubis'
 
 module DataShift
 
-    class Configuration
-      # When performing import, default is to ignore any columns that cannot be mapped  (via headers)
-      # To raise an error set strict => true
-      # Defaults to `false`. Set to `true` to cause exceptions to be thrown
-      # The setting is ignored if routes are disabled.
-      # @param [Boolean] value
-      # @return [Boolean]
-      attr_accessor :strict
-      
-      # Controls the amount of information written to the log
-      # Defaults to `false`. Set to `true` to cause extensive progress messages to be logged
-      # @param [Boolean] value
-      # @return [Boolean]
-      attr_accessor :verbose
-      
+  class Configuration
+    # When performing import, default is to ignore any columns that cannot be mapped  (via headers)
+    # To raise an error set strict => true
+    # Defaults to `false`. Set to `true` to cause exceptions to be thrown
+    # The setting is ignored if routes are disabled.
+    # @param [Boolean] value
+    # @return [Boolean]
+    attr_accessor :strict
 
-      def initialize
-        @strict = false
-        @verbose = false
-      end
-      
+    # Controls the amount of information written to the log
+    # Defaults to `false`. Set to `true` to cause extensive progress messages to be logged
+    # @param [Boolean] value
+    # @return [Boolean]
+    attr_accessor :verbose
+
+    def initialize
+      @strict = false
+      @verbose = false
+    end
+
     # @return [DataShift::Configuration] DataShift's current configuration
     def self.configuration
       @configuration ||= Configuration.new
@@ -37,8 +36,8 @@ module DataShift
 
     # Set DataShift's configuration
     # @param config [DataShift::Configuration]
-    def self.configuration=(config)
-      @configuration = config
+    class << self
+      attr_writer :configuration
     end
 
     # Modify DataShift's current configuration
@@ -51,7 +50,7 @@ module DataShift
     def self.configure
       yield configuration
     end
-  end
+end
 
   class YamlConfiguration
 

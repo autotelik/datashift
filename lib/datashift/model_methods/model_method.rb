@@ -28,7 +28,7 @@ module DataShift
       @assoc_type_enum
     end
 
-    def self.is_association_type?( type )
+    def self.association_type?( type )
       association_types_enum.member?( type )
     end
 
@@ -55,7 +55,7 @@ module DataShift
       if ModelMethod.supported_types_enum.member?(type.to_sym)
         @operator_type = type.to_sym
       else
-        raise BadOperatorType.new("No such operator Type [#{type}] cannot instantiate ModelMethod for #{operator}")
+        raise BadOperatorType, "No such operator Type [#{type}] cannot instantiate ModelMethod for #{operator}"
       end
 
       @operator = operator
@@ -83,7 +83,7 @@ module DataShift
       @operator_class_name ||=
         if operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one)
 
-          get_operator_class.name
+          determine_operator_class.name
 
         elsif @col_type
           @col_type.type.to_s.classify
@@ -96,7 +96,7 @@ module DataShift
 
     # Return the operator's expected class, if can be derived, else nil
     def operator_class
-      @operator_class ||= get_operator_class
+      @operator_class ||= determine_operator_class
       @operator_class
     end
 
@@ -118,7 +118,7 @@ module DataShift
     private
 
     # Return the operator's expected class, if can be derived, else nil
-    def get_operator_class
+    def determine_operator_class
 
       if operator_for(:has_many) || operator_for(:belongs_to) || operator_for(:has_one)
 

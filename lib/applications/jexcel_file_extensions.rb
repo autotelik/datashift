@@ -134,7 +134,8 @@ if DataShift::Guards.jruby?
         startrow = 0
         while numrows > 0
           # Split the results and write to a new sheet
-          next_results = results.slice(startrow, @@maxrows > numrows ? numrows : @@maxrows)
+          slice_at = @@maxrows > numrows ? numrows : @@maxrows
+          next_results = results.slice(startrow, slice_at)
           results_to_sheet(next_results, sheet_name.to_s, mappings, header) if next_results
 
           # Increase counters
