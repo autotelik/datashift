@@ -8,17 +8,46 @@ module DataShift
 
     attr_accessor :excel, :sheet
 
-    #  Options  :
+    #  Create @excel and set @sheet
     #
-    #     :sheet_name : Create a new worksheet and assign to @sheet
+    # Options  :
+    #
+    #     :sheet_name : Create a new worksheet assign to @sheet.
+    #                   Default is class.name
+    #
+    def start_excel(klass, options = {})
 
-    def start_excel( file_name, _sheet_number, options = {})
+      @excel = DataShift::Excel.new
+
+      name = options[:sheet_name] ? options[:sheet_name] : klass.name
+
+      @sheet = excel.create_worksheet( name: name )
+
+      unless sheet
+        logger.error("Excel failed to create WorkSheet called [#{name}]")
+
+        raise "Failed to create Excel WorkSheet called [#{name}]"
+      end
+
+      @excel
+    end
+
+    # Open excel file and assign to @excel and set @sheet
+    #
+    # Options  :
+    #
+    #     :sheet_name : Create a new worksheet assign to @sheet.
+    #                   Default is class.name
+    #
+    #     :sheet_number : Select the sheet by index - sheet_name takes precedence
+    #
+    def open_excel( file_name, options = {})
 
       @excel = DataShift::Excel.new
 
       @excel.open(file_name)
 
-      if options[:sheet_name]
+      if(options[:sheet_name])
 
         @sheet = @excel.create_worksheet( name: options[:sheet_name] )
 
@@ -27,6 +56,9 @@ module DataShift
 
           raise "Failed to create Excel WorkSheet for #{name}"
         end
+
+      elsif(options[:sheet_number])
+        @sheet = @excel.worksheet( options[:sheet_number] )
       else
         @sheet = @excel.worksheets.first
       end

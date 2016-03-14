@@ -16,7 +16,7 @@ module DataShift
 
     class Factory
 
-      # Based on filename find appropriate Loader
+      # Based on file_name find appropriate Loader
 
       # Currently supports :
       #   Excel/Open Office files saved as .xls

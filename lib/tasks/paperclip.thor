@@ -75,7 +75,7 @@ module Datashift
       #         :attach_to_field => digitals  : Owner.digitals = attachment
       #         :attach_to_field => avatar    : User.avatar = attachment
       
-    method_option :split_file_name_on,  :type => :string, :desc => "delimiter to progressivley split filename for lookup", :default => ' '
+    method_option :split_file_name_on,  :type => :string, :desc => "delimiter to progressivley split file_name for lookup", :default => ' '
     method_option :case_sensitive, :type => :boolean, :desc => "Use case sensitive where clause to find :attach_to_klass"
     method_option :use_like, :type => :boolean, :desc => "Use :lookup_field LIKE 'string%' instead of :lookup_field = 'string' in where clauses to find :attach_to_klass"
   

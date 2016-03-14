@@ -49,8 +49,8 @@ if DataShift::Guards.jruby?
       HSSFDataFormat.getBuiltinFormat('m/d/yy h:mm')
     end
 
-    def self.open(filename)
-      HSSFWorkbook.new(FileInputStream.new(filename))
+    def self.open(file_name)
+      HSSFWorkbook.new(FileInputStream.new(file_name))
     end
 
     # NOTES :
@@ -69,8 +69,8 @@ if DataShift::Guards.jruby?
       @date_style = nil
     end
 
-    def open(filename)
-      @workbook = JExcelFile.open(filename)
+    def open(file_name)
+      @workbook = JExcelFile.open(file_name)
 
       @date_style = @workbook.createCellStyle
       @date_style.setDataFormat( JExcelFile.date_format )
@@ -185,8 +185,8 @@ if DataShift::Guards.jruby?
       @row[column] = value
     end
 
-    def write( filename = nil )
-      file = filename.nil? ? @filepath : filename
+    def write( file_name = nil )
+      file = file_name.nil? ? @filepath : file_name
       out = FileOutputStream.new(file)
       @workbook.write(out) unless @workbook.nil?
       out.close
@@ -194,8 +194,8 @@ if DataShift::Guards.jruby?
 
     alias save write
 
-    def save_to_text( filename )
-      File.open( filename, 'w') { |f| f.write(to_s) }
+    def save_to_text( file_name )
+      File.open( file_name, 'w') { |f| f.write(to_s) }
     end
 
     def to_s

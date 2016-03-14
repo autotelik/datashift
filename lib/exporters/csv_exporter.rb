@@ -14,20 +14,19 @@ module DataShift
     include DataShift::Logging
     include DataShift::ColumnPacker
 
-    def initialize(filename)
-      super(filename)
+    def initialize
+      super
     end
 
     # Create CSV file from set of ActiveRecord objects
     # Options :
-    # :filename
     # :text_delim   => Char to use to delim columns, useful when data contain embedded ','
     # :methods      => List of methods to additionally call on each record
     # :remove       => List of columns to remove from generated template
     #
-    def export(export_records, options = {})
+    def export(file_name, export_records, options = {})
 
-      @filename = options[:filename] if options[:filename]
+      @file_name = file_name
 
       records = [*export_records]
 
@@ -46,7 +45,7 @@ module DataShift
 
       remove = options[:remove] || []
 
-      CSV.open( (options[:filename] || filename), 'w' ) do |csv|
+      CSV.open( (options[:file_name] || file_name), 'w' ) do |csv|
         csv << headers
 
         records.each do |r|
@@ -59,7 +58,7 @@ module DataShift
     # Create CSV file from list of ActiveRecord objects
     #
     # Options
-    # [:filename] => Filename for generated template
+    # [:file_name] => Filename for generated template
     #
     # [:with] => List of association Types to include (:has_one etc)
     #
@@ -72,9 +71,9 @@ module DataShift
     #
     # [:remove_rails] => Remove standard Rails cols like :id, created_at etc
     #
-    def export_with_associations(klass, records, options = {})
+    def export_with_associations(file_name, klass, records, options = {})
 
-      @filename = options[:filename] if options[:filename]
+      @file_name = file_name
 
       Delimiters.text_delim = options[:text_delim] if options[:text_delim]
 
@@ -94,7 +93,7 @@ module DataShift
 
       remove_list = options[:remove] || []
 
-      CSV.open( (options[:filename] || filename), 'w' ) do |csv|
+      CSV.open( (options[:file_name] || file_name), 'w' ) do |csv|
         csv << headers
 
         records.each do |record|

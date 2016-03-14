@@ -106,12 +106,12 @@ module Datashift
 
       loader_options = { instance_methods: true, verbose: options[:verbose] }
 
-      loader = loader_klass.new(options[:input], loader_options)
+      loader = loader_klass.new
 
       logger.info("Using loader : #{loader.class}")
       loader.configure_from( options[:config] ) if(options[:config])
 
-      loader.run(klass)
+      loader.run(options[:input], klass, loader_options)
     end
     
     desc "csv", "import CSV file for specified active record model" 
@@ -134,14 +134,13 @@ module Datashift
 
       klass = DataShift::MapperUtils.class_from_string_or_raise( model )
 
-      loader = DataShift::CsvLoader.new(klass)
+      loader = DataShift::CsvLoader.new
 
-      #TOFIX - multi loggers to file + STDOUT
-      # loader.logger.verbose if(options['verbose'])
+      loader_options = { instance_methods: true, verbose: options[:verbose] }
       
       loader.configure_from( options[:config] ) if(options[:config])
 
-      loader.perform_load(options[:input])
+      loader.run(options[:input], klass, loader_options)
     end
     
   end

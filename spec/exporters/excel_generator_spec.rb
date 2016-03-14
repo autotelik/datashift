@@ -18,18 +18,16 @@ module DataShift
       results_clear( '*_template.xls' )
     end
 
-    it 'should be able to create a new excel generator' do
-      generator = ExcelGenerator.new( 'gen_dummy_template.xls' )
+    let(:generator) { ExcelGenerator.new }
 
-      generator.should_not be_nil
+    it 'should be able to create a new excel generator' do
+      expect(generator).to_not be_nil
     end
 
     it 'should generate template .xls file from model', fail: true do
       expected = result_file('gen_project_template.xls')
 
-      gen = ExcelGenerator.new( expected )
-
-      gen.generate(Project)
+      generator.generate(expected, Project)
 
       expect(File.exist?(expected)).to eq true
 
@@ -58,9 +56,7 @@ module DataShift
     it 'should include all associations in template .xls file from model' do
       expected = result_file('gen_project_plus_assoc_template.xls')
 
-      gen = ExcelGenerator.new(expected)
-
-      gen.generate_with_associations(Project)
+      generator.generate_with_associations(expected, Project)
 
       expect( File.exist?(expected)).to eq true
 
@@ -81,11 +77,9 @@ module DataShift
     it 'should enable us to exclude associations by type in template .xls file' do
       expected = result_file('gen_project_plus_some_assoc_template.xls')
 
-      gen = ExcelGenerator.new(expected)
-
       options = { exclude: :has_many }
 
-      gen.generate_with_associations(Project, options)
+      generator.generate_with_associations(expected, Project, options)
 
       expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
 
@@ -109,11 +103,9 @@ module DataShift
     it 'should enable us to exclude certain associations in template .xls file ' do
       expected = result_file('gen_project_plus_some_assoc_template.xls')
 
-      gen = ExcelGenerator.new(expected)
-
       options = { remove: [:milestones, :versions] }
 
-      gen.generate_with_associations(Project, options)
+      generator.generate_with_associations(expected, Project, options)
 
       expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
 
@@ -138,11 +130,9 @@ module DataShift
     it 'should enable us to remove standard rails feilds from template .xls file ' do
       expected = result_file('gen_project_plus_some_assoc_template.xls')
 
-      gen = ExcelGenerator.new(expected)
-
       options = { remove_rails: true }
 
-      gen.generate_with_associations(Project, options)
+      generator.generate_with_associations(expected, Project, options)
 
       expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
 
@@ -163,11 +153,9 @@ module DataShift
     it 'should enable us to autosize columns in the .xls file' do
       expected = result_file('gen_project_autosized_template.xls')
 
-      gen = ExcelGenerator.new(expected)
-
       options = { autosize: true, exclude: :milestones }
 
-      gen.generate_with_associations(Project, options)
+      generator.generate_with_associations(expected, Project, options)
 
       expect( File.exist?(expected)).to eq true
 

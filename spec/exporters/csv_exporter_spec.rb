@@ -13,6 +13,8 @@ module DataShift
       results_clear( '*.csv' )
     end
 
+    let(:exporter) { CsvExporter.new }
+
     include_context 'ClearThenManageProject'
 
     context 'simple project' do
@@ -21,23 +23,17 @@ module DataShift
       end
 
       it 'should be able to create a new CSV exporter' do
-        exporter = CsvExporter.new( 'exp_rspec_csv_empty.csv' )
-
         expect(exporter).not_to be_nil
       end
 
       it 'should throw if not active record objects' do
-        exporter = DataShift::CsvExporter.new( 'exp_rspec_csv_empty.csv' )
-
-        expect { exporter.export([123.45]) }.to raise_error(ArgumentError)
+        expect { exporter.export('exp_rspec_csv_empty.csv', [123.45]) }.to raise_error(ArgumentError)
       end
 
       it 'should export collection of model objects to csv file', fail: true do
         expected = result_file('exp_project_collection_spec.csv')
 
-        exporter = DataShift::CsvExporter.new( expected )
-
-        exporter.export(Project.all)
+        exporter.export(expected, Project.all)
 
         expect(File.exist?(expected)).to eq true
 
@@ -58,11 +54,9 @@ module DataShift
       it 'should handle bad params to export' do
         expected = result_file('project_first_export_spec.csv')
 
-        exporter = DataShift::CsvExporter.new( expected )
+        expect { exporter.export(expected, nil) }.not_to raise_error
 
-        expect { exporter.export(nil) }.not_to raise_error
-
-        expect { exporter.export([]) }.not_to raise_error
+        expect { exporter.export(expected, []) }.not_to raise_error
 
         puts "Can manually check file @ #{expected}"
       end
@@ -70,9 +64,7 @@ module DataShift
       it 'should export a model object to csv file' do
         expected = result_file('project_first_export_spec.csv')
 
-        exporter = DataShift::CsvExporter.new( expected )
-
-        exporter.export(Project.all[0])
+        exporter.export(expected, Project.all[0])
 
         expect(File.exist?(expected)).to eq true
 
@@ -82,9 +74,7 @@ module DataShift
       it 'should export a model and result of method calls on it to csv file' do
         expected = result_file('project_with_methods_export_spec.csv')
 
-        exporter = DataShift::CsvExporter.new( expected )
-
-        exporter.export(Project.all, methods: [:multiply])
+        exporter.export(expected, Project.all, methods: [:multiply])
 
         expect(File.exist?(expected)).to eq true
 
@@ -100,9 +90,7 @@ module DataShift
 
         options = { remove: [:title, :value_as_integer] }
 
-        exporter = DataShift::CsvExporter.new( expected )
-
-        exporter.export(Project.all, options)
+        exporter.export(expected, Project.all, options)
 
         expect(File.exist?(expected)).to eq true
 
@@ -128,9 +116,7 @@ module DataShift
       end
 
       it 'should export a model and associations to a file' do
-        gen = DataShift::CsvExporter.new(expected)
-
-        gen.export_with_associations(Project, Project.all)
+        exporter.export_with_associations(expected, Project, Project.all)
 
         expect(File.exist?(expected)).to eq true
 
@@ -140,9 +126,7 @@ module DataShift
       end
 
       it 'should include headers and association names in row 0' do
-        gen = DataShift::CsvExporter.new(expected)
-
-        gen.export_with_associations(Project, Project.all)
+        exporter.export_with_associations(expected, Project, Project.all)
 
         expect(File.exist?(expected)).to eq true
 
@@ -158,11 +142,9 @@ module DataShift
       end
 
       it 'should export model & associations to single row' do
-        gen = DataShift::CsvExporter.new(expected)
-
         items = Project.all
 
-        gen.export_with_associations(Project, items)
+        exporter.export_with_associations(expected, Project, items)
 
         csv = CSV.read(expected)
 

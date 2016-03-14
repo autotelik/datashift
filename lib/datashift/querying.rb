@@ -114,7 +114,7 @@ module DataShift
         record = search_for_record(klazz, field, find_search_term)
 
         unless record
-          logger.info("Nothing found - trying split filename to terms on [#{split_on}]")
+          logger.info("Nothing found - trying split file_name to terms on [#{split_on}]")
 
           # try individual portions of search_term, front -> back i.e "A_B_C_D" => A, B, C etc
           search_term.split(split_on).each do |str|

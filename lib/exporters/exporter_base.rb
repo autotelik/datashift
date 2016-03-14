@@ -10,8 +10,8 @@ module DataShift
 
   class ExporterBase < FileGenerator
 
-    def initialize(filename)
-      super filename
+    def initialize
+      super
     end
 
   end

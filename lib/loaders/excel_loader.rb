@@ -18,17 +18,8 @@ module DataShift
     include DataShift::ExcelBase
     include DataShift::FileLoader
 
-    # Setup loading
-    #
-    # Options to drive building the method dictionary for a class, enabling headers to be mapped to operators on that class.
-    #
-    # Options
-    #  :verbose          : Verbose logging and to STDOUT
-    #
-    def initialize( file_name, options = {} )
-      super( options )
-
-      @file_name = file_name
+    def initialize
+      super
     end
 
     #  Options
@@ -153,11 +144,13 @@ module DataShift
 
       logger.info("STARTING - Loading from Excel file: #{file_name}")
 
-      start_excel(file_name, options[:sheet_number] || 0 )
+      open_excel(file_name, options)
 
       set_headers( parse_headers(sheet, options[:header_row] || 0) )
 
-      raise MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{headers.idx} contains headers" if headers.empty?
+      if headers.empty?
+        raise MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{headers.idx} contains headers"
+      end
 
       excel
     end

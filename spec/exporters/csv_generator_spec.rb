@@ -15,23 +15,19 @@ module  DataShift
 
     include_context 'ClearThenManageProject'
 
-    it 'should be able to create a new csv generator' do
-      generator = CsvGenerator.new( 'dummy_template.csv' )
+    let(:generator) { CsvGenerator.new }
 
-      generator.should_not be_nil
+    it 'should be able to create a new csv generator' do
+      expect(generator).to_not be_nil
     end
 
     it 'should generate template .csv file from model' do
       expected = result_file('project_template.csv')
-
-      gen = CsvGenerator.new( expected )
-
-      gen.generate(Project)
+      
+      generator.generate(expected, Project)
 
       expect(File.exist?(expected)).to eq true
-
-      puts "Can manually check file @ #{expected}"
-
+      
       csv = CSV.read(expected)
 
       headers = csv[0]
@@ -50,9 +46,7 @@ module  DataShift
     it 'should include all associations in template .csv file from model' do
       expected = result_file('project_plus_assoc_template.csv')
 
-      gen = CsvGenerator.new(expected)
-
-      gen.generate_with_associations(Project)
+      generator.generate_with_associations(expected, Project)
 
       expect( File.exist?(expected)).to eq true
 
@@ -68,11 +62,9 @@ module  DataShift
     it 'should enable us to exclude associations by type in template .csv file' do
       expected = result_file('project_plus_some_assoc_template.csv')
 
-      gen = CsvGenerator.new(expected)
-
       options = { exclude: :has_many }
 
-      gen.generate_with_associations(Project, options)
+      generator.generate_with_associations(expected, Project, options)
 
       expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
 
@@ -91,11 +83,9 @@ module  DataShift
     it 'should enable us to exclude certain associations', fail: true do
       expected = result_file('project_plus_some_assoc_template.csv')
 
-      gen = CsvGenerator.new(expected)
-
       options = { remove: [:milestones, :versions] }
 
-      gen.generate_with_associations(Project, options)
+      generator.generate_with_associations(expected, Project, options)
 
       expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
 
@@ -115,11 +105,9 @@ module  DataShift
     it 'should remove standard rails fields from template .csv file' do
       expected = result_file('project_plus_some_assoc_template.csv')
 
-      gen = CsvGenerator.new(expected)
-
       options = { remove_rails: true }
 
-      gen.generate_with_associations(Project, options)
+      generator.generate_with_associations(expected, Project, options)
 
       expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
 

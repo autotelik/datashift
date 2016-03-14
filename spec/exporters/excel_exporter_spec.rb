@@ -18,20 +18,18 @@ module  DataShift
       results_clear( '*.xls' )
     end
 
+    let(:exporter) { ExcelExporter.new }
+    
     it 'should be able to create a new excel exporter' do
-      generator = ExcelExporter.new( 'exp_dummy.xls' )
-
-      expect(generator).to_not be_nil
+      expect(exporter).to_not be_nil
     end
 
     it 'should handle bad params to export' do
       expect = result_file('project_first_export_spec.csv')
+      
+      expect { exporter.export(expect,nil) }.not_to raise_error
 
-      exporter = DataShift::ExcelExporter.new( expect )
-
-      expect { exporter.export(nil) }.not_to raise_error
-
-      expect { exporter.export([]) }.not_to raise_error
+      expect { exporter.export(expect,[]) }.not_to raise_error
 
       puts "Can manually check file @ #{expect}"
     end
@@ -46,9 +44,7 @@ module  DataShift
       it 'should export model object to .xls file' do
         expected = result_file('exp_project_first_export.xls')
 
-        gen = ExcelExporter.new( expected )
-
-        gen.export(Project.all.first)
+        exporter.export(expected, Project.all.first)
 
         expect(File.exist?(expected)).to eq true
 
@@ -57,10 +53,8 @@ module  DataShift
 
       it 'should export collection of model objects to .xls file' do
         expected = result_file('exp_project_export.xls')
-
-        gen = ExcelExporter.new( expected )
-
-        gen.export(Project.all)
+        
+        exporter.export(expected ,Project.all)
 
         expect( File.exist?(expected)).to eq true
 
@@ -83,11 +77,9 @@ module  DataShift
 
         expected = result_file('exp_project_plus_assoc.xls')
 
-        gen = ExcelExporter.new(expected)
-
         items = Project.all
 
-        gen.export_with_associations(Project, items)
+        exporter.export_with_associations(expected, Project, items)
 
         expect(File.exist?(expected)).to eq true
 
@@ -103,11 +95,9 @@ module  DataShift
 
         expected = result_file('exp_project_plus_assoc.xls')
 
-        gen = ExcelExporter.new(expected)
-
         items = Project.all
 
-        gen.export_with_associations(Project, items)
+        exporter.export_with_associations(expected, Project, items)
 
         expect(File.exist?(expected)).to eq true
 
@@ -141,11 +131,9 @@ module  DataShift
 
         expected = result_file('project_and_has_many_assoc_export.xls')
 
-        gen = ExcelExporter.new(expected)
-
         items = Project.all
 
-        gen.export_with_associations(Project, items)
+        exporter.export_with_associations(expected, Project, items)
 
         expect(File.exist?(expected)).to eq true
 
@@ -175,11 +163,9 @@ module  DataShift
 
         expected = result_file('project_and_has_many_json_export.xls')
 
-        gen = ExcelExporter.new(expected)
-
         items = Project.all
 
-        gen.export_with_associations(Project, items, json: true)
+        exporter.export_with_associations(expected, Project, items, json: true)
 
         expect(File.exist?(expected)).to eq true
 

@@ -1,6 +1,6 @@
-# Copyright:: (c) Autotelik Media Ltd 2012
+# Copyright:: (c) Autotelik Media Ltd 2016
 # Author ::   Tom Statter
-# Date ::     April 2012
+# Date ::     March 2016
 # License::   MIT.
 #
 # Usage::
@@ -10,10 +10,6 @@
 #     require 'datashift'
 #
 #     DataShift::load_commands
-#
-#  Cmd Line:
-#
-# => bundle exec thor datashift:export:excel -m <active record class> -r <output_template.xls> -a
 #
 require 'thor_base'
   
@@ -39,19 +35,19 @@ module Datashift
      
       logger.info "Datashift: Start Excel export to #{result}"
             
-      klass = MapperUtils::class_from_string(model)  #Kernel.const_get(model)
+      klass = DataShift::MapperUtils::class_from_string(model)  #Kernel.const_get(model)
     
       raise "ERROR: No such Model [#{model}] found - check valid model supplied via -model <Class>" if(klass.nil?)
 
       begin
-        gen = DataShift::ExcelExporter.new(result)
+        gen = DataShift::ExcelExporter.new
 
         if(options[:assoc])
           opts = (options[:exclude]) ? {:exclude => options[:exclude]} : {}
           logger.info("Datashift: Exporting with associations")
-          gen.export_with_associations(klass, klass.all, opts)
+          gen.export_with_associations(result, klass, klass.all, opts)
         else
-          gen.export(klass.all, :sheet_name => klass.name)
+          gen.export(result, klass.all, :sheet_name => klass.name)
         end
       rescue => e
         puts e
@@ -145,7 +141,7 @@ module Datashift
 
         puts "Datashift: Start export to #{@result}"
          
-        exporter.filename = @result
+        exporter.file_name = @result
         
         raise "ERROR: No such Model [#{@klass}] found - check valid model supplied via -model <Class>" if(@klass.nil?)
 

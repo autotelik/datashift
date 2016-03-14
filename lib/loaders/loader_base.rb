@@ -20,38 +20,37 @@ module DataShift
     include DataShift::Logging
     include DataShift::Querying
 
-    attr_reader :file_name
-
     attr_reader :strict
+
+    attr_accessor :file_name
 
     attr_accessor :doc_context
     attr_accessor :binder, :mandatory
 
     # Options
     #
-    #  :file_name       : Filename that will be loaded
-    #  :verbose         : Verbose logging and to STDOUT
     #  :strict          : Raise exceptions when issues like missing mandatory columns
     #
-    def initialize( options = {} )
-
-      @file_name   = options[:file_name] || ''
+    def initialize
+      @file_name   =  ''
 
       @doc_context = DocContext.new(NilClass)
 
       @binder      = Binder.new
       @mandatory   = Mandatory.new
-
-      logger.verbose if options[:verbose]
-
-      @strict = (options[:strict] == true)
     end
 
     # Options
     #    [:object]    : Process against an existing object, otherwise new objects created
     #    [:mandatory] : List of columns that must be present in headers
     #
-    def run(object_class, options = {})
+    def run(file_name, object_class, options = {})
+
+      logger.verbose if(options[:verbose])
+
+      @strict = (options[:strict] == true)
+
+      @file_name = file_name
 
       logger.info("Loading options objects of type #{load_object_class}")
 

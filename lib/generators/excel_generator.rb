@@ -15,35 +15,39 @@ module DataShift
   class ExcelGenerator < FileGenerator
 
     include DataShift::Logging
+    include DataShift::ExcelBase
 
     attr_accessor :excel
 
-    def initialize(filename)
-      super filename
+    def initialize
+      super
     end
 
     # Create an Excel file template (header row) representing supplied Model
+    # file_name] => Filename for generated template
+    #
     # Options
     #
     # [:with] => List of association Types to include (:has_one etc)
     #
-    # [:filename] => Filename for generated template
-    #
+
     # [:remove] => List of headers to remove from generated template
     #
     # [:remove_rails] => Remove standard Rails cols like :id, created_at etc
     #
-    def generate(klass, options = {})
+    def generate(file_name, klass, options = {})
 
-      @excel = prepare_excel(klass, options)
+      @file_name = file_name
+
+      start_excel(klass, options)
 
       @excel.set_headers( to_headers(klass, options) )
 
-      logger.info("ExcelGenerator saving generated template #{@filename}")
+      logger.info("ExcelGenerator saving generated template #{@file_name}")
 
       # @excel.autosize if(options[:autosize])
 
-      @excel.write( @filename )
+      @excel.write( @file_name )
     end
 
   end # ExcelGenerator

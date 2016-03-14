@@ -16,16 +16,16 @@ module DataShift
 
       include DataShift::Paperclip
 
-      attr_accessor :attach_to_klass, :attach_to_find_by_field
-
-      attr_reader :attach_to_field
+      attr_accessor :attach_to_klass, :attach_to_find_by_field, :attach_to_field
 
       attr_reader :loading_files_cache
 
-      # Constructor
-      #
-      # Options
-      #
+      def initialize
+        super
+
+        @attach_to_klass, @attach_to_find_by_field, @attach_to_field = nil, nil, nil
+      end
+
       # => :attach_to_klass
       #       A class that has a relationship with the attachment (has_many, has_one or belongs_to etc)
       #       The instance of :attach_to_klass can be searched for and the new attachment assigned.
@@ -49,46 +49,27 @@ module DataShift
       #         :attach_to_field => digitals  : Owner.digitals = attachment
       #         :attach_to_field => avatar    : User.avatar = attachment
       #
-      #  :verbose          : Verbose logging and to STDOUT
-      #
-      def initialize(path, options = {})
+      def init(attach_to_klass, attach_to_find_by_field, attach_to_field, options ={})
+        @attach_to_klass = attach_to_klass
 
-        super( options.dup )
+        ModelMethods::Manager.catalog_class(@attach_to_klass, reload: options[:reload], instance_methods: true)
 
-        @file_name = path
-
-        init_from_options( options )
-
-        logger.info("Attachment Class is #{load_object_class}")
+        @attach_to_find_by_field = attach_to_find_by_field
+        @attach_to_field = attach_to_field
       end
 
-      # Options
-      # :reload
-      #
-      # :attach_to_klass
-      # :attach_to_field
-      # :attach_to_find_by_field
-      #
-      def init_from_options( options )
+      def init_from_options(options)
 
-        @attach_to_klass = options[:attach_to_klass] || attach_to_klass
-
-        if attach_to_klass
-          ModelMethods::Manager.catalog_class(@attach_to_klass, reload: options[:reload], instance_methods: true)
-        end
-
-        @attach_to_find_by_field = options[:attach_to_find_by_field] || @attach_to_find_by_field || nil
-        @attach_to_field = options[:attach_to_field] || @attach_to_field || nil
-
+        init(options[:attach_to_klass], options[:attach_to_find_by_field], options[:attach_to_field])
       end
 
       # This version creates attachments and also attaches them to instances of :attach_to_klazz
       #
-      # Each file found in PATH will be processed - it's filename being used to scan for
+      # Each file found in PATH will be processed - it's file_name being used to scan for
       # a matching record to attach the file to.
       #
       # Options
-      #   :split_file_name_on   Used in scan process to progressively split filename to find
+      #   :split_file_name_on   Used in scan process to progressively split file_name to find
       #
       #   :add_prefix
       #
@@ -105,7 +86,7 @@ module DataShift
         # Support both directory and file
         @loading_files_cache = DataShift::Paperclip.get_files(file_name, options)
 
-        # we'll try splitting up filename in various ways looking for the attachment owqner
+        # we'll try splitting up file_name in various ways looking for the attachment owqner
         split_on = options[:split_file_name_on] || Regexp.new(/\s+/)
 
         logger.info("Found #{loading_files_cache.size} attachment files - splitting names on delimiter [#{split_on}]")

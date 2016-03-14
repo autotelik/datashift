@@ -9,10 +9,51 @@ require 'erubis'
 
 module DataShift
 
-  def self.configure
+    class Configuration
+      # When performing import, default is to ignore any columns that cannot be mapped  (via headers)
+      # To raise an error set strict => true
+      # Defaults to `false`. Set to `true` to cause exceptions to be thrown
+      # The setting is ignored if routes are disabled.
+      # @param [Boolean] value
+      # @return [Boolean]
+      attr_accessor :strict
+      
+      # Controls the amount of information written to the log
+      # Defaults to `false`. Set to `true` to cause extensive progress messages to be logged
+      # @param [Boolean] value
+      # @return [Boolean]
+      attr_accessor :verbose
+      
+
+      def initialize
+        @strict = false
+        @verbose = false
+      end
+      
+    # @return [DataShift::Configuration] DataShift's current configuration
+    def self.configuration
+      @configuration ||= Configuration.new
+    end
+
+    # Set DataShift's configuration
+    # @param config [DataShift::Configuration]
+    def self.configuration=(config)
+      @configuration = config
+    end
+
+    # Modify DataShift's current configuration
+    # @yieldparam [DataShift::Configuration] config current DataShift config
+    # ```
+    # DataShift.configure do |config|
+    #   config.verbose = false
+    # end
+    # ```
+    def self.configure
+      yield configuration
+    end
   end
 
-  class Configuration
+  class YamlConfiguration
 
     attr_accessor :datashift_defaults, :datashift_populators
 
@@ -20,7 +61,6 @@ module DataShift
 
     # N.B @mappings is an OpenStruct data structure
     #
-
     attr_reader :key
     attr_accessor :yaml_data, :key_config
 

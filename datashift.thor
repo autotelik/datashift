@@ -16,8 +16,6 @@
 #             Provides support for moving data between csv files and AR, enabling direct
 #             import/export of AR models and their associations from database.
 #
-## encoding: utf-8
-
 require 'thor'
 
 $:.push File.expand_path("lib", __FILE__)

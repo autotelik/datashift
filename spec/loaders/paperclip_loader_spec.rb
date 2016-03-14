@@ -23,6 +23,7 @@ describe 'PaperClip Bulk Loader' do
   end
 
   let(:path) { File.join(fixtures_path, 'images') }
+
   let(:common_options) { { verbose: true } }
 
   # Owner.where(:name = 'jeff mills').first.digitals << DigitalAttachmentLoadedFromPath
@@ -36,19 +37,26 @@ describe 'PaperClip Bulk Loader' do
 
   let(:paper_clip_attachment_class) { Digital }
 
+  let(:loader) { DataShift::Paperclip::AttachmentLoader.new }
+
   it 'should create a new paperclip loader to load a directory of attachments' do
-    loader = DataShift::Paperclip::AttachmentLoader.new(path, common_options)
-    expect(loader.file_name).to eq path
+    expect(loader).to be
     expect(loader.attach_to_klass).to be_nil
     expect(loader.attach_to_find_by_field).to be_nil
     expect(loader.attach_to_field).to be_nil
   end
 
-  it 'should create loader and define class to attach to' do
-    loader = DataShift::Paperclip::AttachmentLoader.new(path, attachment_options.merge(common_options))
+  it 'can be configured to load attachments against class instances found via field name attached to another field' do
+    loader.init_from_options(attachment_options)
+    expect(loader.attach_to_klass).to eq attachment_options[:attach_to_klass]
+    expect(loader.attach_to_find_by_field).to eq attachment_options[:attach_to_find_by_field]
+    expect(loader.attach_to_field).to eq attachment_options[:attach_to_field]
+  end
 
+  it 'can be initialised to load attachments against class instances found via field name attached to another field' do
+    loader.init(Owner, :image, :digitals)
     expect(loader.attach_to_klass).to eq Owner
-    expect(loader.attach_to_find_by_field).to eq :name
+    expect(loader.attach_to_find_by_field).to eq :image
     expect(loader.attach_to_field).to eq :digitals
   end
 
@@ -57,30 +65,28 @@ describe 'PaperClip Bulk Loader' do
     let(:owner_names) { %w(DEMO_001 DEMO_002 DEMO_003 DEMO_004) }
 
     before(:each) do
-      # these names should be included in the attachment file name somewhere
+      # these Owner names should be embeeded in the attachment FILE NAME somewhere
       owner_names.each do |n|
         Owner.create( name: n )
       end
+
+      loader.init_from_options attachment_options
     end
 
     it 'should bulk load from a directory file system' do
 
-      loader = DataShift::Paperclip::AttachmentLoader.new(path, attachment_options.merge(common_options))
+      loader.run(path, Digital, split_file_name_on: '_')
 
-      loader.run(Digital, split_file_name_on: '_')
-
-      puts Owner.all.collect(&:digitals).inspect
+      expect(Owner.first.digitals.size).to be > 0
 
     end
 
     it 'should save failed images to folder when unable to find matching record' do
 
       # use a non existent field to cause error
-      opts = { attach_to_klass: Owner, attach_to_find_by_field: :junk }.merge(common_options)
+      loader.attach_to_find_by_field = :junk
 
-      loader = DataShift::Paperclip::AttachmentLoader.new(path, opts)
-
-      loader.run(Digital, split_file_name_on: '_')
+      loader.run(path, Digital, split_file_name_on: '_')
 
       expect(Dir.glob('MissingAttachmentRecords/*.jpeg', File::FNM_CASEFOLD).size).to eq owner_names.size
     end

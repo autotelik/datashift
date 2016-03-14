@@ -164,7 +164,7 @@ module Datashift
         raise "ERROR: No such Model [#{@klass}] found - check valid model supplied via -model <Class>" if(@klass.nil?)
 
         begin
-          opts =  { :filename => @result,
+          opts =  { :file_name => @result,
                     :remove => options[:remove],
                     :remove_rails => options[:remove_rails],
                     :sheet_name => @klass.name

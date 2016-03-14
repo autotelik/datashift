@@ -1,30 +1,30 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2016
 # Author ::   Tom Statter
-# Date ::     Aug 2011
+# Date ::     Mar 2016
 # License::   MIT
 #
 # Details::   Export a model to Excel '97(-2007) file format.
 #
-# TOD : Can we switch between .xls and XSSF (POI implementation of Excel 2007 OOXML (.xlsx) file format.)
+# TODO: Can we switch between .xls and XSSF (POI implementation of Excel 2007 OOXML (.xlsx) file format.)
 #
 #
 module DataShift
-
-  require 'exporter_base'
-
-  require 'excel'
 
   class ExcelExporter < ExporterBase
 
     include DataShift::Logging
     include DataShift::ColumnPacker
 
-    def initialize(filename)
-      super(filename)
+    include DataShift::ExcelBase
+
+    def initialize
+      super
     end
 
     # Create an Excel file from list of ActiveRecord objects
-    def export(export_records, options = {})
+    def export(file_name, export_records, options = {})
+
+      @file_name = file_name
 
       records = [*export_records]
 
@@ -41,9 +41,7 @@ module DataShift
 
       logger.info("Exporting #{records.size} #{first.class} to Excel")
 
-      @filename = options[:filename] if options[:filename]
-
-      excel = prepare_excel(first.class, options)
+      excel = start_excel(first.class, options)
 
       to_headers(first.class, options)
 
@@ -51,16 +49,14 @@ module DataShift
 
       excel.ar_to_xls(records)
 
-      logger.info("Writing Excel to file [#{filename}]")
+      logger.info("Writing Excel to file [#{file_name}]")
 
-      excel.write( filename )
+      excel.write( file_name )
     end
 
     # Create an Excel file from list of ActiveRecord objects, includes relationships
     #
     # Options
-    #
-    # [:filename] => Filename for generated template
     #
     # [:with] => List of association Types to include (:has_one etc)
     #
@@ -77,9 +73,11 @@ module DataShift
     #
     # [json:] - Export association data in single column in JSON format
     #
-    def export_with_associations(klass, records, options = {})
+    def export_with_associations(file_name, klass, records, options = {})
 
-      excel = prepare_excel(klass, options)
+      @file_name = file_name
+
+      start_excel(klass, options)
 
       collection = ModelMethods::Manager.catalog_class(klass)
 
@@ -119,8 +117,8 @@ module DataShift
         row += 1
       end
 
-      logger.info("Writing Excel to file [#{filename}]")
-      excel.write( filename )
+      logger.info("Writing Excel to file [#{file_name}]")
+      excel.write( file_name )
 
     end
 

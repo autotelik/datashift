@@ -15,17 +15,8 @@ module DataShift
     include DataShift::Logging
     include DataShift::FileLoader
 
-    # Setup loading
-    #
-    # Options to drive building the method dictionary for a class, enabling headers to be mapped to operators on that class.
-    #
-    # Options
-    #  :verbose          : Verbose logging and to STDOUT
-    #
-    def initialize( file_name, options = {} )
-      super( options )
-
-      @file_name = file_name
+    def initialize
+      super
     end
 
     #  Options
@@ -42,7 +33,6 @@ module DataShift
     #   [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
 
     def perform_load( options = {} )
-
       require 'csv'
 
       raise "Cannot load - failed to create a #{klass}" unless load_object

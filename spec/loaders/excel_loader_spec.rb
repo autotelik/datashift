@@ -10,40 +10,40 @@ module  DataShift
   describe 'Excel Loader' do
     include_context 'ClearAllCatalogues'
 
-    before(:each) do
-      create_list(:category, 5)
-    end
+    let(:loader) { ExcelLoader.new }
+
+    let(:expected) { ifixture_file('SimpleProjects.xls') }
 
     context 'prepare to load' do
-      let(:simple_xls) { ifixture_file('SimpleProjects.xls') }
 
       it 'should be able to create a new excel loader' do
-        expect(ExcelLoader.new( simple_xls)).to be
+        expect(loader).to be
       end
-
-      let(:loader) { ExcelLoader.new( simple_xls) }
 
       it 'should provide access to a context for the whole document' do
         expect(loader.doc_context).to be_a DocContext
       end
 
-      it 'should provide access to the filename' do
-        expect(loader.file_name).to eq simple_xls
-      end
-
-      it 'should open an Excel file' do
-        expect( loader.start_excel( loader.file_name, 0 ) ).to be_a Excel
+      it 'should have access to open an Excel file' do
+        expect( loader.respond_to?(:start_excel)).to eq true
+        expect( loader.open_excel(expected, sheet_number: 0) ).to be_a Excel
       end
     end
 
     context 'basic load operations' do
-      let(:simple_xls) { ifixture_file('SimpleProjects.xls') }
 
-      let(:loader) { ExcelLoader.new(simple_xls) }
+      before(:each) do
+        create_list(:category, 5)
+      end
 
-      it 'should parse the headers', fail: true do
-        loader.run(Project)
+      it 'should provide access to the file_name', duff: true do
+        loader.run(expected, Project)
+        expect(loader.file_name).to eq expected
+      end
 
+      it 'should parse the headers' do
+
+        loader.run(expected, Project)
         expect(loader.headers.class).to eq Headers
         # TOFIX flakey - is it possible to read from 'SimpleProjects.xls'
         expect(loader.headers).to eq ['value_as_string',	'Value as Text', 'value as datetime', 'value_as_boolean',	'value_as_double']
@@ -51,7 +51,7 @@ module  DataShift
       end
 
       it 'should bind headers to real class methods' do
-        loader.run(Project)
+        loader.run(expected, Project)
 
         expect(loader.binder).to be
 
@@ -67,14 +67,11 @@ module  DataShift
     end
 
     context 'creates new records' do
-      let(:simple_xls) { ifixture_file('SimpleProjects.xls') }
-
-      let(:loader) { ExcelLoader.new( simple_xls ) }
 
       it 'should process a simple .xls spreedsheet', fail: true do
         count = Project.count
 
-        loader.run(Project)
+        loader.run(expected, Project)
 
         expect(loader.loaded_count).to eq 3
         expect(Project.count).to eq count + 3
@@ -90,7 +87,7 @@ module  DataShift
       #         end
 
       it 'should populate database objects from a simple .xls spreedsheet' do
-        loader.run(Project)
+        loader.run(expected, Project)
 
         loaded = Project.last
 
@@ -108,8 +105,9 @@ module  DataShift
 
         count = Project.count
 
-        loader = ExcelLoader.new(ifixture_file('ProjectsSingleCategories.xls') )
-        loader.run(Project)
+        expected = ifixture_file('ProjectsSingleCategories.xls')
+
+        loader.run(expected, Project)
 
         expect(loader.loaded_count).to eq 4
 
@@ -127,8 +125,9 @@ module  DataShift
       it 'should process multiple associations in excel spreadsheet' do
         count = Project.count
 
-        loader = ExcelLoader.new(ifixture_file('ProjectsMultiCategories.xls') )
-        loader.run(Project)
+        expected = ifixture_file('ProjectsMultiCategories.xls')
+
+        loader.run(expected, Project)
 
         expect(loader.loaded_count).to eq (Project.count - count)
 
@@ -144,8 +143,9 @@ module  DataShift
       it 'should process multiple associations with lookup specified in column from excel spreadsheet' do
         count = Project.count
 
-        loader = ExcelLoader.new(ifixture_file('ProjectsMultiCategoriesHeaderLookup.xls') )
-        loader.run(Project)
+        expected = ifixture_file('ProjectsMultiCategoriesHeaderLookup.xls')
+
+        loader.run(expected, Project)
 
         expect(loader.loaded_count).to eq 4
         expect(Project.count).to eq count + 4
@@ -160,21 +160,23 @@ module  DataShift
       end
 
       it 'should process excel spreedsheet with extra undefined columns' do
-        loader = ExcelLoader.new(ifixture_file('BadAssociationName.xls') )
+        expected = ifixture_file('BadAssociationName.xls')
 
-        expect { loader.run(Project) }.to_not raise_error
+        expect { loader.run(expected, Project) }.to_not raise_error
       end
 
       it 'should NOT process excel spreedsheet with extra undefined columns when strict mode' do
-        loader = ExcelLoader.new(ifixture_file('BadAssociationName.xls'), strict: true )
+        expected = ifixture_file('BadAssociationName.xls')
 
-        expect { loader.run(Project) }.to raise_error(MappingDefinitionError)
+        expect { loader.run(expected, Project, strict: true) }.to raise_error(MappingDefinitionError)
       end
 
       it 'should raise an error when mandatory columns missing' do
-        loader = ExcelLoader.new(ifixture_file('ProjectsMultiCategories.xls') )
+        expected = ifixture_file('ProjectsMultiCategories.xls')
 
-        expect { loader.run(Project, mandatory: %w(not_an_option must_be_there)) }.to raise_error(DataShift::MissingMandatoryError)
+        expect {
+          loader.run(expected, Project, mandatory: %w(not_an_option must_be_there))
+        }.to raise_error(DataShift::MissingMandatoryError)
       end
     end
 
@@ -182,7 +184,7 @@ module  DataShift
     end
 
     context 'external configuration of loader' do
-      let(:loader)  { ExcelLoader.new(ifixture_file('ProjectsSingleCategories.xls') ) }
+      let(:expected)  { ifixture_file('ProjectsSingleCategories.xls')  }
 
       before(:each) do
         DataShift::Transformer.factory.clear
@@ -200,7 +202,7 @@ module  DataShift
 
         # value_as_string	Value as Text	value as datetime	value_as_boolean	value_as_double	category
 
-        loader.run(Project)
+        loader.run(expected, Project)
 
         p = Project.find_by_title( '099' )
 
@@ -227,7 +229,7 @@ module  DataShift
           factory.set_postfix_on(Project, 'value_as_string', 'my post fix' )
         end
 
-        loader.run(Project)
+        loader.run(expected, Project)
 
         p = Project.find_by_title( '001' )
 

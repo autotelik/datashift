@@ -11,8 +11,8 @@ module DataShift
 
     include DataShift::Logging
 
-    def initialize(filename)
-      super filename
+    def initialize
+      super
     end
 
     # Create CSV file representing supplied Model
@@ -21,20 +21,20 @@ module DataShift
     #
     # [:with] => List of association Types to include (:has_one etc)
     #
-    # [:filename] => Filename for generated template
+    # [:file_name] => Filename for generated template
     #
     # [:remove] => List of headers to remove from generated template
     #
     # [:remove_rails] => Remove standard Rails cols like :id, created_at etc
     #
-    def generate(klass, options = {})
-      @filename = options[:filename] if options[:filename]
+    def generate(file_name, klass, options = {})
+      @file_name = file_name
 
       to_headers(klass, options)
 
-      logger.info("CSVGenerator saving generated Template #{@filename}")
+      logger.info("CSVGenerator saving generated Template #{@file_name}")
 
-      CSV.open(@filename, 'w') do |csv|
+      CSV.open(@file_name, 'w') do |csv|
         csv << headers
       end
 
@@ -42,9 +42,9 @@ module DataShift
 
     # Create CSV file representing supplied Model
     #
-    # Options
+    #  file_name => Filename for generated template
     #
-    # [:filename] => Filename for generated template
+    # Options
     #
     # [:with] => List of association Types to include (:has_one etc)
     #
@@ -57,7 +57,8 @@ module DataShift
     #
     # [:remove_rails] => Remove standard Rails cols like :id, created_at etc
     #
-    def generate_with_associations(klass, options = {})
+    def generate_with_associations(file_name, klass, options = {})
+      @file_name = file_name
 
       # with_associations - so over ride to default to :all if nothing specified
       options[:with] = :all if options[:with].nil?
@@ -65,7 +66,7 @@ module DataShift
       # sort out exclude etc
       options[:with] = op_types_in_scope( options )
 
-      generate(klass, options)
+      generate(file_name, klass, options)
     end
 
   end

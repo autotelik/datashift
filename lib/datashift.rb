@@ -51,9 +51,9 @@ module DataShift
     # Define require search paths, any dir in here will be added to LOAD_PATH
 
     loader_paths.each do |base|
-      $LOAD_PATH.unshift base if File.directory?(base)
+      $LOAD_PATH.unshift base if(File.directory?(base))
       Dir[File.join(base, '**', '**')].each do |p|
-        $LOAD_PATH.unshift p if File.directory? p
+        $LOAD_PATH.unshift p if(File.directory?(p))
       end
     end
 
@@ -64,11 +64,16 @@ module DataShift
                     'datashift/inbound_data',
                     'loaders', 'exporters', 'generators', 'helpers']
 
+    require_relative 'loaders/loader_base'
+
     require_libs.each do |base|
       Dir[File.join(library_path, base, '*.rb')].each do |rb|
-        require_relative rb unless File.directory? rb
+        require_relative rb unless File.directory?(rb)
       end
     end
+
+    require_relative 'applications/excel'
+
   end
 
   # Load all the datashift  tasks and make them available throughout app
@@ -97,12 +102,6 @@ end
 # require_relative 'loaders/file_loader'
 
 DataShift.require_libraries
-
-require_relative 'applications/excel'
-
-require_relative 'datashift/method_binding'
-require_relative 'datashift/binder'
-require_relative 'datashift/mapper_utils'
 
 module DataShift
   if Guards.jruby?

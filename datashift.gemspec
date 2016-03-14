@@ -35,6 +35,8 @@ Gem::Specification.new do |s|
   # for the dummy rails sandbox used in testing
   s.add_development_dependency 'rubocop', '~> 0.38'
 
+
+  s.add_development_dependency 'rake', '~> 11.1'
   s.add_development_dependency 'rspec', '~> 3.4'
   s.add_development_dependency 'factory_girl_rails', '~> 4.5'
   s.add_development_dependency 'database_cleaner', '~> 1.5'

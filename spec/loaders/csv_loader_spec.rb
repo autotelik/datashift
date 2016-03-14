@@ -10,22 +10,18 @@ module  DataShift
   describe 'Csv Loader' do
     include_context 'ClearAllCatalogues'
 
+    let(:loader) { CsvLoader.new }
+
     context 'prepare to load' do
-      let(:simple_csv) { ifixture_file('csv/SimpleProjects.csv') }
 
-      it 'should be able to create a new excel loader' do
-        expect(CsvLoader.new( simple_csv)).to be
+      it 'should be able to create a new CSV loader' do
+        expect(loader).to be
       end
-
-      let(:loader) { CsvLoader.new( simple_csv) }
 
       it 'should provide access to a context for the whole document' do
         expect(loader.doc_context).to be_a DocContext
       end
 
-      it 'should provide access to the filename' do
-        expect(loader.file_name).to eq simple_csv
-      end
     end
 
     context 'basic load operations' do
@@ -35,10 +31,13 @@ module  DataShift
 
       let(:simple_csv) { ifixture_file('csv/SimpleProjects.csv') }
 
-      let(:loader) { CsvLoader.new(simple_csv) }
+      it 'should provide access to the file_name' do
+        expect(loader.respond_to? :file_name).to eq true
+      end
 
       it 'should process a simple .csv spreedsheet' do
-        loader.run(Project)
+
+        loader.run(simple_csv, Project)
 
         expect(loader.headers.class).to eq Headers
         # TOFIX flakey - use CSV to read from SimpleProjects.csv
@@ -50,9 +49,9 @@ module  DataShift
         expect(Project.where(title: '001').first).to be_nil
         count = Project.count
 
-        loader = CsvLoader.new( ifixture_file('csv/ProjectsSingleCategories.csv'))
+        expected = ifixture_file('csv/ProjectsSingleCategories.csv')
 
-        loader.run(Project)
+        loader.run(expected, Project)
 
         expect(loader.loaded_count).to eq 4
         expect(loader.loaded_count).to eq (Project.count - count)
@@ -66,10 +65,10 @@ module  DataShift
       end
 
       it 'should process multiple associations in csv file' do
-        loader = CsvLoader.new(ifixture_file('csv/ProjectsMultiCategories.csv' ))
+        expected = ifixture_file('csv/ProjectsMultiCategories.csv')
 
         count = Project.count
-        loader.run(Project)
+        loader.run(expected, Project)
 
         expect(loader.loaded_count).to eq  (Project.count - count)
 
@@ -81,11 +80,11 @@ module  DataShift
         end
       end
 
-      it 'should process multiple associations with lookup specified in column from excel spreedsheet' do
-        loader = CsvLoader.new(ifixture_file('csv/ProjectsMultiCategoriesHeaderLookup.csv'))
+      it 'should process multiple associations with lookup specified in column from CSV spreedsheet' do
+        expected = ifixture_file('csv/ProjectsMultiCategoriesHeaderLookup.csv')
 
         count = Project.count
-        loader.run(Project)
+        loader.run(expected, Project)
 
         expect(loader.loaded_count).to eq (Project.count - count)
         loader.loaded_count.should > 3
@@ -99,20 +98,20 @@ module  DataShift
         end
       end
 
-      it 'should process excel spreedsheet with extra undefined columns' do
-        loader = CsvLoader.new(ifixture_file('csv/BadAssociationName.csv') )
-        expect { loader.run(Project) }.to_not raise_error
+      it 'should process CSV with extra undefined columns' do
+        expected = ifixture_file('csv/BadAssociationName.csv')
+        expect { loader.run(expected, Project) }.to_not raise_error
       end
 
-      it 'should NOT process excel spreedsheet with extra undefined columns when strict mode' do
-        loader = CsvLoader.new( ifixture_file('csv/BadAssociationName.csv'), strict: true)
-        expect { loader.run(Project) }.to raise_error(MappingDefinitionError)
+      it 'should NOT process CSV with extra undefined columns when strict mode' do
+        expected =  ifixture_file('csv/BadAssociationName.csv')
+        expect { loader.run(expected, Project, strict: true) }.to raise_error(MappingDefinitionError)
       end
 
       it 'should raise an error when mandatory columns missing', fail: true do
-        loader = CsvLoader.new(ifixture_file('csv/ProjectsMultiCategories.csv'))
+        expected = ifixture_file('csv/ProjectsMultiCategories.csv')
         expect {
-          loader.run(Project, mandatory: %w(not_an_option must_be_there))
+          loader.run(expected, Project, mandatory: %w(not_an_option must_be_there))
         }.to raise_error(DataShift::MissingMandatoryError)
       end
 

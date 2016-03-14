@@ -62,8 +62,9 @@ module DataShift
     # Prepare to generate with associations but then
     # calls a **derived generate** method i.e abstract to this base class
     #
+    # file_name => Filename for generated template
+    #
     # Options
-    # [:filename] => Filename for generated template
     #
     # [:with] => List of association Types to include (:has_one etc)
     #
@@ -78,7 +79,7 @@ module DataShift
     #
     # [:remove_rails] => Remove standard Rails cols like :id, created_at etc
     #
-    def generate_with_associations(klass, options = {})
+    def generate_with_associations(file_name, klass, options = {})
 
       # with_associations - so over ride to default to :all if nothing specified
       options[:with] = :all if options[:with].nil?
@@ -86,7 +87,7 @@ module DataShift
       # sort out exclude etc
       options[:with] = op_types_in_scope( options )
 
-      generate(klass, options)
+      generate(file_name, klass, options)
     end
 
     # Prepare the operators types in scope based on options
