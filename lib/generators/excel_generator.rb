@@ -41,7 +41,7 @@ module DataShift
 
       start_excel(klass, options)
 
-      @excel.set_headers( to_headers(klass, options) )
+      @excel.set_headers( klass_to_headers(klass, options) )
 
       logger.info("ExcelGenerator saving generated template #{@file_name}")
 

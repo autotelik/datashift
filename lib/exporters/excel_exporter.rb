@@ -43,7 +43,7 @@ module DataShift
 
       excel = start_excel(first.class, options)
 
-      to_headers(first.class, options)
+      klass_to_headers(first.class, options)
 
       excel.set_headers( headers )
 
@@ -87,7 +87,7 @@ module DataShift
       # sort out exclude etc
       options[:with] = op_types_in_scope( options )
 
-      to_headers(klass, options)
+      klass_to_headers(klass, options)
 
       excel.set_headers( headers )
 

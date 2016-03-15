@@ -22,9 +22,20 @@ $:.push File.expand_path("lib", __FILE__)
 
 require 'datashift'
 
+require File.join(File.dirname(__FILE__), 'spec', "support/sandbox")
+
 module Datashift
 
   class Utils < Thor
+
+    desc "sandbox", 'Rebuild the rails sandbox app required for testing'
+
+    def sandbox
+      puts File.join(File.dirname(__FILE__), 'spec', "support/sandbox")
+
+      # Need an active record DB to test against, so we manage own Rails sandbox
+      DataShift::Sandbox.gen_rails_sandbox( :force )
+    end
 
     desc "build", 'Build gem and install in one step'
 

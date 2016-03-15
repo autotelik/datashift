@@ -62,17 +62,24 @@ module DataShift
                     'datashift/model_methods',
                     'datashift/transformer',
                     'datashift/inbound_data',
-                    'loaders', 'exporters', 'generators', 'helpers']
+                    'loaders', 'exporters', 'generators', 'helpers', 'applications']
 
-    require_relative 'loaders/loader_base'
+    begin
+      require_relative 'generators/generator_base'
+      require_relative 'generators/file_generator'
+      require_relative 'loaders/loader_base'
+      require_relative 'exporters/exporter_base'
 
-    require_libs.each do |base|
-      Dir[File.join(library_path, base, '*.rb')].each do |rb|
-        require_relative rb unless File.directory?(rb)
+      require_libs.each do |base|
+        Dir[File.join(library_path, base, '*.rb')].each do |rb|
+          #puts rb
+          require_relative rb unless File.directory?(rb)
+        end
       end
+    rescue => x
+      puts "Problem initializing gem #{x.inspect}"
     end
 
-    require_relative 'applications/excel'
 
   end
 
@@ -96,10 +103,6 @@ module DataShift
   end
 
 end
-
-# require_relative 'datashift/delimiters'
-# require_relative 'datashift/guards'
-# require_relative 'loaders/file_loader'
 
 DataShift.require_libraries
 

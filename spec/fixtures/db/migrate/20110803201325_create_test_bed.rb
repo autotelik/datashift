@@ -27,7 +27,7 @@ class CreateTestBed < ActiveRecord::Migration
       t.integer :value_as_integer, default: 0
       t.decimal :value_as_double, precision: 10, scale: 4, default: 0.0
       t.references :user
-      t.timestamps
+      t.timestamps null: false
     end
 
     # belongs_to  :project
@@ -38,7 +38,7 @@ class CreateTestBed < ActiveRecord::Migration
       t.datetime :datetime, default: nil
       t.decimal :cost, precision: 8, scale: 2, default: 0.0
       t.references :project
-      t.timestamps
+      t.timestamps null: false
     end
 
     # belongs_to  :project, project => has_one
@@ -46,13 +46,13 @@ class CreateTestBed < ActiveRecord::Migration
       t.string :name
       t.decimal :budget
       t.references :project
-      t.timestamps
+      t.timestamps null: false
     end
 
     # has_belongs_to_many :project
     create_table :categories do |t|
       t.string :reference
-      t.timestamps
+      t.timestamps null: false
     end
 
     # testing has_belongs_to_many (hence no id)
@@ -63,7 +63,7 @@ class CreateTestBed < ActiveRecord::Migration
 
     create_table :versions do |t|
       t.string :name
-      t.timestamps
+      t.timestamps null: false
     end
 
     # testing project has_many release + versions :through
@@ -71,7 +71,7 @@ class CreateTestBed < ActiveRecord::Migration
       t.string :name
       t.references :project
       t.references :version
-      t.timestamps
+      t.timestamps null: false
     end
 
     create_table :long_and_complex_table_linked_to_versions do |t|

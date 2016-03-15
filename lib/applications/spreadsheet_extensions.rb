@@ -10,7 +10,7 @@
 
 require 'excel_base'
 
-module Spreadshee
+module Spreadsheet
 
   class Worksheet
 

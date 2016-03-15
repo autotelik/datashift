@@ -73,7 +73,7 @@ describe 'PaperClip Bulk Loader' do
       loader.init_from_options attachment_options
     end
 
-    it 'should bulk load from a directory file system' do
+    it 'should bulk load from a directory file system', duff: true do
 
       loader.run(path, Digital, split_file_name_on: '_')
 

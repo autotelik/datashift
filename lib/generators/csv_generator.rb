@@ -30,7 +30,7 @@ module DataShift
     def generate(file_name, klass, options = {})
       @file_name = file_name
 
-      to_headers(klass, options)
+      klass_to_headers(klass, options)
 
       logger.info("CSVGenerator saving generated Template #{@file_name}")
 

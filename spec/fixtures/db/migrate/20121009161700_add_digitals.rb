@@ -13,7 +13,7 @@ class AddDigitals < ActiveRecord::Migration
       t.string :attachment_file_name
       t.string :attachment_content_type
       t.integer :attachment_file_size
-      t.timestamps
+      t.timestamps null: false
     end
 
   end

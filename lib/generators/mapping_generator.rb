@@ -62,7 +62,7 @@ module DataShift
 
         config[:with] = op_types_in_scope( config )
 
-        to_headers(klass, config)
+        klass_to_headers(klass, config)
 
         if options[:model_as_dest]
           headers.each_with_index { |s, i|  mappings += "       #srcs_column_heading_#{i}: #{s}\n" }

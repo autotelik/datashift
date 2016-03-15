@@ -17,7 +17,7 @@ module DataShift
       let(:gb) { GeneratorBase.new }
 
       it 'should create a set of headers from a  Domain Model' do
-        gb.to_headers(Project)
+        gb.klass_to_headers(Project)
         expect(gb.headers.size).to be > 2
       end
     end

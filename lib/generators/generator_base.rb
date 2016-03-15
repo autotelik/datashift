@@ -16,6 +16,7 @@ module DataShift
     end
 
     # Helpers for dealing with Active Record models and collections
+    # Catalogs the supplied Klass and builds set of expected/valid Headers for Klass
     #
     # Options:
     #
@@ -27,7 +28,7 @@ module DataShift
     #
     # [:remove_rails] - Remove standard Rails cols like id, created_at etc
     #
-    def to_headers(klass, options = {})
+    def klass_to_headers(klass, options = {})
 
       # default to generating just klass columns
       associations = if options[:with]
@@ -57,7 +58,7 @@ module DataShift
       headers
     end
 
-    alias collection_to_headers to_headers
+    alias :klass_to_collection_and_headers :klass_to_headers
 
     # Prepare to generate with associations but then
     # calls a **derived generate** method i.e abstract to this base class

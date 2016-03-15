@@ -19,7 +19,7 @@ class CSV
   # options[:remove_rails] - Remove standard Rails cols like id, created_at etc
   #
   def ar_to_headers(klass, options = {})
-    add_row( to_headers(klass, options) )
+    add_row( klass_to_headers(klass, options) )
   end
 
   # Convert an AR instance to a set of CSV columns

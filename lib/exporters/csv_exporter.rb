@@ -5,7 +5,6 @@
 # Details::   Export a model to CSV
 #
 #
-require 'exporter_base'
 
 module DataShift
 
@@ -41,7 +40,7 @@ module DataShift
 
       Delimiters.text_delim = options[:text_delim] if options[:text_delim]
 
-      to_headers(first.class, options)
+      klass_to_headers(first.class, options)
 
       remove = options[:remove] || []
 
@@ -86,7 +85,7 @@ module DataShift
 
       logger.info("Association Types in scope for export #{types_in_scope.inspect}")
 
-      to_headers(klass, with: types_in_scope, remove: options[:remove])
+      klass_to_headers(klass, with: types_in_scope, remove: options[:remove])
 
       # do the main model first, as per to_headers
       assignment = types_in_scope.delete(:assignment)

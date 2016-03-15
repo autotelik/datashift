@@ -116,12 +116,12 @@ module DataShift
           end
         end
 
-        model_method = if model_method.nil? && (options[:include_all] || forced.include?(raw_col_name.downcase))
-                         logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :method")
-                         model_method_mgr.insert(raw_col_name, :method)
-                       end
+        if(model_method.nil? && (options[:include_all] || forced.include?(raw_col_name.downcase)))
+          logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :method")
+          model_method = model_method_mgr.insert(raw_col_name, :method)
+        end
 
-        if model_method
+        if(model_method)
 
           binding = MethodBinding.new(raw_col_name, col_index, model_method)
 
@@ -173,14 +173,14 @@ module DataShift
       name = external_name.to_s
 
       [
-        name.downcase,
-        name.tableize,
-        name.tr(' ', '_'),
-        name.tr(' ', '_').downcase,
-        name.gsub(/(\s+)/, '_').downcase,
-        name.delete(' '),
-        name.delete(' ').downcase,
-        name.tr(' ', '_').underscore
+          name.downcase,
+          name.tableize,
+          name.tr(' ', '_'),
+          name.tr(' ', '_').downcase,
+          name.gsub(/(\s+)/, '_').downcase,
+          name.delete(' '),
+          name.delete(' ').downcase,
+          name.tr(' ', '_').underscore
       ]
     end
 
