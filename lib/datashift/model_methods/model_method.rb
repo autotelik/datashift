@@ -8,8 +8,6 @@
 #             into the right format for the style of operator; simple assignment,
 #             appending to an association collection or a method call
 #
-require 'set'
-
 module DataShift
 
   class ModelMethod
@@ -17,14 +15,15 @@ module DataShift
     include DataShift::Logging
 
     # List of supported operator types e.g :assignment, :belongs_to, :has_one, :has_many etc
-
+    # N.B these are in priority order ie. often prefer to process assignments first, then associations
+    #
     def self.supported_types_enum
-      @type_enum ||= Set[:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
+      @type_enum ||= [:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
       @type_enum
     end
 
     def self.association_types_enum
-      @assoc_type_enum ||= Set[:belongs_to, :has_one, :has_many]
+      @assoc_type_enum ||= [:belongs_to, :has_one, :has_many]
       @assoc_type_enum
     end
 
@@ -52,7 +51,7 @@ module DataShift
     def initialize(klass, operator, type, col_type = nil)
       @klass = klass
 
-      if ModelMethod.supported_types_enum.member?(type.to_sym)
+      if ModelMethod.supported_types_enum.include?(type.to_sym)
         @operator_type = type.to_sym
       else
         raise BadOperatorType, "No such operator Type [#{type}] cannot instantiate ModelMethod for #{operator}"
@@ -66,6 +65,8 @@ module DataShift
 
       @col_type = DataShift::ModelMethods::Catalogue.column_type_for(klass, operator) if col_type.nil?
     end
+
+
 
     # Return the actual operator's name for supplied method type
     # where type one of :assignment, :has_one, :belongs_to, :has_many etc
@@ -113,6 +114,28 @@ module DataShift
         EOS
       end
       x
+    end
+
+    def ==(mm)
+      mm.class == self.class && mm.state == state
+    end
+
+    include Comparable
+
+    def <=>(mm)
+      state <=>  mm.state
+    end
+
+    alias_method :eql?, :==
+
+    def hash
+      state.hash
+    end
+
+    protected
+
+    def state
+      [klass.name, ModelMethod::supported_types_enum.index(operator_type), operator]
     end
 
     private

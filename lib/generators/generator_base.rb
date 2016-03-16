@@ -108,7 +108,7 @@ module DataShift
       if options[:with].nil?
         types_in_scope << :assignment
       elsif options[:with] == :all
-        types_in_scope += ModelMethod.supported_types_enum.to_a
+        types_in_scope += ModelMethod.supported_types_enum
       end
 
       types_in_scope -= [*options[:exclude]]

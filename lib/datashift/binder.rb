@@ -1,16 +1,19 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
 # License::   MIT
 #
-# Details::   Binds incoming string headers to domain model's
-#             attribute/association.
+# Details::   Binds incoming string headers to domain model's attribute/association.
+#
+#             So a binding is a mapping between an Inbound Column and a ModelMethod
 #
 #             Example usage, load from a spreadsheet where the column names are only
-#             an approximation of the actual associations. Given a column heading of
-#             'Product Properties' on class Product,  find_method_detail() would search AR model,
-#             and return details of real has_many association 'product_properties'.
+#             an approximation of the actual associations.
 #
-#             This real association can then be used to send spreadsheet row data to the AR object.
+#             Given a column heading of 'Product Properties' on class Product,  map_inbound_headers would search
+#             the Product AR model, for a matching method or association, in this case  would
+#             bind this column, 'Product Properties', to the has_many association 'product_properties'.
+#
+#             This binding can be used to send spreadsheet row data to populate the product_properties on a product
 #
 module DataShift
 

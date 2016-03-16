@@ -95,7 +95,7 @@ module DataShift
       expect(bindings.last).to be_a MethodBinding
     end
 
-    it 'should populate a method detail instance based on column and database info' do
+    it 'should populate a method binding instance based on column and database info' do
       headers = [:value_as_string, :owner, :value_as_boolean, :value_as_double]
 
       bindings = binder.map_inbound_headers( Project, headers )
