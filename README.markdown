@@ -1,5 +1,9 @@
 ##  DataShift 
 
+[![Build Status](https://travis-ci.org/autotelik/datashift?branch=split_into_concerns)](https://travis-ci.org/autotelik/datashift)
+
+- API About to change Drastically - Sorry don't have time to do proper deprecation WARNINGS etc
+
 - [Installation](#Installation)
 - [Features](#features)
 - [Testing](#testing)
@@ -55,57 +59,29 @@ Specific tools for Spree E-Commerce now separate gem [datashift_spree](https://g
 
 #### <a name="Features">Features</a>
 
-Import and Export ActiveRecord models direct to CSV or Excel/OpenOffice (.xls)
+Use CSV or Excel/OpenOffice (.xls) files to Import or Export your database (ActiveRecord) models
 
-You can select which associations to include and for import, set configurable defaults or over rides.
+Bulk import tools from filesystem, for Paperclip attachments i.e attach images to models
 
-Create, parse and use Excel/OpenOffice (.xls) documents dynamically from Ruby
+Include associations to include
 
-Generate a sample template with headers only.
+Set default values, substitutions and transformations er column for Imports.
+
+Generate sample templates, with only headers
 
 Export template and populate with model data 
 
-Bulk import tools for Paperclip attachments.
 
-Easily extendable Loader functionality to deal with non trivial import cases, such
-as complex association lookups.
+#### Active Record - Import/Export CLI
 
-High level rake and thor command line tasks for import/export provided.
-
-
-Loaders can be configured via YAML with over ride values, default values and mandatory column settings.
-
-Many example Spreadsheets/CSV files in spec/fixtures, fully documented with comments for each column.
-
-Features a common Excel interface over both our own wrapper around Apache POI (JRuby) and spreadsheet gem (all main Rubies) 
-
-This means you can switch seamlessly between the two libraries, and if required drop down to make use of advanced
-features in the brilliant Apache POI libraries for anyone using JRuby.
-
-Guards are provided, and used internally, for mixed Ruby setups. Can be used like :
-
-    if(DataShift::Guards::jruby? )
-        ..do something with Apache
-    else
-        ..do something with speadsheet
-    end
-
-#### Active Record - Import/Export
-
-Provides high level tasks for importing data via ActiveRecord models into a DB,
- from various sources, currently csv or .xls files (Excel/Open Office)
+Provides high level tasks for importing/exporting data;
 
 Please use thor list and thor help <xxx> to get latest command lines
 
     bundle exec thor datashift:import:csv model=BlogPost input=BlogPostImport.csv verbose=true 
 
 
-Provides high level  tasks for exporting data to various sources, currently .xls files (Excel/Open Office)
-
-    bundle exec thor datashift:export:excel model=BlogPost result=BlogExport.xls 
-
-  
-Import based on column headings with *Semi-Smart Name Lookup*
+Imports are based on column headings with *Semi-Smart Name Lookup*
 
   On import, first a dictionary of all possible attributes and associations is created for the AR class.
   
@@ -133,72 +109,10 @@ complicated lookup requirements. Spree is the prime Open Source e-commerce proje
 and the specific loaders and tasks support loading Spree Products, and associated data such as Variants,
 OptionTypes, Properties and Images.
 
-#### Template Generation and Export
-
-Template generation tasks can be used to export a model's definition as column headings to CSV or .xls.
-These can be provided to developers or business users, as a template for data collection and then loading.
-
-Export tasks can be used to export of a model's definition and any existing data stored in the database.
-
-This data can be exported directly to CSV or Excel/OpenOffice spreadsheets.
-
-
-#### Example Spreadsheets
-    
-  A number of example Spreadsheets with headers and comments, can be found in the spec/fixtures directory.
-
-  Extensive Spree samples - including .xls and csv versions for simple Products or complex Products with multiple
-  taxons, variants properties etc - can be found in the spec/fixtures/spree subdirectory.
-
-  Column headings contain comments with full descriptions and instructions on syntax. 
-
-
-#### Excel
-
-
-  MS Excel itself does not need to be installed.
-
-  Our proxy for Excel allows seamless switching between 'spreadsheet' gem and datashift's own JRuby wrapper over Apache POI.
-
-  When using JRuby, Apache POI may offer advanced facilities not found in standard Ruby spreadsheet gem
-  
-  The required POI jars are already included.
-
-  Excel/OpenOffice spreadsheets are heavily used in many sectors, so direct support makes it
-  easier and quicker to migrate your client's data into a Rails/ActiveRecord project,
-  without converting first to CSV or YAML.
-
-
-#### Associations
-
-To perform a lookup for an associated model, the primary column(s) must be supplied, along with required select values for those columns.
-
-A single association column can contain multiple name/value sets, in string form :
-
-  column:lookup_key_1, lookup_key_2,...
-
-So if our Project model has many Categories, we can supply a Category list, which is keyed on the column Category.reference with :
-
-  |Categories|
-
-  reference:category_001,category_002
-
-During loading, a call to find_all_by_reference will be made, picking up the 2 categories with matching references,
- and our Project model will contain those two i.e project.categories = [category_002,category_003]
-
-
-### TODO
-
-  - Smart sorting of column processing order ....
-
-  - Does not currently ensure mandatory columns (for valid?) processed first.
-
-  - Look at implementing import/export API using something like https://github.com/ianwhite/orm_adapter 
-    rather than active record, so we can support additional ORMs
-
 
 ### <a name="Testing">Testing</a>
-    Specs have own Gemfile, so you can specify versions of active record that you want  specs to run against :
+    Specs run against a rails sandbox app, so have own Gemfile, so you can specify versions of 
+    active record that you want  specs to run against :
 
     Edit
         ```ruby spec/Gemfile. ```
@@ -247,7 +161,7 @@ During loading, a call to find_all_by_reference will be made, picking up the 2 c
 
 ## License
 
-Copyright:: (c) Autotelik Media Ltd 2015
+Copyright:: (c) Autotelik Media Ltd 2016
 
 Author ::   Tom Statter
 
