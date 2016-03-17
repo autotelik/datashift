@@ -134,6 +134,11 @@ module DataShift
 
     protected
 
+    # Defines the precedence order.
+    # For example in import, generally you want to process attributes first so that by
+    # the time you get to associations you have a valid model instance with an ID
+    # hence operator_type before operator
+    #
     def state
       [klass.name, ModelMethod::supported_types_enum.index(operator_type), operator]
     end

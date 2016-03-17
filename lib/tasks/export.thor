@@ -28,8 +28,6 @@ module Datashift
     def excel()
       start_connections
 
-      require 'excel_exporter'
-
       export(DataShift::ExcelExporter.new)
     end
 
@@ -45,66 +43,66 @@ module Datashift
     def csv()
       start_connections
 
-      require 'csv_exporter'
-
       export(DataShift::CsvExporter.new)
     end
 
     desc "db", "Export every Active Record model"
 
-    method_option :result, :aliases => '-r', :required => true, :desc => "Path in which to create excel files"
+    method_option :path, :aliases => '-p', :required => true, :desc => "Path in which to create export files"
     method_option :csv, :aliases => '-c', :desc => "Export to CSV instead - Excel is default."
-    method_option :prefix, :aliases => '-p', :desc => "For namespaced tables/models specify the table prefix e.g spree_"
-    method_option :module, :aliases => '-m', :desc => "For namespaced tables/models specify the Module name e.g Spree"
+
+    method_option :prefix_map, :aliases => '-x', type: :hash, :default => {},
+                  :desc => "For namespaced tables/models specify the table prefix to module map e.g spree_:Spree"
+
+    method_option :modules, :aliases => '-m', type: :array, :default => [],
+                  :desc => "List of Modules to search for namespaced models"
+
     method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
     method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::ModelMethod.supported_types_enum.to_a.inspect}"
 
     def db()
 
-      require File.expand_path('config/environment.rb')
+      start_connections
 
-      require 'excel_exporter'
-      require 'csv_exporter'
+      unless File.directory?(options[:path])
+        puts "ERROR : No such PATH found #{options[:path]}"
+        exit -1
+      end
 
-      exporter = options[:csv] ?  DataShift::CsvExporter.new(nil) :  DataShift::ExcelExporter.new(nil)
+      exporter = options[:csv] ?  DataShift::CsvExporter.new :  DataShift::ExcelExporter.new
 
       ext = options[:csv] ? '.csv' : '.xls'
 
-      # Hmmm not many models appear - Rails uses autoload !
-      #ActiveRecord::Base.send(:subclasses).each do |model|
-      # puts model.name
-      #end
-
-      parent = options[:module] ? Object.const_get(options[:module]) : Object
+      modules = [nil] + options[:modules]
 
       ActiveRecord::Base.connection.tables.each do |table|
 
-        table.sub!(options[:prefix],'') if(options[:prefix])
+        modules.each do |m|
+          @klass = table_to_arclass(table, m)
+          break if(@klass)
+        end
 
-        @result = File.join(options[:result], "#{table}#{ext}")
+        options[:prefix_map].each do |p, m|
+          @klass = table_to_arclass(table.gsub(p, ''), m)
+          break if(@klass)
+        end unless(@klass)
 
-        begin
-          @klass = parent.const_get(table.classify)
-        rescue => e
-          puts e.inspect
-          puts "WARNING: Could not find an AR model for Table #{table}"
+        if(@klass.nil?)
+          puts  "ERROR: No Model found for Table [#{table}] - perhaps check modules/prefixes"
           next
         end
 
-        puts "Datashift: Start export to #{@result}"
+        result = File.join(options[:path], "#{table}#{ext}")
 
-        exporter.file_name = @result
-
-        raise "ERROR: No such Model [#{@klass}] found - check valid model supplied via -model <Class>" if(@klass.nil?)
+        puts "Datashift: Start export to #{result} for [#{table}]"
 
         begin
 
           if(options[:assoc])
-            opts = (options[:exclude]) ? {:exclude => options[:exclude]} : {}
             logger.info("Datashift: Exporting with associations")
-            exporter.export_with_associations(@klass, @klass.all, opts)
+            exporter.export_with_associations(result, @klass, @klass.all, {})
           else
-            exporter.export(@klass.all, :sheet_name => @klass.name)
+            exporter.export(result, @klass.all, :sheet_name => @klass.name)
           end
         rescue => e
           puts e
@@ -115,6 +113,19 @@ module Datashift
     end
 
     no_commands do
+
+      def table_to_arclass(table, mod)
+
+        find_table = mod.nil? ? table.classify : "#{mod}::#{table.classify}"
+
+        begin
+          DataShift::MapperUtils::class_from_string(find_table)
+        rescue LoadError
+        rescue
+          nil
+        end
+      end
+
       def export(exporter)
         model = options[:model]
         result = options[:result]
