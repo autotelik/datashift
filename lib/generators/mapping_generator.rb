@@ -37,14 +37,6 @@ module DataShift
     #
     # Options:
     #
-    # * <tt>[:with]</tt> => [SYMBOLS]
-    #     Array of association types to include as defined by
-    #     ModelMethod.supported_types_enum e.g
-    #         [:assignment, :belongs_to, :has_one, :has_many]
-    #
-    # * <tt>[:exclude]</tt> - List of headers to remove from generated template
-    #
-    # * <tt>[:remove_rails]</tt> - Remove standard Rails cols like id, created_at etc
     #
     # * <tt>:file</tt> - Write mappings direct to file name provided
     #
@@ -60,9 +52,7 @@ module DataShift
 
         mappings = config[:title] || "#{klass.name}:" + "\n"
 
-        config[:with] = op_types_in_scope( config )
-
-        klass_to_headers(klass, config)
+        klass_to_headers(klass)
 
         if options[:model_as_dest]
           headers.each_with_index { |s, i|  mappings += "       #srcs_column_heading_#{i}: #{s}\n" }

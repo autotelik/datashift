@@ -78,10 +78,7 @@ module DataShift
 
       collection = ModelMethods::Manager.catalog_class(klass)
 
-      # We need to default to :all if nothing specified
-      options[:with] ||= :all
-
-      types_in_scope = op_types_in_scope( options )
+      types_in_scope = configuration.op_types_in_scope
 
       logger.info("Association Types in scope for export #{types_in_scope.inspect}")
 

@@ -60,8 +60,6 @@ module DataShift
     #
     def export_with_associations(file_name, klass, records)
 
-      configuration = DataShift::Exporters::Configuration.configuration
-
       @file_name = file_name
 
       start_excel(klass, options)

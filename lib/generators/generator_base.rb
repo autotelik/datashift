@@ -10,9 +10,13 @@ module DataShift
 
     attr_accessor :headers, :remove_list
 
+    attr_accessor :configuration
+
     def initialize
       @headers = DataShift::Headers.new(:na)
       @remove_list = []
+
+      @configuration = DataShift::Exporters::Configuration.configuration
     end
 
     # Helpers for dealing with Active Record models and collections
@@ -29,8 +33,6 @@ module DataShift
     # [:remove_rails] - Remove standard Rails cols like id, created_at etc
     #
     def klass_to_headers(klass)
-
-      configuration = DataShift::Exporters::Configuration.configuration
 
       # default to generating just klass columns
       associations = configuration.op_types_in_scope
@@ -50,7 +52,7 @@ module DataShift
           collection.for_type(a).each { |md| @headers << md.operator.to_s }
         end
 
-        remove_headers(options)
+        remove_headers
       end
 
       headers
@@ -63,29 +65,7 @@ module DataShift
     #
     # file_name => Filename for generated template
     #
-    # Options
-    #
-    # [:with] => List of association Types to include (:has_one etc)
-    #
-    #   DEFAULT : Include ALL association types defined by
-    #   ModelMethod.supported_types_enum - which can be further refined by
-    #
-    # List can can be further refined by
-    #
-    # [:exclude] => List of association Types to exclude (:has_one etc)
-    #
-    # [:remove] => List of headers to remove from generated template
-    #
-    # [:remove_rails] => Remove standard Rails cols like :id, created_at etc
-    #
     def generate_with_associations(file_name, klass, options = {})
-
-      # with_associations - so over ride to default to :all if nothing specified
-      options[:with] = :all if options[:with].nil?
-
-      # sort out exclude etc
-      options[:with] = op_types_in_scope( options )
-
       generate(file_name, klass, options)
     end
 
@@ -94,9 +74,7 @@ module DataShift
     # Specify columns to remove via  lib/exporters/configuration.rb
     #
     def remove_headers
-      options = DataShift::Exporters::Configuration.configuration
-
-      remove_list = options.prep_remove_list
+      remove_list = configuration.prep_remove_list
 
       headers.delete_if { |h| remove_list.include?( h.to_sym ) } unless remove_list.empty?
     end

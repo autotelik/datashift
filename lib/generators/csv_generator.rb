@@ -60,12 +60,6 @@ module DataShift
     def generate_with_associations(file_name, klass, options = {})
       @file_name = file_name
 
-      # with_associations - so over ride to default to :all if nothing specified
-      options[:with] = :all if options[:with].nil?
-
-      # sort out exclude etc
-      options[:with] = op_types_in_scope( options )
-
       generate(file_name, klass, options)
     end
 

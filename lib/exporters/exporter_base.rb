@@ -9,8 +9,12 @@ module DataShift
 
   class ExporterBase < FileGenerator
 
+    attr_accessor :configuration
+
     def initialize
       super
+
+      @configuration = DataShift::Exporters::Configuration.configuration
     end
 
   end
