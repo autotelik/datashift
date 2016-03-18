@@ -28,14 +28,12 @@ module DataShift
     #
     # [:remove_rails] - Remove standard Rails cols like id, created_at etc
     #
-    def klass_to_headers(klass, options = {})
+    def klass_to_headers(klass)
+
+      configuration = DataShift::Exporters::Configuration.configuration
 
       # default to generating just klass columns
-      associations = if options[:with]
-                       options[:with].dup
-                     else
-                       [:assignment]
-                     end
+      associations = configuration.op_types_in_scope
 
       @headers = Headers.new(klass)
 
@@ -91,70 +89,18 @@ module DataShift
       generate(file_name, klass, options)
     end
 
-    # Prepare the operators types in scope based on options
-    # Default is assignment only
-    #
-    # Options
-    #   with: [:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
-    #
-    #   with: :all -> all op types
-    #
-    #   exclude: - Remove any of [::assignment, :enum, :belongs_to, :has_one, :has_many, :method]
-    #
-    def op_types_in_scope( options = {} )
-
-      types_in_scope = []
-
-      if options[:with].nil?
-        types_in_scope << :assignment
-      elsif options[:with] == :all
-        types_in_scope += ModelMethod.supported_types_enum
-      end
-
-      types_in_scope -= [*options[:exclude]]
-
-      types_in_scope
-    end
-
-    def self.rails_columns
-      @rails_standard_columns ||= [:id, :created_at, :created_on, :updated_at, :updated_on]
-    end
 
     # Parse options and remove  headers
-
-    # Specify columns to remove with :
-    #  Options:
-    #     [:remove]
+    # Specify columns to remove via  lib/exporters/configuration.rb
     #
-    # Rails columns like id, created_at are removed by default,
-    #  to keep them in specify
-    #   options[:include_rails]
-    #
-    def remove_headers(options)
-      remove_list = prep_remove_list( options )
+    def remove_headers
+      options = DataShift::Exporters::Configuration.configuration
 
-      # TODO: - more efficient way ?
+      remove_list = options.prep_remove_list
 
-      # comparable_association = md.operator.to_s.downcase.to_sym
-      # i = remove_list.index { |r| r == comparable_association }
-      # (i) ? remove_list.delete_at(i) : @headers << "#{md.operator}"
       headers.delete_if { |h| remove_list.include?( h.to_sym ) } unless remove_list.empty?
     end
 
-    protected
-
-    # Take options and create a list of symbols to remove from headers
-    #
-    # Rails columns like id, created_at etc are included by default
-    # Specify option :remove_rails to remove them from output
-    #
-    def prep_remove_list( options )
-      @remove_list = [*options[:remove]].compact.collect { |x| x.to_s.downcase.to_sym }
-
-      @remove_list += GeneratorBase.rails_columns if options[:remove_rails]
-
-      remove_list
-    end
 
   end
 

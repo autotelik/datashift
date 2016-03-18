@@ -14,7 +14,7 @@ module DataShift
     class Configuration
 
       # List of association +TYPES+ to INCLUDE (:belongs_to, :has_one etc)
-      #
+      # Defaults to :all
       #
       # @param [Array<#call>] List of association Types to include (:has_one etc)
       # @return [Array<#call>]
@@ -54,7 +54,7 @@ module DataShift
 
 
       def initialize
-        @with = []
+        @with = [:all]
         @exclude = []
         @remove = []
         @remove_rails = true
@@ -62,7 +62,7 @@ module DataShift
         @json = false
       end
 
-      # @return [DataShift::Configuration] DataShift's current configuration
+      # @return [DataShift::Exporters::Configuration] DataShift's current configuration
       def self.configuration
         @configuration ||= Exporters::Configuration.new
       end
@@ -71,6 +71,45 @@ module DataShift
       # @param config [DataShift::Exporters::Configuration]
       class << self
         attr_writer :configuration
+      end
+
+      # Prepare the operators types in scope based on options
+      # Default is assignment only
+      #
+      # Options
+      #   with: [:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
+      #
+      #   with: :all -> all op types
+      #
+      #   exclude: - Remove any of [::assignment, :enum, :belongs_to, :has_one, :has_many, :method]
+      #
+      def op_types_in_scope
+
+        types_in_scope = []
+
+        types_in_scope =if(@with == :all)
+                          ModelMethod.supported_types_enum.dup
+                        else
+                          @with.dup
+                        end
+
+        types_in_scope -= @exclude
+
+        types_in_scope
+      end
+
+
+      # Take options and create a list of symbols to remove from headers
+      #
+      # Rails columns like id, created_at etc are included by default
+      # Specify option :remove_rails to remove them from output
+      #
+      def prep_remove_list
+        remove_list = [*@remove].compact.collect { |x| x.to_s.downcase.to_sym }
+
+        remove_list += DataShift::Configuration.rails_columns if(remove_rails)
+
+        remove_list
       end
 
       # Modify DataShift's current Export configuration
@@ -85,6 +124,6 @@ module DataShift
     end
 
 
-    end
-
   end
+
+end

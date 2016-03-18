@@ -11,19 +11,18 @@
 #
 #     DataShift::load_commands
 #
-require 'thor_base'
+require_relative 'thor_export_base'
 
 # Note, for thor not DataShift, case sensitive, want namespace for cmd line to be : datashift
 module Datashift
 
-  class Export < DataShift::DSThorBase
+  class Export < DataShift::ThorExportBase
 
     desc "excel", "export any active record model (with optional associations)"
 
-    method_option :model, :aliases => '-m', :required => true, :desc => "The active record model to export"
-    method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
-    method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
-    method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::ModelMethod.supported_types_enum.to_a.inspect}"
+    method_option :model, :aliases => '-m', :required => true, desc: "The active record model to export"
+    method_option :result, :aliases => '-r', :required => true, desc: "Create template of model in supplied file"
+    method_option :sheet_name, :type => :string, desc: "Name to use for Excel worksheet instead of model name"
 
     def excel()
       start_connections
@@ -34,11 +33,8 @@ module Datashift
 
     desc "csv", "export any active record model (with optional associations)"
 
-    method_option :model, :aliases => '-m', :required => true, :desc => "The active record model to export"
-    method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
-    method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
-    method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::ModelMethod.supported_types_enum.to_a.inspect}"
-    method_option :methods, :aliases => '-c',  :type => :array, :desc => "List of additional methods to call on model, useful for situations like delegated methods"
+    method_option :model, :aliases => '-m', :required => true, desc: "The active record model to export"
+    method_option :result, :aliases => '-r', :required => true, desc: "Create template of model in supplied file"
 
     def csv()
       start_connections
@@ -46,19 +42,17 @@ module Datashift
       export(DataShift::CsvExporter.new)
     end
 
+
     desc "db", "Export every Active Record model"
 
-    method_option :path, :aliases => '-p', :required => true, :desc => "Path in which to create export files"
-    method_option :csv, :aliases => '-c', :desc => "Export to CSV instead - Excel is default."
+    method_option :path, :aliases => '-p', :required => true, desc: "Path in which to create export files"
+    method_option :csv, :aliases => '-c', desc: "Export to CSV instead - Excel is default."
 
     method_option :prefix_map, :aliases => '-x', type: :hash, :default => {},
-                  :desc => "For namespaced tables/models specify the table prefix to module map e.g spree_:Spree"
+                  desc: "For namespaced tables/models specify the table prefix to module map e.g spree_:Spree"
 
     method_option :modules, :aliases => '-m', type: :array, :default => [],
-                  :desc => "List of Modules to search for namespaced models"
-
-    method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
-    method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::ModelMethod.supported_types_enum.to_a.inspect}"
+                  desc: "List of Modules to search for namespaced models"
 
     def db()
 

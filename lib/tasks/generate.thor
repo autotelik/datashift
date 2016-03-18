@@ -1,6 +1,6 @@
-# Copyright:: (c) Autotelik Media Ltd 2012
+# Copyright:: (c) Autotelik Media Ltd 2016
 # Author ::   Tom Statter
-# Date ::     Mar 2012
+# Date ::     Mar 2016
 # License::   MIT.
 #
 # Usage::
@@ -11,36 +11,24 @@
 #
 #     DataShift::load_commands
 #
-#  Cmd Line:
 #
-# => bundle exec thor list datashift
-#    bundle exec thor help  datashift:generate:excel
-#
-require 'datashift'
-require 'generators/excel_generator'
+require_relative 'thor_export_base'
 
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
 module Datashift
 
-          
-  class Generate < Thor     
+  class Generate  < DataShift::ThorExportBase
          
     include DataShift::Logging
       
     desc "excel", "generate a template from an active record model (with optional associations)" 
     method_option :model, :aliases => '-m', :required => true, :desc => "The active record model to export"
+
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
-    method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
-    method_option :exclude, :aliases => '-x',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::ModelMethod.supported_types_enum.to_a.inspect}"
-    method_option :remove, :aliases => '-e',  :type => :array, :desc => "Don't generate in template the supplied fields"
-    method_option :remove_rails, :type => :boolean, :desc => "Don't generate in template the standard Rails fields: #{DataShift::GeneratorBase::rails_columns.inspect}"
-    
     
     def excel()
-     
-      # TODO - We're assuming run from a rails app/top level dir...
-      # ...can we make this more robust ? e.g what about when using active record but not in Rails app, 
-      require File.expand_path('config/environment.rb')
+
+      start_connections
 
       model = options[:model]
       result = options[:result]
@@ -77,14 +65,10 @@ module Datashift
     desc "csv", "generate a template from an active record model (with optional associations)" 
     method_option :model, :aliases => '-m', :required => true, :desc => "The active record model to export"
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
-    method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
-    method_option :exclude, :aliases => '-x',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::ModelMethod.supported_types_enum.to_a.inspect}"
-    
+
     def csv()
-     
-      # TODO - We're assuming run from a rails app/top level dir...
-      # ...can we make this more robust ? e.g what about when using active record but not in Rails app, 
-      require File.expand_path('config/environment.rb')
+
+      start_connections
    
       require 'csv_generator'
 
@@ -127,14 +111,10 @@ module Datashift
     method_option :csv, :aliases => '-c', :desc => "Export to CSV instead - Excel is default."
     method_option :prefix, :aliases => '-p', :desc => "For namespaced tables/models specify the table prefix e.g spree_"
     method_option :module, :aliases => '-m', :desc => "For namespaced tables/models specify the Module name e.g Spree"
-    method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include all associations in the template"
-    method_option :exclude, :aliases => '-x',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::ModelMethod.supported_types_enum.to_a.inspect}"
-    method_option :remove, :aliases => '-e',  :type => :array, :desc => "Don't generate the user supplied fields"
-    method_option :remove_rails, :type => :boolean, :desc => "Don't generate the standard Rails fields: #{DataShift::GeneratorBase::rails_columns.inspect}"
-     
+
     def db()
-     
-      require File.expand_path('config/environment.rb')
+
+      start_connections
       
       require 'excel_exporter'
       require 'csv_exporter'

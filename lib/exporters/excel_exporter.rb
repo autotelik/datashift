@@ -56,24 +56,11 @@ module DataShift
 
     # Create an Excel file from list of ActiveRecord objects, includes relationships
     #
-    # Options
+    # Options -  See  lib/exporters/configuration.rb
     #
-    # [:with] => List of association Types to include (:has_one etc)
-    #
-    #   Otherwise, defaults to including all association types defined by
-    #   ModelMethod.supported_types_enum - which can be further refined by
-    #
-    # [:exclude] => List of association Types to EXCLUDE (:has_one etc)
-    #
-    # [:remove] => List of headers to remove from generated template
-    #
-    # [:remove_rails] => Remove standard Rails cols like :id, created_at etc
-    #
-    # [sheet_name:] - Name for worksheet, otherwise uses Class name
-    #
-    # [json:] - Export association data in single column in JSON format
-    #
-    def export_with_associations(file_name, klass, records, options = {})
+    def export_with_associations(file_name, klass, records)
+
+      configuration = DataShift::Exporters::Configuration.configuration
 
       @file_name = file_name
 
@@ -81,11 +68,8 @@ module DataShift
 
       collection = ModelMethods::Manager.catalog_class(klass)
 
-      # with_associations - so over ride to default to :all if nothing specified
-      options[:with] = :all if options[:with].nil?
-
       # sort out exclude etc
-      options[:with] = op_types_in_scope( options )
+      op_types_in_scope = configuration.op_types_in_scope
 
       klass_to_headers(klass, options)
 
@@ -101,7 +85,7 @@ module DataShift
         column = 0
 
         # group columns by operator type
-        options[:with].each do |op_type|
+        op_types_in_scope.each do |op_type|
           collection.for_type(op_type).each do |model_method|
             # pack association instances into single column
             if ModelMethod.association_type?(op_type)

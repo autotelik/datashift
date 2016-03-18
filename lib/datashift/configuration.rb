@@ -24,6 +24,10 @@ module DataShift
     # @return [Boolean]
     attr_accessor :verbose
 
+    def self.rails_columns
+      @rails_standard_columns ||= [:id, :created_at, :created_on, :updated_at, :updated_on]
+    end
+
     def initialize
       @strict = false
       @verbose = false

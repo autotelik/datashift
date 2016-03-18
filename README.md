@@ -1,6 +1,6 @@
 ##  DataShift 
 
-[![Build Status](https://travis-ci.org/autotelik/datashift?branch=split_into_concerns)](https://travis-ci.org/autotelik/datashift)
+[![Build Status](https://travis-ci.org/autotelik/datashift.svg?branch=split_into_concerns)](https://travis-ci.org/autotelik/datashift)
 
 - API About to change Drastically - Sorry don't have time to do proper deprecation WARNINGS etc
 
