@@ -26,17 +26,14 @@ module DataShift
 
     # Create an YAML template for mapping headers
     #
+    # For exportable options See DataShift::Exporters::Configuration
+    #
     # Options:
     #
     # * <tt>:title</tt> - Top level YAML node
     #
     # * <tt>:model_as_dest</tt> - Place model operators as the DESTINATION.
     #                             Override default treatment using model for SOURCE
-    #
-    # Rails columns like id, created_at etc are added to the remove list by default
-    #
-    # Options:
-    #
     #
     # * <tt>:file</tt> - Write mappings direct to file name provided
     #

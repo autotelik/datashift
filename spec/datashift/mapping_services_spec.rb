@@ -16,29 +16,70 @@ module DataShift
       results_clear
     end
 
-    context 'generation' do
-      it 'should be able to create a mapping service for a class' do
-        mapping_services = DataShift::MappingServices.new(Project)
+    it 'should be able to create a mapping service for a class' do
+      mapping_services = DataShift::MappingServices.new(Project)
 
-        expect(mapping_services).to be
-      end
+      expect(mapping_services).to be
     end
 
-    let(:mapper) { DataShift::MappingGenerator.new }
+    context 'Generation' do
 
-    let(:mapping_service) { DataShift::MappingServices.new(Project) }
+      let(:mapper) { DataShift::MappingGenerator.new }
+
+      let(:expected_map_file) { result_file('mapping_service_project.yaml') }
+
+      it 'should be able to create a mapping generator' do
+        expect(mapper).to be
+      end
+
+      it 'should be able to write out a basic mapping document for a class' do
+        expect(File.exist?(expected_map_file)).to_not be true
+
+        expect { mapper.generate(Project, file: expected_map_file, with: :all) }.to_not raise_error
+
+        expect(File.exist?(expected_map_file)).to be true
+      end
+
+      it 'a basic mapping document should contain at least attributes of a class' do
+        mapper.generate(Project, file: expected_map_file)
+
+        File.foreach(expected_map_file) {|l| puts l}
+        count = $.
+        expect(count).to be >= 4
+      end
+
+      it 'a basic mapping document can be configures to contain associations as well', duff: true do
+
+        DataShift::Exporters::Configuration.configure do |config|
+          config.with = [:all]
+        end
+
+        mapper.generate(Project, file: expected_map_file)
+
+        expect(File.exist?(expected_map_file)).to be true
+
+        File.foreach(expected_map_file) {|l| puts l}
+        count = $.
+        expect(count).to be >= 4
+      end
+
+    end
+
 
     # TODO: split into two - with and without associations
 
     context 'reading' do
-      let(:mfile) { result_file('mapping_service_project.yaml') }
+
+      let(:mapper) { DataShift::MappingGenerator.new }
+
+      let(:mapping_service) { DataShift::MappingServices.new(Project) }
 
       before(:each) do
-        mapper.generate(Project, file: mfile, with: :all )
+        mapper.generate(Project, file: expected_map_file, with: :all )
 
-        expect(File.exist?(mfile)).to be true
+        expect(File.exist?(expected_map_file)).to be true
 
-        mapping_service.read(mfile)
+        mapping_service.read(expected_map_file)
       end
 
       #       Project:
@@ -58,7 +99,7 @@ module DataShift
       #           categories: #dest_column_heading_13
 
       it 'should be able to read a mapping' do
-        expect(mapping_service.map_file_name).to eq mfile
+        expect(mapping_service.map_file_name).to eq expected_map_file
 
         expect(mapping_service.raw_data).to_not be_empty
         expect(mapping_service.yaml_data).to_not be_empty
@@ -66,7 +107,8 @@ module DataShift
         expect(mapping_service.mappings).to be_a OpenStruct
       end
 
-      it 'should provide access to the top level mapping' do
+      it 'should provide access to the top level mapping', duff: true do
+        puts mapping_service.mappings.inspect
         expect(mapping_service.mappings.Project).to be_a Hash
         expect(mapping_service.mappings['Project']).to be_a Hash
       end
@@ -81,12 +123,12 @@ module DataShift
     end
 
     context 'using' do
-      let(:mfile) { ifixture_file('project_mapping.yaml') }
+      let(:expected_map_file) { ifixture_file('project_mapping.yaml') }
 
       before(:each) do
-        expect(File.exist?(mfile)).to be true
+        expect(File.exist?(expected_map_file)).to be true
 
-        mapping_service.read(mfile)
+        mapping_service.read(expected_map_file)
 
         @project_mappings = mapping_service.mappings['Project']
       end

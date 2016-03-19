@@ -47,7 +47,7 @@ module DataShift
     # Modify DataShift's current configuration
     # @yieldparam [DataShift::Configuration] config current DataShift config
     # ```
-    # DataShift.configure do |config|
+    # DataShift::Configuration.configure do |config|
     #   config.verbose = false
     # end
     # ```

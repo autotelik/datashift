@@ -13,8 +13,8 @@ module DataShift
 
     class Configuration
 
-      # List of association +TYPES+ to INCLUDE (:belongs_to, :has_one etc)
-      # Defaults to :all
+      # List of association +TYPES+ to INCLUDE [:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
+      # Defaults to [:assignment, :enum]
       #
       # @param [Array<#call>] List of association Types to include (:has_one etc)
       # @return [Array<#call>]
@@ -54,7 +54,7 @@ module DataShift
 
 
       def initialize
-        @with = [:all]
+        @with = [:assignment, :enum]
         @exclude = []
         @remove = []
         @remove_rails = true
@@ -67,10 +67,20 @@ module DataShift
         @configuration ||= Exporters::Configuration.new
       end
 
-      # Set DataShift's configuration
+      # Set DataShift's configure
       # @param config [DataShift::Exporters::Configuration]
       class << self
         attr_writer :configuration
+      end
+
+      # Modify DataShift's current Export configuration
+      # ```
+      # DataShift::Exporters::Configuration.configure do |config|
+      #   config.verbose = false
+      # end
+      # ```
+      def self.configure
+        yield configuration
       end
 
       # Prepare the operators types in scope based on options
@@ -87,7 +97,9 @@ module DataShift
 
         types_in_scope = []
 
-        types_in_scope =if(@with == :all)
+        puts "DEBUG: op_types_in_scope with #{@with} "
+        types_in_scope =if(with_all?)
+                          puts "DEBUG: op_types_in_scope with ALL #{@with} "
                           ModelMethod.supported_types_enum.dup
                         else
                           @with.dup
@@ -95,9 +107,15 @@ module DataShift
 
         types_in_scope -= @exclude
 
+        puts "DEBUG: types_in_scope #{types_in_scope.inspect} "
+
         types_in_scope
       end
 
+
+      def with_all?
+        [*@with].include?(:all)
+      end
 
       # Take options and create a list of symbols to remove from headers
       #
@@ -112,18 +130,8 @@ module DataShift
         remove_list
       end
 
-      # Modify DataShift's current Export configuration
-      # ```
-      # DataShift::Exporters.configure do |config|
-      #   config.verbose = false
-      # end
-      # ```
-      def self.configure
-        yield configuration
-      end
+
     end
-
-
   end
 
 end

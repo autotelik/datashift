@@ -37,6 +37,8 @@ module DataShift
       # default to generating just klass columns
       associations = configuration.op_types_in_scope
 
+      puts "DEBUG: Running klass_to_headers for Assocs : #{associations}"
+
       @headers = Headers.new(klass)
 
       collection = ModelMethods::Manager.catalog_class(klass)
