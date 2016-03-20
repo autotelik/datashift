@@ -28,7 +28,7 @@ module DataShift
       return nil if value.blank?
       text = value.to_s.gsub(text_delim, escape_text_delim).gsub("\n", '\\n')
 
-      text = "#{text_delim}#{text}#{text_delim}" if(text.include?(csv_delim) && text.present?)
+      text = "#{text_delim}#{text}#{text_delim}" if(text.include?(csv_delimiter) && text.present?)
       text
     end
 
@@ -70,7 +70,7 @@ module DataShift
 
       [*options[:methods]].each { |x| csv_data << escape_for_csv(record.send(x)) if record.respond_to?(x) } if options[:methods]
 
-      csv_data.join( csv_delim )
+      csv_data.join( csv_delimiter )
     end
 
   end

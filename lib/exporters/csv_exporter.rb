@@ -15,6 +15,8 @@ module DataShift
 
     def initialize
       super
+
+      @csv_delimiter = ','
     end
 
     # Create CSV file from set of ActiveRecord objects
@@ -38,13 +40,17 @@ module DataShift
 
       raise ArgumentError.new('Please supply set of ActiveRecord objects to export') unless first.is_a?(ActiveRecord::Base)
 
-      csv_delim = options[:csv_delim] if(options[:csv_delim])
+      if(options[:csv_delim])
+        @csv_delimiter = options[:csv_delim]
+      end
 
       klass_to_headers(first.class)
 
       remove = options[:remove] || []
 
-      CSV.open( (options[:filename] || filename), "w", col_sep: csv_delim ) do |csv|
+      logger.debug "CSV columns delimited by [#{options[:csv_delim]}] [#{csv_delimiter}]"
+
+      CSV.open(file_name, "w", col_sep: csv_delimiter ) do |csv|
         csv << headers
 
         records.each do |r|

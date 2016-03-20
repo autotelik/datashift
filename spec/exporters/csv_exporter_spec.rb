@@ -80,7 +80,7 @@ module DataShift
         expected = result_file('project_first_export_spec_with_custom_delimeter.csv')
 
         exporter.export(expected, Project.all[0])
-        
+
         got_columns, got_values = CSV.read(expected)
         expect(expected_columns.count).to eq got_columns.count
         expect(expected_values.count).to eq got_values.count

@@ -118,14 +118,12 @@ module DataShift
 
     attr_writer :key_value_sep
 
-    def csv_delim
-      @csv_delim ||= ','
-      @csv_delim
+    def csv_delimiter
+      @csv_delimiter ||= ','
     end
 
-    def csv_delim=(x)
-      @csv_delim = x
-    end
+    attr_writer :csv_delimiter
+
 
     def eol
       "\n"
