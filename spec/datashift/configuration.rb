@@ -9,27 +9,57 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 module DataShift
 
-  describe '#configure' do
+  describe Configuration do
+
     let(:defaults) do
       { project:
-            { value_as_string: 'Default Project Value',
-              category: 'reference:category_002',
-              value_as_datetime: Time.now.to_s(:db)
-            }
+          { value_as_string: 'Default Project Value',
+            category: 'reference:category_002',
+            value_as_datetime: Time.now.to_s(:db)
+          }
       }
     end
 
     before do
-      DataShift.configure do |config|
-        config.datashift_defaults = defaults
-      end
     end
 
-    it 'returns hash with 3 elements' do
-      draw = MegaLotto::Drawing.new.draw
+    let(:configuration) { DataShift::Exporters::Configuration.configuration }
 
-      expect(draw).to be_a(Array)
-      expect(draw.size).to eq(10)
+    context "with" do
+
+      it 'defaults to basic attribute data' do
+        expect(configuration.op_types_in_scope).to eq  [:assignment, :enum]
+      end
+
+      it 'returns complete list of op types when [:all] specified' do
+        DataShift::Exporters::Configuration.configure do |config|
+          config.with = [:all]
+        end
+        expect(configuration.op_types_in_scope).to eq ModelMethod.supported_types_enum
+      end
+
+      it 'returns complete list of op types when :all specified' do
+        DataShift::Exporters::Configuration.configure do |config|
+          config.with = :all
+        end
+        expect(configuration.op_types_in_scope).to eq ModelMethod.supported_types_enum
+      end
+
+      it 'can be configuresd  complete list of op types when :all specified' do
+        DataShift::Exporters::Configuration.configure do |config|
+          config.with = :all
+        end
+        expect(configuration.op_types_in_scope).to eq ModelMethod.supported_types_enum
+      end
+
+      it 'can be configured  with custom list of op types to process' do
+        DataShift::Exporters::Configuration.configure do |config|
+          config.with = [:assignment, :enum, :belongs_to]
+        end
+        expect(configuration.op_types_in_scope).to eq [:assignment, :enum, :belongs_to]
+      end
+
+
     end
   end
 

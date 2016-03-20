@@ -43,7 +43,7 @@ module DataShift
 
       excel = start_excel(first.class, options)
 
-      klass_to_headers(first.class, options)
+      klass_to_headers(first.class)
 
       excel.set_headers( headers )
 
@@ -56,20 +56,20 @@ module DataShift
 
     # Create an Excel file from list of ActiveRecord objects, includes relationships
     #
-    # Options -  See  lib/exporters/configuration.rb
+    # Association Options -  See  lib/exporters/configuration.rb
     #
     def export_with_associations(file_name, klass, records)
 
       @file_name = file_name
 
-      start_excel(klass, options)
+      start_excel(klass)
 
       collection = ModelMethods::Manager.catalog_class(klass)
 
       # sort out exclude etc
       op_types_in_scope = configuration.op_types_in_scope
 
-      klass_to_headers(klass, options)
+      klass_to_headers(klass)
 
       excel.set_headers( headers )
 
@@ -79,21 +79,20 @@ module DataShift
 
       logger.info("Processing #{records.size} records to Excel")
 
+      model_methods = klass_to_model_methods( klass )
+
       records.each do |obj|
         column = 0
 
-        # group columns by operator type
-        op_types_in_scope.each do |op_type|
-          collection.for_type(op_type).each do |model_method|
-            # pack association instances into single column
-            if ModelMethod.association_type?(op_type)
-              logger.info("Processing #{model_method.inspect} associations")
-              excel[row, column] = record_to_column( obj.send( model_method.operator ), options )
-            else
-              excel[row, column] = obj.send( model_method.operator )
-            end
-            column += 1
+        model_methods.each do |model_method|
+          # pack association instances into single column
+          if model_method.association_type?
+            logger.info("Processing #{model_method.inspect} associations")
+            excel[row, column] = record_to_column( obj.send( model_method.operator ), configuration.json )
+          else
+            excel[row, column] = obj.send( model_method.operator )
           end
+          column += 1
         end
 
         row += 1

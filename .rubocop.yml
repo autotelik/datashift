@@ -60,9 +60,20 @@ LineLength:
   Enabled: true
   Max: 140
 
+Loop:
+  Description: >-
+      Use Kernel#loop with break rather than begin/end/until or
+      begin/end/while for post-loop tests.
+  Enabled: false
+
 MethodCalledOnDoEndBlock:
   Exclude:
     - spec/**/*_spec.rb
+
+
+Metrics/BlockNesting:
+  Description: 'Avoid excessive block nesting'
+  Enabled: false
 
 Metrics/LineLength:
   Exclude:
@@ -131,3 +142,27 @@ Style/RegexpLiteral:
 Style/VariableName:
   Exclude:
      - lib/applications/**/*.rb
+
+SingleLineMethods:
+ Description: 'Avoid single-line methods.'
+ Enabled: false
+
+SpaceBeforeFirstArg:
+ Description: >-
+   Checks that exactly one space is used between a method name
+   and the first argument for method calls without parentheses.
+ Enabled: false
+
+Style/SpaceAroundKeyword:
+ Description: 'Use a space around keywords if appropriate.'
+ Enabled: false
+
+SpaceAfterNot:
+ Description: Tracks redundant space after the ! operator.
+ Enabled: false
+
+SpaceBeforeComment:
+ Description: >-
+   Checks for missing space between code and a comment on the
+   same line.
+ Enabled: false

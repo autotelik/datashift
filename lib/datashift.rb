@@ -65,6 +65,7 @@ module DataShift
                     'loaders', 'exporters', 'generators', 'helpers', 'applications']
 
     begin
+      require_relative 'datashift/delimiters'
       require_relative 'generators/generator_base'
       require_relative 'generators/file_generator'
       require_relative 'loaders/loader_base'
@@ -72,14 +73,13 @@ module DataShift
 
       require_libs.each do |base|
         Dir[File.join(library_path, base, '*.rb')].each do |rb|
-          #puts rb
+          # puts rb
           require_relative rb unless File.directory?(rb)
         end
       end
     rescue => x
       puts "Problem initializing gem #{x.inspect}"
     end
-
 
   end
 

@@ -144,7 +144,7 @@ module DataShift
           reset
 
           # TOFIX - what about has_one etc ? - indicates that Context etc are still too complex and Excel/CSV focused
-          puts "attach_to_method_binding.operator", attach_to_method_binding.operator
+          puts 'attach_to_method_binding.operator', attach_to_method_binding.operator
 
           owner_record.send(attach_to_method_binding.operator) << attachment
 

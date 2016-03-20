@@ -9,8 +9,13 @@ require File.dirname(__FILE__) + '/../spec_helper'
 module  DataShift
 
   describe 'CSV Generator' do
+
     before(:all) do
       results_clear( '*_template.csv' )
+    end
+
+    before(:each) do
+      DataShift::Exporters::Configuration.reset
     end
 
     include_context 'ClearThenManageProject'
@@ -62,9 +67,11 @@ module  DataShift
     it 'should enable us to exclude associations by type in template .csv file' do
       expected = result_file('project_plus_some_assoc_template.csv')
 
-      options = { exclude: :has_many }
+      DataShift::Exporters::Configuration.configure do |config|
+        config.exclude = [:has_many]
+      end
 
-      generator.generate_with_associations(expected, Project, options)
+      generator.generate_with_associations(expected, Project)
 
       expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
 
@@ -83,9 +90,11 @@ module  DataShift
     it 'should enable us to exclude certain associations', fail: true do
       expected = result_file('project_plus_some_assoc_template.csv')
 
-      options = { remove: [:milestones, :versions] }
+      DataShift::Exporters::Configuration.configure do |config|
+        config.remove = [:milestones, :versions]
+      end
 
-      generator.generate_with_associations(expected, Project, options)
+      generator.generate_with_associations(expected, Project)
 
       expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
 
@@ -105,9 +114,11 @@ module  DataShift
     it 'should remove standard rails fields from template .csv file' do
       expected = result_file('project_plus_some_assoc_template.csv')
 
-      options = { remove_rails: true }
+      DataShift::Exporters::Configuration.configure do |config|
+        config.remove_rails = true
+      end
 
-      generator.generate_with_associations(expected, Project, options)
+      generator.generate_with_associations(expected, Project)
 
       expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
 

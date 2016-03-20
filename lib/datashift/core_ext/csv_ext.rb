@@ -8,20 +8,6 @@ class CSV
   # TOFIX .. now we use CSV class this probably not needed
   include DataShift::ColumnPacker
 
-  # Helpers for dealing with Active Record models and collections
-  #
-  # options[:with] => [SYMBOLS]
-  #     Specify array of operators/associations to include - possible values :
-  #         [:assignment, :belongs_to, :has_one, :has_many]
-  #
-  # options[:remove] - List of headers to remove from generated template
-  #
-  # options[:remove_rails] - Remove standard Rails cols like id, created_at etc
-  #
-  def ar_to_headers(klass, options = {})
-    add_row( klass_to_headers(klass, options) )
-  end
-
   # Convert an AR instance to a set of CSV columns
   # Additional non instance data can be included by supplying list of methods to call
   # on the record

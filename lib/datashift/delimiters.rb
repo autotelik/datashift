@@ -1,6 +1,6 @@
-# Copyright:: (c) Autotelik Media Ltd 2011
+# Copyright:: (c) Autotelik Media Ltd 2016
 # Author ::   Tom Statter
-# Date ::     Aug 2010
+# Date ::     Aug 2016
 # License::   MIT
 #
 #  Details::  Module providing standard location for delimiters used in both export/import
@@ -12,9 +12,6 @@ module DataShift
 
   module Delimiters
 
-    # I made these class methods, feeling delims are 'global'
-    # I dunno now if that's good pattern or not
-
     # As well as just the column name, support embedding find operators for that column
     # in the heading .. i.e Column header => 'BlogPosts:user_id'
     # ... association has many BlogPosts selected via find_by_user_id
@@ -22,12 +19,12 @@ module DataShift
     # in the heading .. i.e Column header => 'BlogPosts:user_name:John Smith'
     # ... association has many BlogPosts selected via find_by_user_name("John Smith")
     #
-    def self.column_delim
+    def column_delim
       @column_delim ||= ':'
       @column_delim
     end
 
-    def self.column_delim=(x)
+    def column_delim=(x)
       @column_delim = x
     end
 
@@ -51,12 +48,12 @@ module DataShift
     #         => Find 3 different associations, perform lookup via column called Size
     #         => Jumper.properties << [ small, medium, large ]
     #
-    def self.name_value_delim
+    def name_value_delim
       @name_value_delim ||= ':'
       @name_value_delim
     end
 
-    def self.name_value_delim=(x)
+    def name_value_delim=(x)
       @name_value_delim = x
     end
 
@@ -64,11 +61,11 @@ module DataShift
     #     "Colour:red,green,blue".split(Delimiters::multi_value_delim) => [red,green,blue]
     #     {name => value, n2 => v2}.split(Delimiters::multi_value_delim) => [ [name => value], [n2 => v2] ]
 
-    def self.multi_value_delim
+    def multi_value_delim
       @multi_value_delim ||= ','
     end
 
-    def self.multi_value_delim=(x)
+    def multi_value_delim=(x)
       @multi_value_delim = x
     end
 
@@ -79,11 +76,11 @@ module DataShift
     #
     #   => mime_type:jpeg;print_type:colour | mime_type:PDF; print_type:colour
 
-    def self.multi_facet_delim
+    def multi_facet_delim
       @multi_facet_delim ||= ';'
     end
 
-    def self.setmulti_facet_delim(x)
+    def setmulti_facet_delim(x)
       @multi_facet_delim = x
     end
 
@@ -94,43 +91,43 @@ module DataShift
     #      | Category |
     #      'name =>New, :a => 1, :b => 2|name => SecondHand, :a => 6, :b => 34|Name:Old, :a => 12, :b => 67', 'Next Column'
     #
-    def self.multi_assoc_delim
+    def multi_assoc_delim
       @multi_assoc_delim ||= '|'
       @multi_assoc_delim
     end
 
-    def self.multi_assoc_delim=(x)
+    def multi_assoc_delim=(x)
       @multi_assoc_delim = x
     end
 
     # Delimiters for {:abc => 2, :efg => 'some text}
 
-    def self.attribute_list_start
+    def attribute_list_start
       @attribute_list_start ||= '{'
     end
 
-    class << self
-      attr_writer :attribute_list_start
-    end
+    attr_writer :attribute_list_start
 
-    def self.attribute_list_end
+    def attribute_list_end
       @attribute_list_end ||= '}'
     end
 
-    class << self
-      attr_writer :attribute_list_end
-    end
+    attr_writer :attribute_list_end
 
-    def self.csv_delim
+    attr_writer :text_delim
+
+    attr_writer :key_value_sep
+
+    def csv_delim
       @csv_delim ||= ','
       @csv_delim
     end
 
-    def self.csv_delim=(x)
+    def csv_delim=(x)
       @csv_delim = x
     end
 
-    def self.eol
+    def eol
       "\n"
     end
 
@@ -139,16 +136,10 @@ module DataShift
       @text_delim ||= "\'"
     end
 
-    attr_writer :text_delim
-
     # seperator for identifying normal key value pairs
 
-    def self.key_value_sep
+    def key_value_sep
       @key_value_sep ||= '=>' # TODO: check Ruby version and use appropriate has style ?
-    end
-
-    class << self
-      attr_writer :key_value_sep
     end
 
   end

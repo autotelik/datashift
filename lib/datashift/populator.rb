@@ -16,6 +16,9 @@ module DataShift
     include DataShift::Logging
     extend DataShift::Logging
 
+    include DataShift::Delimiters
+    extend DataShift::Delimiters
+
     def self.insistent_method_list
       @insistent_method_list ||= [:to_s, :to_i, :to_f, :to_b]
     end
@@ -62,7 +65,7 @@ module DataShift
     end
 
     def self.attribute_hash_const_regexp
-      @attribute_hash_const_regexp ||= Regexp.new( Delimiters.attribute_list_start + '.*' + Delimiters.attribute_list_end)
+      @attribute_hash_const_regexp ||= Regexp.new( attribute_list_start + '.*' + attribute_list_end)
     end
 
     # Transformations
@@ -341,7 +344,7 @@ module DataShift
       else
         # A single column can contain multiple lookup key:value definitions, delimited by special char
         # size:large | colour:red,green,blue => [where size: 'large'], [where colour: IN ['red,green,blue']
-        columns = value.to_s.split( Delimiters.multi_assoc_delim )
+        columns = value.to_s.split( multi_assoc_delim )
       end
 
       operator = method_binding.operator

@@ -52,19 +52,22 @@ module DataShift
       #
       attr_accessor :json
 
-
       def initialize
         @with = [:assignment, :enum]
         @exclude = []
         @remove = []
         @remove_rails = true
-        @sheet_name = ""
+        @sheet_name = ''
         @json = false
       end
 
       # @return [DataShift::Exporters::Configuration] DataShift's current configuration
       def self.configuration
         @configuration ||= Exporters::Configuration.new
+      end
+
+      def self.reset
+        @configuration = Exporters::Configuration.new
       end
 
       # Set DataShift's configure
@@ -97,21 +100,16 @@ module DataShift
 
         types_in_scope = []
 
-        puts "DEBUG: op_types_in_scope with #{@with} "
-        types_in_scope =if(with_all?)
-                          puts "DEBUG: op_types_in_scope with ALL #{@with} "
-                          ModelMethod.supported_types_enum.dup
-                        else
-                          @with.dup
+        types_in_scope = if with_all?
+                           ModelMethod.supported_types_enum.dup
+                         else
+                           @with.dup
                         end
 
         types_in_scope -= @exclude
 
-        puts "DEBUG: types_in_scope #{types_in_scope.inspect} "
-
         types_in_scope
       end
-
 
       def with_all?
         [*@with].include?(:all)
@@ -125,11 +123,10 @@ module DataShift
       def prep_remove_list
         remove_list = [*@remove].compact.collect { |x| x.to_s.downcase.to_sym }
 
-        remove_list += DataShift::Configuration.rails_columns if(remove_rails)
+        remove_list += DataShift::Configuration.rails_columns if remove_rails
 
         remove_list
       end
-
 
     end
   end

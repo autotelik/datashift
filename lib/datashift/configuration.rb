@@ -54,7 +54,7 @@ module DataShift
     def self.configure
       yield configuration
     end
-end
+  end
 
   class YamlConfiguration
 

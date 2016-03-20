@@ -22,22 +22,41 @@ module DataShift
     # Helpers for dealing with Active Record models and collections
     # Catalogs the supplied Klass and builds set of expected/valid Headers for Klass
     #
-    # Options:
-    #
-    # [:with] => [SYMBOLS]
-    #     Specify array of operators/associations to include - possible values :
-    #         [:assignment, :belongs_to, :has_one, :has_many]
-    #
-    # [:remove] - List of headers to remove from generated template
-    #
-    # [:remove_rails] - Remove standard Rails cols like id, created_at etc
+    def klass_to_model_methods(klass)
+
+      # default to generating just klass columns
+      associations = configuration.op_types_in_scope
+
+      collection = ModelMethods::Manager.catalog_class(klass)
+
+      if collection
+        model_methods = []
+        # make sure models columns are first, then other association types
+        if associations.delete(:assignment)
+          collection.for_type(:assignment).each { |md| model_methods << md }
+        end
+
+        associations.each do |a|
+          collection.for_type(a).each { |md| model_methods << md }
+        end
+
+        remove_list = configuration.prep_remove_list
+
+        model_methods.delete_if { |h| remove_list.include?( h.operator.to_sym ) } unless remove_list.empty?
+
+        model_methods
+      else
+        []
+      end
+    end
+
+    # Helpers for dealing with Active Record models and collections
+    # Catalogs the supplied Klass and builds set of expected/valid Headers for Klass
     #
     def klass_to_headers(klass)
 
       # default to generating just klass columns
       associations = configuration.op_types_in_scope
-
-      puts "DEBUG: Running klass_to_headers for Assocs : #{associations}"
 
       @headers = Headers.new(klass)
 
@@ -60,17 +79,21 @@ module DataShift
       headers
     end
 
-    alias :klass_to_collection_and_headers :klass_to_headers
+    alias klass_to_collection_and_headers klass_to_headers
 
     # Prepare to generate with associations but then
     # calls a **derived generate** method i.e abstract to this base class
     #
     # file_name => Filename for generated template
     #
-    def generate_with_associations(file_name, klass, options = {})
-      generate(file_name, klass, options)
-    end
+    def generate_with_associations(file_name, klass)
 
+      DataShift::Exporters::Configuration.configure do |config|
+        config.with = [:all]
+      end
+
+      generate(file_name, klass)
+    end
 
     # Parse options and remove  headers
     # Specify columns to remove via  lib/exporters/configuration.rb
@@ -80,7 +103,6 @@ module DataShift
 
       headers.delete_if { |h| remove_list.include?( h.to_sym ) } unless remove_list.empty?
     end
-
 
   end
 

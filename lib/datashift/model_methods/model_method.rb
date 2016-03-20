@@ -66,8 +66,6 @@ module DataShift
       @col_type = DataShift::ModelMethods::Catalogue.column_type_for(klass, operator) if col_type.nil?
     end
 
-
-
     # Return the actual operator's name for supplied method type
     # where type one of :assignment, :has_one, :belongs_to, :has_many etc
     def operator_for( type )
@@ -101,6 +99,10 @@ module DataShift
       @operator_class
     end
 
+    def association_type?
+      ModelMethod.association_type?( operator_type )
+    end
+
     def pp
       x = <<-EOS
       Class         [#{klass.name}]
@@ -123,10 +125,10 @@ module DataShift
     include Comparable
 
     def <=>(mm)
-      state <=>  mm.state
+      state <=> mm.state
     end
 
-    alias_method :eql?, :==
+    alias eql? ==
 
     def hash
       state.hash
@@ -140,7 +142,7 @@ module DataShift
     # hence operator_type before operator
     #
     def state
-      [klass.name, ModelMethod::supported_types_enum.index(operator_type), operator]
+      [klass.name, ModelMethod.supported_types_enum.index(operator_type), operator]
     end
 
     private

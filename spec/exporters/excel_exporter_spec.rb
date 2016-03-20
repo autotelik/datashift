@@ -18,6 +18,10 @@ module  DataShift
       results_clear( '*.xls' )
     end
 
+    before(:each) do
+      DataShift::Exporters::Configuration.reset
+    end
+
     let(:exporter) { ExcelExporter.new }
 
     it 'should be able to create a new excel exporter' do
@@ -70,6 +74,10 @@ module  DataShift
 
       before(:each) do
         create_list(:project, expected_projects)
+
+        DataShift::Exporters::Configuration.configure do |config|
+          config.with = :all
+        end
       end
 
       it 'should include associations in headers' do
@@ -153,11 +161,11 @@ module  DataShift
         last_idx = Project.count
 
         # project_with_milestones has real associated user data
-        expect( excel[last_idx, milestone_inx].to_s ).to include Delimiters.multi_assoc_delim
+        expect( excel[last_idx, milestone_inx].to_s ).to include ColumnPacker.multi_assoc_delim
         expect( excel[last_idx, milestone_inx].to_s ).to include 'milestone 1'
       end
 
-      it 'should export a model and  assocs in json to .xls file' do
+      it 'should export a model and  assocs in json to .xls file', duff:true do
         create( :project_with_user )
         create( :project_with_milestones )
 
@@ -165,7 +173,11 @@ module  DataShift
 
         items = Project.all
 
-        exporter.export_with_associations(expected, Project, items, json: true)
+        DataShift::Exporters::Configuration.configure do |config|
+          config.json = true
+        end
+
+        exporter.export_with_associations(expected, Project, items)
 
         expect(File.exist?(expected)).to eq true
 

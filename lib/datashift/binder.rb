@@ -21,6 +21,9 @@ module DataShift
 
     include DataShift::Logging
 
+    include DataShift::Delimiters
+    extend DataShift::Delimiters
+
     attr_reader :mapped_class
 
     attr_accessor :bindings, :missing_bindings
@@ -106,7 +109,7 @@ module DataShift
           next
         end
 
-        raw_col_name, where_field, where_value, *data = raw_col_data.split(Delimiters.column_delim)
+        raw_col_name, where_field, where_value, *data = raw_col_data.split(column_delim)
 
         # Find the domain model method details
         model_method = model_method_mgr.search(raw_col_name)
@@ -129,7 +132,7 @@ module DataShift
           binding = MethodBinding.new(raw_col_name, col_index, model_method)
 
           # we slurped up all possible data in split, turn it back into original string
-          binding.add_column_data(data.join(Delimiters.column_delim))
+          binding.add_column_data(data.join(column_delim))
 
           if where_field
             logger.info("Lookup query field [#{where_field}] - specified for association #{model_method.operator}")
@@ -176,14 +179,14 @@ module DataShift
       name = external_name.to_s
 
       [
-          name.downcase,
-          name.tableize,
-          name.tr(' ', '_'),
-          name.tr(' ', '_').downcase,
-          name.gsub(/(\s+)/, '_').downcase,
-          name.delete(' '),
-          name.delete(' ').downcase,
-          name.tr(' ', '_').underscore
+        name.downcase,
+        name.tableize,
+        name.tr(' ', '_'),
+        name.tr(' ', '_').downcase,
+        name.gsub(/(\s+)/, '_').downcase,
+        name.delete(' '),
+        name.delete(' ').downcase,
+        name.tr(' ', '_').underscore
       ]
     end
 

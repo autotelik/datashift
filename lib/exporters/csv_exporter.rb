@@ -20,9 +20,6 @@ module DataShift
     # Create CSV file from set of ActiveRecord objects
     # Options :
     # :text_delim   => Char to use to delim columns, useful when data contain embedded ','
-    # :methods      => List of methods to additionally call on each record
-    # :remove       => List of columns to remove from generated template
-    #
     def export(file_name, export_records, options = {})
 
       @file_name = file_name
@@ -40,7 +37,7 @@ module DataShift
 
       Delimiters.text_delim = options[:text_delim] if options[:text_delim]
 
-      klass_to_headers(first.class, options)
+      klass_to_headers(first.class)
 
       remove = options[:remove] || []
 
@@ -56,20 +53,6 @@ module DataShift
 
     # Create CSV file from list of ActiveRecord objects
     #
-    # Options
-    # [:file_name] => Filename for generated template
-    #
-    # [:with] => List of association Types to include (:has_one etc)
-    #
-    #   Otherwise, defaults to including ALL association types defined by
-    #   ModelMethod.supported_types_enum - which can be further refined by
-    #
-    # [:exclude] => List of association Types to exclude (:has_one etc)
-    #
-    # [:remove] => List of columns to remove from generated template
-    #
-    # [:remove_rails] => Remove standard Rails cols like :id, created_at etc
-    #
     def export_with_associations(file_name, klass, records, options = {})
 
       @file_name = file_name
@@ -82,7 +65,7 @@ module DataShift
 
       logger.info("Association Types in scope for export #{types_in_scope.inspect}")
 
-      klass_to_headers(klass, with: types_in_scope, remove: options[:remove])
+      klass_to_headers(klass)
 
       # do the main model first, as per to_headers
       assignment = types_in_scope.delete(:assignment)

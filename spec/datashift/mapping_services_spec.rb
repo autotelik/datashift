@@ -68,7 +68,9 @@ module DataShift
 
     # TODO: split into two - with and without associations
 
-    context 'reading' do
+    context 'Reading' do
+
+      let(:expected_map_file) { result_file('mapping_service_project.yaml') }
 
       let(:mapper) { DataShift::MappingGenerator.new }
 
@@ -122,8 +124,10 @@ module DataShift
       end
     end
 
-    context 'using' do
+    context 'Using' do
       let(:expected_map_file) { ifixture_file('project_mapping.yaml') }
+
+      let(:mapping_service) { DataShift::MappingServices.new(Project) }
 
       before(:each) do
         expect(File.exist?(expected_map_file)).to be true

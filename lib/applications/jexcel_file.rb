@@ -91,16 +91,16 @@ if DataShift::Guards.jruby?
 
         name = sanitize_sheet_name( sheet_name )
 
-        if @workbook.getSheetIndex(name) < 0 # Check sheet doesn't already exist
-          return create_sheet_and_set_styles( name )
-        else
-          activate_sheet(name)
-        end
+        return create_sheet_and_set_styles( name ) if @workbook.getSheetIndex(name) < 0 # Check sheet doesn't already exist
+
+        activate_sheet(name)
+
       else
         i = 0
+        # there is no hard limit to no of sheets in Excel but at some point you will run out of memory!
         begin
           sheet_name = "Worksheet#{i += 1}"
-        end while(@workbook.getSheetIndex(sheet_name) >= 0) # there is no hard limit to no of sheets in Excel but at some point you will run out of memory!
+        end while(@workbook.getSheetIndex(sheet_name) >= 0)
 
         return create_sheet_and_set_styles( sheet_name )
       end
@@ -152,9 +152,11 @@ if DataShift::Guards.jruby?
     # Process each row. Row type is org.apache.poi.hssf.usermodel.HSSFRow
 
     # Currently ignores skip argument - TODO - this is how spreadsheet gem works
-    # #each iterates over all used Rows (from the first used Row until but omitting the first unused Row, see also #dimensions)
+    # #each iterates over all used Rows (from the first used Row until
+    # but omitting the first unused Row, see also #dimensions)
     # If the argument skip is given,
-    # #each iterates from that row until but omitting the first unused Row, effectively skipping the first skip Rows from the top of the Worksheet.
+    # #each iterates from that row until but omitting the first unused Row,
+    # effectively skipping the first skip Rows from the top of the Worksheet.
 
     def each(_skip = nil, &block)
       @sheet.rowIterator.each(&block)
