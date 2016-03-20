@@ -18,8 +18,11 @@ module DataShift
     end
 
     # Create CSV file from set of ActiveRecord objects
+    #
     # Options :
-    # :text_delim   => Char to use to delim columns, useful when data contain embedded ','
+    #
+    # :csv_delim => Char to use to delim columns, useful when data contain embedded ','
+    #
     def export(file_name, export_records, options = {})
 
       @file_name = file_name
@@ -35,13 +38,13 @@ module DataShift
 
       raise ArgumentError.new('Please supply set of ActiveRecord objects to export') unless first.is_a?(ActiveRecord::Base)
 
-      Delimiters.text_delim = options[:text_delim] if options[:text_delim]
+      csv_delim = options[:csv_delim] if(options[:csv_delim])
 
       klass_to_headers(first.class)
 
       remove = options[:remove] || []
 
-      CSV.open( (options[:file_name] || file_name), 'w' ) do |csv|
+      CSV.open( (options[:filename] || filename), "w", col_sep: csv_delim ) do |csv|
         csv << headers
 
         records.each do |r|
@@ -53,11 +56,15 @@ module DataShift
 
     # Create CSV file from list of ActiveRecord objects
     #
+    # Options :
+    #
+    # :csv_delim => Char to use to delim columns, useful when data contain embedded ','
+    #
     def export_with_associations(file_name, klass, records, options = {})
 
       @file_name = file_name
 
-      Delimiters.text_delim = options[:text_delim] if options[:text_delim]
+      csv_delim = options[:csv_delim] if(options[:csv_delim]) if(options[:csv_delim])
 
       collection = ModelMethods::Manager.catalog_class(klass)
 

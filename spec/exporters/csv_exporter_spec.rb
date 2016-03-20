@@ -17,11 +17,7 @@ module DataShift
 
     include_context 'ClearThenManageProject'
 
-    context 'simple project' do
-      before(:each) do
-        create( :project )
-      end
-
+    describe '#initialize' do
       it 'should be able to create a new CSV exporter' do
         expect(exporter).not_to be_nil
       end
@@ -29,6 +25,15 @@ module DataShift
       it 'should throw if not active record objects' do
         expect { exporter.export('exp_rspec_csv_empty.csv', [123.45]) }.to raise_error(ArgumentError)
       end
+    end
+
+    describe "#export" do
+
+      let(:project) { create( :project ) }
+      let(:expected_columns) { project.serializable_hash.keys }
+      let(:expected_values) { project.serializable_hash.values.map &:to_s }
+
+      before { project }
 
       it 'should export collection of model objects to csv file', fail: true do
         expected = result_file('exp_project_collection_spec.csv')
@@ -69,6 +74,32 @@ module DataShift
         expect(File.exist?(expected)).to eq true
 
         puts "Can manually check file @ #{expected}"
+      end
+
+      it "should export a model object to csv file with custom delimeter" do
+        expected = result_file('project_first_export_spec_with_custom_delimeter.csv')
+
+        exporter.export(expected, Project.all[0])
+        
+        got_columns, got_values = CSV.read(expected)
+        expect(expected_columns.count).to eq got_columns.count
+        expect(expected_values.count).to eq got_values.count
+
+        expect(expected_columns || got_columns).to eq expected_columns
+        expect(expected_values || got_values).to eq expected_values
+
+        exporter.export(Project.all[0], csv_delim: "§")
+        got_headers, got_columns = CSV.read(expected, col_sep: "§")
+
+        expect(expected_columns || got_columns).to eq expected_columns
+        expect(expected_values || got_values).to eq expected_values
+
+        exporter.export(Project.all[0], csv_delim: "£")
+        got_headers, got_columns = CSV.read(expected, col_sep: "£")
+
+        expect(expected_columns.count).to eq got_columns.count
+        expect(expected_columns || got_columns).to eq expected_columns
+        expect(expected_values || got_values).to eq expected_values
       end
 
       it 'should export a model and result of method calls on it to csv file' do

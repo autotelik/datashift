@@ -25,9 +25,10 @@ module DataShift
     # TODO: - better ways ?? - see transcoding and String#encode
 
     def escape_for_csv(value)
+      return nil if value.blank?
       text = value.to_s.gsub(text_delim, escape_text_delim).gsub("\n", '\\n')
 
-      text = "#{text_delim}#{text}#{text_delim}" if text.include?(csv_delim)
+      text = "#{text_delim}#{text}#{text_delim}" if(text.include?(csv_delim) && text.present?)
       text
     end
 
