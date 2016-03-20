@@ -23,7 +23,7 @@ module DataShift
     # Create CSV file from set of ActiveRecord objects
     # Options :
     # => :filename
-    # => :text_delim => Char to use to delim columns, useful when data contain embedded ','
+    # => :csv_delim => Char to use to delim columns, useful when data contain embedded ','
     # => ::methods => List of methods to additionally call on each record
     #
     def export(export_records, options = {})
@@ -39,12 +39,11 @@ module DataShift
 
       raise ArgumentError.new('Please supply set of ActiveRecord objects to export') unless(first.is_a?(ActiveRecord::Base))
 
-      Delimiters.text_delim = options[:text_delim] if(options[:text_delim])
+      Delimiters.csv_delim = options[:csv_delim] if(options[:csv_delim])
 
-      CSV.open( (options[:filename] || filename), "w" ) do |csv|
+      CSV.open( (options[:filename] || filename), "w", col_sep: Delimiters.csv_delim ) do |csv|
 
         csv.ar_to_headers( records )
-
         records.each do |r|
           next unless(r.is_a?(ActiveRecord::Base))
           csv.ar_to_csv(r, options)
@@ -58,7 +57,7 @@ module DataShift
     #
     def export_with_associations(klass, records, options = {})
 
-      Delimiters.text_delim = options[:text_delim] if(options[:text_delim])
+      Delimiters.csv_delim = options[:csv_delim] if(options[:csv_delim]) if(options[:csv_delim])
 
       MethodDictionary.find_operators( klass )
 
@@ -101,7 +100,6 @@ module DataShift
           csv << row # next record
         end
       end
-
     end
   end
 end
