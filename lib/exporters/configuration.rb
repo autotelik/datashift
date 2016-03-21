@@ -38,6 +38,7 @@ module DataShift
       attr_accessor :remove
 
       # @param [Boolean] Remove standard Rails cols like :id, created_at etc
+      # Default is false - i.e id, created_at etc are included by default
       # @return [Boolean]
       #
       attr_accessor :remove_rails
@@ -56,7 +57,7 @@ module DataShift
         @with = [:assignment, :enum]
         @exclude = []
         @remove = []
-        @remove_rails = true
+        @remove_rails = false
         @sheet_name = ''
         @json = false
       end
@@ -98,15 +99,13 @@ module DataShift
       #
       def op_types_in_scope
 
-        types_in_scope = []
-
         types_in_scope = if with_all?
                            ModelMethod.supported_types_enum.dup
                          else
-                           @with.dup
+                           [*@with].dup
                         end
 
-        types_in_scope -= @exclude
+        types_in_scope -= [*@exclude]
 
         types_in_scope
       end

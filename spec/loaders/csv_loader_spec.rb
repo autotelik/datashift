@@ -12,6 +12,10 @@ module  DataShift
 
     let(:loader) { CsvLoader.new }
 
+    before(:each) do
+      DataShift::Exporters::Configuration.reset
+    end
+
     context 'prepare to load' do
 
       it 'should be able to create a new CSV loader' do
@@ -45,7 +49,7 @@ module  DataShift
         expect(loader.headers.idx).to eq 0
       end
 
-      it 'should process multiple associations from single column' do
+      it 'should process multiple associations from single column', duff:true do
         expect(Project.where(title: '001').first).to be_nil
         count = Project.count
 

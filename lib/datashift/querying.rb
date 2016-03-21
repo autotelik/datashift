@@ -19,11 +19,13 @@ module DataShift
     include DataShift::Logging
     extend DataShift::Logging
 
+    include Delimiters
+    extend Delimiters
+
     # Return arrays 'where' clause field(s), and the value(s) to search for
     #
-    # If not contained
-    # within inbound_data, check the Inbound Column headings
-    # .
+    # If not contained within inbound_data, check the Inbound Column headings
+    #
     # Where field embedded in row ,takes precedence over field in column heading
     #
     # Treat rest of the node as the value to use in the where clause e.g
@@ -34,7 +36,7 @@ module DataShift
     #
     def self.where_field_and_values(method_binding, inbound_data)
 
-      part1, part2 = inbound_data.split(Delimiters.name_value_delim)
+      part1, part2 = inbound_data.split(name_value_delim)
 
       heading_lookups = method_binding.inbound_column.lookup_list
 
@@ -54,11 +56,11 @@ module DataShift
 
         logger.debug("No part2e [#{part1}][#{part1.class}] - [#{part2}][#{part2.class}]")
 
-        part2 = part1.split(Delimiters.multi_value_delim)
+        part2 = part1.split(multi_value_delim)
         part1 = method_binding.inbound_column.find_by_operator
 
       else
-        part2 = part2.split(Delimiters.multi_value_delim)
+        part2 = part2.split(multi_value_delim)
 
       end
 

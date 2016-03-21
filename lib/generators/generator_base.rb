@@ -8,13 +8,12 @@ module DataShift
 
   class GeneratorBase
 
-    attr_accessor :headers, :remove_list
+    attr_accessor :headers
 
     attr_accessor :configuration
 
     def initialize
       @headers = DataShift::Headers.new(:na)
-      @remove_list = []
 
       @configuration = DataShift::Exporters::Configuration.configuration
     end
@@ -40,9 +39,7 @@ module DataShift
           collection.for_type(a).each { |md| model_methods << md }
         end
 
-        remove_list = configuration.prep_remove_list
-
-        model_methods.delete_if { |h| remove_list.include?( h.operator.to_sym ) } unless remove_list.empty?
+        DataShift::Transformer::Remove.unwanted_model_methods model_methods
 
         model_methods
       else
@@ -73,7 +70,7 @@ module DataShift
           collection.for_type(a).each { |md| @headers << md.operator.to_s }
         end
 
-        remove_headers
+        DataShift::Transformer::Remove.unwanted_columns(@headers )
       end
 
       headers

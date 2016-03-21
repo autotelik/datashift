@@ -9,8 +9,13 @@ require File.dirname(__FILE__) + '/../spec_helper'
 module DataShift
 
   describe 'CSV Exporter' do
+
     before(:all) do
       results_clear( '*.csv' )
+    end
+
+    before(:each) do
+      DataShift::Exporters::Configuration.reset
     end
 
     let(:exporter) { CsvExporter.new }
@@ -62,8 +67,6 @@ module DataShift
         expect { exporter.export(expected, nil) }.not_to raise_error
 
         expect { exporter.export(expected, []) }.not_to raise_error
-
-        puts "Can manually check file @ #{expected}"
       end
 
       it 'should export a model object to csv file' do
@@ -88,13 +91,13 @@ module DataShift
         expect(expected_columns || got_columns).to eq expected_columns
         expect(expected_values || got_values).to eq expected_values
 
-        exporter.export(Project.all[0], csv_delim: "§")
+        exporter.export(expected, Project.all[0], csv_delim: "§")
         got_headers, got_columns = CSV.read(expected, col_sep: "§")
 
         expect(expected_columns || got_columns).to eq expected_columns
         expect(expected_values || got_values).to eq expected_values
 
-        exporter.export(Project.all[0], csv_delim: "£")
+        exporter.export(expected, Project.all[0], csv_delim: "£")
         got_headers, got_columns = CSV.read(expected, col_sep: "£")
 
         expect(expected_columns.count).to eq got_columns.count
@@ -116,12 +119,14 @@ module DataShift
         expect(count).to eq Project.count + 1
       end
 
-      it 'should enable removal of certain columns', duff: true do
+      it 'should enable removal of certain columns' do
         expected = result_file('project_remove_export_spec.csv')
 
-        options = { remove: [:title, :value_as_integer] }
+        DataShift::Exporters::Configuration.configure do |config|
+          config.remove = [:title, :value_as_integer]
+        end
 
-        exporter.export(expected, Project.all, options)
+        exporter.export(expected, Project.all)
 
         expect(File.exist?(expected)).to eq true
 
@@ -144,6 +149,15 @@ module DataShift
       before(:each) do
         @user = create( :project_with_user ).user
         create_list(:project, basic_projects)
+      end
+
+      before(:each) do
+        DataShift::Exporters::Configuration.reset
+
+        DataShift::Exporters::Configuration.configure do |config|
+          config.with = [:all]
+        end
+
       end
 
       it 'should export a model and associations to a file' do
@@ -172,7 +186,7 @@ module DataShift
         expect(user_inx).to be > -1
       end
 
-      it 'should export model & associations to single row' do
+      it 'should export model & associations to single row', duff: true do
         items = Project.all
 
         exporter.export_with_associations(expected, Project, items)
