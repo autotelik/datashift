@@ -95,7 +95,7 @@ module Datashift
             
       begin
         # support modules e.g "Spree::Property") 
-        klass = ModelMapper::class_from_string(model)  #Kernel.const_get(model)
+        klass = DataShift::ModelMapper::class_from_string(model)  #Kernel.const_get(model)
       rescue NameError => e
         puts e
         raise Thor::Error.new("ERROR: No such Model [#{model}] found - check valid model supplied")
