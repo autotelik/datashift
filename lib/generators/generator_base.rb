@@ -95,14 +95,6 @@ module DataShift
       generate(file_name, klass)
     end
 
-    # Parse options and remove  headers
-    # Specify columns to remove via  lib/exporters/configuration.rb
-    #
-    def remove_headers
-      remove_list = configuration.prep_remove_list
-
-      headers.delete_if { |h| remove_list.include?( h.to_sym ) } unless remove_list.empty?
-    end
 
   end
 
