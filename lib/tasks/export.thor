@@ -65,6 +65,8 @@ module Datashift
 
       exporter = options[:csv] ?  DataShift::CsvExporter.new :  DataShift::ExcelExporter.new
 
+      DataShift::Exporters::Configuration.from_hash(options)
+
       ext = options[:csv] ? '.csv' : '.xls'
 
       modules = [nil] + options[:modules]
@@ -124,6 +126,8 @@ module Datashift
         model = options[:model]
         result = options[:result]
 
+        DataShift::Exporters::Configuration.from_hash(options)
+
         logger.info "Datashift: Starting export with #{exporter.class.name} to #{result}"
 
         klass = DataShift::MapperUtils::class_from_string(model)  #Kernel.const_get(model)
@@ -132,6 +136,11 @@ module Datashift
 
         begin
           if(options[:assoc])
+
+            DataShift::Exporters::Configuration.configure do |config|
+              config.with = [:all]
+            end
+
             logger.info("Datashift: Exporting with associations")
             exporter.export_with_associations(result, klass, klass.all, options)
           else

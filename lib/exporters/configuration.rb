@@ -62,6 +62,8 @@ module DataShift
         @json = false
       end
 
+
+
       # @return [DataShift::Exporters::Configuration] DataShift's current configuration
       def self.configuration
         @configuration ||= Exporters::Configuration.new
@@ -85,6 +87,20 @@ module DataShift
       # ```
       def self.configure
         yield configuration
+      end
+
+      # Modify DataShift's current Export configuration from an options hash
+
+      def self.from_hash( options )
+        DataShift::Exporters::Configuration.configure do |config|
+          config.with = [:all] if(options[:associations])
+
+          config.with = options[:with] if(options[:with])
+
+          config.exclude = options[:exclude] if(options[:exclude])
+          config.remove = options[:remove] if(options[:remove])
+          config.remove_rails = true if(options[:remove_rails])
+        end
       end
 
       # Prepare the operators types in scope based on options
