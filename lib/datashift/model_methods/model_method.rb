@@ -74,7 +74,12 @@ module DataShift
     end
 
     def operator?(name, case_sensitive = false)
+      return false if(name.nil?)
       case_sensitive ? operator == name : operator.casecmp(name.downcase).zero?
+    end
+
+    def operator_type?(type)
+      @operator_type == type.to_sym
     end
 
     # Return the operator's expected class name, if can be derived, else nil
@@ -103,21 +108,6 @@ module DataShift
       ModelMethod.association_type?( operator_type )
     end
 
-    def pp
-      x = <<-EOS
-      Class         [#{klass.name}]
-      Operator Type [#{operator_type}]
-      Operator      [#{operator}]
-      EOS
-
-      if col_type.respond_to?(:cast_type)
-        x += <<-EOS
-      Col/SqlType   [#{col_type.class} - #{col_type.cast_type.class.name}]
-        EOS
-      end
-      x
-    end
-
     def ==(mm)
       mm.class == self.class && mm.state == state
     end
@@ -132,6 +122,22 @@ module DataShift
 
     def hash
       state.hash
+    end
+
+
+    def pp
+      x = <<-EOS
+      Class         [#{klass.name}]
+      Operator Type [#{operator_type}]
+      Operator      [#{operator}]
+      EOS
+
+      if col_type.respond_to?(:cast_type)
+        x += <<-EOS
+      Col/SqlType   [#{col_type.class} - #{col_type.cast_type.class.name}]
+        EOS
+      end
+      x
     end
 
     protected
@@ -180,5 +186,6 @@ module DataShift
         end
       end
     end
+
   end
 end

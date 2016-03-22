@@ -57,11 +57,11 @@ module DataShift
           Manager.catalog_class(Project)
           Manager.catalog_class(Milestone)
 
-          manager = Manager.for(Project)
+          collection = Manager.for(Project)
 
-          expect(manager.managed_class).to eq Project
+          expect(collection.managed_class).to eq Project
 
-          model_method = manager.find('value_as_string', :assignment)
+          model_method = collection.find_by_name_and_type('value_as_string', :assignment)
 
           expect(model_method).to be_a DataShift::ModelMethod
 

@@ -58,7 +58,9 @@ module DataShift
     end
 
     # OpenStruct not a hash .. supports form ... config.path, config.full_name etc
-    def method_missing(method, *_args, &_block)
+    def method_missing(method, *_args, &_block
+    )
+      puts "Call mapping data #{method.inspect}"
       # logger :debug, "method_missing called with : #{method}"
       @mappings.send(method)
     end
@@ -86,6 +88,8 @@ module DataShift
         logger.error "YAML parse error: #{e.inspect}"
         raise e
       end
+
+      puts "Read mapping data #{yaml_data}"
 
       @mappings = OpenStruct.new(yaml_data)
     end

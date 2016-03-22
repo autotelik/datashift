@@ -19,20 +19,26 @@ module DataShift
       include DataShift::Logging
       extend DataShift::Logging
 
+      include Enumerable
+
       attr_reader :managed_class
 
       # Hash of all available methods by type
-      #   [:belongs_to] => [:user, :address]
+      #    [:assignment] => [:id, :name], [:belongs_to] => [:user, :address]
+      #
       attr_accessor :by_optype
 
-      # Map of operator => model_method
-      # Grouped by :optype - [type][operator] = model_method
-      #   e.g model_method = [:has_many][:projects]
-      attr_accessor :by_optype_and_operator
+      extend Forwardable
+
+      attr_accessor :model_method_list
+
+      # ModelMethod is now Comparable
+      def_delegators :@model_method_list, [], :sort, :sort!, :first, :last
+
 
       def initialize( klass )
         @managed_class = klass
-        @by_optype_and_operator = {}
+        @model_method_list = []
         @by_optype = {}
       end
 
@@ -49,14 +55,14 @@ module DataShift
       end
 
       def add(model_method)
-        by_optype_and_operator[model_method.operator_type.to_sym] ||= {}
+        model_method_list <<  model_method
 
-        # Mapped by Type and ModelMethod name   e.g [:belongs_to][:title]
-        by_optype_and_operator[model_method.operator_type.to_sym][model_method.operator] = model_method
+        maintain_by_optype_helper model_method
+      end
 
+      def maintain_by_optype_helper ( model_method )
         # Helper list of all available by type  [:belongs_to]
         by_optype[model_method.operator_type.to_sym] ||= []
-
         by_optype[model_method.operator_type.to_sym] << model_method
         by_optype[model_method.operator_type.to_sym].uniq!
       end
@@ -65,10 +71,25 @@ module DataShift
         add(model_method)
       end
 
+      def push(model_method)
+        add(model_method)
+      end
+
+      def unshift (model_method)
+        model_method_list.unshift model_method
+        maintain_by_optype_helper model_method
+      end
+
+
+      def each &block
+        model_method_list.each{ |mm| block.call(mm)}
+      end
+
+
       # Search for  matching ModelMethod for given name across all types in supported_types_enum order
       def search(name)
         ModelMethod.supported_types_enum.each do |type|
-          model_method = find(name, type)
+          model_method = find_by_name_and_type(name, type)
           return model_method if model_method
         end
 
@@ -76,45 +97,37 @@ module DataShift
       end
 
       # Return matching ModelMethod for given name and specific type
-      def find(name, type)
-        by_optype_and_operator = get(type)
+      def find_by_name_and_type(name, type)
+        by_optype = model_method_list.find_all { |mm| mm.operator_type? type }
 
-        by_optype_and_operator ? by_optype_and_operator[name] : nil
+        by_optype.find { |mm| mm.operator? name }
       end
 
       # Search for  matching ModelMethod for given name across Association types
       def find_association(name)
         ModelMethod.association_types_enum.each do |type|
-          model_method = find(name, type)
+          model_method = find_by_name_and_type(name, type)
           return model_method if model_method
         end
 
         nil
       end
 
-      def get( klass )
-        @by_optype_and_operator[klass.to_sym]
-      end
-
-      alias get_model_methods_by_class get
-
       # Returns all ModelMethod(s) for supplied type e.g :belongs_to
       # type is expected to be one of ModelMethod::supported_types_enum
       def for_type( type )
-        by_optype[type.to_sym] || []
+        model_method_list.find_all { |mm| mm.operator_type? type }
       end
 
-      alias get_model_methods_by_type for_type
 
       # Get list of Rails model operators
       def get_operators(type)
         for_type(type).collect(&:operator)
       end
 
-      alias get_list_of_operators get_operators
 
       def available_operators
-        by_optype.values.flatten.collect(&:operator)
+        model_method_list.collect(&:operator)
       end
 
       # A reverse map  showing all operators with their associated 'type'

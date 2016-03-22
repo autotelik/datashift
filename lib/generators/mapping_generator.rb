@@ -73,6 +73,8 @@ EOS
         File.open(config[:file], 'w') { |f| f << mappings }
       end
 
+      puts "mappings", mappings.inspect
+
       mappings
 
     end

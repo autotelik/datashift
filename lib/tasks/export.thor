@@ -28,6 +28,8 @@ module Datashift
       start_connections
 
       export(DataShift::ExcelExporter.new)
+
+      puts "Datashift: Excel export COMPLETED to #{options[:result]}"
     end
 
 
@@ -40,6 +42,8 @@ module Datashift
       start_connections
 
       export(DataShift::CsvExporter.new)
+
+      puts "Datashift: CSV export COMPLETED to #{options[:result]}"
     end
 
 
@@ -94,9 +98,9 @@ module Datashift
 
         begin
 
-          if(options[:assoc])
+          if(options[:associations])
             logger.info("Datashift: Exporting with associations")
-            exporter.export_with_associations(result, @klass, @klass.all, {})
+            exporter.export_with_associations(result, @klass, @klass.all)
           else
             exporter.export(result, @klass.all, :sheet_name => @klass.name)
           end
@@ -135,12 +139,8 @@ module Datashift
         raise "ERROR: No such Model [#{model}] found - check valid model supplied via -model <Class>" if(klass.nil?)
 
         begin
-          if(options[:assoc])
 
-            DataShift::Exporters::Configuration.configure do |config|
-              config.with = [:all]
-            end
-
+          if(options[:associations])
             logger.info("Datashift: Exporting with associations")
             exporter.export_with_associations(result, klass, klass.all, options)
           else

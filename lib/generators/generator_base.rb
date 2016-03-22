@@ -23,21 +23,14 @@ module DataShift
     #
     def klass_to_model_methods(klass)
 
-      # default to generating just klass columns
-      associations = configuration.op_types_in_scope
+      op_types_in_scope = configuration.op_types_in_scope
 
       collection = ModelMethods::Manager.catalog_class(klass)
 
       if collection
         model_methods = []
-        # make sure models columns are first, then other association types
-        if associations.delete(:assignment)
-          collection.for_type(:assignment).each { |md| model_methods << md }
-        end
 
-        associations.each do |a|
-          collection.for_type(a).each { |md| model_methods << md }
-        end
+        collection.each { |mm| model_methods << mm  if(op_types_in_scope.include? mm.operator_type)  }
 
         DataShift::Transformer::Remove.unwanted_model_methods model_methods
 
@@ -52,25 +45,17 @@ module DataShift
     #
     def klass_to_headers(klass)
 
-      # default to generating just klass columns
-      associations = configuration.op_types_in_scope
+      op_types_in_scope = configuration.op_types_in_scope
 
       @headers = Headers.new(klass)
 
+      # TODO: This collection can now be sorted
       collection = ModelMethods::Manager.catalog_class(klass)
 
       if collection
+        collection.each { |mm| @headers << mm.operator if(op_types_in_scope.include? mm.operator_type) }
 
-        # make sure models columns are first, then other association types
-        if associations.delete(:assignment)
-          collection.for_type(:assignment).each { |md| @headers << md.operator.to_s }
-        end
-
-        associations.each do |a|
-          collection.for_type(a).each { |md| @headers << md.operator.to_s }
-        end
-
-        DataShift::Transformer::Remove.unwanted_columns(@headers )
+        DataShift::Transformer::Remove.unwanted_columns(@headers)
       end
 
       headers
@@ -85,13 +70,20 @@ module DataShift
     #
     def generate_with_associations(file_name, klass)
 
-      DataShift::Exporters::Configuration.configure do |config|
-        config.with = [:all]
+      begin
+        state = DataShift::Exporters::Configuration.configuration.with
+
+        DataShift::Exporters::Configuration.configure do |config|
+          config.with = [:all]
+        end
+
+        generate(file_name, klass)
+      ensure
+        DataShift::Exporters::Configuration.configure do |config|
+          config.with = state
+        end
       end
-
-      generate(file_name, klass)
     end
-
 
   end
 

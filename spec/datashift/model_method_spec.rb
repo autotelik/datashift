@@ -7,10 +7,8 @@
 #
 require File.join(File.dirname(__FILE__), '/../spec_helper')
 
-require 'model_method'
 
 module DataShift
-
 
   describe 'Model Method' do
     include_context 'ClearAllCatalogues'
@@ -60,7 +58,7 @@ module DataShift
       expect { DataShift::ModelMethod.new(Project, 'milestones', :junk ) }.to raise_error BadOperatorType
     end
 
-    it 'should be comparable based on class', duff: true do
+    it 'should be comparable based on class' do
 
       a = DataShift::ModelMethod.new(Owner, 'owner', :has_one)
       b = DataShift::ModelMethod.new(Project, 'owner', :has_one)
@@ -99,6 +97,12 @@ module DataShift
       expect(c).to be < d
       expect(d).to be > c
       expect(d).to be >= d_again
+
+      clist = [a, d_again, b, d, c]
+
+      clist.sort!
+
+      expect(clist).to eq [b, a,c ,d, d_again]
     end
   end
 

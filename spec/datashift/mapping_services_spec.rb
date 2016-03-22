@@ -24,6 +24,8 @@ module DataShift
 
     context 'Generation' do
 
+      let(:expected_columns) { Project.new.serializable_hash.keys }
+
       let(:mapper) { DataShift::MappingGenerator.new }
 
       let(:expected_map_file) { result_file('mapping_service_project.yaml') }
@@ -43,12 +45,12 @@ module DataShift
       it 'a basic mapping document should contain at least attributes of a class' do
         mapper.generate(Project, file: expected_map_file)
 
-        File.foreach(expected_map_file) {|l| puts l}
-        count = $.
-        expect(count).to be >= 4
+        File.foreach(expected_map_file)
+        expect( $.).to be > expected_columns.size
       end
 
-      it 'a basic mapping document can be configures to contain associations as well', duff: true do
+
+      it 'a basic mapping document can be configures to contain associations as well' do
 
         DataShift::Exporters::Configuration.configure do |config|
           config.with = [:all]
@@ -58,9 +60,9 @@ module DataShift
 
         expect(File.exist?(expected_map_file)).to be true
 
-        File.foreach(expected_map_file) {|l| puts l}
+        File.foreach(expected_map_file)
         count = $.
-        expect(count).to be >= 4
+        expect( $.).to be > expected_columns.size
       end
 
     end
@@ -77,7 +79,7 @@ module DataShift
       let(:mapping_service) { DataShift::MappingServices.new(Project) }
 
       before(:each) do
-        mapper.generate(Project, file: expected_map_file, with: :all )
+        mapper.generate(Project, file: expected_map_file )
 
         expect(File.exist?(expected_map_file)).to be true
 
@@ -93,6 +95,7 @@ module DataShift
       #           value_as_integer: #dest_column_heading_5
       #           value_as_double: #dest_column_heading_6
       #           user_id: #dest_column_heading_7
+      #
       #           user: #dest_column_heading_8
       #           owner: #dest_column_heading_9
       #           milestones: #dest_column_heading_10
@@ -109,8 +112,7 @@ module DataShift
         expect(mapping_service.mappings).to be_a OpenStruct
       end
 
-      it 'should provide access to the top level mapping', duff: true do
-        puts mapping_service.mappings.inspect
+      it 'should provide access to the top level mapping' do
         expect(mapping_service.mappings.Project).to be_a Hash
         expect(mapping_service.mappings['Project']).to be_a Hash
       end
@@ -137,7 +139,7 @@ module DataShift
         @project_mappings = mapping_service.mappings['Project']
       end
 
-      it 'should be able to reach destination for a  mapping', fail: true do
+      it 'should be able to reach destination for a  mapping' do
         expect(@project_mappings['title']).to eq 'TheTitle'
         expect(@project_mappings['value_as_integer']).to eq 'A Number'
         expect(@project_mappings['versions']).to eq 'Indexes'

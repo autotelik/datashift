@@ -50,7 +50,7 @@ module DataShift
 
       remove = DataShift::Transformer::Remove.remove_list
 
-      logger.debug "CSV columns delimited by [#{options[:csv_delim]}] [#{csv_delimiter}]"
+      logger.debug "Writing out CSV Export. Columns delimited by [#{csv_delimiter}]"
 
       CSV.open(file_name, "w", col_sep: csv_delimiter ) do |csv|
         csv << headers
@@ -60,6 +60,8 @@ module DataShift
           csv.ar_to_row(r, remove)
         end
       end
+
+      logger.info "CSV export completed for #{records.size} records"
     end
 
     # Create CSV file from list of ActiveRecord objects
@@ -72,7 +74,7 @@ module DataShift
 
       @file_name = file_name
 
-      csv_delim = options[:csv_delim] if(options[:csv_delim]) if(options[:csv_delim])
+      @csv_delimiter = options[:csv_delim]  if(options[:csv_delim])
 
       collection = ModelMethods::Manager.catalog_class(klass)
 
@@ -82,42 +84,27 @@ module DataShift
 
       klass_to_headers(klass)
 
-      # do the main model first, as per to_headers
-      assignment = types_in_scope.delete(:assignment)
+      model_methods = klass_to_model_methods( klass )
 
-      remove_list = options[:remove] || []
+      logger.debug "Writing out CSV Export for #{klass} wioth Associations. Columns delimited by [#{csv_delimiter}]"
 
-      CSV.open( (options[:file_name] || file_name), 'w' ) do |csv|
+      CSV.open(file_name, "w", col_sep: csv_delimiter ) do |csv|
         csv << headers
 
         records.each do |record|
           row = []
 
-          row += csv.ar_to_csv(record, remove_list, options) if assignment
-
-          # group columns by operator type
-          types_in_scope.each do |op_type|
-
-            # now find all related columns (wrapped in ModelMethod) by operator type
-            collection.for_type(op_type).each do |model_method|
-
-              next if remove_list.include?(model_method.operator.to_sym)
-
-              # row << csv.ar_association_to_csv(record, model_method, options)
-
-              row << if DataShift::ModelMethod.association_type?(model_method.operator_type)
-                       record_to_column( record.send(model_method.operator) )
-                     else
-                       escape_for_csv( record.send(model_method.operator) )
-                     end
-
-            end
+          model_methods.each do |model_method|
+            row << if model_method.association_type?
+                     record_to_column( record.send(model_method.operator) )
+                   else
+                     escape_for_csv( record.send(model_method.operator) )
+                   end
           end
-
           csv.add_row(row)
         end
-      end # end write file
+      end
+    end # end write file
 
-    end
   end
 end

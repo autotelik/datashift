@@ -86,7 +86,6 @@ module DataShift
         it 'has the operator names in the array' do
           name = Catalogue.assignments_for(Project).first
 
-          puts Catalogue.assignments_for(Project).inspect
           expect(name).to be_a String
           expect(name.size).to be > 0
         end

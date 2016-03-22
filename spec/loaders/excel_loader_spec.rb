@@ -91,8 +91,6 @@ module  DataShift
 
         loaded = Project.last
 
-        puts Project.last.inspect
-
         expect(loaded.value_as_string).to eq '003 Can handle different column naming styles'
         expect(loaded.value_as_text).to eq ''
         expect(loaded.value_as_datetime).to eq '2011-05-19'

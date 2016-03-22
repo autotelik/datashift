@@ -5,7 +5,6 @@ require 'csv'
 
 class CSV
 
-  # TOFIX .. now we use CSV class this probably not needed
   include DataShift::ColumnPacker
 
   # Convert an AR instance to a set of CSV columns

@@ -40,7 +40,6 @@ module DataShift
 
       before {
         project
-        GeneratorBase.new.remove_fields expected_columns
       }
 
       it 'should export collection of model objects to csv file', fail: true do
@@ -82,36 +81,40 @@ module DataShift
         puts "Can manually check file @ #{expected}"
       end
 
-      it "should export a model object to csv file with custom delimeter", duff: true do
-        expected = result_file('project_first_export_spec_with_custom_delimeter.csv')
 
-        exporter.export(expected, Project.first)
+      shared_examples "csv exporter with custom delimeter" do
 
-        got_columns, got_values = CSV.read(expected)
+        it "should export a model object to csv file with custom delimeter", duff: true do
+          exporter.export(expected, Project.all, csv_delim: csv_delim)
 
-        GeneratorBase.new.remove_fields expected_columns
+          got_columns, got_values = CSV.read(expected, col_sep: csv_delim)
 
-        expect(expected_columns).to eq got_columns
+          expect(expected_columns).to eq got_columns
 
-        expect(expected_columns.count).to eq got_columns.count
-        expect(expected_values.count).to eq got_values.count
+          expect(expected_columns.count).to eq got_columns.count
+          expect(expected_values.count).to eq got_values.count
+        end
+      end
 
-        expect(expected_columns || got_columns).to eq expected_columns
-        expect(expected_values || got_values).to eq expected_values
+      describe "with , as delim" do
+        it_behaves_like "csv exporter with custom delimeter" do
+          let(:csv_delim) { ',' }
+          let(:expected) { result_file("project_export_spec_with_custom_delim_#{csv_delim}.csv") }
+        end
+      end
 
-        exporter.export(expected, Project.all[0], csv_delim: "§")
-        got_headers, got_columns = CSV.read(expected, col_sep: "§")
+      describe "with § as delim" do
+        it_behaves_like "csv exporter with custom delimeter" do
+          let(:csv_delim) { '§' }
+          let(:expected) { result_file("project_export_spec_with_custom_delim_#{csv_delim}.csv") }
+        end
+      end
 
-        expect(expected_columns || got_columns).to eq expected_columns
-        expect(expected_values || got_values).to eq expected_values
-
-        exporter.export(expected, Project.all[0], csv_delim: "£")
-        got_headers, got_columns = CSV.read(expected, col_sep: "£")
-
-        expect(expected_columns).to eq got_columns
-        expect(expected_columns.count).to eq got_columns.count
-
-        expect(expected_values || got_values).to eq expected_values
+      describe "with £ as delim" do
+        it_behaves_like "csv exporter with custom delimeter" do
+          let(:csv_delim) { '£' }
+          let(:expected) { result_file("project_export_spec_with_custom_delim_#{csv_delim}.csv") }
+        end
       end
 
       it 'should export a model and result of method calls on it to csv file' do
@@ -120,8 +123,6 @@ module DataShift
         exporter.export(expected, Project.all, methods: [:multiply])
 
         expect(File.exist?(expected)).to eq true
-
-        puts "Can manually check file @ #{expected}"
 
         File.foreach(expected) {}
         count = $INPUT_LINE_NUMBER
