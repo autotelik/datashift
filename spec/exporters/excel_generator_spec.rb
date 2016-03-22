@@ -18,6 +18,10 @@ module DataShift
       results_clear( '*_template.xls' )
     end
 
+    before(:each) do
+      DataShift::Exporters::Configuration.reset
+    end
+
     let(:generator) { ExcelGenerator.new }
 
     it 'should be able to create a new excel generator' do
@@ -77,9 +81,11 @@ module DataShift
     it 'should enable us to exclude associations by type in template .xls file' do
       expected = result_file('gen_project_plus_some_assoc_template.xls')
 
-      options = { exclude: :has_many }
+      DataShift::Exporters::Configuration.configure do |config|
+        config.exclude = :has_many
+      end
 
-      generator.generate_with_associations(expected, Project, options)
+      generator.generate_with_associations(expected, Project)
 
       expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
 
@@ -103,9 +109,11 @@ module DataShift
     it 'should enable us to exclude certain associations in template .xls file ' do
       expected = result_file('gen_project_plus_some_assoc_template.xls')
 
-      options = { remove: [:milestones, :versions] }
+      DataShift::Exporters::Configuration.configure do |config|
+        config.remove = [:milestones, :versions]
+      end
 
-      generator.generate_with_associations(expected, Project, options)
+      generator.generate_with_associations(expected, Project)
 
       expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
 
@@ -130,9 +138,11 @@ module DataShift
     it 'should enable us to remove standard rails feilds from template .xls file ' do
       expected = result_file('gen_project_plus_some_assoc_template.xls')
 
-      options = { remove_rails: true }
+      DataShift::Exporters::Configuration.configure do |config|
+        config.remove_rails = true
+      end
 
-      generator.generate_with_associations(expected, Project, options)
+      generator.generate_with_associations(expected, Project)
 
       expect(File.exist?(expected)).to eq true # , "Failed to find expected result file #{expected}"
 
@@ -153,9 +163,13 @@ module DataShift
     it 'should enable us to autosize columns in the .xls file' do
       expected = result_file('gen_project_autosized_template.xls')
 
-      options = { autosize: true, exclude: :milestones }
+      pending "Auto sizing of Excel columns"
 
-      generator.generate_with_associations(expected, Project, options)
+      DataShift::Exporters::Configuration.configure do |config|
+        config.autosize = true
+      end
+
+      generator.generate_with_associations(expected, Project)
 
       expect( File.exist?(expected)).to eq true
 

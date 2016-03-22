@@ -64,11 +64,6 @@ module DataShift
 
       start_excel(klass)
 
-      collection = ModelMethods::Manager.catalog_class(klass)
-
-      # sort out exclude etc
-      op_types_in_scope = configuration.op_types_in_scope
-
       klass_to_headers(klass)
 
       excel.set_headers( headers )

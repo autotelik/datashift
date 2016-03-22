@@ -46,7 +46,9 @@ module DataShift
 
       klass_to_headers(first.class)
 
-      remove =  DataShift::Exporters::Configuration.configuration.remove
+      DataShift::Transformer::Remove.unwanted_columns(@headers )
+
+      remove = DataShift::Transformer::Remove.remove_list
 
       logger.debug "CSV columns delimited by [#{options[:csv_delim]}] [#{csv_delimiter}]"
 
@@ -55,7 +57,7 @@ module DataShift
 
         records.each do |r|
           next unless r.is_a?(ActiveRecord::Base)
-          csv.ar_to_row(r, remove, options)
+          csv.ar_to_row(r, remove)
         end
       end
     end

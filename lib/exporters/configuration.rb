@@ -38,6 +38,7 @@ module DataShift
       attr_accessor :remove
 
       # @param [Boolean] Remove standard Rails cols like :id, created_at etc
+      # Default is false - i.e id, created_at etc are included by default
       # @return [Boolean]
       #
       attr_accessor :remove_rails
@@ -56,10 +57,12 @@ module DataShift
         @with = [:assignment, :enum]
         @exclude = []
         @remove = []
-        @remove_rails = true
+        @remove_rails = false
         @sheet_name = ''
         @json = false
       end
+
+
 
       # @return [DataShift::Exporters::Configuration] DataShift's current configuration
       def self.configuration
@@ -86,6 +89,20 @@ module DataShift
         yield configuration
       end
 
+      # Modify DataShift's current Export configuration from an options hash
+
+      def self.from_hash( options )
+        DataShift::Exporters::Configuration.configure do |config|
+          config.with = [:all] if(options[:associations])
+
+          config.with = options[:with] if(options[:with])
+
+          config.exclude = options[:exclude] if(options[:exclude])
+          config.remove = options[:remove] if(options[:remove])
+          config.remove_rails = true if(options[:remove_rails])
+        end
+      end
+
       # Prepare the operators types in scope based on options
       # Default is assignment only
       #
@@ -98,15 +115,13 @@ module DataShift
       #
       def op_types_in_scope
 
-        types_in_scope = []
-
         types_in_scope = if with_all?
                            ModelMethod.supported_types_enum.dup
                          else
-                           @with.dup
+                           [*@with].dup
                         end
 
-        types_in_scope -= @exclude
+        types_in_scope -= [*@exclude]
 
         types_in_scope
       end

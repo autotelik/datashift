@@ -14,21 +14,21 @@ class CSV
   #
   # Returns the data added
   #
-  def ar_to_csv(record, remove_list = [], options = {})
+  def ar_to_csv(record, remove_list = [], method_list = [])
 
     serializable_hash = record.serializable_hash(except: remove_list)
 
     csv_data = serializable_hash.values.collect { |c| escape_for_csv(c) }
 
-    [*options[:methods]].each do |x|
+    [*method_list].each do |x|
       csv_data << escape_for_csv(record.send(x)) if record.respond_to?(x)
     end
 
     csv_data
   end
 
-  def ar_to_row(record, remove_list = [], options = {})
-    add_row( ar_to_csv(record, remove_list, options) )
+  def ar_to_row(record, remove_list = [], method_list = [])
+    add_row( ar_to_csv(record, remove_list, method_list) )
   end
 
   def ar_association_to_csv(record, model_method, _options = {})

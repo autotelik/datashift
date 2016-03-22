@@ -1,4 +1,4 @@
-# Copyright:: (c) Autotelik Media Ltd 2012
+# Copyright:: (c) Autotelik Media Ltd 2016
 # Author ::   Tom Statter
 # License::   MIT.
 #
@@ -8,8 +8,7 @@ module DataShift
 
   class ThorExportBase < DataShift::DSThorBase
 
-    class_option :associations, aliases: '-a', type: :boolean,
-                                desc: 'Include associations'
+    class_option :associations, aliases: '-a', type: :boolean, desc: 'Include associations. Can be further refiend by :with & :exclude'
 
     # See DataShift::Exporters::Configuration
 

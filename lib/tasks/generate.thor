@@ -40,14 +40,7 @@ module Datashift
       begin
         gen = DataShift::ExcelGenerator.new
 
-        DataShift::Exporters::Configuration.configure do |config|
-
-          config.with = options[:with] if(options[:with])
-          config.exclude = options[:exclude] if(options[:exclude])
-          config.remove = options[:remove] if(options[:remove])
-          config.remove_rails  truie if(options[:remove_rails])
-
-        end
+        DataShift::Exporters::Configuration.from_hash(options)
 
         gen.generate(result, klass)
 
