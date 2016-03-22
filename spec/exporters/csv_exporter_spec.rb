@@ -33,7 +33,10 @@ module DataShift
       let(:expected_columns) { project.serializable_hash.keys }
       let(:expected_values) { project.serializable_hash.values.map &:to_s }
 
-      before { project }
+      before {
+        project
+        GeneratorBase.new.remove_fields expected_columns
+      }
 
       it 'should export collection of model objects to csv file', fail: true do
         expected = result_file('exp_project_collection_spec.csv')
@@ -76,29 +79,35 @@ module DataShift
         puts "Can manually check file @ #{expected}"
       end
 
-      it "should export a model object to csv file with custom delimeter" do
+      it "should export a model object to csv file with custom delimeter", duff: true do
         expected = result_file('project_first_export_spec_with_custom_delimeter.csv')
 
-        exporter.export(expected, Project.all[0])
+        exporter.export(expected, Project.first)
 
         got_columns, got_values = CSV.read(expected)
+
+        GeneratorBase.new.remove_fields expected_columns
+
+        expect(expected_columns).to eq got_columns
+
         expect(expected_columns.count).to eq got_columns.count
         expect(expected_values.count).to eq got_values.count
 
         expect(expected_columns || got_columns).to eq expected_columns
         expect(expected_values || got_values).to eq expected_values
 
-        exporter.export(Project.all[0], csv_delim: "§")
+        exporter.export(expected, Project.all[0], csv_delim: "§")
         got_headers, got_columns = CSV.read(expected, col_sep: "§")
 
         expect(expected_columns || got_columns).to eq expected_columns
         expect(expected_values || got_values).to eq expected_values
 
-        exporter.export(Project.all[0], csv_delim: "£")
+        exporter.export(expected, Project.all[0], csv_delim: "£")
         got_headers, got_columns = CSV.read(expected, col_sep: "£")
 
+        expect(expected_columns).to eq got_columns
         expect(expected_columns.count).to eq got_columns.count
-        expect(expected_columns || got_columns).to eq expected_columns
+
         expect(expected_values || got_values).to eq expected_values
       end
 

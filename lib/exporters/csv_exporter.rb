@@ -46,7 +46,7 @@ module DataShift
 
       klass_to_headers(first.class)
 
-      remove = options[:remove] || []
+      remove =  DataShift::Exporters::Configuration.configuration.remove
 
       logger.debug "CSV columns delimited by [#{options[:csv_delim]}] [#{csv_delimiter}]"
 

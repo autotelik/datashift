@@ -73,7 +73,7 @@ module DataShift
           collection.for_type(a).each { |md| @headers << md.operator.to_s }
         end
 
-        remove_headers
+        remove_fields( headers )
       end
 
       headers
@@ -98,10 +98,10 @@ module DataShift
     # Parse options and remove  headers
     # Specify columns to remove via  lib/exporters/configuration.rb
     #
-    def remove_headers
+    def remove_fields( collection )
       remove_list = configuration.prep_remove_list
 
-      headers.delete_if { |h| remove_list.include?( h.to_sym ) } unless remove_list.empty?
+      collection.delete_if { |h| remove_list.include?( h.to_sym ) } unless remove_list.empty?
     end
 
   end
