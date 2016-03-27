@@ -14,6 +14,8 @@
 #
 require_relative 'thor_export_base'
 
+require 'csv_generator'
+
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
 module Datashift
 
@@ -27,29 +29,11 @@ module Datashift
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
 
     def excel()
-
       start_connections
 
-      model = options[:model]
-      result = options[:result]
+      generate( DataShift::ExcelGenerator.new)
 
-      logger.info "Datashift: Start Excel template generation in #{result}"
-
-      klass = DataShift::MapperUtils.class_from_string_or_raise( model )
-
-      begin
-        gen = DataShift::ExcelGenerator.new
-
-        DataShift::Exporters::Configuration.from_hash(options)
-
-        gen.generate(result, klass)
-
-      rescue => e
-        puts e
-        puts e.backtrace
-        puts "Warning: Error during generation, template may be incomplete"
-      end
-
+      puts "Datashift: Excel Template COMPLETED to #{options[:result]}"
     end
 
 
@@ -58,90 +42,67 @@ module Datashift
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
 
     def csv()
-
       start_connections
 
-      require 'csv_generator'
+      generate( DataShift::CsvGenerator.new)
 
-      model = options[:model]
-      result = options[:result]
-
-      logger.info "Datashift: Start CSV template generation in #{result}"
-
-      begin
-        # support modules e.g "Spree::Property")
-        klass = MapperUtils::class_from_string(model)  #Kernel.const_get(model)
-      rescue NameError => e
-        puts e
-        raise Thor::Error.new("ERROR: No such Model [#{model}] found - check valid model supplied")
-      end
-
-      raise Thor::Error.new("ERROR: No such Model [#{model}] found - check valid model supplied") unless(klass)
-
-      begin
-        gen = DataShift::CsvGenerator.new
-
-        gen.generate(result, klass)
-
-      rescue => e
-        puts e
-        puts e.backtrace
-        puts "Warning: Error during generation, template may be incomplete"
-      end
-
+      puts "Datashift: CSV Template COMPLETED to #{options[:result]}"
     end
 
     desc "db", "Generate a template for every Active Record model"
 
-    method_option :result, :aliases => '-r', :required => true, :desc => "Path in which to create excel files"
-    method_option :csv, :aliases => '-c', :desc => "Export to CSV instead - Excel is default."
-    method_option :prefix, :aliases => '-p', :desc => "For namespaced tables/models specify the table prefix e.g spree_"
-    method_option :module, :aliases => '-m', :desc => "For namespaced tables/models specify the Module name e.g Spree"
+    method_option :path, :aliases => '-p', :required => true, desc: "Path in which to create export files"
+    method_option :csv, :aliases => '-c', desc: "Generate CSV template instead - Excel is default."
+
+    method_option :prefix_map, :aliases => '-x', type: :hash, :default => {},
+                  desc: "For namespaced tables/models specify the table prefix to module map e.g spree_:Spree"
+
+    method_option :modules, :aliases => '-m', type: :array, :default => [],
+                  desc: "List of Modules to search for namespaced models"
 
     def db()
 
       start_connections
 
-      require 'excel_exporter'
-      require 'csv_exporter'
+      unless File.directory?(options[:path])
+        puts "WARNING : No such PATH found #{options[:path]} - trying mkdir"
+        FileUtils::mkdir_p(options[:path])
+      end
 
-      exporter = options[:csv] ?  DataShift::CsvGenerator.new(nil) :  DataShift::ExcelGenerator.new(nil)
+      generator = options[:csv] ?  DataShift::CsvGenerator.new :  DataShift::ExcelGenerator.new
+
+      DataShift::Exporters::Configuration.from_hash(options)
 
       ext = options[:csv] ? '.csv' : '.xls'
 
-      parent = options[:module] ? Object.const_get(options[:module]) : Object
+      modules = [nil] + options[:modules]
 
       ActiveRecord::Base.connection.tables.each do |table|
 
-        table.sub!(options[:prefix],'') if(options[:prefix])
+        modules.each do |m|
+          @klass = DataShift::MapperUtils.table_to_arclass(table, m)
+          break if(@klass)
+        end
 
-        @result = File.join(options[:result], "#{table}#{ext}")
+        options[:prefix_map].each do |p, m|
+          @klass = DataShift::MapperUtils.table_to_arclass(table.gsub(p, ''), m)
+          break if(@klass)
+        end unless(@klass)
 
-        begin
-          @klass = parent.const_get(table.classify)
-        rescue => e
-          puts e.inspect
-          puts "WARNING: Could not find an AR model for Table #{table}"
+        if(@klass.nil?)
+          puts  "ERROR: No Model found for Table [#{table}] - perhaps a prefix map required?"
           next
         end
 
-        puts "Datashift: Start template generation to #{@result}"
+        result = File.join(options[:path], "#{table}#{ext}")
 
-        raise "ERROR: No such Model [#{@klass}] found - check valid model supplied via -model <Class>" if(@klass.nil?)
-
+        puts "Datashift: Start export to #{result} for [#{table}]"
         begin
-          opts =  { :file_name => @result,
-                    :remove => options[:remove],
-                    :remove_rails => options[:remove_rails],
-                    :sheet_name => @klass.name
-          }
-
-          if(options[:assoc])
-            opts[:exclude] = options[:exclude]
+          if(options[:associations])
             logger.info("Datashift: Generating with associations")
-            exporter.generate_with_associations(@klass, opts)
+            generator.generate_with_associations(result, @klass)
           else
-            exporter.generate(@klass, opts)
+            generator.generate(result, @klass)
           end
         rescue => e
           puts e
@@ -149,7 +110,40 @@ module Datashift
           puts "Warning: Error during export, data may be incomplete"
         end
       end
+
     end
+
+    no_commands do
+
+      def generate(generater)
+        model = options[:model]
+        result = options[:result]
+
+        DataShift::Exporters::Configuration.from_hash(options)
+
+        logger.info "Datashift: Starting template generation for #{generater.class.name} to #{result}"
+
+        klass = DataShift::MapperUtils::class_from_string(model)  #Kernel.const_get(model)
+
+        raise "ERROR: No such Model [#{model}] found - check valid model supplied via -model <Class>" if(klass.nil?)
+
+        begin
+
+          if(options[:associations])
+            logger.info("Datashift: Generating template including associations")
+            generater.generate_with_associations(result, klass)
+          else
+            generater.generate(result, klass)
+          end
+        rescue => e
+          puts e
+          puts e.backtrace
+          puts "Warning: Error during export, data may be incomplete"
+        end
+
+      end
+
+    end   # no_commands
 
 
   end

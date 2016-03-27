@@ -15,7 +15,7 @@ module DataShift
     def initialize
       @headers = DataShift::Headers.new(:na)
 
-      @configuration = DataShift::Exporters::Configuration.configuration
+      @configuration = DataShift::Exporters::Configuration.call
     end
 
     # Helpers for dealing with Active Record models and collections
@@ -71,17 +71,13 @@ module DataShift
     def generate_with_associations(file_name, klass)
 
       begin
-        state = DataShift::Exporters::Configuration.configuration.with
+        state = DataShift::Exporters::Configuration.call.with
 
-        DataShift::Exporters::Configuration.configure do |config|
-          config.with = [:all]
-        end
+        DataShift::Exporters::Configuration.call.with = :all
 
         generate(file_name, klass)
       ensure
-        DataShift::Exporters::Configuration.configure do |config|
-          config.with = state
-        end
+        DataShift::Exporters::Configuration.call.with = state
       end
     end
 

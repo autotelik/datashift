@@ -13,6 +13,16 @@ module DataShift
 
     class Configuration
 
+      # @param [Char] Char to use as the column delimter for csv format
+      # @return [Char]
+      #
+      attr_accessor :csv_delimiter
+
+      # @param [Boolean] Export association data in single column in JSON format
+      # @return [Boolean]
+      #
+      attr_accessor :json
+
       # List of association +TYPES+ to INCLUDE [:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
       # Defaults to [:assignment, :enum]
       #
@@ -48,10 +58,6 @@ module DataShift
       #
       attr_accessor :sheet_name
 
-      # @param [Boolean] Export association data in single column in JSON format
-      # @return [Boolean]
-      #
-      attr_accessor :json
 
       def initialize
         @with = [:assignment, :enum]
@@ -60,12 +66,13 @@ module DataShift
         @remove_rails = false
         @sheet_name = ''
         @json = false
+        @csv_delimiter = ','
       end
 
 
 
       # @return [DataShift::Exporters::Configuration] DataShift's current configuration
-      def self.configuration
+      def self.call
         @configuration ||= Exporters::Configuration.new
       end
 
@@ -86,20 +93,23 @@ module DataShift
       # end
       # ```
       def self.configure
-        yield configuration
+        yield call
       end
 
       # Modify DataShift's current Export configuration from an options hash
 
       def self.from_hash( options )
         DataShift::Exporters::Configuration.configure do |config|
+
           config.with = [:all] if(options[:associations])
 
-          config.with = options[:with] if(options[:with])
+          config.remove_rails = true if(options[:remove_rails])
 
+          # TODO DRY by processing all simple assignments as a list
+          config.with = options[:with] if(options[:with])
           config.exclude = options[:exclude] if(options[:exclude])
           config.remove = options[:remove] if(options[:remove])
-          config.remove_rails = true if(options[:remove_rails])
+          config.csv_delimiter = options[:csv_delimiter] if(options[:csv_delimiter])
         end
       end
 

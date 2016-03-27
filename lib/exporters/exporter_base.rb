@@ -14,7 +14,7 @@ module DataShift
     def initialize
       super
 
-      @configuration = DataShift::Exporters::Configuration.configuration
+      @configuration = DataShift::Exporters::Configuration.call
     end
 
   end

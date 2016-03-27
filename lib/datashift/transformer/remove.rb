@@ -13,13 +13,13 @@ module DataShift
     class Remove
 
       def self.remove_list
-        DataShift::Exporters::Configuration.configuration.prep_remove_list
+        DataShift::Exporters::Configuration.call.prep_remove_list
       end
 
       # Specify columns to remove via DataShift::Exporters::Configuration
       #
       def self.unwanted_columns( columns )
-        remove_list = DataShift::Exporters::Configuration.configuration.prep_remove_list
+        remove_list = DataShift::Exporters::Configuration.call.prep_remove_list
 
         columns.delete_if { |r| remove_list.include?( r.to_sym ) } unless remove_list.empty?
       end
@@ -27,7 +27,7 @@ module DataShift
       # Specify columns to remove via DataShift::Exporters::Configuration
       #
       def self.unwanted_model_methods( model_methods )
-        remove_list = DataShift::Exporters::Configuration.configuration.prep_remove_list
+        remove_list = DataShift::Exporters::Configuration.call.prep_remove_list
 
         model_methods.delete_if { |r| remove_list.include?( r.operator.to_sym ) } unless remove_list.empty?
       end

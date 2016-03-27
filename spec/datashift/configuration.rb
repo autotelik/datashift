@@ -23,40 +23,40 @@ module DataShift
     before do
     end
 
-    let(:configuration) { DataShift::Exporters::Configuration.configuration }
+    let(:call) { DataShift::Exporters::Configuration.call }
 
     context "with" do
 
       it 'defaults to basic attribute data' do
-        expect(configuration.op_types_in_scope).to eq  [:assignment, :enum]
+        expect(call.op_types_in_scope).to eq [:assignment, :enum]
       end
 
       it 'returns complete list of op types when [:all] specified' do
         DataShift::Exporters::Configuration.configure do |config|
           config.with = [:all]
         end
-        expect(configuration.op_types_in_scope).to eq ModelMethod.supported_types_enum
+        expect(call.op_types_in_scope).to eq ModelMethod.supported_types_enum
       end
 
       it 'returns complete list of op types when :all specified' do
         DataShift::Exporters::Configuration.configure do |config|
           config.with = :all
         end
-        expect(configuration.op_types_in_scope).to eq ModelMethod.supported_types_enum
+        expect(call.op_types_in_scope).to eq ModelMethod.supported_types_enum
       end
 
       it 'can be configuresd  complete list of op types when :all specified' do
         DataShift::Exporters::Configuration.configure do |config|
           config.with = :all
         end
-        expect(configuration.op_types_in_scope).to eq ModelMethod.supported_types_enum
+        expect(call.op_types_in_scope).to eq ModelMethod.supported_types_enum
       end
 
       it 'can be configured  with custom list of op types to process' do
         DataShift::Exporters::Configuration.configure do |config|
           config.with = [:assignment, :enum, :belongs_to]
         end
-        expect(configuration.op_types_in_scope).to eq [:assignment, :enum, :belongs_to]
+        expect(call.op_types_in_scope).to eq [:assignment, :enum, :belongs_to]
       end
 
 

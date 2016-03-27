@@ -63,8 +63,8 @@ module Datashift
       start_connections
 
       unless File.directory?(options[:path])
-        puts "ERROR : No such PATH found #{options[:path]}"
-        exit -1
+        puts "WARNING : No such PATH found #{options[:path]} - trying mkdir"
+        FileUtils::mkdir_p(options[:path])
       end
 
       exporter = options[:csv] ?  DataShift::CsvExporter.new :  DataShift::ExcelExporter.new
@@ -78,12 +78,12 @@ module Datashift
       ActiveRecord::Base.connection.tables.each do |table|
 
         modules.each do |m|
-          @klass = table_to_arclass(table, m)
+          @klass = DataShift::MapperUtils.table_to_arclass(table, m)
           break if(@klass)
         end
 
         options[:prefix_map].each do |p, m|
-          @klass = table_to_arclass(table.gsub(p, ''), m)
+          @klass = DataShift::MapperUtils.table_to_arclass(table.gsub(p, ''), m)
           break if(@klass)
         end unless(@klass)
 
@@ -142,7 +142,7 @@ module Datashift
 
           if(options[:associations])
             logger.info("Datashift: Exporting with associations")
-            exporter.export_with_associations(result, klass, klass.all, options)
+            exporter.export_with_associations(result, klass, klass.all)
           else
             exporter.export(result, klass.all, options)
           end
