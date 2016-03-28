@@ -69,8 +69,6 @@ module DataShift
         @csv_delimiter = ','
       end
 
-
-
       # @return [DataShift::Exporters::Configuration] DataShift's current configuration
       def self.call
         @configuration ||= Exporters::Configuration.new

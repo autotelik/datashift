@@ -41,9 +41,11 @@ module DataShift
     #
     def self.class_from_string( str )
 
-      MapperUtils.const_get_from_string(str.to_s) # Kernel.const_get(model)
-    rescue
-      return nil
+      begin
+        MapperUtils.const_get_from_string(str.to_s) # Kernel.const_get(model)
+      rescue
+        return nil
+      end
 
     end
 

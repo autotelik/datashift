@@ -8,7 +8,9 @@ module DataShift
 
   class ThorExportBase < DataShift::DSThorBase
 
-    class_option :associations, aliases: '-a', type: :boolean, desc: 'Include associations. Can be further refiend by :with & :exclude'
+    class_option :associations, aliases: '-a',
+                                type: :boolean,
+                                desc: 'Include associations. Can be further refined by :with & :exclude'
 
     # See DataShift::Exporters::Configuration
 
@@ -22,7 +24,7 @@ module DataShift
                            desc: "Exclude association types. Choose from #{DataShift::ModelMethod.supported_types_enum.inspect}"
 
     class_option :remove,  type: :array,
-                           desc: "Don't include this lis of supplied fields"
+                           desc: "Don't include this list of supplied fields"
 
     class_option :remove_rails, type: :boolean,
                                 desc: "Remove standard Rails cols :  #{DataShift::Configuration.rails_columns.inspect}"

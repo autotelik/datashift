@@ -1,29 +1,15 @@
-# Copyright:: (c) Autotelik Media Ltd 2012
+# Copyright:: (c) Autotelik Media Ltd 2016
 # Author ::   Tom Statter
-# Date ::     Mar 2012
+# Date ::     Mar 2016
 # License::   MIT.
 #
-# Usage::
-#
-#  To pull Datashift commands into your main application :
-#
-#     require 'datashift'
-#
-#     DataShift::load_commands
-#
-#  N.B Requires JRuby
-#
-# => bundle exec thor datashift:import:excel -m <active record class> -i <output_template.xls> -a
-#
-
-require 'datashift'
-  
+require_relative 'thor_import_base'
 
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
 module Datashift
 
           
-  class Import < Thor     
+  class Import < DataShift::ThorImportBase
   
     include DataShift::Logging
 
@@ -76,31 +62,30 @@ module Datashift
     desc "excel", "import .xls file for specifiec active record model" 
     method_option :model, :aliases => '-m', :required => true, :desc => "The related active record model"
     method_option :input, :aliases => '-i', :required => true, :desc => "The input .xls file"
-    method_option :config, :aliases => '-c', :desc => "YAML config file with defaults, over-rides etc"
-    method_option :assoc, :aliases => '-a', :type => :boolean, :desc => "Include any associations supplied in the input"
-    method_option :exclude, :aliases => '-e',  :type => :array, :desc => "Use with -a : Exclude association types. Any from #{DataShift::ModelMethod.supported_types_enum.to_a.inspect}"
-    method_option :verbose, :aliases => '-v', :type => :boolean, :desc => "Verbose logging"
-     
+
+
     def excel()
-     
-      # TODO - We're assuming run from a rails app/top level dir...
-      # ...can we make this more robust ? e.g what about when using active record but not in Rails app, 
-      require File.expand_path('config/environment.rb')
+
+      start_connections
 
       require 'excel_loader'
 
       model = options[:model]
+
+      logger.info("Start Excel based import from model #{model}")
 
       klass = DataShift::MapperUtils.class_from_string_or_raise( model )
 
       loader_klass = if(options[:loader])
         begin
            DataShift::MapperUtils::class_from_string(options[:loader])
+
+           logger.info("Using specified Loader : #{options[:loader]}")
         rescue
-         raise NoSuchClassError("INFO: No Loader [#{options[:loader]}] found ")
+         raise NoSuchClassError("INFO: No such Loader [#{options[:loader]}] found ")
         end
       else
-        logger.info("No Loader specified - using generic ExcelLoader")
+        logger.info("No Loader specified - using standard Excel Loader")
         DataShift::ExcelLoader
       end
 
@@ -108,7 +93,6 @@ module Datashift
 
       loader = loader_klass.new
 
-      logger.info("Using loader : #{loader.class}")
       loader.configure_from( options[:config] ) if(options[:config])
 
       loader.run(options[:input], klass, loader_options)
