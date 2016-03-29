@@ -42,7 +42,6 @@ module DataShift
     end
 
     def add_failed_object(object)
-      puts "IN add_failed_object(#{object})"
       @failed_inbound_count += 1
       @processed_object_count += 1
 

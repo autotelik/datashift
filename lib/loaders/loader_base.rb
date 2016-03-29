@@ -42,11 +42,11 @@ module DataShift
 
     def run(file_name, object_class)
 
+      object_class = DataShift::MapperUtils.class_from_string_or_raise(object_class) if(object_class.is_a?(String))
+
       @file_name = file_name
 
       @doc_context = DocContext.new(object_class)
-
-      logger.info("Loading options objects of type #{load_object_class}")
 
       logger.info("Loading objects of type #{load_object_class}")
 
@@ -150,32 +150,8 @@ module DataShift
       binder
     end
 
-    # We can bind inbound 'fields' to associatde model columns, from any source, not just headers
+    # We can bind inbound 'fields' to associated model columns, from any source, not just headers
     alias bind_fields bind_headers
-
-    #     # Process columns with a default value specified
-    #     def process_defaults()
-    #       @populator.process_defaults
-    #     end
-    #
-    #
-    #     # Core API - Given a single free text column name from a file, search method mapper for
-    #     # associated operator on base object class.
-    #     #
-    #     # If suitable association found, process row data and then assign to current load_object
-    #     def find_and_process(column_name, data)
-    #
-    #       puts "WARNING: MethodDictionary empty for class #{load_object_class}" unless(MethodDictionary.for?(load_object_class))
-    #
-    #       method_detail = MethodDictionary.find_method_detail( load_object_class, column_name )
-    #
-    #       if(method_detail)
-    #         process(method_detail, data)
-    #       else
-    #         puts "No matching method found for column #{column_name}"
-    #         @load_object.errors.add(:base, "No matching method found for column #{column_name}")
-    #       end
-    #     end
 
     # Any Config under key 'LoaderBase' is merged over existing options - taking precedence.
     #

@@ -27,8 +27,6 @@ module DataShift
     #   [:allow_empty_rows]  : Default is to stop processing once we hit a completely empty row. Over ride.
     #                          WARNING maybe slow, as will process all rows as defined by Excel
     #
-    #   [:dummy]           : Perform a dummy run - attempt to load everything but then roll back
-    #
     #   [:sheet_number]    : Default is 0. The index of the Excel Worksheet to use.
     #   [:header_row]      : Default is 0. Use alternative row as header definition.
     #
@@ -51,7 +49,7 @@ module DataShift
       bind_headers(headers, options)
 
       begin
-        puts 'Dummy Run - Changes will be rolled back' if options[:dummy]
+        puts 'Dummy Run - Changes will be rolled back' if(configuration.dummy_run)
 
         load_object_class.transaction do
           sheet.each_with_index do |row, i|
@@ -116,7 +114,7 @@ module DataShift
             doc_context.reset unless doc_context.context.next_update?
           end # all rows processed
 
-          if options[:dummy]
+          if(configuration.dummy_run)
             puts 'Excel loading stage done - Dummy run so Rolling Back.'
             raise ActiveRecord::Rollback # Don't actually create/upload to DB if we are doing dummy run
           end
@@ -140,9 +138,6 @@ module DataShift
     #   [:header_row]      : Default is 0. Use alternative row as header definition.
     #
     def start( file_name, options = {} )
-
-      logger.info("STARTING - Loading from Excel file: #{file_name}")
-
       open_excel(file_name, options)
 
       set_headers( parse_headers(sheet, options[:header_row] || 0) )

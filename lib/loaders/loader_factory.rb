@@ -22,18 +22,16 @@ module DataShift
       #   Excel/Open Office files saved as .xls
       #   CSV files
       #
-      def get_loader(file_name, options = {} )
+      def self.get_loader(file_name)
 
         raise DataShift::BadFile, "Cannot load #{file_name} file not found." unless File.exist?(file_name)
-
-        logger.info("Perform Load Options:\n#{options.inspect}")
 
         ext = File.extname(file_name)
 
         if ext.casecmp('.xls') == 0 || ext.casecmp('.xlsx') == 0
-          return ExcelLoader.new(file_name, options )
+          return ExcelLoader.new
         elsif ext.casecmp('.csv') == 0
-          return CsvLoader.new(file_name, options)
+          return CsvLoader.new
         else
           raise DataShift::UnsupportedFileType, "#{ext} files not supported - Try .csv or OpenOffice/Excel .xls"
         end

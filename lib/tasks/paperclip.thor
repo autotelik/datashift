@@ -78,9 +78,7 @@ module Datashift
     method_option :split_file_name_on,  :type => :string, :desc => "delimiter to progressivley split file_name for lookup", :default => ' '
     method_option :case_sensitive, :type => :boolean, :desc => "Use case sensitive where clause to find :attach_to_klass"
     method_option :use_like, :type => :boolean, :desc => "Use :lookup_field LIKE 'string%' instead of :lookup_field = 'string' in where clauses to find :attach_to_klass"
-  
-    method_option :dummy, :aliases => '-d', :type => :boolean, :desc => "Dummy run, do not actually save attachment"
-       
+
     method_option :skip_when_assoc, :aliases => '-x', :type => :boolean, :desc => "Do not process if :attach_to_klass already has an attachment"
     
     method_option :verbose, :aliases => '-v', :type => :boolean, :desc => "Verbose logging"

@@ -24,6 +24,13 @@ module DataShift
     # @return [Boolean]
     attr_accessor :verbose
 
+    # Do everything except commit changes.
+    # For import save will not be called on the final object
+    # Defaults to `false`. Set to `true` to cause extensive progress messages to be logged
+    # @param [Boolean] value
+    # @return [Boolean]
+    attr_accessor :dummy_run
+
     def self.rails_columns
       @rails_standard_columns ||= [:id, :created_at, :created_on, :updated_at, :updated_on]
     end
@@ -31,6 +38,7 @@ module DataShift
     def initialize
       @strict = false
       @verbose = false
+      @dummy_run = false
     end
 
     # @return [DataShift::Configuration] DataShift's current configuration

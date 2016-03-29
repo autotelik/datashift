@@ -25,7 +25,7 @@ module DataShift
       # @return [Boolean]
       #
       attr_accessor :abort_on_failure
-      
+
       def initialize
         @mandatory = []
         @abort_on_failure = false

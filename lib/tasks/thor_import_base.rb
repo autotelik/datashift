@@ -8,21 +8,12 @@ module DataShift
 
   class ThorImportBase < DataShift::DSThorBase
 
-    class_option :loader, aliases: '-l', required: false,
-                 desc: 'Loader class to use'
+    class_option :model, :aliases => '-m', :required => true, :desc => "The related active record model"
+
+    class_option :input, :aliases => '-i', :required => true, :desc => "The input file"
 
 
-    class_option :associations, aliases: '-a', type: :boolean,
-                                desc: 'Include associations. Can be further refined by :with & :exclude'
-
-    class_option :with, type: :array,
-                        desc: "Restrict association types. Choose from #{DataShift::ModelMethod.supported_types_enum.inspect}"
-
-    class_option :exclude, type: :array,
-                           desc: "Exclude association types. Choose from #{DataShift::ModelMethod.supported_types_enum.inspect}"
-
-    class_option :remove,  type: :array,
-                           desc: "Don't include this list of supplied fields"
+    class_option :loader, aliases: '-l', required: false,  desc: 'Loader class to use'
 
     class_option :verbose, :aliases => '-v', :type => :boolean, :desc => "Verbose logging"
 

@@ -91,7 +91,7 @@ module DataShift
 
       [*error_messages].each { |e| errors << e }
 
-      puts "IN failure(#{error_messages})"
+      logger.error "Failure(S) reported : #{[*error_messages].inspect}"
 
       reporter.add_failed_object(load_object)
 
@@ -124,8 +124,8 @@ module DataShift
         logger.info("Successfully SAVED Object [#{load_object.id}] for [#{context.method_binding.pp}]")
         success
       else
+        logger.error( "Save FAILED - logging failed object [#{load_object.id}] ")
         failure( current_errors )
-        logger.error "Load failed while processing [#{context.method_binding.pp}]"
       end
 
     end

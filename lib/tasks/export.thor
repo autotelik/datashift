@@ -114,18 +114,6 @@ module Datashift
 
     no_commands do
 
-      def table_to_arclass(table, mod)
-
-        find_table = mod.nil? ? table.classify : "#{mod}::#{table.classify}"
-
-        begin
-          DataShift::MapperUtils::class_from_string(find_table)
-        rescue LoadError
-        rescue
-          nil
-        end
-      end
-
       def export(exporter)
         model = options[:model]
         result = options[:result]

@@ -21,7 +21,7 @@ module DataShift
       # We try splitting up inbound file_names in various ways looking for the attachment Owner
       attr_accessor :split_file_name_on
 
-      attr_reader :loading_files_cache
+      attr_reader :loading_files_cache, :missing_records
 
       def initialize
         super
@@ -31,6 +31,8 @@ module DataShift
         @attach_to_field = nil
 
         @split_file_name_on = Regexp.new(/\s+/)
+
+        @missing_records = []
       end
 
       # => :attach_to_klass
@@ -69,6 +71,35 @@ module DataShift
         init(options[:attach_to_klass], options[:attach_to_find_by_field], options[:attach_to_field])
       end
 
+      def find_bindings(options = {})
+        # Map field to a suitable call on the Active Record Owner class e.g Owner.digitals
+        bindings = begin
+          logger.info("Finding matching field/association [#{attach_to_field}] on class [#{attach_to_klass}]")
+
+          binder.map_inbound_fields(attach_to_klass, attach_to_field, options )
+        rescue => e
+          logger.error("Failed to map #{attach_to_field} to database operator : #{e.inspect}")
+          logger.error( e.backtrace )
+          raise MappingDefinitionError, 'Failed to map #{attach_to_field} to database operator'
+        end
+
+        bindings
+      end
+
+      def find_owner(options = {} )
+        owner_record = get_record_by(attach_to_klass, attach_to_find_by_field, search_term, split_file_name_on, options)
+
+        if owner_record
+          logger.info("#{owner_record.class} (id : #{owner_record.id}) found with matching :#{attach_to_find_by_field} ")
+        else
+          logger.error("No matching owner found for file name : #{search_term}")
+          doc_context.failure("No matching owner found for file name : #{search_term}")
+          missing_records << file_name
+        end
+
+        owner_record
+      end
+
       # This version creates attachments and also attaches them to instances of :attach_to_klazz
       #
       # Each file found in PATH will be processed - it's file_name being used to scan for
@@ -85,9 +116,9 @@ module DataShift
 
         raise "The field to search for attachment's owner has not been set (:attach_to_find_by_field)" unless @attach_to_find_by_field
 
-        @load_object = options[:attachment] if options[:attachment]
+        @missing_records = []
 
-        missing_records = []
+        @load_object = options[:attachment] if options[:attachment]
 
         # Support both directory and file
         @loading_files_cache = DataShift::Paperclip.get_files(file_name, options)
@@ -95,15 +126,7 @@ module DataShift
         logger.info("Found #{loading_files_cache.size} files - splitting names on delimiter [#{split_file_name_on}]")
 
         # Map field to a suitable call on the Active Record Owner class e.g Owner.digitals
-        bindings = begin
-          logger.info("Finding matching field/association [#{attach_to_field}] on class [#{attach_to_klass}]")
-
-          binder.map_inbound_fields(attach_to_klass, attach_to_field, options )
-        rescue => e
-          logger.error("Failed to map #{attach_to_field} to database operator : #{e.inspect}")
-          logger.error( e.backtrace )
-          raise MappingDefinitionError, 'Failed to map #{attach_to_field} to database operator'
-        end
+        bindings = find_bindings( options )
 
         attach_to_method_binding = if bindings.size != 1
                                      logger.warn("Failed to map #{attach_to_field} to database operator")
@@ -124,17 +147,9 @@ module DataShift
 
           logger.info("Attempting to find matching owner Record for file name : #{search_term}")
 
-          owner_record = get_record_by(attach_to_klass, attach_to_find_by_field, search_term, split_file_name_on, options)
+          owner_record = find_owner(options)
 
-          if owner_record
-            logger.info("#{owner_record.class} (id : #{owner_record.id}) found with matching :#{attach_to_find_by_field} ")
-          else
-            logger.error("No matching owner found for file name : #{search_term}")
-            doc_context.failure("No matching owner found for file name : #{search_term}")
-            missing_records << file_name
-          end
-
-          next if options[:dummy] # Don't actually create/upload to DB if we are doing dummy run
+          next if(configuration.dummy_run) # Don't actually create/upload to DB if we are doing dummy run
 
           attachment = create_paperclip_attachment(load_object_class, file_name, options)
 
@@ -150,23 +165,29 @@ module DataShift
           logger.info "Added Attachment to #{owner_record.class} (id : #{owner_record.id})"
         end
 
-        unless missing_records.empty?
-          FileUtils.mkdir_p('MissingAttachmentRecords') unless File.directory?('MissingAttachmentRecords')
+        process_missing_records( missing_records )
 
-          puts "WARNING : #{missing_records.size} of #{loading_files_cache.size} files could not be attached to a #{load_object_class}"
-          puts "For your convenience copying files with MISSING #{attach_to_klass} to : MissingAttachmentRecords"
-          missing_records.each do |i|
-            FileUtils.cp( i, 'MissingAttachmentRecords') unless options[:dummy] == 'true'
-            logger.info("Copied #{i} to MissingAttachmentRecords folder")
-          end
-        end
+        created = loading_files_cache.size - missing_records.size
 
-        puts "Created #{loading_files_cache.size - missing_records.size} of #{loading_files_cache.size} #{load_object_class} attachments and succesfully attached to a #{@attach_to_klass}"
+        puts "Created #{created} / #{loading_files_cache.size} attachments of type #{load_object_class} attached to #{@attach_to_klass}"
 
-        puts 'Dummy Run Complete- if happy run without -d' if options[:dummy]
+        puts 'Dummy Run Complete- if happy run without -d' if(configuration.dummy_run)
 
       end
 
+    end
+
+    def process_missing_records( missing_records )
+      unless missing_records.empty?
+        FileUtils.mkdir_p('MissingAttachmentRecords') unless File.directory?('MissingAttachmentRecords')
+
+        puts "WARNING : #{missing_records.size} of #{loading_files_cache.size} files could not be attached to a #{load_object_class}"
+        puts "For your convenience copying files with MISSING #{attach_to_klass} to : MissingAttachmentRecords"
+        missing_records.each do |i|
+          FileUtils.cp( i, 'MissingAttachmentRecords') unless(configuration.dummy_run)
+          logger.info("Copied #{i} to MissingAttachmentRecords folder")
+        end
+      end
     end
 
   end

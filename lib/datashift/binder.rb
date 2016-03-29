@@ -73,6 +73,8 @@ module DataShift
     #
     # The MethodDetails instance will contain a pointer to the column index from which it was mapped.
     #
+    # TODO - pull options out into Configuration
+    #
     # Options:
     #
     #   [:force_inclusion]  : List of columns that do not map to any operator but should be included in processing.
