@@ -166,14 +166,19 @@ module  DataShift
       it 'should NOT process excel spreedsheet with extra undefined columns when strict mode' do
         expected = ifixture_file('BadAssociationName.xls')
 
-        expect { loader.run(expected, Project, strict: true) }.to raise_error(MappingDefinitionError)
+        loader.configuration.strict = true
+
+        expect { loader.run(expected, Project) }.to raise_error(MappingDefinitionError)
       end
 
       it 'should raise an error when mandatory columns missing' do
         expected = ifixture_file('ProjectsMultiCategories.xls')
 
         expect {
-          loader.run(expected, Project, mandatory: %w(not_an_option must_be_there))
+
+          loader.configuration.mandatory = %w(not_an_option must_be_there)
+
+          loader.run(expected, Project)
         }.to raise_error(DataShift::MissingMandatoryError)
       end
     end

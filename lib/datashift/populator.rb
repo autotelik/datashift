@@ -134,7 +134,7 @@ module DataShift
         elsif ( )
           @current_value = value.value
         elsif !DataShift::Guards.jruby? &&
-              (data.is_a?(Spreadsheet::Formula) || value.class.ancestors.include?(Spreadsheet::Formula))
+          (data.is_a?(Spreadsheet::Formula) || value.class.ancestors.include?(Spreadsheet::Formula))
           # TOFIX jruby/apache poi equivalent ?
           @value = data.value
         else
@@ -205,15 +205,21 @@ module DataShift
     def assignment(record, value, model_method)
       operator = model_method.operator
 
-      if model_method.col_type.respond_to? :type_cast
-        logger.debug("Assignment via [#{operator}] to [#{value}] (CAST TYPE [#{model_method.col_type.type_cast(value).inspect}])")
+      begin
 
-        record.send( operator + '=', model_method.col_type.type_cast( value ) )
-      else
-        logger.debug("Assignment via [#{operator}] to [#{value}] (CAST [#{model_method.col_type.cast_type.inspect}])")
+        if model_method.col_type.respond_to? :type_cast
+          logger.debug("Assignment via [#{operator}] to [#{value}] (CAST TYPE [#{model_method.col_type.type_cast(value).inspect}])")
 
-        # TODO: -investigate if we need cast here and if so what we can do with model_method.col_type.sql_type
-        record.send( operator + '=', value)
+          record.send( operator + '=', model_method.col_type.type_cast( value ) )
+        else
+          logger.debug("Assignment via [#{operator}] to [#{value}] (CAST [#{model_method.col_type.cast_type.inspect}])")
+
+          # TODO: -investigate if we need cast here and if so what we can do with model_method.col_type.sql_type
+          record.send( operator + '=', value)
+        end
+      rescue => e
+        logger.error(e.inspect)
+        raise DataProcessingError, "Failed to assign [#{value}]  via operator #{operator}" unless value.nil?
       end
     end
 

@@ -16,7 +16,7 @@ module DataShift
 
     attr_accessor :load_object, :current_row
 
-    # The current Node
+    # The current Node - TODO - rename this to node?
     attr_accessor :context
 
     # The inbound document headers
@@ -29,7 +29,7 @@ module DataShift
     #    populator
     #
     def initialize( klass )
-      @klass = klass
+      reset_klass(klass)
 
       @headers  = DataShift::Headers.new(:na)
       @reporter = DataShift::Reporter.new
@@ -37,7 +37,7 @@ module DataShift
       @errors = []
     end
 
-    def klass=( klass )
+    def reset_klass( klass )
       @klass = klass
       reset
     end
@@ -91,22 +91,24 @@ module DataShift
 
       [*error_messages].each { |e| errors << e }
 
-      if load_object
-        reporter.add_failed_object(load_object)
+      puts "IN failure(#{error_messages})"
 
-        # TODO: - make this behaviour configurable with soem ind of rollback setting/funciton
-        if load_object.respond_to?('destroy') && !load_object.new_record?
-          load_object.destroy
-          reset
-        end
-      end
+      reporter.add_failed_object(load_object)
+
+      # TODO: - make this behaviour configurable with some kind of rollback setting/funciton
+      if load_object.respond_to?('destroy') && !load_object.new_record?
+        load_object.destroy
+        reset
+      end if load_object
+
     end
 
     # This method usually called during processing to avoid errors with associations like
     #   <ActiveRecord::RecordNotSaved: You cannot call create unless the parent is saved>
     # If the object is still invalid at this point probably indicates compulsory
-    # columns on model have not been processed before associations on that model
-    # TODO: smart ordering of columns dynamically ourselves rather than relying on incoming data order
+    # columns on model have not been processed before associations on that model.
+    #
+    # You can provide a custom sort function to the Collection of model methods (which are comparable) to fix this.
     #
     def save_if_new
       return unless load_object.new_record?

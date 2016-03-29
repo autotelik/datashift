@@ -92,7 +92,7 @@ module DataShift
     end
 
     def pp
-      "Binding: Row [#{inbound_index}] : Header [#{inbound_name}] : Operator [#{model_method.operator}]"
+      "Binding: Column [#{inbound_index}] : Header [#{inbound_name}] : Operator [#{model_method.operator}]"
     end
 
   end

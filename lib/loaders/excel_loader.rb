@@ -39,8 +39,6 @@ module DataShift
 
     def perform_load( options = {} )
 
-      raise "Cannot load - failed to create a #{klass}" unless load_object
-
       raise MissingHeadersError, "Minimum row for Headers is 0 - passed #{options[:header_row]}" if options[:header_row] && options[:header_row].to_i < 0
 
       allow_empty_rows = options[:allow_empty_rows]
@@ -50,7 +48,7 @@ module DataShift
       start(file_name, options)
 
       # maps list of headers into suitable calls on the Active Record class
-      bind_headers(headers, options.merge(strict: @strict) )
+      bind_headers(headers, options)
 
       begin
         puts 'Dummy Run - Changes will be rolled back' if options[:dummy]
@@ -70,7 +68,7 @@ module DataShift
             # got no better idea than ending once we hit the first completely empty row
             break if !allow_empty_rows && (row.nil? || row.empty?)
 
-            logger.info "Processing Row #{i} : #{@current_row}"
+            logger.info "Processing Row #{current_row_idx}"
 
             contains_data = false
 
@@ -78,7 +76,7 @@ module DataShift
 
             @binder.bindings.each_with_index do |method_binding, i|
               unless method_binding.valid?
-                logger.warn("No binding was found for column (#{i})")
+                logger.warn("No binding was found for column (#{current_row_idx})")
                 next
               end
 
@@ -94,7 +92,7 @@ module DataShift
                 context.process
               rescue => x
 
-                logger.error("Process failed with #{x.inspect} #{x.backtrace}")
+                logger.error("Process failed with #{x.inspect} #{x.backtrace.last}")
 
                 if doc_context.all_or_nothing?
                   logger.error('Node failed so Current Row aborted')
@@ -108,6 +106,7 @@ module DataShift
             break if !allow_empty_rows && contains_data == false
 
             if doc_context.errors? && doc_context.all_or_nothing?
+              # Error already logged with doc_context.failure
               logger.warn "Row #{current_row_idx} contained errors and has been skipped"
             else
               doc_context.save_and_report

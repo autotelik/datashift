@@ -20,12 +20,11 @@ module DataShift
     include DataShift::Logging
     include DataShift::Querying
 
-    attr_reader :strict
-
+    attr_accessor :configuration
     attr_accessor :file_name
 
     attr_accessor :doc_context
-    attr_accessor :binder, :mandatory
+    attr_accessor :binder
 
     # Options
     #
@@ -34,36 +33,25 @@ module DataShift
     def initialize
       @file_name = ''
 
-      @doc_context = DocContext.new(NilClass)
+      @doc_context = DocContext.new(Object)
 
       @binder      = Binder.new
-      @mandatory   = Mandatory.new
+
+      @configuration = DataShift::Importers::Configuration.new
     end
 
-    # Options
-    #    [:object]    : Process against an existing object, otherwise new objects created
-    #    [:mandatory] : List of columns that must be present in headers
-    #
-    def run(file_name, object_class, options = {})
-
-      logger.verbose if options[:verbose]
-
-      @strict = (options[:strict] == true)
+    def run(file_name, object_class)
 
       @file_name = file_name
 
-      logger.info("Loading options objects of type #{load_object_class}")
-
       @doc_context = DocContext.new(object_class)
 
-      @mandatory = Mandatory.new(options[:mandatory]) if options[:mandatory]
+      logger.info("Loading options objects of type #{load_object_class}")
 
       logger.info("Loading objects of type #{load_object_class}")
 
-      doc_context.reset(options[:object])
-
       # no implementation - derived classes must implement
-      perform_load( options )
+      perform_load
     end
 
     # Reset the loader, including database object to be populated, and load counts
@@ -73,7 +61,7 @@ module DataShift
     end
 
     def abort_on_failure?
-      # TODO: @config[:abort_on_failure].to_s == 'true'
+      !!DataShift::Importers::Configuration.call.abort_on_failure
     end
 
     def loaded_count
@@ -115,8 +103,6 @@ module DataShift
     # Given a list of free text column names from inbound headers,
     # map all headers to a domain model containing details on operator, look ups etc.
     #
-    # Options:
-    #    [:strict]          : Raise an exception of any headers can't be mapped to an attribute/association
     #    [:ignore]          : List of column headers to ignore when building operator map
     #
     #    [:force_inclusion] : List of columns that do not map to any operator but should be includeed in processing.
@@ -134,8 +120,6 @@ module DataShift
 
       logger.info("Binding #{headers.size} inbound headers to #{load_object_class.name}")
 
-      @strict = options[:strict] if options[:strict]
-
       @binder ||= DataShift::Binder.new
 
       begin
@@ -150,8 +134,10 @@ module DataShift
         logger.warn("Following headings couldn't be mapped to #{load_object_class}:")
         binder.missing_bindings.each { |m| logger.warn("Heading [#{m.inbound_name}] - Index (#{m.inbound_index})") }
 
-        raise MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}" if strict
+        raise MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}" if configuration.strict
       end
+
+      mandatory = DataShift::Mandatory.new configuration.mandatory
 
       unless mandatory.contains_all?(binder)
         mandatory.missing_columns.each do |er|

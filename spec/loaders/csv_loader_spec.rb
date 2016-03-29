@@ -109,13 +109,17 @@ module  DataShift
 
       it 'should NOT process CSV with extra undefined columns when strict mode' do
         expected = ifixture_file('csv/BadAssociationName.csv')
-        expect { loader.run(expected, Project, strict: true) }.to raise_error(MappingDefinitionError)
+        loader.configuration.strict = true
+
+        expect { loader.run(expected, Project) }.to raise_error(MappingDefinitionError)
       end
 
       it 'should raise an error when mandatory columns missing', fail: true do
         expected = ifixture_file('csv/ProjectsMultiCategories.csv')
         expect {
-          loader.run(expected, Project, mandatory: %w(not_an_option must_be_there))
+          loader.configuration.mandatory = %w(not_an_option must_be_there)
+
+          loader.run(expected, Project)
         }.to raise_error(DataShift::MissingMandatoryError)
       end
 

@@ -64,7 +64,7 @@ module DataShift
     end
 
     def verbose
-      logger.add(STDOUT)
+      @verbose_logger ||= logger.add(STDOUT)
     end
 
     private
@@ -75,6 +75,8 @@ module DataShift
       MultiIO.instance.add_file(File.join(logdir, log))
 
       ActiveRecord::Base.logger = MultiIO.instance if defined?(ActiveRecord) && ActiveRecord::Base.logger
+
+      verbose if(DataShift::Configuration.call.verbose)
 
       MultiIO.instance
     end

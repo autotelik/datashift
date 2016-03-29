@@ -58,6 +58,11 @@ module DataShift
       #
       attr_accessor :sheet_name
 
+      # @param [Boolean] Stop processing and abort if a row fails to export
+      # Default is false
+      # @return [Boolean]
+      #
+      attr_accessor :abort_on_failure
 
       def initialize
         @with = [:assignment, :enum]
@@ -67,6 +72,7 @@ module DataShift
         @sheet_name = ''
         @json = false
         @csv_delimiter = ','
+        @abort_on_failure = false
       end
 
       # @return [DataShift::Exporters::Configuration] DataShift's current configuration

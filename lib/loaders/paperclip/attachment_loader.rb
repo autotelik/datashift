@@ -18,6 +18,9 @@ module DataShift
 
       attr_accessor :attach_to_klass, :attach_to_find_by_field, :attach_to_field
 
+      # We try splitting up inbound file_names in various ways looking for the attachment Owner
+      attr_accessor :split_file_name_on
+
       attr_reader :loading_files_cache
 
       def initialize
@@ -26,6 +29,8 @@ module DataShift
         @attach_to_klass = nil
         @attach_to_find_by_field = nil
         @attach_to_field = nil
+
+        @split_file_name_on = Regexp.new(/\s+/)
       end
 
       # => :attach_to_klass
@@ -61,7 +66,6 @@ module DataShift
       end
 
       def init_from_options(options)
-
         init(options[:attach_to_klass], options[:attach_to_find_by_field], options[:attach_to_field])
       end
 
@@ -88,10 +92,7 @@ module DataShift
         # Support both directory and file
         @loading_files_cache = DataShift::Paperclip.get_files(file_name, options)
 
-        # we'll try splitting up file_name in various ways looking for the attachment owqner
-        split_on = options[:split_file_name_on] || Regexp.new(/\s+/)
-
-        logger.info("Found #{loading_files_cache.size} attachment files - splitting names on delimiter [#{split_on}]")
+        logger.info("Found #{loading_files_cache.size} files - splitting names on delimiter [#{split_file_name_on}]")
 
         # Map field to a suitable call on the Active Record Owner class e.g Owner.digitals
         bindings = begin
@@ -111,8 +112,6 @@ module DataShift
                                      bindings[0]
                                    end
 
-        populator = ContextFactory.get_populator(attach_to_method_binding)
-
         # Iterate through all the files creating an attachment per file
 
         loading_files_cache.each do |file_name|
@@ -125,7 +124,7 @@ module DataShift
 
           logger.info("Attempting to find matching owner Record for file name : #{search_term}")
 
-          owner_record = get_record_by(attach_to_klass, attach_to_find_by_field, search_term, split_on, options)
+          owner_record = get_record_by(attach_to_klass, attach_to_find_by_field, search_term, split_file_name_on, options)
 
           if owner_record
             logger.info("#{owner_record.class} (id : #{owner_record.id}) found with matching :#{attach_to_find_by_field} ")

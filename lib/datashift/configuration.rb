@@ -34,7 +34,7 @@ module DataShift
     end
 
     # @return [DataShift::Configuration] DataShift's current configuration
-    def self.configuration
+    def self.call
       @configuration ||= Configuration.new
     end
 
@@ -47,7 +47,7 @@ module DataShift
     # Modify DataShift's current configuration
     # @yieldparam [DataShift::Configuration] config current DataShift config
     # ```
-    # DataShift::Configuration.configure do |config|
+    # DataShift::Configuration.call do |config|
     #   config.verbose = false
     # end
     # ```

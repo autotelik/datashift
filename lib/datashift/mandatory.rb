@@ -21,10 +21,15 @@ module DataShift
       @missing_columns = []
     end
 
+    def empty?
+      @comparable_mandatory_columns.empty?
+    end
+
     # Sets mandatory_columns
     # Returns true if bound methods contain every method listed in Mandatory
     #
     def contains_all?( binder )
+      return true if(empty?)
       @missing_columns = @comparable_mandatory_columns - binder.operator_names.collect(&:downcase)
       @missing_columns.empty?
     end

@@ -73,9 +73,10 @@ describe 'PaperClip Bulk Loader' do
       loader.init_from_options attachment_options
     end
 
-    it 'should bulk load from a directory file system', duff: true do
+    it 'should bulk load from a directory file system' do
+      loader.split_file_name_on = '_'
 
-      loader.run(path, Digital, split_file_name_on: '_')
+      loader.run(path, Digital)
 
       expect(Owner.first.digitals.size).to be > 0
 
@@ -85,8 +86,9 @@ describe 'PaperClip Bulk Loader' do
 
       # use a non existent field to cause error
       loader.attach_to_find_by_field = :junk
+      loader.split_file_name_on = '_'
 
-      loader.run(path, Digital, split_file_name_on: '_')
+      loader.run(path, Digital)
 
       expect(Dir.glob('MissingAttachmentRecords/*.jpeg', File::FNM_CASEFOLD).size).to eq owner_names.size
     end
