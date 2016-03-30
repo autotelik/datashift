@@ -9,7 +9,7 @@
 - [Testing](#testing)
 - [License](#license)
 
-Shift data between Excel/CSV files and Rails or Ruby applications
+Import/Export data between Excel/CSV/Paperclip attachments and Rails/Ruby applications
 
 Comprehensive Wiki here : **https://github.com/autotelik/datashift/wiki**
 
@@ -21,17 +21,15 @@ Add gem 'datashift' to your Gemfile/bundle or use ```gem install```
 gem 'datashift'
 ```
 
-To use :
-
-    require 'datashift'
+Win OLE and MS Excel are NOT required.
 
 To use the Thor command line applications, pull in the tasks.
 
-Generally the easiest way is to, create a high level .thor file in your Rails root directory
+Create or add to a high level .thor file in your lib/tasks or root directory
 
     e.g mysite.thor
 
-Edit the file and add the following to pull in the thor commands :
+Edit the file and add the following to pull in the datashift thor commands :
 
 ```ruby
     require 'thor'
@@ -46,44 +44,40 @@ To keep the availability to only development mode use
 
 To check the available tasks run
 
-    bundle exec thor list datashift
+```bundle exec thor list datashift```
 
 To get usage information use thor help <command>, for example
 
-    bundle exec thor help datashift:generate:excel
+```bundle exec thor help datashift:generate:excel```
 
-To use Excel OLE and MS Excel are NOT required.
 
 Specific tools for Spree E-Commerce now separate gem [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
 
 
 #### <a name="Features">Features</a>
 
-Use CSV or Excel/OpenOffice (.xls) files to Import or Export your database (ActiveRecord) models
+Use CSV or Excel/OpenOffice/LibraOffice etc (.xls) files to Import or Export your database (ActiveRecord) models
 
-Bulk import tools from filesystem, for Paperclip attachments i.e attach images to models
+Bulk import tools from filesystem, for Paperclip attachments i.e attach images/mp3 etc to models
 
-Include associations to include
+Supports all association types, in either hash or json formats.
 
-Set default values, substitutions and transformations er column for Imports.
+Set default values, substitutions and transformations per column for Imports.
 
-Generate sample templates, with only headers
+Generate sample templates, with only headers.
 
-Export template and populate with model data 
+Export template and populate with model data.
 
 
-#### Active Record - Import/Export CLI
+####  <a name="ImportCLI">Active Record - Import CLI</a>
 
-Provides high level tasks for importing/exporting data;
+Please use thor list and thor help <xxx> to get latest command lines, for example
 
-Please use thor list and thor help <xxx> to get latest command lines
-
-    bundle exec thor datashift:import:csv model=BlogPost input=BlogPostImport.csv verbose=true 
-
+'''bundle exec thor datashift:import:csv --model BlogPost --input BlogPostImport.csv'''
 
 Imports are based on column headings with *Semi-Smart Name Lookup*
 
-  On import, first a dictionary of all possible attributes and associations is created for the AR class.
+  On import, a dictionary of all possible attributes and associations is created for the AR class.
   
   This enables lookup, of a user supplied name (column heading), managing white space, pluralisation etc .
 
@@ -92,8 +86,8 @@ Imports are based on column headings with *Semi-Smart Name Lookup*
   finds real association 'product_properties' to send or call on the AR object
 
 
-Can import/export 'belongs_to, 'has_many' and 'has_one' associations, including assignment of multiple objects
-via either multiple columns, or via a DSL for creating multiple entries in a single (column). 
+Can import 'belongs_to, 'has_many' and 'has_one' associations, including assignment of multiple objects
+via either multiple columns, or via single column containing multiple entries in json/HASH format.
 
 The DSL can also be used to define which fields to lookup associations, and assign values to other fields.
 

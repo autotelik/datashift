@@ -79,7 +79,6 @@ describe 'PaperClip Bulk Loader' do
       loader.run(path, Digital)
 
       expect(Owner.first.digitals.size).to be > 0
-
     end
 
     it 'should save failed images to folder when unable to find matching record' do

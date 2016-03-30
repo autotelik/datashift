@@ -3,24 +3,15 @@
 # Date ::     Mar 2015
 # License::   MIT.
 #
-# Usage::
-#
-#  To pull Datashift commands into your main application :
-#
-#     require 'datashift'
-#
-#     DataShift::load_commands
-#
-require 'datashift'
-
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
+
 module Datashift
 
-  class Mapping < Thor
+  class Mapping < DataShift::ThorExportBase
 
     include DataShift::Logging
 
-    desc "template", "Generate a simple mappings template\nInput is treated as the *source* unless otherwise directed"
+    desc "template", "Generate a YAML mappings template\nInput is treated as the *source* unless otherwise directed"
 
     method_option :model, :aliases => '-m', :desc => "The active record model to use for mappings"
     method_option :model_as_dest, :aliases => '-d', :type=> :boolean, :desc => "Set model attributes as destination"
@@ -32,9 +23,7 @@ module Datashift
 
     def template()
 
-      # TODO - We're assuming run from a rails app/top level dir...
-      # ...can we make this more robust ? e.g what about when using active record but not in Rails app, 
-      require File.expand_path('config/environment.rb')
+      start_connections
 
       result = options[:result]
 

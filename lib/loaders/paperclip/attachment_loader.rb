@@ -86,7 +86,13 @@ module DataShift
         bindings
       end
 
-      def find_owner(options = {} )
+      def find_owner(in_file_name, options = {} )
+
+        search_term = File.basename(in_file_name, '.*')
+        search_term.strip!
+
+        logger.info("Attempting to find attachment owner (#{attach_to_klass} for [#{search_term}]")
+
         owner_record = get_record_by(attach_to_klass, attach_to_find_by_field, search_term, split_file_name_on, options)
 
         if owner_record
@@ -94,7 +100,7 @@ module DataShift
         else
           logger.error("No matching owner found for file name : #{search_term}")
           doc_context.failure("No matching owner found for file name : #{search_term}")
-          missing_records << file_name
+          missing_records << in_file_name
         end
 
         owner_record
@@ -137,29 +143,22 @@ module DataShift
 
         # Iterate through all the files creating an attachment per file
 
-        loading_files_cache.each do |file_name|
-          attachment_name = File.basename(file_name)
+        loading_files_cache.each do |in_file_name|
+          attachment_name = File.basename(in_file_name)
 
           logger.info "Processing attachment file #{attachment_name} "
 
-          search_term = File.basename(file_name, '.*')
-          search_term.strip!
-
-          logger.info("Attempting to find matching owner Record for file name : #{search_term}")
-
-          owner_record = find_owner(options)
+          owner_record = find_owner(in_file_name, options)
 
           next if(configuration.dummy_run) # Don't actually create/upload to DB if we are doing dummy run
 
-          attachment = create_paperclip_attachment(load_object_class, file_name, options)
+          attachment = create_paperclip_attachment(load_object_class, in_file_name, options)
 
           # Check if attachment must have an associated owner_record
           next unless attachment && owner_record && attach_to_method_binding
           reset
 
           # TOFIX - what about has_one etc ? - indicates that Context etc are still too complex and Excel/CSV focused
-          puts 'attach_to_method_binding.operator', attach_to_method_binding.operator
-
           owner_record.send(attach_to_method_binding.operator) << attachment
 
           logger.info "Added Attachment to #{owner_record.class} (id : #{owner_record.id})"
@@ -171,7 +170,7 @@ module DataShift
 
         puts "Created #{created} / #{loading_files_cache.size} attachments of type #{load_object_class} attached to #{@attach_to_klass}"
 
-        puts 'Dummy Run Complete- if happy run without -d' if(configuration.dummy_run)
+        puts 'Dummy Run Complete - if happy run with full commit' if(configuration.dummy_run)
 
       end
 
@@ -184,8 +183,8 @@ module DataShift
         puts "WARNING : #{missing_records.size} of #{loading_files_cache.size} files could not be attached to a #{load_object_class}"
         puts "For your convenience copying files with MISSING #{attach_to_klass} to : MissingAttachmentRecords"
         missing_records.each do |i|
+          logger.info("Copying #{i} to MissingAttachmentRecords folder")
           FileUtils.cp( i, 'MissingAttachmentRecords') unless(configuration.dummy_run)
-          logger.info("Copied #{i} to MissingAttachmentRecords folder")
         end
       end
     end

@@ -241,8 +241,13 @@ module  DataShift
         expect(p.value_as_string).to eq 'myprefixDemo stringmy post fix'
       end
 
-      it 'should provide facility to set default values via YAML configuration', duff: true  do
+      it 'should provide facility to set configuration via YAML ', duff: true  do
+        loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
 
+        loader.configuration.inspect
+      end
+
+      it 'should provide facility to set default values via YAML configuration', duff: true  do
         loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
 
         loader.run(expected, Project)
