@@ -1,0 +1,28 @@
+# YAML Template for Datashift Transformation Factory
+#
+<% @klass -%>:
+    defaults:
+      <name>: <value>
+  <% @defaults.each do |k, v| -%>:
+      <% k %>: <% v %>
+  <% end -%>
+    overrides:
+      <name>: <value>
+  <% @overrides.each do |k, v| -%>:
+      <% k %>: <% v %>
+  <% end -%>
+    substitutions:
+      <name>: <value>
+  <% @substitutions.each do |k, v| -%>:
+      <% k %>: <% v %>
+  <% end -%>
+    prefixs:
+      <name>: <value>
+  <% @prefixs.each do |k, v| -%>:
+      <% k %>: <% v %>
+  <% end -%>
+    postfixs:
+      <name>: <value>
+  <% @postfixs.each do |k, v| -%>:
+      <% k %>: <% v %>
+  <% end -%>

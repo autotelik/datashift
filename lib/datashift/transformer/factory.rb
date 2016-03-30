@@ -210,6 +210,12 @@ module DataShift
     #
     #     datashift_overrides:
     #       value_as_double: 99.23546
+    #     substitutions
+    #     prefixs
+    #     postfixs
+  end
+
+  def set_postfix_on
     #
     def configure_from(load_object_class, yaml_file)
 
@@ -230,6 +236,32 @@ module DataShift
         defaults.each do |_operator, default_value|
           DataShift::Transformer.factory.defaults_for(klass)[method_binding.operator] = default_value
         end if defaults & defaults.is_a(Hash)
+
+=begin
+        def set_default_on(klass, operator, default_value )
+          # puts "In set_default_on ", klass, operator, default_value
+          defaults_for(klass)[operator] = default_value
+        end
+
+        # use regardless of whether inbound data supplied
+        def set_override_on(klass, operator, value )
+          overrides_for(klass)[operator] = value
+        end
+
+        def set_substitution_on(klass, operator, rule, replacement )
+          substitutions_for(klass)[operator] =
+            Struct.new('Substitution', :pattern, :replacement)[rule, replacement]
+        end
+
+        def set_prefix_on(klass, operator, value)
+          prefixs_for(klass)[operator] = value
+        end
+
+        def set_postfix_on(klass, operator, value)
+          postfixs_for(klass)[operator] = value
+        end
+=end
+
 
         #         overrides = keyed_on_class['datashift_overrides']
         #

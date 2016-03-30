@@ -85,7 +85,7 @@ module  DataShift
     end
 
     context 'Column removals' do
-      it 'should process options to remove unwant5ed columns' do
+      it 'should process options to remove unwanted columns' do
         headers = [:a, :b, :c, :d, :e, :f]
 
         DataShift::Exporters::Configuration.configure do |config|
