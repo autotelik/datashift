@@ -60,7 +60,7 @@ module DataShift
       #
       def init(attach_to_klass, attach_to_find_by_field, attach_to_field, options = {})
 
-        @attach_to_klass = LoaderBase.ensure_class( attach_to_klass )
+        @attach_to_klass = MapperUtils.ensure_class( attach_to_klass )
 
         ModelMethods::Manager.catalog_class(@attach_to_klass, reload: options[:reload], instance_methods: true)
 

@@ -89,19 +89,13 @@ Imports are based on column headings with *Semi-Smart Name Lookup*
 Can import 'belongs_to, 'has_many' and 'has_one' associations, including assignment of multiple objects
 via either multiple columns, or via single column containing multiple entries in json/HASH format.
 
-The DSL can also be used to define which fields to lookup associations, and assign values to other fields.
-
 See Wiki for more details on DSL syntax.
 
-Supports inclusion of delegated attributes and normal instance methods as column headings.
+####  <a name="Configuration">Configuration</a>
 
-The library can be easily extended with Loaders to deal with non trivial cases,
- for example when multiple lookups required to find right association.
+To generate a default mapping and conmfiguraiton file for an import class run
 
-Spree loaders are an example, these illustrate over riding processing for specific columns with
-complicated lookup requirements. Spree is the prime Open Source e-commerce project for Rails, 
-and the specific loaders and tasks support loading Spree Products, and associated data such as Variants,
-OptionTypes, Properties and Images.
+
 
 
 ### <a name="Testing">Testing</a>

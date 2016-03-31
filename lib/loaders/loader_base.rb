@@ -43,7 +43,7 @@ module DataShift
     def run(file_name, object_class)
       @file_name = file_name
 
-      @doc_context = DocContext.new( LoaderBase.ensure_class(object_class) )
+      @doc_context = DocContext.new( MapperUtils.ensure_class(object_class) )
 
       logger.info("Loading objects of type #{load_object_class}")
 
@@ -67,10 +67,6 @@ module DataShift
 
     def failed_count
       reporter.failed_objects.size
-    end
-
-    def self.ensure_class( klass )
-      klass.is_a?(String) ? MapperUtils::class_from_string(klass) : klass
     end
 
     def load_object_class

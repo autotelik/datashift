@@ -11,12 +11,15 @@ module Datashift
 
     include DataShift::Logging
 
+    # TODO - split Excel into own CLi
     desc "template", "Generate a YAML mappings template\nInput is treated as the *source* unless otherwise directed"
 
-    method_option :model, :aliases => '-m', :desc => "The active record model to use for mappings"
+    method_option :model, :aliases => '-m', :required => true,
+                  :desc => "The active record model to use for mappings"
+
     method_option :model_as_dest, :aliases => '-d', :type=> :boolean, :desc => "Set model attributes as destination"
 
-    method_option :excel, :aliases => '-e', :desc => "The excel spreadsheet to use for mappings"
+    method_option :excel, :aliases => '-e', :desc => "Excel spreadsheet to use as source for mappings"
     method_option :excel_as_dest, :aliases => '-a', :type=> :boolean, :desc => "Set excel headers as destination"
 
     method_option :result, :aliases => '-r', :required => true, :desc => "Create template of model in supplied file"
@@ -33,19 +36,14 @@ module Datashift
       end
 
       logger.info "Datashift: Starting mapping template generation to [#{result}]"
-      
+
       mapper = DataShift::MappingGenerator.new
 
-      model = options[:model]
+      mapper.generate(options[:model], options)
 
-      mappings = String.new
+     # mappings += mapper.generate_from_excel(options[:excel], options.dup) if(options[:excel])
 
-      # if not from Excel and no model, still generate most basic mapping possible
-      mappings += mapper.generate(model, options.dup) unless(model.nil? && options[:excel])
-
-      mappings += mapper.generate_from_excel(options[:excel], options.dup) if(options[:excel])
-
-      File.open(result, 'w') { |f| f << mappings }
+     # File.open(result, 'w') { |f| f << mappings }
 
     end
 

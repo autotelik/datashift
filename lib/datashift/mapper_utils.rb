@@ -9,6 +9,10 @@ module DataShift
 
   class MapperUtils
 
+    def self.ensure_class( klass )
+      klass.is_a?(String) ? MapperUtils.class_from_string_or_raise( klass ) : klass
+    end
+
     def self.class_from_string_or_raise( klass )
 
       ruby_klass = begin

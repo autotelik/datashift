@@ -1,28 +1,36 @@
 # YAML Template for Datashift Transformation Factory
 #
-<% @klass -%>:
-    defaults:
-      <name>: <value>
-  <% @defaults.each do |k, v| -%>:
-      <% k %>: <% v %>
-  <% end -%>
-    overrides:
-      <name>: <value>
-  <% @overrides.each do |k, v| -%>:
-      <% k %>: <% v %>
-  <% end -%>
-    substitutions:
-      <name>: <value>
-  <% @substitutions.each do |k, v| -%>:
-      <% k %>: <% v %>
-  <% end -%>
-    prefixs:
-      <name>: <value>
-  <% @prefixs.each do |k, v| -%>:
-      <% k %>: <% v %>
-  <% end -%>
-    postfixs:
-      <name>: <value>
-  <% @postfixs.each do |k, v| -%>:
-      <% k %>: <% v %>
-  <% end -%>
+<%= @title -%>:
+  defaults:
+    <%= "#<name>: <value>" if(@defaults.empty?) %>
+<% @defaults.each do |k, v| -%>:
+    <%= "#{k}: #{v}" %>
+<% end -%>
+  overrides:
+    <%= "#<name>: <value>" if(@overrides.empty?) %>
+<% @overrides.each do |k, v| -%>:
+    <% k %>: <% v %>
+<% end -%>
+  substitutions:
+    <%= "#<name>: <value>" if(@substitutions.empty?) %>
+<% @substitutions.each do |k, v| -%>:
+    <% k %>: <% v %>
+<% end -%>
+  prefixs:
+    <%= "#<name>: <value>" if(@prefixs.empty?) %>
+<% @prefixs.each do |k, v| -%>:
+    <% k %>: <% v %>
+<% end -%>
+  postfixs:
+<%= "    #<name>: <value>" if(@postfixs.empty?) %>
+<% @postfixs.each do |k, v| -%>:
+    <% k %>: <% v %>
+<% end -%>
+  column_mappings:
+<% @headers.each_with_index do |s, i| %>
+  <% if(@model_as_dest) %>
+        <%= "    #src_column_heading_#{i}: #{s}\n"  -%>
+ <% else %>
+        <%= "    #{s}: #dest_column_heading_#{i}\n" -%>
+  <% end %>
+<% end %>

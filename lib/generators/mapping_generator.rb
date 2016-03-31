@@ -41,41 +41,29 @@ module DataShift
 
       config = options.dup
 
-      klass = klass_or_name.is_a?(String) ? MapperUtils.class_from_string_or_raise( klass_or_name ) : klass_or_name
+      @klass = MapperUtils::ensure_class(klass_or_name)
 
-      mappings = ''
+      template =File.join(DataShift.library_path, 'datashift/templates/standard_mapping_transform.erb')
 
-      if klass
+      @title = config[:title] || "#{@klass.name}"
 
-        mappings = config[:title] || "#{klass.name}:" + "\n"
+      @defaults = []
+      @overrides = []
+      @substitutions = []
+      @prefixs = []
+      @postfixs = []
 
-        klass_to_headers(klass)
+      klass_to_headers(@klass)
 
-        if options[:model_as_dest]
-          headers.each_with_index { |s, i|  mappings += "       #srcs_column_heading_#{i}: #{s}\n" }
-        else
-          headers.each_with_index { |s, i|  mappings += "       #{s}: #dest_column_heading_#{i}\n" }
-        end
-      else
+      result = Erubis::Eruby.new( File.read(template)).result(binding)
 
-        mappings = config[:title] || MappingGenerator.title
-        mappings += <<EOS
-    # source_column_heading_0: dest_column_heading_0
-    # source_column_heading_1: dest_column_heading_1
-    # source_column_heading_2: dest_column_heading_2
-
-EOS
-      end
+      puts result
 
       if config[:file]
         logger.info("Generating Mapping File [#{config[:file]}]")
 
-        File.open(config[:file], 'w') { |f| f << mappings }
+        File.open(config[:file], 'w') { |f| f << result }
       end
-
-      puts "mappings", mappings.inspect
-
-      mappings
 
     end
 
