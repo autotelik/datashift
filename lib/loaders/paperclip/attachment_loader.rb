@@ -59,7 +59,8 @@ module DataShift
       #         :attach_to_field => avatar    : User.avatar = attachment
       #
       def init(attach_to_klass, attach_to_find_by_field, attach_to_field, options = {})
-        @attach_to_klass = attach_to_klass
+
+        @attach_to_klass = LoaderBase.ensure_class( attach_to_klass )
 
         ModelMethods::Manager.catalog_class(@attach_to_klass, reload: options[:reload], instance_methods: true)
 
@@ -69,6 +70,8 @@ module DataShift
 
       def init_from_options(options)
         init(options[:attach_to_klass], options[:attach_to_find_by_field], options[:attach_to_field])
+
+        @split_file_name_on = options[:split_file_name_on] if(options[:split_file_name_on])
       end
 
       def find_bindings(options = {})

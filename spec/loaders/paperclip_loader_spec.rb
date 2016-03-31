@@ -46,14 +46,20 @@ describe 'PaperClip Bulk Loader' do
     expect(loader.attach_to_field).to be_nil
   end
 
-  it 'can be configured to load attachments against class instances found via field name attached to another field' do
+  it 'can be configured via Hash to load attachments against class found via field name, attached to another field' do
     loader.init_from_options(attachment_options)
     expect(loader.attach_to_klass).to eq attachment_options[:attach_to_klass]
     expect(loader.attach_to_find_by_field).to eq attachment_options[:attach_to_find_by_field]
     expect(loader.attach_to_field).to eq attachment_options[:attach_to_field]
   end
 
-  it 'can be initialised to load attachments against class instances found via field name attached to another field' do
+  it 'can be configured to load attachments against class as a String' do
+    attachment_options[:attach_to_klass] = 'Owner'
+    loader.init_from_options(attachment_options)
+    expect(loader.attach_to_klass).to eq  Owner
+  end
+
+  it 'can be initialised directly with owning class, found via field name, attached to another field' do
     loader.init(Owner, :image, :digitals)
     expect(loader.attach_to_klass).to eq Owner
     expect(loader.attach_to_find_by_field).to eq :image

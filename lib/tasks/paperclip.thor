@@ -1,15 +1,9 @@
-# Copyright:: (c) Autotelik Media Ltd 2012
+# Copyright:: (c) Autotelik Media Ltd 2016
 # Author ::   Tom Statter
-# Date ::     Sept 2012
+# Date ::     March 2016
 # License::   MIT.
 #
 # Usage::
-#
-#  To pull Datashift commands into your main application :
-#
-#     require 'datashift'
-#
-#     DataShift::load_commands
 #
 #     thor help datashift:paperclip:attach
 #
@@ -18,9 +12,7 @@ require 'datashift'
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
 module Datashift
          
-  class Paperclip < Thor     
-  
-    include DataShift::Logging   
+  class Paperclip <  DataShift::DSThorBase
 
     desc "attach", "Create paperclip attachments and attach to a Model from files in a directory.
     This is specifically for the use case where the paperclip attachments are stored in a class, such as Image, Icon, Asset,
@@ -75,7 +67,9 @@ module Datashift
       #         :attach_to_field => digitals  : Owner.digitals = attachment
       #         :attach_to_field => avatar    : User.avatar = attachment
       
-    method_option :split_file_name_on,  :type => :string, :desc => "delimiter to progressivley split file_name for lookup", :default => ' '
+    method_option :split_file_name_on,  :type => :string,
+                  :desc => "delimiter to progressivley split file_name for lookup", :default => ' '
+
     method_option :case_sensitive, :type => :boolean, :desc => "Use case sensitive where clause to find :attach_to_klass"
     method_option :use_like, :type => :boolean, :desc => "Use :lookup_field LIKE 'string%' instead of :lookup_field = 'string' in where clauses to find :attach_to_klass"
 
@@ -91,31 +85,20 @@ module Datashift
         puts "ERROR: Supplied Path [#{@attachment_path}] not accesible"
         exit(-1)
       end
-      
-      require File.expand_path('config/environment.rb')
+
+      start_connections
       
       require 'paperclip/attachment_loader'
-            
-      @verbose = options[:verbose]
 
-      puts "Using Field #{options[:attach_to_field]} for lookup"
-       
-      klazz = MapperUtils::class_from_string( options[:attachment_klass] )
-      raise "Cannot find Attachment Class #{options[:attachment_klass]}" unless klazz
-       
-      attachment_klazz  = MapperUtils::class_from_string( options[:attach_to_klass] )
-      raise "Cannot find Attach to Class #{options[:attach_to_klass]}" unless klazz
-      
-      opts = options.dup
-      
-      opts[:attach_to_klass] = attachment_klazz # Pass in real Ruby class not string class name
-      
-      loader = DataShift::Paperclip::AttachmentLoader.new(klazz, nil, opts)
-   
+      puts "Using Field #{options[:attach_to_find_by_field]} to lookup matching [#{options[:attach_to_klass]}]"
+
+      loader = DataShift::Paperclip::AttachmentLoader.new
+
+      loader.init_from_options(options)
+
       logger.info "Loading attachments from #{@attachment_path}"
 
-      loader.process_from_filesystem(@attachment_path, opts)
-    
+      loader.run(@attachment_path, options[:attachment_klass])
     end
   end
   
