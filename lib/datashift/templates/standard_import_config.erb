@@ -1,0 +1,38 @@
+# YAML Template for Datashift Import Configuration
+#
+<%= @title -%>:
+  defaults:
+    <%= "#<name>: <value>" if(@defaults.empty?) %>
+<% @defaults.each do |k, v| -%>:
+    <%= "#{k}: #{v}" %>
+<% end -%>
+  overrides:
+    <%= "#<name>: <value>" if(@overrides.empty?) %>
+<% @overrides.each do |k, v| -%>:
+    <% k %>: <% v %>
+<% end -%>
+  substitutions:
+    <%= "#<name>: <value>" if(@substitutions.empty?) %>
+<% @substitutions.each do |k, v| -%>:
+    <% k %>: <% v %>
+<% end -%>
+  prefixs:
+    <%= "#<name>: <value>" if(@prefixs.empty?) %>
+<% @prefixs.each do |k, v| -%>:
+    <% k %>: <% v %>
+<% end -%>
+  postfixs:
+<%= "    #<name>: <value>" if(@postfixs.empty?) %>
+<% @postfixs.each do |k, v| -%>:
+    <% k %>: <% v %>
+<% end -%>
+<% unless(@headers.empty?) %>
+  # Mappings between inbound column names and internal names
+  # are only required when datashift cannot guess the mapping itself
+  # It will automatically map headings like :
+  #  'Product properties' or 'Product_Properties', 'product Properties' etc to product_properties
+  column_mappings:
+  <% @headers.each_with_index do |s, i| %>
+        <%= "#src_column_heading_#{i}: #{s}\n"  -%>
+  <% end %>
+<% end %>

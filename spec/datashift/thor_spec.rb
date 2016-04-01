@@ -16,22 +16,25 @@ describe 'Thor high level command line tasks' do
     DataShift.load_commands
   end
 
-  context 'Mapping CLI' do
+  context 'Generate CLI' do
     before(:each) do
-      load File.join( datashift_thor_root, 'mapping.thor')
+      load File.join( datashift_thor_root, 'generate.thor')
 
       results_clear
     end
 
     it 'should provide tasks to generate a mapping doc' do
-      opts = { model: 'Project', result: results_path.to_s }
+
+     # datashift:generate:config:import -m Spree::Product -p ~/blah.yaml
+
+      opts = { model: 'Project', path: results_path.to_s }
 
       run_in(rails_sandbox_path) do
-        output = capture_stream(:stdout) { Datashift::Mapping.new.invoke(:template, [], opts) }
+        output = capture_stream(:stdout) { Datashift::Generate::Config.new.invoke(:import, [], opts) }
 
         puts output
 
-        expect(output).to include('Output generated')
+        expect(output).to include('Creating new configuration file ')
       end
     end
   end

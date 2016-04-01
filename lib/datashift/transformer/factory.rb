@@ -22,7 +22,7 @@
 #
 # IN : my_transformations.rb
 #
-#     DataShift::transformer.factory do |factory|
+#     DataShift::Transformer.factory do |factory|
 #        factory.set_default_on(Project, 'value_as_string', 'default text' )
 #     end
 #
@@ -47,6 +47,8 @@ module DataShift
 
     class Factory
 
+      include DataShift::Logging
+
       @__instance__ = ThreadSafe::Cache.new
 
       def self.instance(locale = :en)
@@ -66,6 +68,56 @@ module DataShift
         @substitutions = {}
         @prefixs = {}
         @postfixs = {}
+      end
+
+      # Default values and over rides can be provided in Ruby/YAML ???? config file.
+      #
+      #  Format :
+      #
+      #    Load Class:    (e.g Spree:Product)
+      #     defaults:
+      #       value_as_string: "Default Project Value"
+      #       category: reference:category_002
+      #
+      #     overrides:
+      #       value_as_double: 99.23546
+      #     substitutions
+      #     prefixs
+      #     postfixs
+      #
+      def configure_from(load_object_class, yaml_file)
+
+        data = YAML.load( ERB.new( IO.read(yaml_file) ).result )
+
+        logger.info("Setting up Transformations : #{data.inspect}")
+        puts ("Setting up Transformations : #{data.inspect}")
+
+        klass = load_object_class.name
+
+        keyed_on_class = data[klass]
+        puts "Loading Transformations for Class #{klass}"
+
+        if(keyed_on_class)
+
+          defaults = keyed_on_class['defaults']
+
+          puts "IN defaults", defaults.inspect
+
+          defaults.each do |operator, default_value|
+            set_default_on(load_object_class, operator,default_value )
+          end if(defaults && defaults.is_a?(Hash))
+
+=begin
+        # use regardless of whether inbound data supplied
+        def set_override_on(klass, operator, value )
+
+        def set_substitution_on(klass, operator, rule, replacement )
+
+        def set_prefix_on(klass, operator, value)
+
+        def set_postfix_on(klass, operator, value)
+=end
+        end
       end
 
       def defaults_for( klass )
@@ -199,87 +251,6 @@ module DataShift
       end
     end
 
-    # Default values and over rides can be provided in Ruby/YAML ???? config file.
-    #
-    #  Format :
-    #
-    #    Load Class:    (e.g Spree:Product)
-    #     datashift_defaults:
-    #       value_as_string: "Default Project Value"
-    #       category: reference:category_002
-    #
-    #     datashift_overrides:
-    #       value_as_double: 99.23546
-    #     substitutions
-    #     prefixs
-    #     postfixs
-  end
+  end ## class
 
-  def set_postfix_on
-    #
-    def configure_from(load_object_class, yaml_file)
-
-      # TODO
-
-      data = YAML.load( ERB.new( IO.read(yaml_file) ).result )
-
-      logger.info("Setting up Transformations : #{data.inspect}")
-
-      klass = load_object_class.name
-
-      keyed_on_class = data[klass]
-
-      if keyed_on_class
-
-        defaults = keyed_on_class['datashift_defaults']
-
-        defaults.each do |_operator, default_value|
-          DataShift::Transformer.factory.defaults_for(klass)[method_binding.operator] = default_value
-        end if defaults & defaults.is_a(Hash)
-
-=begin
-        def set_default_on(klass, operator, default_value )
-          # puts "In set_default_on ", klass, operator, default_value
-          defaults_for(klass)[operator] = default_value
-        end
-
-        # use regardless of whether inbound data supplied
-        def set_override_on(klass, operator, value )
-          overrides_for(klass)[operator] = value
-        end
-
-        def set_substitution_on(klass, operator, rule, replacement )
-          substitutions_for(klass)[operator] =
-            Struct.new('Substitution', :pattern, :replacement)[rule, replacement]
-        end
-
-        def set_prefix_on(klass, operator, value)
-          prefixs_for(klass)[operator] = value
-        end
-
-        def set_postfix_on(klass, operator, value)
-          postfixs_for(klass)[operator] = value
-        end
-=end
-
-
-        #         overrides = keyed_on_class['datashift_overrides']
-        #
-        #         subs = keyed_on_class['datashift_substitutions']
-        #
-        #         subs.each do |o, sub|
-        #           # TODO support single array as well as multiple [[..,..], [....]]
-        #           sub.each { |tuple| set_substitution(o, tuple) }
-        #         end if(subs)
-      end
-
-      proteced
-
-      def get_method_name( binding )
-        binding.is_a?(MethodBinding) ? method_binding.operator : binding
-      end
-
-    end ## class
-
-  end
 end

@@ -1,4 +1,4 @@
-# YAML Template for Datashift Transformation Factory
+# YAML Template for Datashift Export
 #
 <%= @title -%>:
   defaults:
@@ -26,11 +26,10 @@
 <% @postfixs.each do |k, v| -%>:
     <% k %>: <% v %>
 <% end -%>
+<% unless(@headers.empty?) %>
+    # Mappings between external column names and internal names
   column_mappings:
-<% @headers.each_with_index do |s, i| %>
-  <% if(@model_as_dest) %>
-        <%= "    #src_column_heading_#{i}: #{s}\n"  -%>
- <% else %>
-        <%= "    #{s}: #dest_column_heading_#{i}\n" -%>
+  <% @headers.each_with_index do |s, i| %>
+      <%= "  #{s}: #dest_column_heading_#{i}\n" -%>
   <% end %>
 <% end %>

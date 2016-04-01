@@ -145,6 +145,37 @@ module Datashift
 
     end   # no_commands
 
+    class Config < DataShift::DSThorBase
+
+      include DataShift::Logging
+
+      desc "import", "Generate a YAML Import configuration template"
+
+      method_option :model, aliases: '-m', required: true, desc: "The active record model to use for mappings"
+
+      method_option :path, aliases: '-p', required: true, desc: "Path or file, to create YAML config"
+
+      def import()
+
+        start_connections
+
+        result = options[:path]
+
+        if(File.directory?(result))
+          result = File.join(result, "mapping_template.yaml")
+        end
+
+        logger.info "Datashift: Starting Import mapping template generation to [#{result}]"
+
+        mapper = DataShift::ConfigGenerator.new
+
+        puts "Creating new configuration file : [#{result}]"
+        mapper.write_import(result, options[:model], options)
+
+      end
+
+    end
+
 
   end
 

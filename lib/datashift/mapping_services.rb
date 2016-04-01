@@ -82,6 +82,8 @@ module DataShift
       begin
         @yaml_data = YAML.load(erb)
 
+        puts "Loaded YAML #{@yaml_data.inspect}"
+
         logger.info "Loaded YAML config from [#{file}]"
 
       rescue => e

@@ -22,51 +22,6 @@ module DataShift
       expect(mapping_services).to be
     end
 
-    context 'Generation' do
-
-      let(:expected_columns) { Project.new.serializable_hash.keys }
-
-      let(:mapper) { DataShift::MappingGenerator.new }
-
-      let(:expected_map_file) { result_file('mapping_service_project.yaml') }
-
-      it 'should be able to create a mapping generator' do
-        expect(mapper).to be
-      end
-
-      it 'should be able to write out a basic mapping document for a class' do
-        expect(File.exist?(expected_map_file)).to_not be true
-
-        expect { mapper.generate(Project, file: expected_map_file, with: :all) }.to_not raise_error
-
-        expect(File.exist?(expected_map_file)).to be true
-      end
-
-      it 'a basic mapping document should contain at least attributes of a class' do
-        mapper.generate(Project, file: expected_map_file)
-
-        File.foreach(expected_map_file)
-        expect( $.).to be > expected_columns.size
-      end
-
-
-      it 'a basic mapping document can be configures to contain associations as well' do
-
-        DataShift::Exporters::Configuration.configure do |config|
-          config.with = [:all]
-        end
-
-        mapper.generate(Project, file: expected_map_file)
-
-        expect(File.exist?(expected_map_file)).to be true
-
-        File.foreach(expected_map_file)
-        count = $.
-        expect( $.).to be > expected_columns.size
-      end
-
-    end
-
 
     # TODO: split into two - with and without associations
 
@@ -74,12 +29,12 @@ module DataShift
 
       let(:expected_map_file) { result_file('mapping_service_project.yaml') }
 
-      let(:mapper) { DataShift::MappingGenerator.new }
+      let(:config_generator) { DataShift::ConfigGenerator.new }
 
       let(:mapping_service) { DataShift::MappingServices.new(Project) }
 
       before(:each) do
-        mapper.generate(Project, file: expected_map_file )
+        config_generator.write_import(expected_map_file, Project)
 
         expect(File.exist?(expected_map_file)).to be true
 
@@ -117,16 +72,11 @@ module DataShift
         expect(mapping_service.mappings['Project']).to be_a Hash
       end
 
-      it 'should provide access to the collection of mappings under top level' do
-        project_mappings = mapping_service.mappings['Project']
-
-        expect(project_mappings.key?('title')).to eq true
-        expect(project_mappings.key?('value_as_integer')).to eq true
-        expect(project_mappings.key?('versions')).to eq true
-      end
     end
 
     context 'Using' do
+
+      # TODO - generated dynamically from latest templates ??
       let(:expected_map_file) { ifixture_file('project_mapping.yaml') }
 
       let(:mapping_service) { DataShift::MappingServices.new(Project) }

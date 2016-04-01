@@ -36,7 +36,7 @@ module  DataShift
         create_list(:category, 5)
       end
 
-      it 'should provide access to the file_name', duff: true do
+      it 'should provide access to the file_name' do
         loader.run(expected, Project)
         expect(loader.file_name).to eq expected
       end
@@ -241,13 +241,19 @@ module  DataShift
         expect(p.value_as_string).to eq 'myprefixDemo stringmy post fix'
       end
 
-      it 'should provide facility to set configuration via YAML ', duff: true  do
+      it 'should provide facility to set configuration via YAML'  do
+
+        loader.setup_load_class(Project)
+
         loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
 
         loader.configuration.inspect
       end
 
       it 'should provide facility to set default values via YAML configuration', duff: true  do
+
+        loader.setup_load_class(Project)
+
         loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
 
         loader.run(expected, Project)

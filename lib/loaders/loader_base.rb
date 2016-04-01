@@ -40,10 +40,14 @@ module DataShift
       @configuration = DataShift::Importers::Configuration.new
     end
 
+    def setup_load_class(load_class)
+      @doc_context = DocContext.new( MapperUtils.ensure_class(load_class) )
+    end
+
     def run(file_name, object_class)
       @file_name = file_name
 
-      @doc_context = DocContext.new( MapperUtils.ensure_class(object_class) )
+      setup_load_class(object_class)
 
       logger.info("Loading objects of type #{load_object_class}")
 
@@ -171,6 +175,9 @@ module DataShift
       @config.merge!(data['LoaderBase']) if data['LoaderBase']
 
       @config.merge!(data[self.class.name]) if data[self.class.name]
+
+      DataShift::Transformer.factory { |f| f.configure_from(load_object_class, yaml_file) }
+
 
       ContextFactory.configure(load_object_class, yaml_file)
 
