@@ -16,12 +16,12 @@
 <% @substitutions.each do |k, v| -%>:
     <% k %>: <% v %>
 <% end -%>
-  prefixs:
+  prefixes:
     <%= "#<name>: <value>" if(@prefixs.empty?) %>
 <% @prefixs.each do |k, v| -%>:
     <% k %>: <% v %>
 <% end -%>
-  postfixs:
+  postfixes:
 <%= "    #<name>: <value>" if(@postfixs.empty?) %>
 <% @postfixs.each do |k, v| -%>:
     <% k %>: <% v %>

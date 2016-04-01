@@ -180,7 +180,7 @@ module  DataShift
       #       it "should provide facility to set default values via YAML configuration" do
       #         loader = CsvLoader.new(ifixture_file('csv/ProjectsSingleCategories.csv'))
       #
-      #         loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
+      #         loader.configure_from( ifixture_file('ProjectConfiguration.yml') )
       #
       #         loader.run(Project)
       #
@@ -195,7 +195,7 @@ module  DataShift
       #       it "should provide facility to over ride values via YAML configuration" do
       #         loader = CsvLoader.new(ifixture_file('csv/ProjectsSingleCategories.csv'))
       #
-      #         loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
+      #         loader.configure_from( ifixture_file('ProjectConfiguration.yml') )
       #
       #         loader.run(Project)
       #

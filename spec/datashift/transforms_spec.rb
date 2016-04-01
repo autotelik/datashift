@@ -84,45 +84,45 @@ module  DataShift
       end
     end
 
-    context 'Column removals' do
-      it 'should process options to remove unwanted columns' do
-        headers = [:a, :b, :c, :d, :e, :f]
-
-        DataShift::Exporters::Configuration.configure do |config|
-          config.remove = [:b, :f]
-        end
-
-        DataShift::Transformer::Remove.unwanted_columns(headers )
-
-        expect(headers).to_not include [:b, :f]
-      end
-
-      it 'should process options to remove unwant5ed columns' do
-        headers = [:a, :id, :c, :d, :e, :created_on, :f, :updated_on]
-
-        DataShift::Exporters::Configuration.configure do |config|
-          config.remove_rails = true
-        end
-
-        DataShift::Transformer::Remove.unwanted_columns(headers )
-
-        expect(headers).to_not include [:id, :created_on, :updated_on]
-      end
-
-    end
+    let(:config_file) {ifixture_file('ProjectConfiguration.yml') }
 
     context 'Configuration of Transformations' do
-      it 'should provide facility to set default values via YAML configuration' do
-        pending 'refactoring this out of loader'
+      it 'should provide facility to set default values via YAML configuration', duff: true do
+        DataShift::Transformer.factory.configure_from( Project, config_file )
 
-        sometransformer.configure_from( ifixture_file('ProjectsDefaults.yml') )
+        defaults =  DataShift::Transformer.factory.defaults_for( Project )
+        expect(defaults).to be_a Hash
+        expect(defaults.size).to eq 3
       end
 
-      it 'should provide facility to over ride values via YAML configuration' do
-        pending 'refactoring this out of loader'
+      it 'should provide facility to set override values via YAML configuration', duff: true do
+        DataShift::Transformer.factory.configure_from( Project, config_file )
 
-        sometransformer.configure_from( ifixture_file('ProjectsDefaults.yml') )
+        override =  DataShift::Transformer.factory.overrides_for( Project )
+        expect(override).to be_a Hash
+        expect(override.has_key?('value_as_integer')).to eq true
+        expect(override.size).to eq 2
       end
+
+      it 'should provide facility to set prefixes via YAML configuration' do
+        DataShift::Transformer.factory.configure_from( Project, config_file )
+
+        prefixes =  DataShift::Transformer.factory.prefixes_for( Project )
+        expect(prefixes).to be_a Hash
+        expect(prefixes.has_key?('value_as_string')).to eq true
+        expect(prefixes.size).to eq 1
+      end
+
+      it 'should provide facility to set postfixes via YAML configuration' do
+        DataShift::Transformer.factory.configure_from( Project, config_file )
+
+        postfixes =  DataShift::Transformer.factory.postfixes_for( Project )
+        expect(postfixes).to be_a Hash
+        expect(postfixes.has_key?('value_as_string')).to eq true
+        expect(postfixes.size).to eq 1
+      end
+
+
     end
   end
 

@@ -32,10 +32,10 @@
 #   If passed an optional locale, rules for other
 #   languages can be specified. If not specified, defaults to <tt>:en</tt>.
 #
-#
-# WORK In PROGRESS
-
 require 'thread_safe'
+
+# Helper class
+Struct.new('Substitution', :pattern, :replacement)
 
 module DataShift
 
@@ -43,7 +43,20 @@ module DataShift
 
     extend self
 
-    Struct.new('Substitution', :pattern, :replacement)
+    # Yields a singleton instance of Transformations::Factory
+    # so you can specify additional transforms in .rb config
+    # If passed an optional locale, rules for other
+    # languages can be specified. If not specified, defaults to <tt>:en</tt>.
+    #
+    # Only rules for English are provided.
+    #
+    def factory(locale = :en)
+      if block_given?
+        yield Factory.instance(locale)
+      else
+        Factory.instance(locale)
+      end
+    end
 
     class Factory
 
@@ -56,7 +69,7 @@ module DataShift
       end
 
       attr_reader :defaults, :overrides, :substitutions
-      attr_reader :prefixs, :postfixs
+      attr_reader :prefixes, :postfixes
 
       def initialize
         clear
@@ -66,57 +79,41 @@ module DataShift
         @defaults = {}
         @overrides = {}
         @substitutions = {}
-        @prefixs = {}
-        @postfixs = {}
+        @prefixes = {}
+        @postfixes = {}
       end
 
-      # Default values and over rides can be provided in Ruby/YAML ???? config file.
-      #
-      #  Format :
-      #
-      #    Load Class:    (e.g Spree:Product)
-      #     defaults:
-      #       value_as_string: "Default Project Value"
-      #       category: reference:category_002
-      #
-      #     overrides:
-      #       value_as_double: 99.23546
-      #     substitutions
-      #     prefixs
-      #     postfixs
+      # Default values and over rides per class can be provided in YAML config file.
       #
       def configure_from(load_object_class, yaml_file)
 
         data = YAML.load( ERB.new( IO.read(yaml_file) ).result )
 
         logger.info("Setting up Transformations : #{data.inspect}")
-        puts ("Setting up Transformations : #{data.inspect}")
 
         klass = load_object_class.name
 
-        keyed_on_class = data[klass]
-        puts "Loading Transformations for Class #{klass}"
+        config_for_class = data[klass]
 
-        if(keyed_on_class)
+        if(config_for_class)
 
-          defaults = keyed_on_class['defaults']
+          method_map = {
+            defaults: :set_default_on,
+            overrides: :set_override_on,
+            # TODO How to specify rule/replacement in YAML -
+            # substitutions: :set_substitution_on,
+            prefixes: :set_prefix_on,
+            postfixes: :set_postfix_on
+          }
 
-          puts "IN defaults", defaults.inspect
+          method_map.each do |key, call|
+            settings = config_for_class[key.to_s]
 
-          defaults.each do |operator, default_value|
-            set_default_on(load_object_class, operator,default_value )
-          end if(defaults && defaults.is_a?(Hash))
+            settings.each do |operator, value|
+              send( call, load_object_class, operator, value)
+            end if(settings && settings.is_a?(Hash))
+          end
 
-=begin
-        # use regardless of whether inbound data supplied
-        def set_override_on(klass, operator, value )
-
-        def set_substitution_on(klass, operator, rule, replacement )
-
-        def set_prefix_on(klass, operator, value)
-
-        def set_postfix_on(klass, operator, value)
-=end
         end
       end
 
@@ -159,30 +156,30 @@ module DataShift
         overrides_for(method_binding.klass).key?(method_binding.operator)
       end
 
-      def prefixs_for(klass)
-        prefixs[klass] ||= {}
-        prefixs[klass]
+      def prefixes_for(klass)
+        prefixes[klass] ||= {}
+        prefixes[klass]
       end
 
       def prefix( method_binding )
-        prefixs_for(method_binding.klass)[method_binding.operator]
+        prefixes_for(method_binding.klass)[method_binding.operator]
       end
 
       def has_prefix?( method_binding )
-        prefixs_for(method_binding.klass).key?(method_binding.operator)
+        prefixes_for(method_binding.klass).key?(method_binding.operator)
       end
 
-      def postfixs_for(klass)
-        postfixs[klass] ||= {}
-        postfixs[klass]
+      def postfixes_for(klass)
+        postfixes[klass] ||= {}
+        postfixes[klass]
       end
 
       def postfix( method_binding )
-        postfixs_for(method_binding.klass)[method_binding.operator]
+        postfixes_for(method_binding.klass)[method_binding.operator]
       end
 
       def has_postfix?( method_binding )
-        postfixs_for(method_binding.klass).key?(method_binding.operator)
+        postfixes_for(method_binding.klass).key?(method_binding.operator)
       end
 
       # use when no inbound data supplied
@@ -197,15 +194,15 @@ module DataShift
 
       def set_substitution( method_binding, rule, replacement )
         substitutions_for(method_binding.klass)[method_binding.operator] =
-          Struct.new('Substitution', :pattern, :replacement)[rule, replacement]
+          Struct::Substitution.new(rule, replacement)
       end
 
       def set_prefix( method_binding, value)
-        prefixs_for(method_binding.klass)[method_binding.operator] = value
+        prefixes_for(method_binding.klass)[method_binding.operator] = value
       end
 
       def set_postfix( method_binding, value)
-        postfixs_for(method_binding.klass)[method_binding.operator] = value
+        postfixes_for(method_binding.klass)[method_binding.operator] = value
       end
 
       # Class based versions
@@ -221,34 +218,17 @@ module DataShift
       end
 
       def set_substitution_on(klass, operator, rule, replacement )
-        substitutions_for(klass)[operator] =
-          Struct.new('Substitution', :pattern, :replacement)[rule, replacement]
+        substitutions_for(klass)[operator] = Struct::Substitution.new(rule, replacement)
       end
 
       def set_prefix_on(klass, operator, value)
-        prefixs_for(klass)[operator] = value
+        prefixes_for(klass)[operator] = value
       end
 
       def set_postfix_on(klass, operator, value)
-        postfixs_for(klass)[operator] = value
+        postfixes_for(klass)[operator] = value
       end
 
-    end
-
-    # Yields a singleton instance of Transformations::Factory
-    # so you can specify additional transforms in .rb config
-    # If passed an optional locale, rules for other
-    # languages can be specified. If not specified, defaults to <tt>:en</tt>.
-    #
-    # Only rules for English are provided.
-    #
-
-    def factory(locale = :en)
-      if block_given?
-        yield Factory.instance(locale)
-      else
-        Factory.instance(locale)
-      end
     end
 
   end ## class

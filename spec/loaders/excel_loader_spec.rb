@@ -245,7 +245,7 @@ module  DataShift
 
         loader.setup_load_class(Project)
 
-        loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
+        loader.configure_from( ifixture_file('ProjectConfiguration.yml') )
 
         loader.configuration.inspect
       end
@@ -254,7 +254,7 @@ module  DataShift
 
         loader.setup_load_class(Project)
 
-        loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
+        loader.configure_from( ifixture_file('ProjectConfiguration.yml') )
 
         loader.run(expected, Project)
 
@@ -267,7 +267,7 @@ module  DataShift
 
       it 'should provide facility to over ride values via YAML configuration', excel: true do
         pending 'pending fix over rides - configure_from YAML '
-        loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
+        loader.configure_from( ifixture_file('ProjectConfiguration.yml') )
 
         loader.run(Project)
 
@@ -279,7 +279,7 @@ module  DataShift
 
         expect(Project.count).to eq 0
 
-        loader.configure_from( ifixture_file('ProjectsDefaults.yml') )
+        loader.configure_from( ifixture_file('ProjectConfiguration.yml') )
 
         loader.run(Project)
 

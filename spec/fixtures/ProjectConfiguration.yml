@@ -5,10 +5,11 @@ Project:
     value_as_datetime:  <%= Time.now.to_s(:db) %>
   overrides:
     value_as_double: 99.23546
+    value_as_integer: 3
   substitutions:
-    #<name>: <value>
-  prefixs:
-    #<name>: <value>
-  postfixs:
-    #<name>: <value>
+    value_as_boolean: false, true
+  prefixes:
+    value_as_string: "prefix me every-time"
+  postfixes:
+    value_as_string: "postfix me every-time"
 
