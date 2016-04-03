@@ -11,10 +11,17 @@
 <% @overrides.each do |k, v| -%>:
     <% k %>: <% v %>
 <% end -%>
+  # Expects a tuple (list with 2 entries), the rule and the replacement
   substitutions:
-    <%= "#<name>: <value>" if(@substitutions.empty?) %>
+<% if(@substitutions.empty?) %>
+    <%= "#<name>:" %>
+    <%= "- <rule>"  %>
+    <%= "- <replacement>" -%>
+<% end %>
 <% @substitutions.each do |k, v| -%>:
-    <% k %>: <% v %>
+    <% k %>:
+      - <% v.first %>
+      - <% v.last %>
 <% end -%>
   prefixes:
     <%= "#<name>: <value>" if(@prefixs.empty?) %>

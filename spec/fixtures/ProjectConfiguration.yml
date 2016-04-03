@@ -7,9 +7,12 @@ Project:
     value_as_double: 99.23546
     value_as_integer: 3
   substitutions:
-    value_as_boolean: false, true
+    value_as_text:
+      - 'change me'
+      - 'i only gone and got meself changed by datashift'
   prefixes:
-    value_as_string: "prefix me every-time"
+    value_as_string: "prefix me every-time "
   postfixes:
-    value_as_string: "postfix me every-time"
+    value_as_string: " postfix me every-time"
+    value_as_text: " postfix for value_as_text"
 

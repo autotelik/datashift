@@ -100,8 +100,7 @@ module DataShift
           method_map = {
             defaults: :set_default_on,
             overrides: :set_override_on,
-            # TODO How to specify rule/replacement in YAML -
-            # substitutions: :set_substitution_on,
+            substitutions: :set_substitution_on_list,
             prefixes: :set_prefix_on,
             postfixes: :set_postfix_on
           }
@@ -130,6 +129,8 @@ module DataShift
         defaults_for(method_binding.klass).key?(method_binding.operator)
       end
 
+      # SUBSTITUTIONS
+
       def substitutions_for( klass )
         substitutions[klass] ||= {}
         substitutions[klass]
@@ -143,6 +144,7 @@ module DataShift
         substitution_for(method_binding.klass).key?(method_binding.operator)
       end
 
+      # OVER RIDES
       def overrides_for(klass)
         overrides[klass] ||= {}
         overrides[klass]
@@ -227,6 +229,12 @@ module DataShift
 
       def set_postfix_on(klass, operator, value)
         postfixes_for(klass)[operator] = value
+      end
+
+    private
+
+      def set_substitution_on_list(klass, operator, list )
+        substitutions_for(klass)[operator] = Struct::Substitution.new(list[0], list[1])
       end
 
     end

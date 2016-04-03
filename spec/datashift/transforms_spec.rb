@@ -87,26 +87,40 @@ module  DataShift
     let(:config_file) {ifixture_file('ProjectConfiguration.yml') }
 
     context 'Configuration of Transformations' do
-      it 'should provide facility to set default values via YAML configuration', duff: true do
-        DataShift::Transformer.factory.configure_from( Project, config_file )
 
+      before(:each) do
+        DataShift::Transformer.factory.clear
+        DataShift::Transformer.factory.configure_from( Project, config_file )
+      end
+
+      it 'should provide facility to set default values via YAML configuration' do
         defaults =  DataShift::Transformer.factory.defaults_for( Project )
         expect(defaults).to be_a Hash
         expect(defaults.size).to eq 3
       end
 
-      it 'should provide facility to set override values via YAML configuration', duff: true do
-        DataShift::Transformer.factory.configure_from( Project, config_file )
-
+      it 'should provide facility to set override values via YAML configuration' do
         override =  DataShift::Transformer.factory.overrides_for( Project )
         expect(override).to be_a Hash
         expect(override.has_key?('value_as_integer')).to eq true
         expect(override.size).to eq 2
       end
 
-      it 'should provide facility to set prefixes via YAML configuration' do
-        DataShift::Transformer.factory.configure_from( Project, config_file )
+      it 'should provide facility to substitute values via YAML configuration', duff: true do
+        substitutes =  DataShift::Transformer.factory.substitutions_for( Project )
+        expect(substitutes).to be_a Hash
+        expect(substitutes.has_key?('value_as_text')).to eq true
 
+        sub = substitutes['value_as_text']
+
+        expect(sub).to be_a Struct::Substitution
+        expect(sub.pattern).to eq "change me"
+        expect(sub.replacement).to eq "i only gone and got meself changed by datashift"
+
+        expect(substitutes.size).to eq 1
+      end
+
+      it 'should provide facility to set prefixes via YAML configuration' do
         prefixes =  DataShift::Transformer.factory.prefixes_for( Project )
         expect(prefixes).to be_a Hash
         expect(prefixes.has_key?('value_as_string')).to eq true
@@ -114,14 +128,17 @@ module  DataShift
       end
 
       it 'should provide facility to set postfixes via YAML configuration' do
-        DataShift::Transformer.factory.configure_from( Project, config_file )
-
         postfixes =  DataShift::Transformer.factory.postfixes_for( Project )
         expect(postfixes).to be_a Hash
+        expect(postfixes.has_key?('value_as_integer')).to eq false
         expect(postfixes.has_key?('value_as_string')).to eq true
-        expect(postfixes.size).to eq 1
+        expect(postfixes.has_key?('value_as_text')).to eq true
+        expect(postfixes.size).to eq 2
       end
 
+      after(:all) do
+        DataShift::Transformer.factory.clear
+      end
 
     end
   end

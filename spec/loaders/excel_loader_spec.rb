@@ -262,7 +262,8 @@ module  DataShift
 
         expect(p).to_not be_nil
 
-        expect(p.value_as_string).to eq 'Default Project Value'
+        expect(p.value_as_string).to eq 'prefix me every-time Default Project Value postfix me every-time'
+
       end
 
       it 'should provide facility to over ride values via YAML configuration', excel: true do
