@@ -186,7 +186,7 @@ module  DataShift
     context 'update existing records' do
     end
 
-    context 'external configuration of loader' do
+    context 'internal configuration of loader' do
       let(:expected)  { ifixture_file('ProjectsSingleCategories.xls') }
 
       before(:each) do
@@ -240,21 +240,23 @@ module  DataShift
 
         expect(p.value_as_string).to eq 'myprefixDemo stringmy post fix'
       end
+    end
 
-      it 'should provide facility to set configuration via YAML'  do
+    context 'external configuration of loader' do
+      let(:expected)  { ifixture_file('ProjectsSingleCategories.xls') }
 
+      before(:each) do
+        DataShift::Transformer.factory.clear
         loader.setup_load_class(Project)
 
         loader.configure_from( ifixture_file('ProjectConfiguration.yml') )
 
-        loader.configuration.inspect
+        expect(Project.where(title: '099').first).to be_nil
+
+        loader.run(expected, Project)
       end
 
-      it 'should provide facility to set default values via YAML configuration', duff: true  do
-
-        loader.setup_load_class(Project)
-
-        loader.configure_from( ifixture_file('ProjectConfiguration.yml') )
+      it 'should provide facility to set default values via YAML configuration'  do
 
         loader.run(expected, Project)
 
@@ -262,8 +264,22 @@ module  DataShift
 
         expect(p).to_not be_nil
 
-        expect(p.value_as_string).to eq 'prefix me every-time Default Project Value postfix me every-time'
+        puts p.inspect, p.categories.inspect
 
+        # yaml has snippet to set Time to 'now' .. at least match the date part
+        expect(p.value_as_datetime.to_s).to include(Date.today.to_s)
+      end
+
+      it 'should combine transformations set via YAML configuration' do
+
+
+        p = Project.find_by_title( '099' )
+
+        expect(p).to_not be_nil
+
+        puts p.inspect, p.value_as_datetime
+
+        expect(p.value_as_string).to eq 'prefix me every-time Default Project Value postfix me every-time'
       end
 
       it 'should provide facility to over ride values via YAML configuration', excel: true do
