@@ -1,7 +1,5 @@
 $LOAD_PATH.push File.expand_path('../lib', __FILE__)
 
-require 'rake'
-
 # Maintain your gem"s version:
 require 'datashift/version'
 
