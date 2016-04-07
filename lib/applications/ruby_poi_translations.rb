@@ -3,6 +3,7 @@
 # Date ::     July 2010
 # License::
 #
+# Translate Apache Poi Java data types/va;pues to Ruby world
 #
 if DataShift::Guards.jruby?
 
@@ -33,6 +34,8 @@ if DataShift::Guards.jruby?
     # Cell.CELL_TYPE_BLANK, Cell.CELL_TYPE_BOOLEAN, Cell.CELL_TYPE_ERROR
 
     def cell_value(cell)
+      return '' unless(cell)
+
       case cell.getCellType
       when HSSFCell::CELL_TYPE_FORMULA  then return cell.getCellFormula
       when HSSFCell::CELL_TYPE_NUMERIC  then return cell.getNumericCellValue

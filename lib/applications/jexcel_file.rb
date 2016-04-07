@@ -12,20 +12,18 @@
 if DataShift::Guards.jruby?
 
   require 'java'
+  require 'poi-3.7-20101029.jar'
 
-  require 'excel_base'
-  require 'ruby_poi_translations'
+  require_relative 'ruby_poi_translations'
 
   class JExcelFile
-
-    include ExcelBase
 
     include RubyPoiTranslations
     extend RubyPoiTranslations
 
     include Enumerable
 
-    include_class 'org.apache.poi.hssf.util.HSSFColor'
+    java_import 'org.apache.poi.hssf.util.HSSFColor'
     java_import 'org.apache.poi.poifs.filesystem.POIFSFileSystem'
 
     java_import 'org.apache.poi.hssf.usermodel.HSSFCell'

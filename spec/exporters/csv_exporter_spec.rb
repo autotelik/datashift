@@ -1,3 +1,9 @@
+# encoding: utf-8
+
+# The above is required for JRuby to handle the line :
+#     describe "with § as delim" do
+# Without this Jruby throws - invalid multibyte char (US-ASCII)
+#
 # Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
 # License::   MIT
@@ -103,7 +109,8 @@ module DataShift
         end
       end
 
-      describe "with § as delim" do
+
+      describe "with § as delim" do # Jruby throws - invalid multibyte char (US-ASCII)
         it_behaves_like "csv exporter with custom delimeter" do
           let(:csv_delim) { '§' }
           let(:expected) { result_file("project_export_spec_with_custom_delim_#{csv_delim}.csv") }

@@ -9,7 +9,7 @@
 if DataShift::Guards.jruby?
 
   JExcelFile.class_eval do
-    include_class 'org.apache.poi.hssf.util.HSSFColor'
+    java_import 'org.apache.poi.hssf.util.HSSFColor'
 
     # Return the current active sheet
     # If term supplied find sheet and set active

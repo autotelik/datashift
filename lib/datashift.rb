@@ -70,20 +70,25 @@ module DataShift
       require_relative 'generators/file_generator'
       require_relative 'loaders/loader_base'
       require_relative 'exporters/exporter_base'
-
-      require_libs.each do |base|
-        Dir[File.join(library_path, base, '*.rb')].each do |rb|
-          # puts rb
-          require_relative rb unless File.directory?(rb)
-        end
-      end
     rescue => x
       puts "Problem initializing gem #{x.inspect}"
     end
 
+    require_libs.each do |base|
+      Dir[File.join(library_path, base, '*.rb')].each do |rb|
+        # puts rb
+        begin
+          require_relative rb unless File.directory?(rb)
+        rescue => x
+          puts "Problem loading file #{rb} - #{x.inspect}"
+          puts x.backtrace.last
+        end
+      end
+    end
+
   end
 
-  # Load all the datashift  tasks and make them available throughout app
+# Load all the datashift  tasks and make them available throughout app
   def self.load_tasks
     # Long parameter lists so ensure rake -T produces nice wide output
     ENV['RAKE_COLUMNS'] = '180'
@@ -91,7 +96,7 @@ module DataShift
     Dir["#{base}/*.rake"].sort.each { |ext| load ext }
   end
 
-  # Load all the datashift Thor commands and make them available throughout app
+# Load all the datashift Thor commands and make them available throughout app
 
   def self.load_commands
     base = File.join(library_path, 'tasks', '**')
