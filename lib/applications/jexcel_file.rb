@@ -185,6 +185,10 @@ if DataShift::Guards.jruby?
       @row[column] = value
     end
 
+    def sanitize_sheet_name( name )
+      name.gsub(/[\[\]:\*\/\\\?]/, '')
+    end
+
     def write( file_name = nil )
       file = file_name.nil? ? @filepath : file_name
       out = FileOutputStream.new(file)
