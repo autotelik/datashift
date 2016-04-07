@@ -86,6 +86,15 @@ module DataShift
       end
     end
 
+    if(DataShift::Guards.jruby?)
+      require 'jexcel_file'
+      JExcelFile
+    else
+      require 'spreadsheet'
+      require 'spreadsheet_extensions'
+      Spreadsheet
+    end
+
   end
 
 # Load all the datashift  tasks and make them available throughout app
