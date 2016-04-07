@@ -1,11 +1,9 @@
 # Copyright:: Autotelik Media Ltd
 # Author ::   Tom Statter
-# Date ::     July 2010
+# Date ::     April 2016
 # License::
 #
-# A wrapper around creating and directly manipulating Excel files.
-#
-# i.e Create and populate XSL files
+# A wrapper around Apache POI - creating and directly manipulating Excel files.
 #
 # jar added to class path in manifest - 'poi-3.5-beta4-20081128.jar'
 #
@@ -15,6 +13,19 @@ if DataShift::Guards.jruby?
   require 'poi-3.7-20101029.jar'
 
   require_relative 'ruby_poi_translations'
+  require_relative 'hssf_row_extensions'
+  require_relative 'hssf_sheet_extensions'
+
+  java_import 'org.apache.poi.hssf.util.HSSFColor'
+  java_import 'org.apache.poi.poifs.filesystem.POIFSFileSystem'
+
+  java_import 'org.apache.poi.hssf.usermodel.HSSFCell'
+  java_import 'org.apache.poi.hssf.usermodel.HSSFWorkbook'
+  java_import 'org.apache.poi.hssf.usermodel.HSSFCellStyle'
+  java_import 'org.apache.poi.hssf.usermodel.HSSFDataFormat'
+  java_import 'org.apache.poi.hssf.usermodel.HSSFClientAnchor'
+  java_import 'org.apache.poi.hssf.usermodel.HSSFRichTextString'
+  java_import 'org.apache.poi.ss.util.CellReference'
 
   class JExcelFile
 
@@ -22,16 +33,6 @@ if DataShift::Guards.jruby?
     extend RubyPoiTranslations
 
     include Enumerable
-
-    java_import 'org.apache.poi.hssf.util.HSSFColor'
-    java_import 'org.apache.poi.poifs.filesystem.POIFSFileSystem'
-
-    java_import 'org.apache.poi.hssf.usermodel.HSSFCell'
-    java_import 'org.apache.poi.hssf.usermodel.HSSFWorkbook'
-    java_import 'org.apache.poi.hssf.usermodel.HSSFCellStyle'
-    java_import 'org.apache.poi.hssf.usermodel.HSSFDataFormat'
-    java_import 'org.apache.poi.hssf.usermodel.HSSFClientAnchor'
-    java_import 'org.apache.poi.hssf.usermodel.HSSFRichTextString'
 
     attr_accessor :workbook, :row, :date_style
     attr_reader :sheet, :current_sheet_index
@@ -227,6 +228,6 @@ if DataShift::Guards.jruby?
   end
 
   require 'jexcel_file_extensions'
-  require 'apache_poi_extensions'
+  require 'hssf_sheet_extensions'
 
 end

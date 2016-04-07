@@ -1,21 +1,13 @@
-# Copyright:: Autotelik Media Ltd
+# Copyright:: Autotelik Media Ltd 2016
 # Author ::   Tom Statter
-# Date ::     July 2010
+# Date ::     April 2016
 # License::
 #
 #
 if DataShift::Guards.jruby?
-
-  require 'java'
-  require 'poi-3.7-20101029.jar'
-
-  # Extend the Poi classes with some syntactic sugar
-
-  java_import  'org.apache.poi.ss.util.CellReference'
-
   module Java
-
     module OrgApachePoiHssfUsermodel
+
       class HSSFSheet
         def name
           getSheetName
@@ -26,6 +18,7 @@ if DataShift::Guards.jruby?
         end
 
       end
+
     end
   end
 end
