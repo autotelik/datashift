@@ -1,0 +1,25 @@
+# markdown-spellcheck spelling configuration file
+# Format - lines beginning # are comments
+# global dictionary is at the start, file overrides afterwards
+# one word per line, to define a file override use ' - filename'
+# where filename is relative to this configuration file
+datashift
+paperclip
+gemfile
+thor
+libraoffice
+xls
+activerecord
+mp3
+json
+csv
+blogpost
+autotelik
+statter
+ - README.md
+_spree
+BlogPostImport.csv
+_properties
+_to
+_many
+_one
