@@ -10,6 +10,8 @@ group :test do
   platform :jruby do
     gem 'jruby-openssl'
     gem 'activerecord-jdbcsqlite3-adapter'
+
+     #ruby "2.2.0", engine: "jruby"  #, engine_version: "~> 9.0"
   end
 
   platform :ruby do

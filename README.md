@@ -1,8 +1,6 @@
-##  DataShift 
+## DataShift
 
-[![Build Status](https://travis-ci.org/autotelik/datashift.svg?branch=split_into_concerns)](https://travis-ci.org/autotelik/datashift)
-
-- API About to change Drastically - Sorry don't have time to do proper deprecation WARNINGS etc
+[![Build Status](https://travis-ci.org/autotelik/datashift.svg?branch=master)](https://travis-ci.org/autotelik/datashift)
 
 - [Installation](#Installation)
 - [Features](#features)
@@ -11,7 +9,7 @@
 
 Import/Export data between Excel/CSV/Paperclip attachments and Rails/Ruby applications
 
-Comprehensive Wiki here : **https://github.com/autotelik/datashift/wiki**
+Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
 
 ### <a name="Installation">Installation</a>
 
@@ -40,19 +38,23 @@ Edit the file and add the following to pull in the datashift thor commands :
 
 To keep the availability to only development mode use
 
-```ruby DataShift::load_commands if(Rails.env.development?) ```
+```ruby
+DataShift::load_commands if(Rails.env.development?)
+```
 
 To check the available tasks run
 
-```bundle exec thor list datashift```
+```ruby
+bundle exec thor list datashift
+```
 
 To get usage information use thor help <command>, for example
 
-```bundle exec thor help datashift:generate:excel```
+```ruby
+bundle exec thor help datashift:generate:excel
+```
 
-
-Specific tools for Spree E-Commerce now separate gem [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
-
+There are specific import/export loaders for [Spree E-Commerce](http://spreecommerce.com/) here [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
 
 #### <a name="Features">Features</a>
 
@@ -68,12 +70,13 @@ Generate sample templates, with only headers.
 
 Export template and populate with model data.
 
-
-####  <a name="ImportCLI">Active Record - Import CLI</a>
+#### <a name="ImportCLI">Active Record - Import CLI</a>
 
 Please use thor list and thor help <xxx> to get latest command lines, for example
 
-'''bundle exec thor datashift:import:csv --model BlogPost --input BlogPostImport.csv'''
+'''ruby
+bundle exec thor datashift:import:csv --model BlogPost --input BlogPostImport.csv
+'''
 
 Imports are based on column headings with *Semi-Smart Name Lookup*
 
@@ -85,34 +88,40 @@ Imports are based on column headings with *Semi-Smart Name Lookup*
   an approximation of the actual associations, so given 'Product Properties' heading,
   finds real association 'product_properties' to send or call on the AR object
 
-
 Can import 'belongs_to, 'has_many' and 'has_one' associations, including assignment of multiple objects
 via either multiple columns, or via single column containing multiple entries in json/HASH format.
 
 See Wiki for more details on DSL syntax.
 
-####  <a name="Configuration">Configuration</a>
+#### <a name="Configuration">Configuration</a>
 
-To generate a default mapping and conmfiguraiton file for an import class run
+You can now configure datashift with a standard initialisation block
 
+To generate a configuration file template, for import see
 
-
+```ruby
+thor help datashift:generate:config:import
+```
 
 ### <a name="Testing">Testing</a>
+
     Specs run against a rails sandbox app, so have own Gemfile, so you can specify versions of 
     active record that you want  specs to run against :
 
     Edit
-        ```ruby spec/Gemfile. ```
+
+```ruby
+spec/Gemfile.
+```
 
     Then run :
 
-    ```ruby
+```ruby
     cd spec
     bundle install
-    ```
+```
 
-####  Changing Versions
+#### Changing Versions
 
     A sandbox will be generated in spec/sandbox if no such directory exists.
 
@@ -135,17 +144,15 @@ To generate a default mapping and conmfiguraiton file for an import class run
 #### Run the Tests
 
     ** N.B You should run the specs from within the specs directory. **
-    ```ruby
+
+```ruby
         bundle exec rspec -c .
-    ```
+```
 
     A datashift **log **will be written within **spec/logs**, which hooks into the standard active record logger
 
           /log/datashift.log
           spec/logs/datashift_spec.log
-
-
-
 
 ## License
 
@@ -153,7 +160,7 @@ Copyright:: (c) Autotelik Media Ltd 2016
 
 Author ::   Tom Statter
 
-Date ::     Dec 2015
+Date ::     April 2016
 
 The MIT License
 
