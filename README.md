@@ -7,7 +7,9 @@
 - [Testing](#testing)
 - [License](#license)
 
-Import/Export data between Excel/CSV/Paperclip attachments and Rails/Ruby applications
+Import/Export data between Excel/CSV and Rails/Ruby applications.
+
+Bulk attach multiple files easily to [Paperclip](https://github.com/thoughtbot/paperclip) models.
 
 Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
 
@@ -54,15 +56,21 @@ To get usage information use thor help <command>, for example
 bundle exec thor help datashift:generate:excel
 ```
 
-There are specific import/export loaders for [Spree E-Commerce](http://spreecommerce.com/) here [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
+There are specific import/export loaders for [Spree E-Commerce](http://spreecommerce.com/) here @ [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
 
 #### <a name="Features">Features</a>
 
 Use CSV or Excel/OpenOffice/LibraOffice etc (.xls) files to Import or Export your database (ActiveRecord) models
 
-Bulk import tools from filesystem, for Paperclip attachments i.e attach images/mp3 etc to models
+Bulk import tools from filesystem, for Paperclip attachments, takes folder of attachments such as images/mp3s/files
+and use the file name to find and attach to DB models. For example look up a product, by it's '''SKU''',
+based on the **SKU being present the image filename**, and attache that image to the product's '''images''' association
 
-Supports all association types, in either hash or json formats.
+Supports export of all association types, in either hash or json formats.
+
+Association types to include/exclude can be set in configuration as well as speciifc columsn to exclude.
+
+Rails standard columns such as id, created_at etc can also be easily excluded via Configuration.
 
 Set default values, substitutions and transformations per column for Imports.
 
