@@ -137,7 +137,7 @@ module DataShift
     # seperator for identifying normal key value pairs
 
     def key_value_sep
-      @key_value_sep ||= '=>' # TODO: check Ruby version and use appropriate has style ?
+      @key_value_sep ||= ' ' # for now assume everyone wants newer less verbose style
     end
 
   end

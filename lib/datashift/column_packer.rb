@@ -56,7 +56,7 @@ module DataShift
       else
         record.serializable_hash.each do |name, value|
           text = value.to_s.gsub(text_delim, escape_text_delim)
-          data << "#{name.to_sym} #{key_value_sep} #{text}"
+          data << "#{name}:#{key_value_sep}#{text}"
         end
 
         "#{attribute_list_start}#{data.join(multi_value_delim)}#{attribute_list_end}"

@@ -74,6 +74,8 @@ module  DataShift
 
       before(:each) do
         create_list(:project, expected_projects)
+        create( :project_with_user )
+        create( :project_with_milestones, milestones_count: 4 )
 
         DataShift::Exporters::Configuration.configure do |config|
           config.with = :all
@@ -81,13 +83,9 @@ module  DataShift
       end
 
       it 'should include associations in headers' do
-        create( :project_with_user )
+        expected = result_file('exp_project_assoc_headers.xls')
 
-        expected = result_file('exp_project_plus_assoc.xls')
-
-        items = Project.all
-
-        exporter.export_with_associations(expected, Project, items)
+        exporter.export_with_associations(expected, Project, Project.all)
 
         expect(File.exist?(expected)).to eq true
 
@@ -99,13 +97,9 @@ module  DataShift
       end
 
       it 'should export a model and associations to .xls file' do
-        create( :project_with_user )
-
         expected = result_file('exp_project_plus_assoc.xls')
 
-        items = Project.all
-
-        exporter.export_with_associations(expected, Project, items)
+        exporter.export_with_associations(expected, Project, Project.all)
 
         expect(File.exist?(expected)).to eq true
 
@@ -133,64 +127,50 @@ module  DataShift
         expect( excel[last_idx, owner_idx] ).to include '10000.23'
       end
 
-      it 'should export a model and has_many assocs to .xls file', fail: true do
-        create( :project_with_user )
-        create( :project_with_milestones, milestones_count: 4 )
+      it 'should export associations in hash format by default to .xls file', duff: true do
 
-        expected = result_file('project_and_has_many_assoc_export.xls')
+        expected = result_file('project_and_assoc_in_hash_export.xls')
 
-        items = Project.all
-
-        exporter.export_with_associations(expected, Project, items)
+        exporter.export_with_associations(expected, Project, Project.all)
 
         expect(File.exist?(expected)).to eq true
 
         excel = Excel.new
         excel.open(expected)
 
-        expect(excel.row(0)).to include 'owner'
-        expect(excel.row(0)).to include 'user'
-
-        expect(excel.num_rows).to eq Project.count + 1
-
         milestone_inx = excel.row(0).index 'milestones'
 
-        expect(milestone_inx).to be > -1
-
-        # These tests very flakey - better way to find row rather than rely on idx??
-        last_idx = Project.count
-
         # project_with_milestones has real associated user data
-        expect( excel[last_idx, milestone_inx].to_s ).to include ColumnPacker.multi_assoc_delim
-        expect( excel[last_idx, milestone_inx].to_s ).to include 'milestone 1'
+        last_row_idx = Project.count
+
+        expect( excel[last_row_idx, milestone_inx].to_s ).to include ColumnPacker.multi_assoc_delim
+        expect( excel[last_row_idx, milestone_inx].to_s ).to include '{'
+        expect( excel[last_row_idx, milestone_inx].to_s ).to match(/name: milestone/)
+        expect( excel[last_row_idx, milestone_inx].to_s ).to match(/project_id: \d+/)
       end
 
       it 'should export a model and  assocs in json to .xls file', duff:true do
-        create( :project_with_user )
-        create( :project_with_milestones )
 
-        expected = result_file('project_and_has_many_json_export.xls')
-
-        items = Project.all
+        expected = result_file('project_and_assoc_in_json_export.xls')
 
         DataShift::Exporters::Configuration.configure do |config|
           config.json = true
         end
 
-        exporter.export_with_associations(expected, Project, items)
+        exporter.export_with_associations(expected, Project, Project.all)
 
         expect(File.exist?(expected)).to eq true
 
         excel = Excel.new
         excel.open(expected)
 
-        expect(excel.num_rows).to eq Project.count + 1
-
         milestone_inx = excel.row(0).index 'milestones'
 
-        last_idx = Project.count
-        expect( excel[last_idx, milestone_inx].to_s ).to include '['
-        expect( excel[last_idx, milestone_inx].to_s ).to match(/name\":\"milestone/)
+        last_row_idx = Project.count
+
+        expect( excel[last_row_idx, milestone_inx].to_s ).to include '['
+        expect( excel[last_row_idx, milestone_inx].to_s ).to match(/name\":\"milestone/)
+        expect( excel[last_row_idx, milestone_inx].to_s ).to match(/"project_id":\d+/)
       end
     end
   end

@@ -217,7 +217,7 @@ module DataShift
         ids = csv.collect { |r| r[0][0] }
         expect(ids).to eq expected_ids
 
-        expect( csv[0][user_header_inx] ).to include "title => #{@user.title},first_name => #{@user.first_name}"
+        expect( csv[0][user_header_inx] ).to include "title: #{@user.title},first_name: #{@user.first_name}"
       end
     end
   end
