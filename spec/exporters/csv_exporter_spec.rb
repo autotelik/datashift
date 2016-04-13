@@ -204,21 +204,39 @@ module DataShift
       end
 
       it 'should export model & associations to single row', duff: true do
-        items = Project.all
 
-        exporter.export_with_associations(expected, Project, items)
+        exporter.export_with_associations(expected, Project, Project.all)
 
         csv = CSV.read(expected)
 
         user_header_inx = csv[0].index 'user'
         csv.shift # shift off headers
 
-        expected_ids = items.collect { |p| p.id.to_s }
+        expected_ids = Project.all.collect { |p| p.id.to_s }
         ids = csv.collect { |r| r[0][0] }
         expect(ids).to eq expected_ids
 
         expect( csv[0][user_header_inx] ).to include "title: #{@user.title},first_name: #{@user.first_name}"
       end
+
+      it 'should export a model and  assocs in json to .xls file', duff:true do
+
+        expected = result_file('project_and_assoc_in_json_export.csv')
+
+        DataShift::Exporters::Configuration.configure do |config|
+          config.json = true
+        end
+
+        exporter.export_with_associations(expected, Project, Project.all)
+
+        csv = CSV.read(expected)
+
+        user_header_inx = csv[0].index 'user'
+        csv.shift # shift off headers
+
+        expect( csv[0][user_header_inx] ).to include "title: #{@user.title},first_name: #{@user.first_name}"
+      end
+
     end
   end
 
