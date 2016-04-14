@@ -40,9 +40,7 @@ module DataShift
 
       raise ArgumentError.new('Please supply set of ActiveRecord objects to export') unless first.is_a?(ActiveRecord::Base)
 
-      if(options[:csv_delim])
-        @csv_delimiter = options[:csv_delim]
-      end
+      @csv_delimiter = options[:csv_delim] if options[:csv_delim]
 
       klass_to_headers(first.class)
 
@@ -52,7 +50,7 @@ module DataShift
 
       logger.debug "Writing out CSV Export. Columns delimited by [#{csv_delimiter}]"
 
-      CSV.open(file_name, "w", col_sep: csv_delimiter ) do |csv|
+      CSV.open(file_name, 'w', col_sep: csv_delimiter ) do |csv|
         csv << headers
 
         records.each do |r|
@@ -74,7 +72,7 @@ module DataShift
 
       @file_name = file_name
 
-      @csv_delimiter = options[:csv_delim]  if(options[:csv_delim])
+      @csv_delimiter = options[:csv_delim] if(options[:csv_delim])
 
       types_in_scope = configuration.op_types_in_scope
 
@@ -86,7 +84,7 @@ module DataShift
 
       logger.debug "Writing out CSV Export for #{klass} wioth Associations. Columns delimited by [#{csv_delimiter}]"
 
-      CSV.open(file_name, "w", col_sep: csv_delimiter ) do |csv|
+      CSV.open(file_name, 'w', col_sep: csv_delimiter ) do |csv|
         csv << headers
 
         records.each do |record|

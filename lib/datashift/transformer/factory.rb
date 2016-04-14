@@ -231,7 +231,7 @@ module DataShift
         postfixes_for(klass)[operator] = value
       end
 
-    private
+      private
 
       def set_substitution_on_list(klass, operator, list )
         substitutions_for(klass)[operator] = Struct::Substitution.new(list[0], list[1])

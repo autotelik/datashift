@@ -219,7 +219,7 @@ module DataShift
         expect( csv[0][user_header_inx] ).to include "title: #{@user.title},first_name: #{@user.first_name}"
       end
 
-      it 'should export a model and  assocs in json to .xls file', duff:true do
+      it 'should export a model and assocs in json to .xls file', duff:true do
 
         expected = result_file('project_and_assoc_in_json_export.csv')
 

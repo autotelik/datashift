@@ -108,14 +108,14 @@ module DataShift
       ModelMethod.association_type?( operator_type )
     end
 
-    def ==(mm)
-      mm.class == self.class && mm.state == state
+    def ==(other)
+      other.class == self.class && other.state == state
     end
 
     include Comparable
 
-    def <=>(mm)
-      state <=> mm.state
+    def <=>(other)
+      state <=> other.state
     end
 
     alias eql? ==
@@ -123,7 +123,6 @@ module DataShift
     def hash
       state.hash
     end
-
 
     def pp
       x = <<-EOS

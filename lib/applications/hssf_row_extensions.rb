@@ -7,7 +7,7 @@ if DataShift::Guards.jruby?
 
   # Extend the Poi classes with some syntactic sugar
 
-  java_import  'org.apache.poi.ss.util.CellReference'
+  java_import 'org.apache.poi.ss.util.CellReference'
 
   module Java
 
@@ -39,11 +39,11 @@ if DataShift::Guards.jruby?
         end
 
         def get_or_create_cell( column, value = nil )
-          ref = CellReference.new(getRowNum(), column)
+          ref = CellReference.new(getRowNum, column)
           if value
             getCell(ref.getCol) # || createCell(column, poi_cell_type(value))
           else
-            getCell(ref.getCol) #|| java_send(:createCell, column)
+            getCell(ref.getCol) # || java_send(:createCell, column)
           end
         end
 

@@ -109,7 +109,7 @@ module DataShift
 
           config.remove_rails = true if(options[:remove_rails])
 
-          # TODO DRY by processing all simple assignments as a list
+          # TODO: DRY by processing all simple assignments as a list
           config.with = options[:with] if(options[:with])
           config.exclude = options[:exclude] if(options[:exclude])
           config.remove = options[:remove] if(options[:remove])

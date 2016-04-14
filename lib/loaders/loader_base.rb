@@ -178,7 +178,6 @@ module DataShift
 
       DataShift::Transformer.factory { |f| f.configure_from(load_object_class, yaml_file) }
 
-
       ContextFactory.configure(load_object_class, yaml_file)
 
       logger.info("Loader Options : #{@config.inspect}")

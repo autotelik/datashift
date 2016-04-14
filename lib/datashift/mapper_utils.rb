@@ -16,7 +16,7 @@ module DataShift
     def self.class_from_string_or_raise( klass )
 
       ruby_klass = begin
-                     # support modules e.g "Spree::Property")
+        # support modules e.g "Spree::Property")
         MapperUtils.class_from_string(klass) # Kernel.const_get(model)
       rescue NameError => e
         logger.error( e.message )
@@ -45,11 +45,9 @@ module DataShift
     #
     def self.class_from_string( str )
 
-      begin
-        MapperUtils.const_get_from_string(str.to_s) # Kernel.const_get(model)
-      rescue
-        return nil
-      end
+      MapperUtils.const_get_from_string(str.to_s) # Kernel.const_get(model)
+    rescue
+      return nil
 
     end
 
@@ -58,7 +56,7 @@ module DataShift
       find_table = mod.nil? ? table.classify : "#{mod}::#{table.classify}"
 
       begin
-        DataShift::MapperUtils::class_from_string(find_table)
+        DataShift::MapperUtils.class_from_string(find_table)
       rescue LoadError
       rescue
         nil

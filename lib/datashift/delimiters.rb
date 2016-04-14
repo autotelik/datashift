@@ -124,7 +124,6 @@ module DataShift
 
     attr_writer :csv_delimiter
 
-
     def eol
       "\n"
     end

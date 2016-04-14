@@ -59,7 +59,7 @@ module DataShift
 
     # OpenStruct not a hash .. supports form ... config.path, config.full_name etc
     def method_missing(method, *_args, &_block
-    )
+                      )
       puts "Call mapping data #{method.inspect}"
       # logger :debug, "method_missing called with : #{method}"
       @mappings.send(method)

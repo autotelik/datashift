@@ -91,12 +91,12 @@ module  DataShift
         loader.run(expected, Project)
 
         expect(loader.loaded_count).to eq (Project.count - count)
-        loader.loaded_count.should > 3
+        expect(loader.loaded_count).to be > 3
 
         { '004' => 4, '005' => 1, '006' => 0, '007' => 1 }.each do |title, expected|
           project = Project.where(title: title).first
 
-          project.should_not be_nil
+          expect(project).to_not be_nil
 
           expect(project.categories.size).to eq expected
         end

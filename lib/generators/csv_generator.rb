@@ -26,7 +26,7 @@ module DataShift
 
       csv_delim = DataShift::Exporters::Configuration.call.csv_delimiter
 
-      CSV.open(file_name, "w", col_sep: csv_delim ) do |csv|
+      CSV.open(file_name, 'w', col_sep: csv_delim ) do |csv|
         csv << headers
       end
 

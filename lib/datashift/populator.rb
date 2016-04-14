@@ -134,7 +134,7 @@ module DataShift
         elsif ( )
           @current_value = value.value
         elsif !DataShift::Guards.jruby? &&
-          (data.is_a?(Spreadsheet::Formula) || value.class.ancestors.include?(Spreadsheet::Formula))
+              (data.is_a?(Spreadsheet::Formula) || value.class.ancestors.include?(Spreadsheet::Formula))
           # TOFIX jruby/apache poi equivalent ?
           @value = data.value
         else

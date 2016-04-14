@@ -30,7 +30,7 @@ module DataShift
       if collection
         model_methods = []
 
-        collection.each { |mm| model_methods << mm  if(op_types_in_scope.include? mm.operator_type)  }
+        collection.each { |mm| model_methods << mm if(op_types_in_scope.include? mm.operator_type) }
 
         DataShift::Transformer::Remove.unwanted_model_methods model_methods
 
@@ -70,15 +70,14 @@ module DataShift
     #
     def generate_with_associations(file_name, klass)
 
-      begin
-        state = DataShift::Exporters::Configuration.call.with
+      state = DataShift::Exporters::Configuration.call.with
 
-        DataShift::Exporters::Configuration.call.with = :all
+      DataShift::Exporters::Configuration.call.with = :all
 
-        generate(file_name, klass)
-      ensure
-        DataShift::Exporters::Configuration.call.with = state
-      end
+      generate(file_name, klass)
+    ensure
+      DataShift::Exporters::Configuration.call.with = state
+
     end
 
   end

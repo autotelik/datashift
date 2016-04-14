@@ -102,7 +102,7 @@ module DataShift
       expect(headers.include?('owner')).to eq  true
 
       %w(milestones loader_releases versions categories).each do |check|
-        headers.should_not include check
+        expect(headers).to_not include check
       end
     end
 
@@ -156,7 +156,7 @@ module DataShift
       headers = excel.worksheets[0].row(0)
 
       %w(id updated_at created_at).each do |check|
-        headers.should_not include check
+        expect(headers).to_not include check
       end
     end
 

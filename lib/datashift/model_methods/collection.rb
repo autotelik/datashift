@@ -35,7 +35,6 @@ module DataShift
       # ModelMethod is now Comparable
       def_delegators :@model_method_list, [], :sort, :sort!, :first, :last
 
-
       def initialize( klass )
         @managed_class = klass
         @model_method_list = []
@@ -55,12 +54,12 @@ module DataShift
       end
 
       def add(model_method)
-        model_method_list <<  model_method
+        model_method_list << model_method
 
         maintain_by_optype_helper model_method
       end
 
-      def maintain_by_optype_helper ( model_method )
+      def maintain_by_optype_helper( model_method )
         # Helper list of all available by type  [:belongs_to]
         by_optype[model_method.operator_type.to_sym] ||= []
         by_optype[model_method.operator_type.to_sym] << model_method
@@ -75,16 +74,14 @@ module DataShift
         add(model_method)
       end
 
-      def unshift (model_method)
+      def unshift(model_method)
         model_method_list.unshift model_method
         maintain_by_optype_helper model_method
       end
 
-
-      def each &block
-        model_method_list.each{ |mm| block.call(mm)}
+      def each
+        model_method_list.each { |mm| yield(mm) }
       end
-
 
       # Search for  matching ModelMethod for given name across all types in supported_types_enum order
       def search(name)
@@ -119,12 +116,10 @@ module DataShift
         model_method_list.find_all { |mm| mm.operator_type? type }
       end
 
-
       # Get list of Rails model operators
       def get_operators(type)
         for_type(type).collect(&:operator)
       end
-
 
       def available_operators
         model_method_list.collect(&:operator)

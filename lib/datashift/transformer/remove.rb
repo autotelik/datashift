@@ -32,7 +32,6 @@ module DataShift
         model_methods.delete_if { |r| remove_list.include?( r.operator.to_sym ) } unless remove_list.empty?
       end
 
-
     end
 
   end

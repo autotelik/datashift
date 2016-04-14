@@ -28,8 +28,8 @@ module DataShift
       @import_template ||= File.join(DataShift.library_path, 'datashift/templates/standard_import_config.erb')
     end
 
-    def write_import(file_name, klass_or_name , options = {})
-      result = import(klass_or_name , options)
+    def write_import(file_name, klass_or_name, options = {})
+      result = import(klass_or_name, options)
 
       logger.info("Writing Import Config File [#{file_name}]")
 
@@ -41,16 +41,16 @@ module DataShift
     #
     # For other options See DataShift::Importers::Configuration
     #
-    def import(klass_or_name , options = {})
+    def import(klass_or_name, options = {})
 
-      @klass = MapperUtils::ensure_class(klass_or_name)
+      @klass = MapperUtils.ensure_class(klass_or_name)
 
-      @title = "#{@klass.name}"
+      @title = @klass.name.to_s
 
       @defaults = options[:defaults] || []
       @overrides = options[:overrides] || []
       @substitutions = options[:substitutions] || []
-      @prefixs = options[:prefixs] ||  []
+      @prefixs = options[:prefixs] || []
       @postfixs = options[:postfixs] || []
 
       klass_to_headers(@klass)
@@ -64,8 +64,8 @@ module DataShift
       @export_template ||= File.join(DataShift.library_path, 'datashift/templates/standard_export_config.erb')
     end
 
-    def write_export(file_name, klass_or_name , options = {})
-      result = export(klass_or_name , options)
+    def write_export(file_name, klass_or_name, options = {})
+      result = export(klass_or_name, options)
 
       logger.info("Writing Export Config File [#{config[:file]}]")
 
@@ -77,16 +77,16 @@ module DataShift
     #
     # For other options See DataShift::Exporters::Configuration
     #
-    def export(klass_or_name , options = {})
+    def export(klass_or_name, options = {})
 
-      @klass = MapperUtils::ensure_class(klass_or_name)
+      @klass = MapperUtils.ensure_class(klass_or_name)
 
-      @title = "#{@klass.name}"
+      @title = @klass.name.to_s
 
       @defaults = options[:defaults] || []
       @overrides = options[:overrides] || []
       @substitutions = options[:substitutions] || []
-      @prefixs = options[:prefixs] ||  []
+      @prefixs = options[:prefixs] || []
       @postfixs = options[:postfixs] || []
 
       klass_to_headers(@klass)

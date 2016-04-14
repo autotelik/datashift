@@ -97,7 +97,7 @@ module DataShift
 
   end
 
-# Load all the datashift  tasks and make them available throughout app
+  # Load all the datashift  tasks and make them available throughout app
   def self.load_tasks
     # Long parameter lists so ensure rake -T produces nice wide output
     ENV['RAKE_COLUMNS'] = '180'
@@ -105,7 +105,7 @@ module DataShift
     Dir["#{base}/*.rake"].sort.each { |ext| load ext }
   end
 
-# Load all the datashift Thor commands and make them available throughout app
+  # Load all the datashift Thor commands and make them available throughout app
 
   def self.load_commands
     base = File.join(library_path, 'tasks', '**')
