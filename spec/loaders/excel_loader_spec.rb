@@ -157,13 +157,13 @@ module  DataShift
         end
       end
 
-      it 'should process excel spreedsheet with extra undefined columns' do
+      it 'should process excel spreadsheet with extra undefined columns' do
         expected = ifixture_file('BadAssociationName.xls')
 
         expect { loader.run(expected, Project) }.to_not raise_error
       end
 
-      it 'should NOT process excel spreedsheet with extra undefined columns when strict mode' do
+      it 'should NOT process excel spreadsheet with extra undefined columns when strict mode' do
         expected = ifixture_file('BadAssociationName.xls')
 
         loader.configuration.strict = true
@@ -257,27 +257,20 @@ module  DataShift
       end
 
       it 'should provide facility to set default values via YAML configuration'  do
-
         loader.run(expected, Project)
 
         p = Project.find_by_title( '099' )
 
         expect(p).to_not be_nil
 
-        puts p.inspect, p.categories.inspect
-
         # yaml has snippet to set Time to 'now' .. at least match the date part
         expect(p.value_as_datetime.to_s).to include(Date.today.to_s)
       end
 
       it 'should combine transformations set via YAML configuration' do
-
-
         p = Project.find_by_title( '099' )
 
         expect(p).to_not be_nil
-
-        puts p.inspect, p.value_as_datetime
 
         expect(p.value_as_string).to eq 'prefix me every-time Default Project Value postfix me every-time'
       end
