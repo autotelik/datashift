@@ -55,8 +55,6 @@ module DataShift
           sheet.each_with_index do |row, i|
             current_row_idx = i
 
-            doc_context.current_row = row
-
             next if current_row_idx == headers.idx
 
             # Excel num_rows seems to return all 'visible' rows, which appears to be greater than the actual data rows
@@ -80,7 +78,7 @@ module DataShift
 
               value = row[method_binding.inbound_index] # binding contains column number
 
-              context = doc_context.create_context(method_binding, i, value)
+              context = doc_context.create_node_context(method_binding, i, value)
 
               contains_data ||= context.contains_data?
 
@@ -111,7 +109,7 @@ module DataShift
             end
 
             # unless next operation is update, reset the loader object
-            doc_context.reset unless doc_context.context.next_update?
+            doc_context.reset unless doc_context.node_context.next_update?
           end # all rows processed
 
           if(configuration.dummy_run)

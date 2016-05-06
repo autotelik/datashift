@@ -65,12 +65,13 @@ module DataShift
       !!DataShift::Importers::Configuration.call.abort_on_failure
     end
 
+    # TOFIX - use delegation to doc_context.progress_monitor
     def loaded_count
-      reporter.loaded_objects.size
+      doc_context.progress_monitor.loaded_objects.size
     end
 
     def failed_count
-      reporter.failed_objects.size
+      doc_context.progress_monitor.failed_objects.size
     end
 
     def load_object_class
@@ -91,12 +92,8 @@ module DataShift
       doc_context.headers
     end
 
-    def reporter
-      doc_context.reporter
-    end
-
     def report
-      reporter.report
+      doc_context.reporters.each {|r| r.report }
     end
 
     # Core API

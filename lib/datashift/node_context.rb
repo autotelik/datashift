@@ -10,7 +10,7 @@
 
 module DataShift
 
-  class Context
+  class NodeContext
 
     include DataShift::Logging
 
@@ -33,7 +33,7 @@ module DataShift
 
     def next_update?
       false # for now create only
-      # TODO :
+      # TODO : Support UPDATES
       # next = ProcessingRules.next_action(method_binding )
       # next == :update
     end
@@ -51,7 +51,7 @@ module DataShift
 
   end
 
-  class EmptyContext < Context
+  class EmptyContext < NodeContext
 
     def initialize
       super(NilClass, DataShift::NoMethodBinding.new, -1, [])

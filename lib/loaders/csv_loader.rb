@@ -65,9 +65,7 @@ module DataShift
           parsed_file.each_with_index do |row, i|
             current_row_idx = i
 
-            doc_context.current_row = row
-
-            logger.info "Processing Row #{i} : #{@current_row}"
+            logger.info "Processing Row #{i} : #{row}"
 
             # Iterate over the bindings, creating a context from data in associated Excel column
 
@@ -79,7 +77,7 @@ module DataShift
 
               value = row[method_binding.inbound_index] # binding contains column number
 
-              context = doc_context.create_context(method_binding, i, value)
+              context = doc_context.create_node_context(method_binding, i, value)
 
               logger.info "Processing Column #{method_binding.inbound_index} (#{method_binding.pp})"
 
@@ -99,7 +97,7 @@ module DataShift
               doc_context.save_and_report
             end
 
-            doc_context.reset unless doc_context.context.next_update?
+            doc_context.reset unless doc_context.node_context.next_update?
           end # all rows processed
 
           if(configuration.dummy_run)
