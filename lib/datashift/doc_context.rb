@@ -119,13 +119,17 @@ module DataShift
     end
 
     def save_and_report
-
-      if save
-        logger.info("Successfully SAVED Object [#{load_object.id}] for [#{context.method_binding.pp}]")
-        success
+      if(errors? && all_or_nothing?)
+        # Error already logged with doc_context.failure
+        logger.warn "Row #{current_row_idx} contained errors - SAVE has been skipped"
       else
-        logger.error( "Save FAILED - logging failed object [#{load_object.id}] ")
-        failure( current_errors )
+        if save
+          logger.info("Successfully SAVED Object [#{load_object.id}] for [#{context.method_binding.pp}]")
+          success
+        else
+          logger.error( "Save FAILED - logging failed object [#{load_object.id}] ")
+          failure( current_errors )
+        end
       end
 
     end

@@ -103,12 +103,7 @@ module DataShift
             # manually have to detect when actual data ends
             break if !allow_empty_rows && contains_data == false
 
-            if doc_context.errors? && doc_context.all_or_nothing?
-              # Error already logged with doc_context.failure
-              logger.warn "Row #{current_row_idx} contained errors and has been skipped"
-            else
-              doc_context.save_and_report
-            end
+            doc_context.save_and_report
 
             # unless next operation is update, reset the loader object
             doc_context.reset unless doc_context.context.next_update?

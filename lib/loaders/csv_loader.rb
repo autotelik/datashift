@@ -91,13 +91,9 @@ module DataShift
                   break
                 end
               end
-            end
+            end   # end of each column(node)
 
-            if doc_context.errors? && doc_context.all_or_nothing?
-              logger.warn "Row #{current_row_idx} contained errors and has been skipped"
-            else
-              doc_context.save_and_report
-            end
+            doc_context.save_and_report
 
             doc_context.reset unless doc_context.context.next_update?
           end # all rows processed
