@@ -31,7 +31,7 @@ module DataShift
 
       records = [*export_records]
 
-      unless records && records.size > 0
+      unless records && !records.empty?
         logger.warn('No objects supplied for export')
         return
       end

@@ -28,7 +28,7 @@ module DataShift
 
       records = [*export_records]
 
-      unless records && records.size > 0
+      if(records.nil? || records.empty?)
         logger.warn('Excel Export - No objects supplied for export - no file written')
         return
       end

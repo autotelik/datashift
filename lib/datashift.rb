@@ -62,12 +62,14 @@ module DataShift
                     'datashift/model_methods',
                     'datashift/transformer',
                     'datashift/inbound_data',
-                    'loaders', 'exporters', 'generators', 'helpers', 'applications']
+                    'loaders', 'loaders/reporters',
+                    'exporters', 'generators', 'helpers', 'applications']
 
     begin
       require_relative 'datashift/delimiters'
       require_relative 'generators/generator_base'
       require_relative 'generators/file_generator'
+      require_relative 'loaders/reporters/reporter'
       require_relative 'loaders/loader_base'
       require_relative 'exporters/exporter_base'
     rescue => x
