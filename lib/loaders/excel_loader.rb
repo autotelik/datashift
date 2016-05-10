@@ -101,7 +101,7 @@ module DataShift
             # manually have to detect when actual data ends
             break if !allow_empty_rows && contains_data == false
 
-            doc_context.save_and_report
+            doc_context.save_and_monitor_progress
 
             # unless next operation is update, reset the loader object
             doc_context.reset unless doc_context.node_context.next_update?

@@ -91,7 +91,7 @@ module DataShift
               end
             end   # end of each column(node)
 
-            doc_context.save_and_report
+            doc_context.save_and_monitor_progress
 
             doc_context.reset unless doc_context.node_context.next_update?
           end # all rows processed

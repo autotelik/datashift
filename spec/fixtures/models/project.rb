@@ -11,12 +11,14 @@
 #       t.datetime :value_as_datetime, :default => nil
 #       t.integer  :value_as_integer, :default => 0
 #
-#   :precision - Specifies the precision for a :decimal column.
-#:  scale - Specifies the scale for a :decimal column.
-# For example, the number 123.45 has a precision of 5 and a scale of 2.
-# A decimal with a precision of 5 and a scale of 2 can range from -999.99 to 999.99.
+#       :precision - Specifies the precision for a :decimal column.
+#       :scale - Specifies the scale for a :decimal column.
+#
+#       For example, the number 123.45 has a precision of 5 and a scale of 2.
+#       A decimal with a precision of 5 and a scale of 2 can range from -999.99 to 999.99.
 #
 #       t.decimal  :value_as_double, :precision => 8, :scale => 4, :default => 0.0
+#
 #       t.references :user
 #       t.timestamps
 #     end

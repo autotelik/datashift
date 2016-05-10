@@ -17,7 +17,7 @@ module DataShift
     end
 
     def self.rails_sandbox_path
-      File.expand_path('../../rails_sandbox', __FILE__)
+      File.expand_path('../../dummy', __FILE__)
     end
 
     def self.gen_rails_sandbox( force = false)

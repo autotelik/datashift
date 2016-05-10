@@ -7,6 +7,8 @@ gemspec
 
 group :test do
 
+  gem "rspec-rails", "~> 3.4"
+
   platform :jruby do
     gem 'jruby-openssl'
     gem 'activerecord-jdbcsqlite3-adapter'

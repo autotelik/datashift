@@ -1,7 +1,11 @@
+DB_CLEANER_TRUNCATION_OPTS = {} # except: %w(projects) }.freeze
+
 RSpec.configure do |config|
+
   config.before(:suite) do
-    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.strategy = :truncation, DB_CLEANER_TRUNCATION_OPTS
     DatabaseCleaner.clean_with(:truncation)
+
 
     begin
       DatabaseCleaner.start

@@ -3,7 +3,7 @@ AllCops:
   Exclude:
     - 'spec/**/*'
     - 'spec/private/**/*'
-    - 'spec/rails_sandbox/**/*'
+    - 'spec/dummy/**/*'
     - 'spec/factories/*.rb'
     - 'spec/fixtures/**/*'
     - 'fixtures/**/*'

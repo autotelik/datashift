@@ -49,7 +49,7 @@ module  DataShift
         expect(loader.headers.idx).to eq 0
       end
 
-      it 'should process multiple associations from single column', duff:true do
+      it 'should process multiple associations from single column' do
         expect(Project.where(title: '001').first).to be_nil
         count = Project.count
 

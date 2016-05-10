@@ -101,8 +101,13 @@ module DataShift
         if owner_record
           logger.info("#{owner_record.class} (id : #{owner_record.id}) found with matching :#{attach_to_find_by_field} ")
         else
-          logger.error("No matching owner found for file name : #{search_term}")
-          doc_context.failure("No matching owner found for file name : #{search_term}")
+
+          message = "No matching owner found for file name : #{search_term}"
+
+          failed = FailureData.new(nil, doc_context.node_context, message)
+
+          doc_context.progress_monitor.failure(failed, message)
+
           missing_records << in_file_name
         end
 

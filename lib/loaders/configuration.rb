@@ -20,8 +20,14 @@ module DataShift
       #
       attr_accessor :mandatory
 
-      # @param [Boolean] Stop processing and abort if a row fails to import
-      # Default is false
+      # Destroy failed objects - if object.save fails at any point destroy the current object - all or nothing
+      # Default is true - database is cleaned up
+      # @return [Boolean]
+      #
+      attr_accessor :destroy_on_failure
+
+      # @param [Boolean] Stop processing and abort if any row fails to import
+      # Default is false - row reported as failure but loading continues
       # @return [Boolean]
       #
       attr_accessor :abort_on_failure
@@ -29,6 +35,7 @@ module DataShift
       def initialize
         @mandatory = []
         @abort_on_failure = false
+        @destroy_on_failure = true
       end
 
       # @return [DataShift::Importers::Configuration] DataShift's current configuration

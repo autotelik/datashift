@@ -76,11 +76,11 @@ module DataShift
       end
 
       def clear
-        @defaults = {}
-        @overrides = {}
-        @substitutions = {}
-        @prefixes = {}
-        @postfixes = {}
+        @defaults = new_hash_instance
+        @overrides = new_hash_instance
+        @substitutions = new_hash_instance
+        @prefixes = new_hash_instance
+        @postfixes = new_hash_instance
       end
 
       # Default values and over rides per class can be provided in YAML config file.
@@ -117,7 +117,7 @@ module DataShift
       end
 
       def defaults_for( klass )
-        defaults[klass] ||= {}
+        defaults[klass] ||= new_hash_instance
         defaults[klass]
       end
 
@@ -132,7 +132,7 @@ module DataShift
       # SUBSTITUTIONS
 
       def substitutions_for( klass )
-        substitutions[klass] ||= {}
+        substitutions[klass] ||= new_hash_instance
         substitutions[klass]
       end
 
@@ -146,7 +146,7 @@ module DataShift
 
       # OVER RIDES
       def overrides_for(klass)
-        overrides[klass] ||= {}
+        overrides[klass] ||= new_hash_instance
         overrides[klass]
       end
 
@@ -159,7 +159,7 @@ module DataShift
       end
 
       def prefixes_for(klass)
-        prefixes[klass] ||= {}
+        prefixes[klass] ||= new_hash_instance
         prefixes[klass]
       end
 
@@ -172,7 +172,7 @@ module DataShift
       end
 
       def postfixes_for(klass)
-        postfixes[klass] ||= {}
+        postfixes[klass] ||= new_hash_instance
         postfixes[klass]
       end
 
@@ -235,6 +235,10 @@ module DataShift
 
       def set_substitution_on_list(klass, operator, list )
         substitutions_for(klass)[operator] = Struct::Substitution.new(list[0], list[1])
+      end
+
+      def new_hash_instance
+        ActiveSupport::HashWithIndifferentAccess.new {}
       end
 
     end

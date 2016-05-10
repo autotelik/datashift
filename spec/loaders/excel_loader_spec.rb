@@ -68,7 +68,7 @@ module  DataShift
 
     context 'creates new records' do
 
-      it 'should process a simple .xls spreedsheet', fail: true do
+      it 'should process a simple .xls spreedsheet' do
         count = Project.count
 
         loader.run(expected, Project)
@@ -256,7 +256,7 @@ module  DataShift
         loader.run(expected, Project)
       end
 
-      it 'should provide facility to set default values via YAML configuration'  do
+      it 'should provide facility to set DEFAULT values via YAML configuration'  do
         loader.run(expected, Project)
 
         p = Project.find_by_title( '099' )
@@ -267,7 +267,7 @@ module  DataShift
         expect(p.value_as_datetime.to_s).to include(Date.today.to_s)
       end
 
-      it 'should combine transformations set via YAML configuration' do
+      it 'should combine PREFIX and POSTFIX transformations set via YAML configuration' do
         p = Project.find_by_title( '099' )
 
         expect(p).to_not be_nil
@@ -275,30 +275,16 @@ module  DataShift
         expect(p.value_as_string).to eq 'prefix me every-time Default Project Value postfix me every-time'
       end
 
-      it 'should provide facility to over ride values via YAML configuration', excel: true do
-        pending 'pending fix over rides - configure_from YAML '
-        loader.configure_from( ifixture_file('ProjectConfiguration.yml') )
+      it 'should provide facility to OVER RIDE values via YAML configuration' do
 
-        loader.run(Project)
+        expected = DataShift::Transformer.factory.overrides_for(Project)[:value_as_double]
 
-        Project.all.each { |p| expect(p.value_as_double).to eq 99.23546 }
+        Project.all.each { |p|
+          # TOFIX - the scale of the DB column from migration is 4 -- can we get that dynamically ?
+          expect(p.value_as_double).to be_within(0.0001).of(expected)
+        }
       end
 
-      it 'should provide facility to over ride values via YAML configuration', yaml: true do
-        pending 'pending fix over rides - configure_from YAML '
-
-        expect(Project.count).to eq 0
-
-        loader.configure_from( ifixture_file('ProjectConfiguration.yml') )
-
-        loader.run(Project)
-
-        Project.all.each do |p|
-          expect(p.value_as_double).to be_a BigDecimal
-          expect(p.value_as_double).to eq 99.23546
-        end
-      end
     end
   end
-
 end

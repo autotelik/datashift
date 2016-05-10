@@ -72,31 +72,6 @@ module DataShift
       !load_object.errors.empty?
     end
 
-    def success
-      @progress_monitor.add_loaded_object(load_object)
-      logger.info("Successfully processed #{@progress_monitor.success_inbound_count}")
-    end
-
-    # Loading failed. Store a failed object and if requested roll back (destroy) the current load object
-    # For use case where object saved early but subsequent required columns fail to process
-    # so the load object is invalid
-
-    def failure( error_messages, _delete_object = true)
-
-      logger.error "Failure(S) reported : #{[*error_messages].inspect}"
-
-      failed = FailureData.new(load_object, node_context, error_messages)
-
-      @progress_monitor.add_failed_object(failed)
-
-      # TODO: - make this behaviour configurable with some kind of rollback setting/functoon
-      if load_object.respond_to?('destroy') && !load_object.new_record?
-        load_object.destroy
-        reset
-      end if load_object
-
-    end
-
     # This method usually called during processing to avoid errors with associations like
     #   <ActiveRecord::RecordNotSaved: You cannot call create unless the parent is saved>
     # If the object is still invalid at this point probably indicates compulsory
@@ -112,17 +87,27 @@ module DataShift
       raise DataShift::SaveError, "Cannot Save Invalid #{load_object.class} Record : #{current_errors}"
     end
 
-    def save_and_report
+
+    # Save the object and then report the outcome to ProgressMonitor, as either success or failure
+    #
+    def save_and_monitor_progress
       if(errors? && all_or_nothing?)
         # Error already logged with doc_context.failure
         logger.warn "Row #{current_row_idx} contained errors - SAVE has been skipped"
       else
         if save
-          logger.info("Successfully SAVED Object [#{load_object.id}] for [#{context.method_binding.pp}]")
-          success
+          @progress_monitor.success(load_object)
+
+          logger.info("Successfully Processed [#{node_context.method_binding.pp}]")
+          logger.info("Successfully SAVED Object #{@progress_monitor.success_inbound_count} - [#{load_object.id}]")
         else
-          logger.error( "Save FAILED - logging failed object [#{load_object.id}] ")
-          failure( current_errors )
+
+          failed = FailureData.new(load_object, node_context, current_errors)
+
+          @progress_monitor.failure(failed, current_errors)
+
+          logger.info("Failed to Process [#{node_context.method_binding.pp}]")
+          logger.info("Failed to SAVE Object #{@progress_monitor.success_inbound_count} - [#{load_object.inspect}]")
         end
       end
     end

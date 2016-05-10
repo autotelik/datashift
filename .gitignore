@@ -29,11 +29,10 @@ spec/logs
 spec/logs/**
 spec/fixtures/results
 spec/private
-spec/rails_sandbox
+spec/dummy
 
 nbproject
 Thumbs.db
-
 
 # rdoc generated
 rdoc

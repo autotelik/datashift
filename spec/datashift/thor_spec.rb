@@ -63,7 +63,7 @@ describe 'Thor high level command line tasks' do
     skip 'How to run once rails already initialzed .. error : database configuration does not specify adapter'
 
     x = Thread.new {
-      run_in(rails_sandbox) do
+      run_in(Sandbox.rails_sandbox_path) do
         stdout = capture_stream(:stdout){
           Thor::Runner.start(['datashift:import:excel', '-m', 'Project', '-i', ifixture_file('ProjectsSingleCategories.xls')])
         }
