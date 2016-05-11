@@ -32,7 +32,6 @@ module DataShift
     #
     #  Options passed through  to :  populate_method_mapper_from_headers
     #
-    #   [:force_inclusion] : Array of inbound column names to force into mapping
     #   [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
 
     def perform_load( options = {} )
@@ -70,6 +69,8 @@ module DataShift
 
             # Iterate over the bindings, creating a context from data in associated Excel column
 
+            doc_context.progress_monitor.start_monitoring
+
             @binder.bindings.each_with_index do |method_binding, i|
               unless method_binding.valid?
                 logger.warn("No binding was found for column (#{current_row_idx})")
@@ -78,7 +79,7 @@ module DataShift
 
               value = row[method_binding.inbound_index] # binding contains column number
 
-              context = doc_context.create_node_context(method_binding, i, value)
+              context = doc_context.create_node_context(method_binding, current_row_idx, value)
 
               contains_data ||= context.contains_data?
 
@@ -86,19 +87,16 @@ module DataShift
 
               begin
                 context.process
-              rescue => x
-
-                logger.error("Process failed with #{x.inspect} #{x.backtrace.last}")
-
+              rescue
                 if doc_context.all_or_nothing?
-                  logger.error('Node failed so Current Row aborted')
+                  logger.error('All or nothing set and Current Column failed so complete Row aborted')
                   break
                 end
-
               end
+
             end
 
-            # manually have to detect when actual data ends
+            # Excel data rows not accurate, seems to have to manually detect when actual Excel data rows end
             break if !allow_empty_rows && contains_data == false
 
             doc_context.save_and_monitor_progress

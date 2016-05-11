@@ -99,7 +99,7 @@ module DataShift
         end
       end
 
-      context 'Full Collection from Class and operations', duff: true do
+      context 'Full Collection from Class and operations' do
 
         let(:collection) { ModelMethods::Manager.catalog_class(Project) }
 

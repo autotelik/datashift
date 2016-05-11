@@ -11,7 +11,7 @@ module DataShift
 
     attr_reader :mandatory_columns, :missing_columns
 
-    def initialize(columns = [])
+    def initialize(columns)
 
       @mandatory_columns = columns
 

@@ -29,7 +29,6 @@ module DataShift
     #
     #  Options passed through  to :  populate_method_mapper_from_headers
     #
-    #   [:force_inclusion] : Array of inbound column names to force into mapping
     #   [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
 
     def perform_load( options = {} )
@@ -85,7 +84,7 @@ module DataShift
                 context.process
               rescue => x
                 if doc_context.all_or_nothing?
-                  logger.error('Node failed so Current Row aborted')
+                  logger.error('All or nothing set and Current Columnfailed so complete Row aborted')
                   break
                 end
               end

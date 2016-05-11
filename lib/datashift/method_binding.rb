@@ -95,6 +95,10 @@ module DataShift
       "Binding: Column [#{inbound_index}] : Header [#{inbound_name}] : Operator [#{model_method.operator}]"
     end
 
+    def spp
+      "Column [#{inbound_index}] : Header [#{inbound_name}]"
+    end
+
   end
 
   class NoMethodBinding < MethodBinding

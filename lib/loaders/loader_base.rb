@@ -20,24 +20,28 @@ module DataShift
     include DataShift::Logging
     include DataShift::Querying
 
-    attr_accessor :configuration
     attr_accessor :file_name
-
-    attr_accessor :doc_context
     attr_accessor :binder
 
-    # Options
-    #
-    #  :strict          : Raise exceptions when issues like missing mandatory columns
-    #
+    extend Forwardable
+
+    attr_accessor :doc_context
+
+    # Fwd calls onto the DocumentContext
+    def_delegators :doc_context,
+                   :load_object,
+                   :loaded_count, :failed_count,
+                   :headers, :reporters, :reporters=
+
+    attr_reader :configuration
+
     def initialize
       @file_name = ''
 
       @doc_context = DocContext.new(Object)
-
       @binder      = Binder.new
 
-      @configuration = DataShift::Importers::Configuration.new
+      @configuration = DataShift::Importers::Configuration.call
     end
 
     def setup_load_class(load_class)
@@ -62,38 +66,22 @@ module DataShift
     end
 
     def abort_on_failure?
-      !!DataShift::Importers::Configuration.call.abort_on_failure
+      !! configuration.abort_on_failure
     end
 
-    # TOFIX - use delegation to doc_context.progress_monitor
-    def loaded_count
-      doc_context.progress_monitor.loaded_objects.size
-    end
-
-    def failed_count
-      doc_context.progress_monitor.failed_objects.size
-    end
 
     def load_object_class
       doc_context.klass
     end
 
-    def load_object
-      doc_context.load_object
+    def set_headers(headings)
+      logger.info("Setting parsed headers to [#{headings.inspect}]")
+      doc_context.headers = headings
     end
 
-    def set_headers(column_headings)
-      logger.info("Setting parsed headers to [#{column_headings.inspect}]")
-
-      doc_context.headers = column_headings
-    end
-
-    def headers
-      doc_context.headers
-    end
 
     def report
-      doc_context.reporters.each {|r| r.report }
+      reporters.each {|r| r.report }
     end
 
     # Core API
@@ -101,16 +89,7 @@ module DataShift
     # Given a list of free text column names from inbound headers,
     # map all headers to a domain model containing details on operator, look ups etc.
     #
-    #    [:ignore]          : List of column headers to ignore when building operator map
-    #
-    #    [:force_inclusion] : List of columns that do not map to any operator but should be includeed in processing.
-    #
-    #       This provides the opportunity for :
-    #
-    #       1) loaders to provide specific methods to handle these fields, when no direct operator
-    #        is available on the model or it's associations
-    #
-    #       2) Handle delegated methods i.e no direct association but method is on a model throuygh it's delegate
+    #    [:ignore]          : List of column headers to ignore when building operator ma
     #
     #    [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
     #
@@ -135,14 +114,14 @@ module DataShift
         raise MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}" if configuration.strict
       end
 
-      mandatory = DataShift::Mandatory.new configuration.mandatory
+      mandatory = DataShift::Mandatory.new(configuration.mandatory)
 
       unless mandatory.contains_all?(binder)
         mandatory.missing_columns.each do |er|
           logger.error "Mandatory column missing - expected column '#{er}'"
         end
 
-        raise MissingMandatoryError, 'Mandatory columns missing  - please fix and retry.'
+        raise MissingMandatoryError, 'Mandatory columns missing  - see logs - please fix and retry.'
       end
 
       binder
@@ -178,15 +157,6 @@ module DataShift
       ContextFactory.configure(load_object_class, yaml_file)
 
       logger.info("Loader Options : #{@config.inspect}")
-    end
-
-    protected
-
-    # Take current column data and split into each association
-    # Supported Syntax :
-    #  assoc_find_name:value | assoc2_find_name:value | etc
-    def get_each_assoc
-      current_value = @populator.value.to_s.split( Delimiters.multi_assoc_delim )
     end
 
   end

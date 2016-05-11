@@ -13,10 +13,11 @@ module DataShift
       # Holds the actual data r.e data rows/objects inbound
       attr_accessor :progress_monitor
 
-      def initialize(progress_monitor)
+      def initialize(progress_monitor = DataShift::ProgressMonitor.new)
         @progress_monitor = progress_monitor
       end
 
+      # an abstract method
       def report
       end
 

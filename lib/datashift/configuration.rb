@@ -10,6 +10,7 @@ require 'erubis'
 module DataShift
 
   class Configuration
+
     # When performing import, default is to ignore any columns that cannot be mapped  (via headers)
     # To raise an error set strict => true
     # Defaults to `false`. Set to `true` to cause exceptions to be thrown
@@ -17,6 +18,19 @@ module DataShift
     # @param [Boolean] value
     # @return [Boolean]
     attr_accessor :strict
+
+
+    # When performing writes use update methods that write immediately to DB
+    # and use validations.
+    #
+    # Validations can ensure business logic but this can be far less efficient as writes to DB once per column
+    #
+    # To raise an error set strict => true
+    # Default  is to use more efficient but less strict attribute writing,
+    # no write to DB/No validations run
+    # @param [Boolean] value
+    # @return [Boolean]
+    attr_accessor :update_and_validate
 
     # Controls the amount of information written to the log
     # Defaults to `false`. Set to `true` to cause extensive progress messages to be logged
@@ -31,6 +45,19 @@ module DataShift
     # @return [Boolean]
     attr_accessor :dummy_run
 
+    #  List of external columns that do not map to any operator but should be included in processing.
+    #
+    #  Example use cases
+    #
+    #  Provides the opportunity for loaders to provide specific methods to handle columns
+    #  that do not map directly to a model's operators or associations
+    #
+    #  Enable handling delegated methods i.e no direct association but method is on a model through it's delegate
+    #
+    # @param [Array] value
+    # @return [Array]
+    attr_accessor :force_inclusion_of_columns
+
     def self.rails_columns
       @rails_standard_columns ||= [:id, :created_at, :created_on, :updated_at, :updated_on]
     end
@@ -39,11 +66,19 @@ module DataShift
       @strict = false
       @verbose = false
       @dummy_run = false
+      @force_inclusion_of_columns = []
+
+      # default to more efficient attribute writing - no write to DB/no validations run
+      @update_and_validate = false
     end
 
     # @return [DataShift::Configuration] DataShift's current configuration
     def self.call
       @configuration ||= Configuration.new
+    end
+
+    def self.reset
+      @configuration = Configuration.new
     end
 
     # Set DataShift's configuration

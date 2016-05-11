@@ -150,7 +150,7 @@ module DataShift
         expect(mapping_service.mappings['Project']).to be_a Hash
       end
 
-      it 'should provide access to the collection of mappings under top level', duff: true do
+      it 'should provide access to the collection of mappings under top level' do
         project_mappings = mapping_service.mappings['Project']
 
         expect(project_mappings.key?('column_mappings')).to eq true

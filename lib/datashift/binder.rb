@@ -49,6 +49,10 @@ module DataShift
       missing_bindings.collect(&:inbound_index)
     end
 
+    def forced_inclusion_columns
+      [*DataShift::Configuration.call.force_inclusion_of_columns]
+    end
+
     # Build complete picture of the methods whose names listed in columns
     # Handles method names as defined by a user, from spreadsheets or file headers where the names
     # specified may not be exactly as required e.g handles capitalisation, white space, _ etc
@@ -77,11 +81,6 @@ module DataShift
     #
     # Options:
     #
-    #   [:force_inclusion]  : List of columns that do not map to any operator but should be included in processing.
-    #
-    #       This provides the opportunity for loaders to provide specific methods to handle these fields
-    #       when no direct operator is available on the model or it's associations
-    #
     #   [:include_all]      : Include all headers in processing - takes precedence of :force_inclusion
     #
     #   [:model_classes]    : Also ensure these classes are included in ModelMethods Dictionary
@@ -98,7 +97,7 @@ module DataShift
         ModelMethods::Manager.catalog_class(c)
       end if options[:model_classes]
 
-      forced = [*options[:force_inclusion]].compact.collect { |f| f.to_s.downcase }
+      forced = forced_inclusion_columns.compact.collect { |f| f.to_s.downcase }
 
       reset
 

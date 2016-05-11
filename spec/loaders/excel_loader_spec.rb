@@ -36,7 +36,7 @@ module  DataShift
         create_list(:category, 5)
       end
 
-      it 'should provide access to the file_name', duff: true do
+      it 'should provide access to the file_name' do
         loader.run(expected, Project)
         expect(loader.file_name).to eq expected
       end

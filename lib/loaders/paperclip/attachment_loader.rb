@@ -106,7 +106,7 @@ module DataShift
 
           failed = FailureData.new(nil, doc_context.node_context, message)
 
-          doc_context.progress_monitor.failure(failed, message)
+          doc_context.progress_monitor.failure(failed)
 
           missing_records << in_file_name
         end

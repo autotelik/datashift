@@ -134,7 +134,7 @@ module DataShift
         elsif ( )
           @current_value = value.value
         elsif !DataShift::Guards.jruby? &&
-              (data.is_a?(Spreadsheet::Formula) || value.class.ancestors.include?(Spreadsheet::Formula))
+          (data.is_a?(Spreadsheet::Formula) || value.class.ancestors.include?(Spreadsheet::Formula))
           # TOFIX jruby/apache poi equivalent ?
           @value = data.value
         else
@@ -215,11 +215,18 @@ module DataShift
           logger.debug("Assignment via [#{operator}] to [#{value}] (CAST [#{model_method.col_type.cast_type.inspect}])")
 
           # TODO: -investigate if we need cast here and if so what we can do with model_method.col_type.sql_type
-          record.send( operator + '=', value)
+
+          # Good guide on diff ways to set attributes
+          #   http://www.davidverhasselt.com/set-attributes-in-activerecord/
+
+          if(DataShift::Configuration.call.update_and_validate)
+            record.update( operator => value)
+          else
+            record.send( operator + '=', value)
+          end
         end
       rescue => e
-        logger.error(e.inspect)
-        raise DataProcessingError, "Failed to assign [#{value}]  via operator #{operator}" unless value.nil?
+        raise DataProcessingError, "Failed to set [#{value}] via [#{operator}] due to ERROR : #{e.message}"
       end
     end
 

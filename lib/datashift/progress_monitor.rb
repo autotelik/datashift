@@ -18,8 +18,11 @@ module DataShift
     # DB objects created, updated etc
     attr_accessor :loaded_objects, :failed_objects
 
-    # actual data rows/objects inbound
+    # Actual number of data rows processed
+    # Bearing in mind things like updates, these can be greater than loaded/failed objects
     attr_accessor :success_inbound_count, :failed_inbound_count
+
+    attr_reader :current_status
 
     def initialize
       reset
@@ -32,6 +35,12 @@ module DataShift
 
       @success_inbound_count = 0
       @failed_inbound_count = 0
+
+      @current_status = :success
+    end
+
+    def start_monitoring
+      @current_status = :success
     end
 
     def success(reportable_object)
@@ -42,9 +51,12 @@ module DataShift
     # For use case where object saved early but subsequent required columns fail to process
     # so the load object is invalid
 
-    def failure(failure_data, error_messages = [])
+    def failure(failure_data)
 
-      logger.error "Failure(S) reported : #{[*error_messages].inspect}" unless error_messages.empty?
+      @current_status = :failure
+
+      logger.error "Failure(s) reported :"
+      [*failure_data.errors].each { |e| logger.error "\t#{e}" }
 
       add_failed_object(failure_data)
 
@@ -64,6 +76,16 @@ module DataShift
       @processed_object_count += 1
 
       @failed_objects << object unless  object.nil? || @failed_objects.include?(object)
+    end
+
+    # The database objects created or rejected
+
+    def loaded_count
+      loaded_objects.size
+    end
+
+    def failed_count
+      failed_objects.size
     end
 
   end

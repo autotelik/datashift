@@ -106,7 +106,7 @@ module  DataShift
         expect(override.size).to eq 2
       end
 
-      it 'should provide facility to substitute values via YAML configuration', duff: true do
+      it 'should provide facility to substitute values via YAML configuration' do
         substitutes =  DataShift::Transformer.factory.substitutions_for( Project )
         expect(substitutes).to be_a Hash
         expect(substitutes.has_key?('value_as_text')).to eq true

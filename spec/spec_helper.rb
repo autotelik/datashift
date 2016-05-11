@@ -32,6 +32,12 @@ RSpec.configure do |config|
     FileUtils.mkdir_p(results_path()) unless File.exist?(results_path)
   end
 
+  config.before(:each) do
+    DataShift::Configuration.reset
+    DataShift::Exporters::Configuration.reset
+    DataShift::Importers::Configuration.reset
+  end
+
   config.include FactoryGirl::Syntax::Methods
 
   # Print the 10 slowest examples and example groups at the

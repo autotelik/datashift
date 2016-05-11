@@ -127,7 +127,7 @@ module  DataShift
         expect( excel[last_idx, owner_idx] ).to include '10000.23'
       end
 
-      it 'should export associations in hash format by default to .xls file', duff: true do
+      it 'should export associations in hash format by default to .xls file' do
 
         expected = result_file('project_and_assoc_in_hash_export.xls')
 
@@ -149,7 +149,7 @@ module  DataShift
         expect( excel[last_row_idx, milestone_inx].to_s ).to match(/project_id: \d+/)
       end
 
-      it 'should export a model and  assocs in json to .xls file', duff:true do
+      it 'should export a model and  assocs in json to .xls file' do
 
         expected = result_file('project_and_assoc_in_json_export.xls')
 

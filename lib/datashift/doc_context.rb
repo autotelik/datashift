@@ -64,12 +64,22 @@ module DataShift
       # TODO: - read in from configration
     end
 
+    # TOFIX - use delegation to doc_context.progress_monitor
+    def loaded_count
+      progress_monitor.loaded_count
+    end
+
+    def failed_count
+      progress_monitor.failed_count
+    end
+
+
     def current_errors
       load_object.errors.full_messages
     end
 
     def errors?
-      !load_object.errors.empty?
+      !load_object.errors.empty? || progress_monitor.current_status == :failure
     end
 
     # This method usually called during processing to avoid errors with associations like
@@ -93,20 +103,20 @@ module DataShift
     def save_and_monitor_progress
       if(errors? && all_or_nothing?)
         # Error already logged with doc_context.failure
-        logger.warn "Row #{current_row_idx} contained errors - SAVE has been skipped"
+        logger.warn "SAVE skipped due to Errors for Row #{node_context.current_row_index} - #{node_context.method_binding.spp}"
       else
         if save
           @progress_monitor.success(load_object)
 
-          logger.info("Successfully Processed [#{node_context.method_binding.pp}]")
+          logger.info("Successfully Processed [#{node_context.method_binding.spp}]")
           logger.info("Successfully SAVED Object #{@progress_monitor.success_inbound_count} - [#{load_object.id}]")
         else
 
           failed = FailureData.new(load_object, node_context, current_errors)
 
-          @progress_monitor.failure(failed, current_errors)
+          @progress_monitor.failure(failed)
 
-          logger.info("Failed to Process [#{node_context.method_binding.pp}]")
+          logger.info("Failed to Process [#{node_context.method_binding.spp}]")
           logger.info("Failed to SAVE Object #{@progress_monitor.success_inbound_count} - [#{load_object.inspect}]")
         end
       end

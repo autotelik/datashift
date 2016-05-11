@@ -90,7 +90,7 @@ module DataShift
 
       shared_examples "csv exporter with custom delimeter" do
 
-        it "should export a model object to csv file with custom delimeter", duff: true do
+        it "should export a model object to csv file with custom delimeter" do
           exporter.export(expected, Project.all, csv_delim: csv_delim)
 
           got_columns, got_values = CSV.read(expected, col_sep: csv_delim)
@@ -203,7 +203,7 @@ module DataShift
         expect(user_inx).to be > -1
       end
 
-      it 'should export model & associations to single row', duff: true do
+      it 'should export model & associations to single row' do
 
         exporter.export_with_associations(expected, Project, Project.all)
 
@@ -219,7 +219,7 @@ module DataShift
         expect( csv[0][user_header_inx] ).to include "title: #{@user.title},first_name: #{@user.first_name}"
       end
 
-      it 'should export a model and assocs in json to .xls file', duff:true do
+      it 'should export a model and assocs in json to .xls file' do
 
         expected = result_file('project_and_assoc_in_json_export.csv')
 

@@ -69,7 +69,7 @@ module DataShift
       expect(b).to be > a
     end
 
-    it 'should be comparable based on operator_type and operator', duff: true do
+    it 'should be comparable based on operator_type and operator' do
 
       a = DataShift::ModelMethod.new(Project, 'value_as_text', :assignment )
       b = DataShift::ModelMethod.new(Project, 'title', :assignment )
