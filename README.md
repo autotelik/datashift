@@ -5,6 +5,8 @@ Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
 [![Build Status](https://travis-ci.org/autotelik/datashift.svg?branch=master)](https://travis-ci.org/autotelik/datashift)
 
 - [Installation](#Installation)
+- [Introduction](#Introduction)
+- [CLI](#cli)
 - [Features](#features)
 - [Testing](#testing)
 - [License](#license)
