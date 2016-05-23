@@ -1,5 +1,7 @@
 ## DataShift
 
+Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
+
 [![Build Status](https://travis-ci.org/autotelik/datashift.svg?branch=master)](https://travis-ci.org/autotelik/datashift)
 
 - [Installation](#Installation)
@@ -7,11 +9,31 @@
 - [Testing](#testing)
 - [License](#license)
 
-Import/Export data between Excel/CSV and Rails/Ruby applications.
+Datashift is a suite of tools to help you import or export data from a Rails application.
 
-Bulk attach multiple files easily to [Paperclip](https://github.com/thoughtbot/paperclip) models.
+Formats currently supported are Excel, CSV files and paperclip attachments.
 
-Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
+Datashift automatically maps your files headers to your active record model attributes.
+
+When your files differ from your models, it provides tools to generate a mapping
+document, so you can map source headers, to the destination target in your database.
+
+Data transformations are supported, again via configuration setttings, which support
+
+* Defaults - Where your column is empty, provide a default value to be used.
+
+* Overrides - When you want to provide a default value in all cases, or set a value even when you have no inbound data at all.
+
+* Prefixes/Postfixes - Amend data on the fly. e.g if you wish to add a string id to a reference type field.
+
+[Paperclip](https://github.com/thoughtbot/paperclip) support enables the bulk load of
+paperclip supported filetypes from the filesystem.
+
+The loaded content is automatically attached to the model containing the has_attached_file directive.
+
+Matching to this right attachment model instance, is performed using the filename.
+
+The database field to match on, and the filename matching pattern are all configurable.
 
 ### <a name="Installation">Installation</a>
 
