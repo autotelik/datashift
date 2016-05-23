@@ -13,6 +13,18 @@ Datashift is a suite of tools to help you import or export data from a Rails app
 
 Formats currently supported are Excel, CSV files and paperclip attachments.
 
+### <a name="Installation">Installation</a>
+
+Add gem 'datashift' to your Gemfile/bundle or use ```gem install```
+
+```ruby
+gem 'datashift'
+```
+
+Win OLE and MS Excel are NOT required to use the Excel functionality.
+
+### <a name="Introduction">Introduction</a>
+
 Datashift automatically maps your files headers to your active record model attributes.
 
 When your files differ from your models, it provides tools to generate a mapping
@@ -22,28 +34,27 @@ Data transformations are supported, again via configuration setttings, which sup
 
 * Defaults - Where your column is empty, provide a default value to be used.
 
-* Overrides - When you want to provide a default value in all cases, or set a value even when you have no inbound data at all.
+* Overrides - When you want to provide a default value in all cases, or set a value even when you have no inbound data.
 
-* Prefixes/Postfixes - Amend data on the fly. e.g if you wish to add a string id to a reference type field.
+* Prefixes/Postfixes - Amend data on the fly. e.g if you wish to prepend a string id to a reference type field.
 
 [Paperclip](https://github.com/thoughtbot/paperclip) support enables the bulk load of
 paperclip supported filetypes from the filesystem.
 
-The loaded content is automatically attached to the model containing the has_attached_file directive.
+The loaded content is automatically attached to the model containing the `has_attached_file` directive.
 
 Matching to this right attachment model instance, is performed using the filename.
 
 The database field to match on, and the filename matching pattern are all configurable.
 
-### <a name="Installation">Installation</a>
+There are specific import/export loaders for [Spree E-Commerce](http://spreecommerce.com/) here @ [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
 
-Add gem 'datashift' to your Gemfile/bundle or use ```gem install```
+### <a name="CLI">CLI</a>
 
-```ruby
-gem 'datashift'
-```
+Current high level applications, are provided through command line tasks, although the API is
+available to use throughout your app.
 
-Win OLE and MS Excel are NOT required.
+An engine version with MVC applications is in the pipeline.
 
 To use the Thor command line applications, pull in the tasks.
 
@@ -77,8 +88,6 @@ To get usage information use thor help <command>, for example
 ```ruby
 bundle exec thor help datashift:generate:excel
 ```
-
-There are specific import/export loaders for [Spree E-Commerce](http://spreecommerce.com/) here @ [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
 
 #### <a name="Features">Features</a>
 
