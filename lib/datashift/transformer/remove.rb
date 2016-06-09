@@ -16,6 +16,11 @@ module DataShift
         DataShift::Exporters::Configuration.call.prep_remove_list
       end
 
+      def self.association?(mm)
+        return false unless(mm.association_type?)
+        DataShift::Configuration.call.exclude_associations.include?(mm.operator)
+      end
+
       # Specify columns to remove via DataShift::Exporters::Configuration
       #
       def self.unwanted_columns( columns )

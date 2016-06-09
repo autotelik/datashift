@@ -20,7 +20,7 @@ module DataShift
             require File.expand_path('config/environment.rb')
           rescue => e
             logger.error("Failed to initialise ActiveRecord : #{e.message}")
-            raise ConnectionError.new('No config/environment.rb found - cannot initialise ActiveRecord')
+            raise ConnectionError.new("Failed to initialise ActiveRecord : #{e.message}")
           end
 
         else

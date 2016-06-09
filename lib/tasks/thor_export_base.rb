@@ -12,6 +12,10 @@ module DataShift
                                 type: :boolean,
                                 desc: 'Include associations. Can be further refined by :with & :exclude'
 
+    class_option :expand_associations, type: :boolean,
+                 desc: 'Expand association data to multiple columns i.e 1 column per attribute'
+
+
     # See DataShift::Exporters::Configuration
 
     class_option :methods, type: :array,

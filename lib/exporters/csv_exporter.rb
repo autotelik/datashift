@@ -74,9 +74,7 @@ module DataShift
 
       @csv_delimiter = options[:csv_delim] if(options[:csv_delim])
 
-      types_in_scope = configuration.op_types_in_scope
-
-      logger.info("Association Types in scope for export #{types_in_scope.inspect}")
+      logger.info("Association Types in scope for export #{configuration.op_types_in_scope.inspect}")
 
       klass_to_headers(klass)
 

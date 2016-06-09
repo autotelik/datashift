@@ -45,21 +45,13 @@ module DataShift
     #
     def klass_to_headers(klass)
 
-      op_types_in_scope = configuration.op_types_in_scope
-
       @headers = Headers.new(klass)
 
-      # TODO: This collection can now be sorted
-      collection = ModelMethods::Manager.catalog_class(klass)
-
-      if collection
-        collection.each { |mm| @headers << mm.operator if(op_types_in_scope.include? mm.operator_type) }
-
-        DataShift::Transformer::Remove.unwanted_columns(@headers)
-      end
+      headers.source_to_headers
 
       headers
     end
+
 
     alias klass_to_collection_and_headers klass_to_headers
 

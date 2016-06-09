@@ -104,8 +104,13 @@ module DataShift
       @operator_class
     end
 
+    # Returns true of MM is an association (rather than plain attribute or, enum or method)
     def association_type?
       ModelMethod.association_type?( operator_type )
+    end
+
+    def association_columns
+      klass.reflect_on_association(operator).klass.columns
     end
 
     def ==(other)
