@@ -8,11 +8,15 @@ module DataShift
 
   class GeneratorBase
 
+    include DataShift::Logging
+
     attr_accessor :headers
 
     attr_accessor :configuration
 
     def initialize
+
+      #TOFIX - don't think these belong here
       @headers = DataShift::Headers.new(:na)
 
       @configuration = DataShift::Exporters::Configuration.call

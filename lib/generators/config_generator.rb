@@ -3,7 +3,8 @@
 # Date ::     Mar 2015
 # License::   MIT
 #
-# Details::   Create Configuraiton files for import and export
+# Details::   Generate an empty Configuration file, users can populate
+#             to configure their specific import and export
 #
 require 'generator_base'
 

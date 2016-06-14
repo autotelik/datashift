@@ -17,7 +17,7 @@ module DataShift
     end
 
     it 'should be able to create a mapping service for a class' do
-      mapping_services = DataShift::MappingServices.new(Project)
+      mapping_services = DataShift::Header.new(Project)
 
       expect(mapping_services).to be
     end
@@ -31,7 +31,7 @@ module DataShift
 
       let(:config_generator) { DataShift::ConfigGenerator.new }
 
-      let(:mapping_service) { DataShift::MappingServices.new(Project) }
+      let(:mapping_service) { DataShift::Header.new(Project) }
 
       before(:each) do
         config_generator.write_import(expected_map_file, Project)
@@ -79,7 +79,7 @@ module DataShift
       # TODO - generated dynamically from latest templates ??
       let(:expected_map_file) { ifixture_file('project_mapping.yaml') }
 
-      let(:mapping_service) { DataShift::MappingServices.new(Project) }
+      let(:mapping_service) { DataShift::Header.new(Project) }
 
       before(:each) do
         expect(File.exist?(expected_map_file)).to be true

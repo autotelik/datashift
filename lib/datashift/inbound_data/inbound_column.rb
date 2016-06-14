@@ -12,17 +12,14 @@ module DataShift
     # The raw, client supplied data such as column heading, column index etc
     # Heading may contain additional data such as lookup fields, defaults etc
     #
-    class Column
+    class Column < Node
 
       attr_accessor :file_name
-
-      attr_accessor :name, :index
 
       attr_accessor :lookup_list, :data
 
       def initialize( in_name, in_index = -1)
-        @name = in_name.to_s
-        @index = in_index
+        super(in_name, in_index = -1)
 
         @lookup_list = []
         @data = []

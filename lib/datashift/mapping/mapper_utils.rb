@@ -3,7 +3,7 @@
 # Date ::     Feb 2015
 # License::   MIT
 #
-# Details::   Helpers for mapping to/from inbound data and Classes
+# Details::   Helpers for dealing with Ccass <-> String, Table <-> String type mappings
 
 module DataShift
 

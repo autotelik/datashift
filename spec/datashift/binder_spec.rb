@@ -105,6 +105,7 @@ module DataShift
       expect(bindings[0]).to be_a MethodBinding
 
       headers.each_with_index do |_c, i|
+        puts bindings[i].inspect
         expect(bindings[i].inbound_index).to eq i
         expect(bindings[i].inbound_column.index).to eq i
       end

@@ -64,6 +64,8 @@ module DataShift
 
       start_excel(klass)
 
+      template = create_export_template( klass )
+=begin
       klass_to_headers(klass)
 
       excel.set_headers( headers )
@@ -75,6 +77,9 @@ module DataShift
       logger.info("Processing #{records.size} records to Excel")
 
       model_methods = klass_to_model_methods( klass )
+=end
+
+      model_methods = template,model_methods
 
       records.each do |obj|
         column = 0

@@ -126,7 +126,7 @@ module DataShift
 
     context 'Reading' do
 
-      let(:mapping_service) { DataShift::MappingServices.new(Project) }
+      let(:mapping_service) { DataShift::Header.new(Project) }
 
       before(:each) do
         generate

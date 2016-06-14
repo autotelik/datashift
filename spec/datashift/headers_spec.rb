@@ -21,7 +21,6 @@ describe 'Headers' do
       expect(h.source).to eq :csv
       expect(h.idx).to eq 2
       expect(h.mapped?).to eq false
-      expect(h.previous_headers).to eq []
     end
 
     it 'should act like an Array' do
