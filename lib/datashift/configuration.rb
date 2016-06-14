@@ -195,8 +195,6 @@ module DataShift
       remove_list
     end
 
-
-
     # Modify DataShift's current Export configuration from an options hash
     def self.from_hash( options )
       DataShift::Configuration.configure do |config|

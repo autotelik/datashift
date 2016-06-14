@@ -47,10 +47,7 @@ module DataShift
 
     include DataShift::Logging
 
-    attr_reader :node_collection
-
     def initialize
-      @node_collection = NodeCollection.new
     end
 
     def prepare_from_file(file_name, locale_key = "data_flow_schema")
@@ -67,7 +64,7 @@ module DataShift
 
     def prepare_from_yaml(yaml, locale_key = "data_flow_schema")
 
-      @node_collection = NodeCollection.new
+      node_collection = NodeCollection.new
 
       raise RuntimeError.new("Bad YAML syntax  - No key #{locale_key} found in #{yaml}") unless yaml[locale_key]
 
@@ -76,25 +73,32 @@ module DataShift
       logger.info("Nodes: #{nodes.inspect}")
 
       unless(nodes.is_a?(Array))
-        Rails.logger.error("Bad syntax in your review YAML - Nodes should be a sequence")
-        raise RuntimeError, "Bad syntax in your review YAML - Nodes should be a sequence"
+        Rails.logger.error("Bad syntax in flow schema YAML - Nodes should be a sequence")
+        raise RuntimeError, "Bad syntax in flow schema YAML - Nodes should be a sequence"
       end
 
-      # Return a collection of Nodes
+      nodes.each do |section|
 
-      nodes.collect do |node|
+        unless(section.keys.size == 1)
+          Rails.logger.error("Bad syntax in flow schema YAML - Section should be keyed hash")
+          raise RuntimeError, "Bad syntax in flow schema YAML - Section should be keyed hash"
+        end
+
 #        heading:
 #         source: "title"
 #         destination: "Title"
-#       operator:
+#       operator: title
 
-        logger.info("Node: #{node.inspect}")
+        logger.info("Node Data: #{section.inspect}")
+        puts("Node Data: #{section.inspect}")
 
-        @current_section = node
+        node = DataShift::Node.new(section.keys.first)
 
-        node = DataShift::Node.new(node)
+        data = section.values.first
 
-        node.header = Header.new(source: node['heading']['source'], destination: node['heading']['destination'])
+        node.header = Header.new(source: data['heading']['source'], destination: data['heading']['destination'])
+
+        node.operator = data['operator']
 
         node_collection << node
       end
@@ -104,7 +108,7 @@ module DataShift
 
     private
 
-    attr_accessor :current_section, :current_review_object
+    attr_accessor :current_review_object
 
     attr_accessor :model_object
 

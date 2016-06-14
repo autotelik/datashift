@@ -45,7 +45,7 @@ module DataShift
 
       klass_to_headers(first.class)
 
-      excel.set_headers( headers )
+      excel.set_headers( headers.destinations )
 
       excel.ar_to_xls(records)
 
@@ -68,7 +68,7 @@ module DataShift
 =begin
       klass_to_headers(klass)
 
-      excel.set_headers( headers )
+      excel.set_headers( headers.destinations )
 
       logger.info("Wrote headers for #{klass} to Excel")
 

@@ -8,7 +8,7 @@
 module DataShift
   class Node
 
-    attr_accessor :name, :index, :header
+    attr_accessor :name, :index, :header, :operator
 
     def initialize( in_name, index = -1)
       @name = in_name.to_s

@@ -1,11 +1,13 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
-RSpec.describe DataShift::DataFlowSchema, type: :model do
+module DataShift
 
-  let(:data_flow_schema) { subject }
+  RSpec.describe DataFlowSchema, type: :model do
 
-  let(:yaml_text) {
-    x=<<-EOS
+    let(:data_flow_schema) { subject }
+
+    let(:yaml_text) {
+      x=<<-EOS
       data_flow_schema:
         nodes:
           - project_title:
@@ -17,9 +19,9 @@ RSpec.describe DataShift::DataFlowSchema, type: :model do
               heading:
                 destination: "Budget"
               operator: owner.budget
-    EOS
-    x
-  }
+      EOS
+      x
+    }
 =begin
   context "Helper ReviewDataSection" do
     let(:review_data_section) {  DataShift::ReviewDataSection.new("heading") }
@@ -49,18 +51,23 @@ RSpec.describe DataShift::DataFlowSchema, type: :model do
     end
   end
 =end
-  context "DataFlowSchema" do
+    context "DataFlowSchema" do
 
-    context("YAML (LOCALE) DSL") do
+      context("YAML (LOCALE) DSL") do
 
-      it "build node colleciton from a locale based DSL" do
-        expect(data_flow_schema.prepare_from_string(yaml_text)).to be_instance_of Array
-      end
+        it "build node collection from a locale based DSL" do
+
+          collection = data_flow_schema.prepare_from_string(yaml_text)
+
+          expect(collection).to be_instance_of NodeCollection
+          expect(collection.size).to eq 2
+        end
+
+        it "each section is an instance of Node" do
+          collection = data_flow_schema.prepare_from_string(yaml_text)
+          expect(collection.first).to be_instance_of DataShift::Node
+        end
 =begin
-      it "each section is an instance of ReviewData" do
-        expect(review_data_sections.first).to be_instance_of DataShift::ReviewDataSection
-      end
-
       it "each section can contain multiple investigatable rows" do
         section = review_data_sections.first
 
@@ -156,6 +163,7 @@ RSpec.describe DataShift::DataFlowSchema, type: :model do
       end
     end
 =end
+      end
     end
   end
 end

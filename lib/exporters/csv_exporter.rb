@@ -44,14 +44,12 @@ module DataShift
 
       klass_to_headers(first.class)
 
-      DataShift::Transformer::Remove.unwanted_columns(@headers )
+      logger.debug "Writing out CSV Export. Columns delimited by [#{csv_delimiter}]"
 
       remove = DataShift::Transformer::Remove.remove_list
 
-      logger.debug "Writing out CSV Export. Columns delimited by [#{csv_delimiter}]"
-
       CSV.open(file_name, 'w', col_sep: csv_delimiter ) do |csv|
-        csv << headers
+        csv << headers.destinations
 
         records.each do |r|
           next unless r.is_a?(ActiveRecord::Base)
@@ -83,7 +81,7 @@ module DataShift
       logger.debug "Writing out CSV Export for #{klass} wioth Associations. Columns delimited by [#{csv_delimiter}]"
 
       CSV.open(file_name, 'w', col_sep: csv_delimiter ) do |csv|
-        csv << headers
+        csv << headers.destinations
 
         records.each do |record|
           row = []

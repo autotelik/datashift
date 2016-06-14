@@ -53,6 +53,8 @@ module DataShift
 
       headers.source_to_headers
 
+      DataShift::Transformer::Remove.unwanted_headers(@headers)
+
       headers
     end
 

@@ -29,6 +29,12 @@ module DataShift
         columns.delete_if { |r| remove_list.include?( r.to_sym ) } unless remove_list.empty?
       end
 
+      def self.unwanted_headers( headers )
+        remove_list = DataShift::Exporters::Configuration.call.prep_remove_list
+
+        headers.delete_if { |r| remove_list.include?( r.source.to_sym ) } unless remove_list.empty?
+      end
+
       # Specify columns to remove via DataShift::Exporters::Configuration
       #
       def self.unwanted_model_methods( model_methods )

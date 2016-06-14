@@ -28,7 +28,8 @@ module DataShift
 
       it 'headers are the model method operator name' do
         gb.klass_to_headers(Project)
-        expect(gb.headers[0]).to be_a String
+        expect(gb.headers[0]).to be_a Header
+        expect(gb.headers[0].source).to be_a String
       end
 
     end

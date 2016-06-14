@@ -12,7 +12,9 @@ module DataShift
 
     extend Forwardable
 
-    def_delegators :@nodes, *Array.instance_methods.delete_if { |i| i.match(/__.*|class|object_id/) }
+    def_delegators :@nodes, *Array.instance_methods.delete_if do |i|
+      i.match(/__.*|class|object_id|inspect|instance_of?/)
+    end
 
     def initialize()
       @nodes = []
