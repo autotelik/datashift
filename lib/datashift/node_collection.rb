@@ -8,13 +8,13 @@ require 'forwardable'
 
 module DataShift
 
+  # Acts as an array
+
   class NodeCollection
 
     extend Forwardable
 
-    def_delegators :@nodes, *Array.instance_methods.delete_if do |i|
-      i.match(/__.*|class|object_id|inspect|instance_of?/)
-    end
+    def_delegators :@nodes, *Array.delegated_methods_for_fwdable
 
     def initialize()
       @nodes = []

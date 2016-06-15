@@ -19,6 +19,10 @@ module DataShift
               heading:
                 destination: "Budget"
               operator: owner.budget
+          - project_owner_budget:
+              heading:
+                destination: "Budget"
+              operator: owner.budget
       EOS
       x
     }
@@ -67,8 +71,8 @@ module DataShift
           collection = data_flow_schema.prepare_from_string(yaml_text)
           expect(collection.first).to be_instance_of DataShift::Node
         end
-=begin
-      it "each section can contain multiple investigatable rows" do
+
+      it "should preserve order of the nodes" do
         section = review_data_sections.first
 
         expect(section.rows).to be_instance_of Array
@@ -77,7 +81,7 @@ module DataShift
         expect(section.rows.size).to eq section.size
         expect(section.rows.empty?).to eq section.empty?
       end
-
+=begin
       it "each row contains columns required to build view" do
         review_data_column = review_data_sections.first.rows.first
 

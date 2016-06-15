@@ -10,7 +10,8 @@ module DataShift
 
     def self.sandbox_gem_list
       add_gem 'datashift', path:  File.expand_path('../../..', __FILE__)
-      add_gem 'awesome_print' # , github: 'michaeldv/awesome_print', branch: 'master'
+      add_gem 'awesome_print'
+      add_gem 'factory_girl_rails'
 
       # we use this to help gen the sandbox
       add_gem 'active_scaffold'
@@ -50,10 +51,17 @@ module DataShift
           FileUtils.cp_r( Dir.glob(File.join(fixtures_path, 'models', '*.rb')), File.join(name, 'app/models'))
 
           migrations = File.expand_path(File.join(fixtures_path, 'db', 'migrate'), __FILE__)
-
           FileUtils.cp_r( migrations, File.join(rails_sandbox_path, 'db'))
 
           FileUtils.cp_r( File.join(fixtures_path, 'sandbox_example.thor'), rails_sandbox_path)
+
+          factories = File.expand_path(File.join(fixtures_path, '..', 'factories'), __FILE__)
+
+          FileUtils.cp_r( factories, rails_sandbox_path)
+
+          seeds = File.expand_path(File.join(fixtures_path, 'db', 'seeds.rb'), __FILE__)
+          FileUtils.cp_r( seeds, File.join(rails_sandbox_path, 'db'))
+
         end
 
         puts 'Configuring gems in rails sandbox Gemfile'
@@ -122,7 +130,7 @@ module DataShift
       gem_options.each { |key, value| parts << "#{key}: '#{value}'" }
 
       File.open('Gemfile', 'ab') do |file|
-        file.write( "\ngem #{parts.join(', ')}")
+        file.write( "\ngem #{parts.join(', ')}\n")
       end
 
     end

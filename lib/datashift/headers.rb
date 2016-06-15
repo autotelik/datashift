@@ -9,16 +9,18 @@ require 'forwardable'
 
 module DataShift
 
-  class Headers
+  # Acts as an array
 
-    extend Forwardable # For def_delegators
+  class Headers
 
     attr_accessor :source, :configuration
 
     # Row Index
     attr_reader :idx
 
-    def_delegators :@headers, *Array.instance_methods.delete_if { |i| i.match(/__.*|class|object_id/) }
+    extend Forwardable
+
+    def_delegators :@headers, *Array.delegated_methods_for_fwdable
 
     def initialize(source, idx = 0, headers = [])
       @source = source

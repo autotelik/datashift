@@ -23,11 +23,11 @@ module DataShift
     attr_accessor :file_name
     attr_accessor :binder
 
-    extend Forwardable
-
     attr_accessor :doc_context
 
     # Fwd calls onto the DocumentContext
+    extend Forwardable
+
     def_delegators :doc_context,
                    :load_object,
                    :loaded_count, :failed_count,
