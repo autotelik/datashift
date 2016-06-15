@@ -15,10 +15,10 @@ module DataShift
                 source: "title"
                 destination: "Title"
               operator: title
-          - project_owner_budget:
+          - value_as_string:
               heading:
-                destination: "Budget"
-              operator: owner.budget
+                destination: "Value:"
+              operator: value_as_string
           - project_owner_budget:
               heading:
                 destination: "Budget"
@@ -26,60 +26,33 @@ module DataShift
       EOS
       x
     }
-=begin
-  context "Helper ReviewDataSection" do
-    let(:review_data_section) {  DataShift::ReviewDataSection.new("heading") }
 
+    let(:node_tags) { %w{ project_title value_as_string project_owner_budget } }
 
-    it "supports adding multiple rows and returns row created" do
-      expect(review_data_section.add("title", "data", "state_to_link_to", "dummy"))
-        .to be_instance_of Struct::ReviewDataRow
-
-      expect(review_data_section.rows).to be_instance_of Array
-    end
-
-    it "link target supports :none for empty target columns" do
-      row = review_data_section.add("title", "data", :none, "dummy")
-
-      expect(row.target(enrollment)).to be_nil
-    end
-
-    it "view helper for target handles :none for empty target columns" do
-      class Blah
-        include WasteExemptionsShared::EnrollmentsHelper
-      end
-
-      expect(
-        Blah.new.link_to_reviewing_change_this(enrollment, review_data_section.add("title", "data", :none, "dummy")
-                                              )).to be_nil
-    end
-  end
-=end
     context "DataFlowSchema" do
 
       context("YAML (LOCALE) DSL") do
 
+        before(:each) do
+          @collection = data_flow_schema.prepare_from_string(yaml_text)
+        end
+
         it "build node collection from a locale based DSL" do
-
-          collection = data_flow_schema.prepare_from_string(yaml_text)
-
-          expect(collection).to be_instance_of NodeCollection
-          expect(collection.size).to eq 2
+          expect(@collection).to be_instance_of NodeCollection
+          expect(@collection.size).to eq node_tags.size
         end
 
         it "each section is an instance of Node" do
-          collection = data_flow_schema.prepare_from_string(yaml_text)
-          expect(collection.first).to be_instance_of DataShift::Node
+          @collection = data_flow_schema.prepare_from_string(yaml_text)
+          expect(@collection.first).to be_instance_of DataShift::Node
         end
 
       it "should preserve order of the nodes" do
-        section = review_data_sections.first
+         @collection.each_with_index {|n, i| expect(n.tag).to eq node_tags[i] }
 
-        expect(section.rows).to be_instance_of Array
+         tags = @collection.collect(&:tag)
 
-        # delegators
-        expect(section.rows.size).to eq section.size
-        expect(section.rows.empty?).to eq section.empty?
+         expect(tags).to eq node_tags
       end
 =begin
       it "each row contains columns required to build view" do
