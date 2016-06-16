@@ -46,7 +46,7 @@ module DataShift
     end
 
     def inbound_name
-      inbound_column.name
+      inbound_column.source
     end
 
     def inbound_index

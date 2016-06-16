@@ -13,8 +13,11 @@ module DataShift
     def initialize(tag, index = -1)
       @tag = tag.to_s
       @index = index
-      @header = nil
+      @header = Header.new(source: tag)
     end
+
+    delegate :source, to: :header
+    delegate :destination, to: :header
 
   end
 end

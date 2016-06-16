@@ -18,8 +18,8 @@ module DataShift
 
       attr_accessor :lookup_list, :data
 
-      def initialize(name, index = -1)
-        super(name, index)
+      def initialize(tag, index = -1)
+        super(tag, index)
 
         @lookup_list = []
         @data = []
