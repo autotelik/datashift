@@ -27,12 +27,10 @@ module DataShift
       @idx = idx
       @headers = headers
 
-      @mapped = false
-
       @configuration = DataShift::Configuration.call
     end
 
-    # Helpers for dealing with Active Record models and collections
+    # Helpers for dealing with source = class, usually an Active Record model
     # Catalogs the supplied Klass and builds set of expected/valid Headers for Klass
     #
     def source_to_headers
