@@ -1,6 +1,5 @@
-# Copyright:: (c) Autotelik Media Ltd 2015
+# Copyright:: (c) Autotelik Media Ltd 2016
 # Author ::   Tom Statter
-# Date ::     Jan 2015
 # License::   MIT
 #
 # Details::  Store details of the inbound data from Excel, CSV files etc
@@ -19,7 +18,8 @@ module DataShift
       attr_accessor :lookup_list, :data
 
       def initialize(tag, index = -1)
-        super(tag, index)
+        
+        super(tag, index: index)
 
         @lookup_list = []
         @data = []

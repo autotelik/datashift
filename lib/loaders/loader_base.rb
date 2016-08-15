@@ -89,18 +89,19 @@ module DataShift
     # Given a list of free text column names from inbound headers,
     # map all headers to a domain model containing details on operator, look ups etc.
     #
-    #    [:ignore]          : List of column headers to ignore when building operator ma
+    # See configuration options
     #
+    #    [:ignore]          : List of column headers to ignore when building operator ma
     #    [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
     #
-    def bind_headers( headers, options = {} )
+    def bind_headers( headers )
 
       logger.info("Binding #{headers.size} inbound headers to #{load_object_class.name}")
 
       @binder ||= DataShift::Binder.new
 
       begin
-        binder.map_inbound_headers(load_object_class, headers, options )
+        binder.map_inbound_headers(load_object_class, headers)
       rescue => e
         logger.error("Failed to map header row to set of database operators : #{e.inspect}")
         logger.error( e.backtrace )

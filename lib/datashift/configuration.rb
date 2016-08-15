@@ -103,6 +103,13 @@ module DataShift
     # @return [Array]
     attr_accessor :force_inclusion_of_columns
 
+    #  All external columns should be included in processing whether or not they automatically map to an operator
+    #
+    # @param [Boolean]
+    # @return [Boolean]
+    #
+    attr_accessor :include_all_columns
+
     def self.rails_columns
       @rails_standard_columns ||= [:id, :created_at, :created_on, :updated_at, :updated_on]
     end

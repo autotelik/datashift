@@ -17,8 +17,14 @@ module DataShift
 
     include DataShift::ExcelBase
 
+    # Pptional, otherwise  uses the standard collection of Model Methods for supplied klass
+
+    attr_accessor :data_flow_schema
+
     def initialize
       super
+
+      @data_flow_schema = nil
     end
 
     # Create an Excel file from list of ActiveRecord objects
@@ -35,17 +41,11 @@ module DataShift
 
       first = records[0]
 
-      raise ArgumentError.new('Please supply set of ActiveRecord objects to export') unless first.is_a?(ActiveRecord::Base)
-
-      raise ArgumentError.new('Please supply array of records to export') unless records.is_a? Array
+      raise(ArgumentError, 'Please supply set of ActiveRecord objects to export') unless first.is_a?(ActiveRecord::Base)
 
       logger.info("Exporting #{records.size} #{first.class} to Excel")
 
       excel = start_excel(first.class, options)
-
-      klass_to_headers(first.class)
-
-      excel.set_headers( headers.destinations )
 
       excel.ar_to_xls(records)
 
@@ -54,32 +54,40 @@ module DataShift
       excel.write( file_name )
     end
 
+
+    def preprare_data_flow_schema( klass )
+      logger.info("Wrote headers for #{klass} to Excel")
+
+      if(data_flow_schema)
+        excel.set_headers( data_flow_schema.destinations )
+      else
+        @data_flow_schema = DataShift::DataFlowSchema.new
+        @data_flow_schema.prepare_from_klass( klass )
+
+        klass_to_headers(klass)
+        excel.set_headers( headers.destinations )
+      end
+
+      data_flow_schema
+    end
+
     # Create an Excel file from list of ActiveRecord objects, includes relationships
     #
     # Association Options -  See  lib/exporters/configuration.rb
     #
-    def export_with_associations(file_name, klass, records)
+    def export_with_associations(file_name, klass, records, options = {})
 
       @file_name = file_name
 
-      start_excel(klass)
+      excel = start_excel(klass, options)
 
-      template = create_export_template( klass )
-=begin
-      klass_to_headers(klass)
-
-      excel.set_headers( headers.destinations )
-
-      logger.info("Wrote headers for #{klass} to Excel")
-
-      row = 1
+      preprare_data_flow_schema( klass )
 
       logger.info("Processing #{records.size} records to Excel")
 
-      model_methods = klass_to_model_methods( klass )
-=end
+      model_methods = data_flow_schema.nodes
 
-      model_methods = template,model_methods
+      row = 1
 
       records.each do |obj|
         column = 0

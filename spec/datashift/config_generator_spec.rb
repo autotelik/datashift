@@ -1,9 +1,7 @@
-# Copyright:: (c) Autotelik Media Ltd 2015
+# Copyright:: (c) Autotelik Media Ltd 2016
 # Author ::   Tom Statter
 # License::   MIT
 #
-# Details::   Specs for Mapping aspects
-#             Provides automatic mapping between different system's column headings
 #
 require File.join(File.dirname(__FILE__), '/../spec_helper')
 
@@ -18,31 +16,22 @@ module DataShift
 
     let(:config_generator) { DataShift::ConfigGenerator.new }
 
-    let(:expected_map_file) { result_file('mapping_service_project.yaml') }
+    let(:expected_config_file) { result_file('mapping_service_project.yaml') }
 
-    let(:generate) {  config_generator.write_import(expected_map_file, Project) }
+    let(:generate_config_file) {  config_generator.write_import(expected_config_file, Project) }
 
-    context 'generation' do
-
-      # maybe more trouble than its worth - more investigation needed
-
-      # include FakeFS::SpecHelpers::Rails     # careful where this goes, restrict it's scope to specific contexts
-      # FakeFS.activate!
-      # FakeFS::FileSystem.clone(File.join(DataShift::root_path, 'spec'))
-
-      let(:map_file) { result_file('mapper.yaml') }
-
+    context 'erb generation' do
 
       context 'basic templates without a class' do
-        it 'should generate a standard default mapping' do
-          result = config_generator.import Project
+        it 'should generate an standard ERB template containing default mappings & config' do
+          result = config_generator.create_import_erb Project
 
           expect(result).to be_a String
           expect(result).to match '#src_column_heading_0:'
         end
 
         it 'should have a consistent starting title' do
-          result = config_generator.import Project
+          result = config_generator.create_import_erb Project
 
           expect(result).to include 'Project'
         end
@@ -52,21 +41,21 @@ module DataShift
         let(:map_file) { result_file('project_mapper.yaml') }
 
         it 'should generate a populated mapping doc for a class' do
-          generate
+          generate_config_file
 
-          expect(File.exist?(expected_map_file)).to be true
-          expect( File.read(expected_map_file) ).to include 'Project:'
+          expect(File.exist?(expected_config_file)).to be true
+          expect( File.read(expected_config_file) ).to include 'Project:'
         end
 
         it 'should be able to extract headers from_excel', fail: true do
-          config_generator.generate_from_excel(ifixture_file('SimpleProjects.xls'), file: map_file )
+          config_generator.generate_from_excel(ifixture_file('SimpleProjects.xls') )
 
           expect(config_generator.headers.empty?).to eq false
           expect(config_generator.headers.class).to eq Headers
         end
 
         it 'should be able to extract headers from_excel' do
-          config_generator.generate_from_excel(ifixture_file('SimpleProjects.xls'), file: map_file )
+          config_generator.generate_from_excel(ifixture_file('SimpleProjects.xls') )
 
           # bit flakey need to manually st expected spreadsheet values
           # value_as_string,	Value as Text,	value as datetime,	value_as_boolean,	value_as_double
@@ -77,6 +66,8 @@ module DataShift
         end
 
         it 'should be able to generate a mapping from_excel' do
+          expect(File.exist?(map_file)).to be false
+
           config_generator.generate_from_excel(ifixture_file('SimpleProjects.xls'), file: map_file )
 
           expect(File.exist?(map_file)).to be true
@@ -88,18 +79,18 @@ module DataShift
 
       let(:expected_columns) { Project.new.serializable_hash.keys }
 
-      it 'should be able to write out a basic mapping document for a class' do
-        expect(File.exist?(expected_map_file)).to_not be true
+      it 'should be able to write out a basic configuration document for a class' do
+        expect(File.exist?(expected_config_file)).to_not be true
 
-        expect { generate }.to_not raise_error
+        expect { generate_config_file }.to_not raise_error
 
-        expect(File.exist?(expected_map_file)).to be true
+        expect(File.exist?(expected_config_file)).to be true
       end
 
       it 'a basic mapping document should contain at least attributes of a class' do
-        generate
+        generate_config_file
 
-        File.foreach(expected_map_file)
+        File.foreach(expected_config_file)
         expect( $.).to be > expected_columns.size
       end
 
@@ -110,34 +101,32 @@ module DataShift
           config.with = [:all]
         end
 
-        generate
+        generate_config_file
 
-        expect(File.exist?(expected_map_file)).to be true
+        expect(File.exist?(expected_config_file)).to be true
 
-        File.foreach(expected_map_file)
-        count = $.
+        File.foreach(expected_config_file)
         expect( $.).to be > expected_columns.size
       end
 
     end
 
-
     # TODO: split into two - with and without associations
 
     context 'Reading' do
 
-      let(:mapping_service) { DataShift::Header.new(Project) }
+      let(:mapping_service) { FlowProducerFactory.new(Project) }
 
       before(:each) do
-        generate
+        generate_config_file
 
-        expect(File.exist?(expected_map_file)).to be true
+        expect(File.exist?(expected_config_file)).to be true
 
-        mapping_service.read(expected_map_file)
+        mapping_service.read(expected_config_file)
       end
 
       it 'should be able to read a mapping' do
-        expect(mapping_service.map_file_name).to eq expected_map_file
+        expect(mapping_service.map_file_name).to eq expected_config_file
 
         expect(mapping_service.raw_data).to_not be_empty
         expect(mapping_service.yaml_data).to_not be_empty

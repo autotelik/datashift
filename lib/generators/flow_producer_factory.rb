@@ -3,11 +3,14 @@
 # Date ::     Mar 2015
 # License::   MIT
 #
-# Details::   Create a FlowProducer for use in import or export
-#             FlowProducer directs the import or export of data by providing details of the required flow
+# Details::   Create a DataFlowSchema for use in import or export.
+#
+#             A DataFlowSchema directs the import or export of data by providing details of the required flow.
+
 #             A Flow is direction agnostic, and contains a series of nodes (columns)
-#             Each node includes any conversion of the header and the operator required to get the data
+#             Each node includes details of the header and the operator required to get the data
 #             for that column.
+#
 #             Importers and exporters can iterate through the series to generate output, or load data
 #
 #             The Flow can be defined by the user in a flow mapping YAML document

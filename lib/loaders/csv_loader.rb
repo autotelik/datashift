@@ -27,10 +27,6 @@ module DataShift
     #   [:dummy]           : Perform a dummy run - attempt to load everything but then roll back
     #
     #
-    #  Options passed through  to :  populate_method_mapper_from_headers
-    #
-    #   [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
-
     def perform_load( options = {} )
       require 'csv'
 
@@ -53,7 +49,7 @@ module DataShift
       set_headers( DataShift::Headers.new(:csv, header_idx, header_row) )
 
       # maps list of headers into suitable calls on the Active Record class
-      bind_headers(headers, options.merge(strict: @strict) )
+      bind_headers(headers)
 
       begin
         puts 'Dummy Run - Changes will be rolled back' if(configuration.dummy_run)

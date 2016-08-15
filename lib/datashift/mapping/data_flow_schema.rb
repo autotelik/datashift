@@ -28,15 +28,17 @@
 # EXAMPLE:
 #
 # data_flow_schema:
-#   nodes:
-#     - project:
+#   Project:
+#     nodes:
+#       - project:
 #         heading:
 #           source: "title"
 #           destination: "Title"
 #         operator: title
-#     - project_owner_budget:
-#       heading:
-#         destination: "Budget"
+#
+#       - project_owner_budget:
+#         heading:
+#           destination: "Budget"
 #         operator: owner.budget
 #
 require 'erubis'
@@ -47,7 +49,38 @@ module DataShift
 
     include DataShift::Logging
 
+    attr_reader :configuration, :nodes
+
     def initialize
+      @nodes = NodeCollection.new
+
+      @configuration = DataShift::Configuration.call
+    end
+
+    def prepare_from_klass( klass )
+      @nodes = klass_to_model_methods( klass )
+    end
+
+    # Helpers for dealing with Active Record models and collections
+    # Catalogs the supplied Klass and builds set of expected/valid Headers for Klass
+    #
+    def klass_to_model_methods(klass)
+
+      op_types_in_scope = configuration.op_types_in_scope
+
+      collection = ModelMethods::Manager.catalog_class(klass)
+
+      if collection
+        model_methods = []
+
+        collection.each { |mm| model_methods << mm if(op_types_in_scope.include? mm.operator_type) }
+
+        DataShift::Transformer::Remove.unwanted_model_methods model_methods
+
+        model_methods
+      else
+        []
+      end
     end
 
     def prepare_from_file(file_name, locale_key = "data_flow_schema")
@@ -62,22 +95,22 @@ module DataShift
       prepare_from_yaml(yaml, locale_key)
     end
 
-    def prepare_from_yaml(yaml, locale_key = "data_flow_schema")
+    def prepare_from_yaml(klass, yaml, locale_key = "data_flow_schema")
 
-      node_collection = NodeCollection.new
+      @nodes = NodeCollection.new
 
       raise RuntimeError.new("Bad YAML syntax  - No key #{locale_key} found in #{yaml}") unless yaml[locale_key]
 
-      nodes = yaml[locale_key]['nodes']
+      yaml_nodes =yaml[locale_key][klass]['nodes']
 
       logger.info("Nodes: #{nodes.inspect}")
 
-      unless(nodes.is_a?(Array))
+      unless(yaml_nodes.is_a?(Array))
         Rails.logger.error("Bad syntax in flow schema YAML - Nodes should be a sequence")
         raise RuntimeError, "Bad syntax in flow schema YAML - Nodes should be a sequence"
       end
 
-      nodes.each do |section|
+      nodes = yaml_nodes.collect do |section|
 
         unless(section.keys.size == 1)
           Rails.logger.error("Bad syntax in flow schema YAML - Section should be keyed hash")
@@ -98,12 +131,16 @@ module DataShift
 
         node.header = Header.new(source: data['heading']['source'], destination: data['heading']['destination'])
 
-        node.operator = data['operator']
+        if(data['operator'])
+          node.operator = Operator.new(data['operator'], :method)
+        else
+          #TODO - Find and Get the model method for this Class && column name
+        end
 
-        node_collection << node
+        node
       end
 
-      node_collection
+      nodes
     end
 
     private

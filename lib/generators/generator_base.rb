@@ -15,34 +15,10 @@ module DataShift
     attr_accessor :configuration
 
     def initialize
-
       #TOFIX - don't think these belong here
       @headers = DataShift::Headers.new(:na)
-
-      @configuration = DataShift::Exporters::Configuration.call
     end
 
-    # Helpers for dealing with Active Record models and collections
-    # Catalogs the supplied Klass and builds set of expected/valid Headers for Klass
-    #
-    def klass_to_model_methods(klass)
-
-      op_types_in_scope = configuration.op_types_in_scope
-
-      collection = ModelMethods::Manager.catalog_class(klass)
-
-      if collection
-        model_methods = []
-
-        collection.each { |mm| model_methods << mm if(op_types_in_scope.include? mm.operator_type) }
-
-        DataShift::Transformer::Remove.unwanted_model_methods model_methods
-
-        model_methods
-      else
-        []
-      end
-    end
 
     # Helpers for dealing with Active Record models and collections
     # Catalogs the supplied Klass and builds set of expected/valid Headers for Klass

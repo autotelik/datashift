@@ -15,6 +15,16 @@
 #
 #             This binding can be used to send spreadsheet row data to populate the product_properties on a product
 #
+#             Sometimes there may be no automatic binding available, but you may want to supply a custom method to process
+#             that column, in which case the following options may come into play
+#
+#             You can specify a list of columns to be bound even if no mapping is found using
+#               DataShift::Configuration.force_inclusion_of_columns = []
+#
+#             You can force inclusion of all columns despite whether mapping found or not using
+#               DataShift::Configuration.include_all = true
+#
+#
 module DataShift
 
   class Binder
@@ -53,6 +63,18 @@ module DataShift
       [*DataShift::Configuration.call.force_inclusion_of_columns]
     end
 
+    def forced
+      @forced ||= forced_inclusion_columns.compact.collect { |f| f.to_s.downcase }
+    end
+
+    def forced?(column_name)
+      forced.include?(column_name.downcase)
+    end
+
+    def include_all?
+      DataShift::Configuration.call.include_all_columns == true
+    end
+
     # Build complete picture of the methods whose names listed in columns
     # Handles method names as defined by a user, from spreadsheets or file headers where the names
     # specified may not be exactly as required e.g handles capitalisation, white space, _ etc
@@ -77,15 +99,7 @@ module DataShift
     #
     # The MethodDetails instance will contain a pointer to the column index from which it was mapped.
     #
-    # TODO - pull options out into Configuration
-    #
-    # Options:
-    #
-    #   [:include_all]      : Include all headers in processing - takes precedence of :force_inclusion
-    #
-    #   [:model_classes]    : Also ensure these classes are included in ModelMethods Dictionary
-
-    def map_inbound_headers( klass, columns, options = {} )
+    def map_inbound_headers(klass, columns)
 
       @mapped_class = klass
 
@@ -93,22 +107,18 @@ module DataShift
       # which can be used to map headers and populate an object of type klass
       model_method_mgr = ModelMethods::Manager.catalog_class(klass)
 
-      [*options[:model_classes]].each do |c|
-        ModelMethods::Manager.catalog_class(c)
-      end if options[:model_classes]
-
-      forced = forced_inclusion_columns.compact.collect { |f| f.to_s.downcase }
-
       reset
 
       [*columns].each_with_index do |col_data, col_index|
         raw_col_data = col_data.to_s
 
         if raw_col_data.nil? || raw_col_data.empty?
-          logger.warn("Column list contains empty or null column at index #{col_index}")
+          logger.warn("Column list contains empty or null header at index #{col_index}")
           bindings << NoMethodBinding.new(raw_col_data, col_index)
           next
         end
+
+        # Header DSL Name::Where::Value:Misc
 
         raw_col_name, where_field, where_value, *data = raw_col_data.split(column_delim)
 
@@ -123,7 +133,7 @@ module DataShift
           end
         end
 
-        if(model_method.nil? && (options[:include_all] || forced.include?(raw_col_name.downcase)))
+        if( model_method.nil? && (include_all? || forced?(raw_col_name)) )
           logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :method")
           model_method = model_method_mgr.insert(raw_col_name, :method)
         end

@@ -35,6 +35,8 @@ module DataShift
     #
     def source_to_headers
 
+      raise SourceIsNotAClass, "Cannot parse source for headers - source must be a Class" unless source.is_a?(Class)
+
       # TODO: This collection can now be sorted
       collection = ModelMethods::Manager.catalog_class(source)
 
@@ -59,8 +61,13 @@ module DataShift
       end
     end
 
-    def add(source)
-      @headers << Header.new(source: source, destination: source)
+    def add(source, destination = nil)
+      destination ||= source
+      @headers << Header.new(source: source, destination: destination)
+    end
+
+    def sources
+      @headers.collect(&:source)
     end
 
     def destinations

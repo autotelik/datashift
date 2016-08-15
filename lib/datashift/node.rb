@@ -10,10 +10,12 @@ module DataShift
 
     attr_accessor :tag, :index, :header, :operator
 
-    def initialize(tag, index = -1)
+    def initialize(tag, operator: nil, index: -1)
       @tag = tag.to_s
       @index = index
-      @header = Header.new(source: tag)
+      @header = DataShift::Header.new(source: tag)
+
+      @operator = operator
     end
 
     delegate :source, to: :header

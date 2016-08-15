@@ -13,6 +13,12 @@ module DataShift
 
     class Configuration < DataShift::Configuration
 
+      # Default is to stop processing once we hit a completely empty row. Over ride.
+      # WARNING maybe slow, as will process all rows as defined by Excel
+      # @param [Boolean]
+      #
+      attr_accessor :allow_empty_rows
+
       # List of headers/columns that are Mandatory i.e must be present in the inbound data
       #
       # @param [Array<#call>] List of headers/columns that are Mandatory
@@ -22,21 +28,36 @@ module DataShift
 
       # Destroy failed objects - if object.save fails at any point destroy the current object - all or nothing
       # Default is true - database is cleaned up
-      # @return [Boolean]
+      # @param [Boolean]
       #
       attr_accessor :destroy_on_failure
 
-      # @param [Boolean] Stop processing and abort if any row fails to import
+      # Stop processing and abort if any row fails to import
       # Default is false - row reported as failure but loading continues
-      # @return [Boolean]
+      # @param [Boolean]
       #
       attr_accessor :abort_on_failure
 
+      # Row containing headers - default is 0
+      # @param [Integer]
+      #
+      attr_writer :header_row
+
       def initialize
         @mandatory = []
+        @allow_empty_rows = false
         @abort_on_failure = false
         @destroy_on_failure = true
+        @header_row = 0
       end
+
+      # Custom Readers
+
+      def header_row
+        raise MissingHeadersError, "Minimum row for Headers is 0 - passed #{@header_row}" if @header_row.to_i < 0
+        @header_row
+      end
+
 
       # @return [DataShift::Importers::Configuration] DataShift's current configuration
       def self.call
