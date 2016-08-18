@@ -19,7 +19,7 @@ module DataShift
     context 'generation' do
       include_context 'ClearThenManageProject'
 
-      let(:gb) { x = GeneratorBase.new;  x.klass_to_headers(Project); x }
+      let(:gb) { x = GeneratorBase.new; Headers.klass_to_headers(Project); x }
 
       it 'should create an instance of Headers from a Domain Model' do
         expect(gb.headers).to be_a Headers

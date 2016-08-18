@@ -8,7 +8,7 @@ require 'forwardable'
 
 module DataShift
 
-  # Acts as an array
+  # Acts as an array of Node
 
   class NodeCollection
 

@@ -54,7 +54,7 @@ module DataShift
       @prefixs = options[:prefixs] || []
       @postfixs = options[:postfixs] || []
 
-      klass_to_headers(@klass)
+      @headers = Headers.klass_to_headers(@klass)
 
       Erubis::Eruby.new( File.read(import_template)).result(binding)
     end

@@ -15,27 +15,9 @@ module DataShift
     attr_accessor :configuration
 
     def initialize
-      #TOFIX - don't think these belong here
       @headers = DataShift::Headers.new(:na)
     end
 
-
-    # Helpers for dealing with Active Record models and collections
-    # Catalogs the supplied Klass and builds set of expected/valid Headers for Klass
-    #
-    def klass_to_headers(klass)
-
-      @headers = Headers.new(klass)
-
-      headers.source_to_headers
-
-      DataShift::Transformer::Remove.unwanted_headers(@headers)
-
-      headers
-    end
-
-
-    alias klass_to_collection_and_headers klass_to_headers
 
     # Prepare to generate with associations but then
     # calls a **derived generate** method i.e abstract to this base class

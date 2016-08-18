@@ -13,15 +13,14 @@ module DataShift
           - project_title:
               heading:
                 source: "title"
-                destination: "Title"
               operator: title
           - value_as_string:
               heading:
-                destination: "Value:"
+                source: "Value:"
               operator: value_as_string
           - project_owner_budget:
               heading:
-                destination: "Budget"
+                source: "Budget"
               operator: owner.budget
       EOS
       x

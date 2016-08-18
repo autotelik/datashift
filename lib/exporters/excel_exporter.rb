@@ -43,9 +43,15 @@ module DataShift
 
       raise(ArgumentError, 'Please supply set of ActiveRecord objects to export') unless first.is_a?(ActiveRecord::Base)
 
-      logger.info("Exporting #{records.size} #{first.class} to Excel")
+      klass = first.class
 
-      excel = start_excel(first.class, options)
+      excel = start_excel(klass, options)
+
+      prepare_data_flow_schema(klass)
+
+      export_headers(klass)
+
+      logger.info("Exporting #{records.size} #{klass} to Excel")
 
       excel.ar_to_xls(records)
 
@@ -54,18 +60,25 @@ module DataShift
       excel.write( file_name )
     end
 
-
-    def preprare_data_flow_schema( klass )
-      logger.info("Wrote headers for #{klass} to Excel")
+    def export_headers(klass)
 
       if(data_flow_schema)
-        excel.set_headers( data_flow_schema.destinations )
+        @headers = data_flow_schema.sources
       else
+        # find details automatically from a class to use as headers
+        @headers = Headers.klass_to_headers(klass)
+      end
+
+      excel.set_headers( headers )
+
+      logger.info("Wrote headers for #{klass} to Excel")
+      headers
+    end
+
+    def prepare_data_flow_schema(klass)
+      unless(data_flow_schema)
         @data_flow_schema = DataShift::DataFlowSchema.new
         @data_flow_schema.prepare_from_klass( klass )
-
-        klass_to_headers(klass)
-        excel.set_headers( headers.destinations )
       end
 
       data_flow_schema
@@ -81,18 +94,23 @@ module DataShift
 
       excel = start_excel(klass, options)
 
-      preprare_data_flow_schema( klass )
-
       logger.info("Processing #{records.size} records to Excel")
 
-      model_methods = data_flow_schema.nodes
+      prepare_data_flow_schema(klass)
+
+      export_headers(klass)
+
+      nodes = data_flow_schema.nodes
 
       row = 1
 
       records.each do |obj|
         column = 0
 
-        model_methods.each do |model_method|
+        nodes.each do |node|
+
+          model_method = node.model_method
+
           # pack association instances into single column
           if model_method.association_type?
             logger.info("Processing #{model_method.inspect} associations")

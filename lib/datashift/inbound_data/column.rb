@@ -2,28 +2,28 @@
 # Author ::   Tom Statter
 # License::   MIT
 #
-# Details::  Store details of the inbound data from Excel, CSV files etc
+# Details::   The basic raw Header info from a client - column heading, column indexx
+#             Column contains additional data such as lookup fields, defaults etc
+#
 
 module DataShift
 
   module InboundData
 
-    # The raw, client supplied data such as column heading, column index etc
-    # Heading may contain additional data such as lookup fields, defaults etc
-    #
-    class Column < Node
+    class Column
 
-      attr_accessor :file_name
+      attr_accessor :header, :index, :lookup_list, :data
 
-      attr_accessor :lookup_list, :data
+      def initialize(source, index = -1)
 
-      def initialize(tag, index = -1)
-        
-        super(tag, index: index)
+        @header = DataShift::Header.new(source: source)
 
+        @index = index
         @lookup_list = []
         @data = []
       end
+
+      delegate :source, to: :header
 
       alias lookups lookup_list
 

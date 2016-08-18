@@ -4,17 +4,16 @@
 # License::   MIT
 #
 # Details::   A header
-#             Provides source <-> destination String mappings
+#             The source text
 #
 module DataShift
 
   class Header
 
-    attr_accessor :source, :destination
+    attr_accessor :source
 
-    def initialize(source:, destination: "")
+    def initialize(source:)
       @source = source
-      @destination = destination
     end
 
   end

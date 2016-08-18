@@ -57,8 +57,21 @@ module DataShift
       @configuration = DataShift::Configuration.call
     end
 
+    def sources
+      @nodes.collect(&:header).collect(&:source)
+    end
+
     def prepare_from_klass( klass )
-      @nodes = klass_to_model_methods( klass )
+
+      @nodes = NodeCollection.new
+
+      klass_to_model_methods( klass ).each_with_index do |mm, i|
+        binding = MethodBinding.new(mm.operator, i, mm)
+
+        @nodes << DataShift::Node.new(mm.operator,  method_binding: binding, index: i)
+      end
+
+      @nodes
     end
 
     # Helpers for dealing with Active Record models and collections
@@ -70,17 +83,17 @@ module DataShift
 
       collection = ModelMethods::Manager.catalog_class(klass)
 
+      model_methods = []
+
       if collection
-        model_methods = []
 
         collection.each { |mm| model_methods << mm if(op_types_in_scope.include? mm.operator_type) }
 
         DataShift::Transformer::Remove.unwanted_model_methods model_methods
-
-        model_methods
-      else
-        []
       end
+
+      model_methods
+
     end
 
     def prepare_from_file(file_name, locale_key = "data_flow_schema")
@@ -129,7 +142,7 @@ module DataShift
 
         data = section.values.first
 
-        node.header = Header.new(source: data['heading']['source'], destination: data['heading']['destination'])
+        node.header = Header.new(source: data['heading']['source'])
 
         if(data['operator'])
           node.operator = Operator.new(data['operator'], :method)

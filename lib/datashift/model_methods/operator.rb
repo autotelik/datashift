@@ -31,7 +31,7 @@ module DataShift
     # Operator is a population type method call
     # Type determines the style of operator call; simple assignment, an association or a method call
     #
-    def initialize(operator, type)
+    def initialize(operator, type = :method)
 
       if ModelMethod.supported_types_enum.include?(type.to_sym)
         @operator_type = type.to_sym

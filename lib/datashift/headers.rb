@@ -30,10 +30,24 @@ module DataShift
       @configuration = DataShift::Configuration.call
     end
 
+    # Helpers for dealing with Active Record models and collections
+    # Catalogs the supplied Klass and builds set of expected/valid Headers for Klass
+    #
+    def self.klass_to_headers(klass)
+
+      headers = Headers.new(klass)
+
+      headers.class_source_to_headers
+
+      DataShift::Transformer::Remove.unwanted_headers(headers)
+
+      headers
+    end
+
     # Helpers for dealing with source = class, usually an Active Record model
     # Catalogs the supplied Klass and builds set of expected/valid Headers for Klass
     #
-    def source_to_headers
+    def class_source_to_headers
 
       raise SourceIsNotAClass, "Cannot parse source for headers - source must be a Class" unless source.is_a?(Class)
 
@@ -61,17 +75,12 @@ module DataShift
       end
     end
 
-    def add(source, destination = nil)
-      destination ||= source
-      @headers << Header.new(source: source, destination: destination)
+    def add(source)
+      @headers << Header.new(source: source)
     end
 
     def sources
       @headers.collect(&:source)
-    end
-
-    def destinations
-      @headers.collect(&:destination)
     end
 
     def row_index
