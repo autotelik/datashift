@@ -91,6 +91,12 @@ To get usage information use thor help <command>, for example
 bundle exec thor help datashift:generate:excel
 ```
 
+It's simple to use a loader in standard Ruby, for example, loading from csv in standard seeds.rb (rake db:seed)
+
+```ruby
+DataShift::CsvLoader.new.run('db/seeds/permit.csv', Permit)
+```
+
 #### <a name="Features">Features</a>
 
 Use CSV or Excel/OpenOffice/LibraOffice etc (.xls) files to Import or Export your database (ActiveRecord) models

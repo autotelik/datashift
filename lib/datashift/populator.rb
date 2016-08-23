@@ -302,9 +302,15 @@ module DataShift
 
         enums = klass.send(operator.pluralize)
 
+        logger.debug("Checking for enum - #{enums.inspect} - #{value.parameterize.underscore}" )
+
         if enums.is_a?(Hash) && enums.keys.include?(value.parameterize.underscore)
           # ENUM
           logger.debug("[#{operator}] Appears to be an ENUM - setting to [#{value}])")
+
+          # TODO - now we know this column is an enum set operator type to :enum to save this check in future
+          # probably requires changes above to just assign enum directly without this check
+          model_method.operator_for(:assignment)
 
           record.send( operator + '=', value.parameterize.underscore)
           return true
