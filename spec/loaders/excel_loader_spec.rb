@@ -1,4 +1,4 @@
-# Copyright:: (c) Autotelik Media Ltd 2015
+# Copyright:: (c) Autotelik Media Ltd 2016
 # Author ::   Tom Statter
 # License::   MIT
 #
@@ -9,6 +9,10 @@ module  DataShift
 
   describe 'Excel Loader' do
     include_context 'ClearAllCatalogues'
+
+    before(:each) do
+      DataShift::Transformer::Factory.reset
+    end
 
     let(:loader) { ExcelLoader.new }
 

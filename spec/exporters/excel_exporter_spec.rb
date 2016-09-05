@@ -20,6 +20,8 @@ module  DataShift
 
     before(:each) do
       DataShift::Exporters::Configuration.reset
+
+      DataShift::Configuration.reset
     end
 
     let(:exporter) { ExcelExporter.new }
@@ -53,7 +55,7 @@ module  DataShift
         expect(File.exist?(expected)).to eq true
       end
 
-      it 'should export model attributes as headers', duff: true do
+      it 'should export model attributes as headers' do
         expected = result_file('exp_project_export.xls')
 
         exporter.export(expected, Project.all)
@@ -84,12 +86,12 @@ module  DataShift
         create( :project_with_user )
         create( :project_with_milestones, milestones_count: 4 )
 
-        DataShift::Exporters::Configuration.configure do |config|
+        DataShift::Configuration.configure do |config|
           config.with = :all
         end
       end
 
-      it 'should include associations in headers' do
+      it 'should include associations in headers', duff: true do
         expected = result_file('exp_project_assoc_headers.xls')
 
         exporter.export_with_associations(expected, Project, Project.all)

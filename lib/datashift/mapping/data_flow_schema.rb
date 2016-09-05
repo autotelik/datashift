@@ -52,23 +52,23 @@ module DataShift
     attr_reader :configuration, :nodes
 
     def initialize
-      @nodes = NodeCollection.new
-
-      @configuration = DataShift::Configuration.call
+      @nodes = DataShift::NodeCollection.new
     end
 
     def sources
-      @nodes.collect(&:header).collect(&:source)
+      @nodes.collect(&:method_binding).collect(&:source)
     end
 
     def prepare_from_klass( klass )
 
-      @nodes = NodeCollection.new
+      @nodes =  DataShift::NodeCollection.new
 
       klass_to_model_methods( klass ).each_with_index do |mm, i|
+        puts "DataFlowSchema - #{mm.operator}"
+
         binding = MethodBinding.new(mm.operator, i, mm)
 
-        @nodes << DataShift::Node.new(mm.operator,  method_binding: binding, index: i)
+        @nodes << DataShift::NodeContext.new( DocContext.new(klass), binding, i, nil)
       end
 
       @nodes
@@ -79,7 +79,9 @@ module DataShift
     #
     def klass_to_model_methods(klass)
 
-      op_types_in_scope = configuration.op_types_in_scope
+      op_types_in_scope = DataShift::Configuration.call.op_types_in_scope
+
+      puts "DataFlowSchema - OpTypesInScope : #{op_types_in_scope}"
 
       collection = ModelMethods::Manager.catalog_class(klass)
 
@@ -114,6 +116,8 @@ module DataShift
 
       raise RuntimeError.new("Bad YAML syntax  - No key #{locale_key} found in #{yaml}") unless yaml[locale_key]
 
+      klass = yaml[locale_key][klass]
+
       yaml_nodes =yaml[locale_key][klass]['nodes']
 
       logger.info("Nodes: #{nodes.inspect}")
@@ -123,34 +127,47 @@ module DataShift
         raise RuntimeError, "Bad syntax in flow schema YAML - Nodes should be a sequence"
       end
 
-      nodes = yaml_nodes.collect do |section|
+      nodes = []
+
+      # The over all doc context
+      doc = DataShift::DocContext.new( klass )
+
+      yaml_nodes.each_with_index do |section, i|
 
         unless(section.keys.size == 1)
           Rails.logger.error("Bad syntax in flow schema YAML - Section should be keyed hash")
           raise RuntimeError, "Bad syntax in flow schema YAML - Section should be keyed hash"
         end
 
-#        heading:
-#         source: "title"
-#         destination: "Title"
-#       operator: title
-
+        # data_flow_schema:
+        #   Project:
+        #     nodes:
+        #       - project:
+        #         heading:
+        #           source: "title"
+        #           destination: "Title"
+        #         operator: title
+        #         operator_type: has_many
+        #
+        #       - project_owner_budget:
+        #         heading:
+        #           destination: "Budget"
+        #         operator: owner.budget
+        #
         logger.info("Node Data: #{section.inspect}")
-        puts("Node Data: #{section.inspect}")
 
-        node = DataShift::Node.new(section.keys.first)
+        # type one of ModelMethod.supported_types_enum
+        operator = Operator.new(data['operator'], :method)
 
-        data = section.values.first
+        model_method = ModelMethod.new( klass,operator, section['operator_type'])
 
-        node.header = Header.new(source: data['heading']['source'])
+        method_binding = MethodBinding.new(section['heading']['source'], i, model_method)
 
-        if(data['operator'])
-          node.operator = Operator.new(data['operator'], :method)
-        else
-          #TODO - Find and Get the model method for this Class && column name
-        end
+        doc.headers.add( section['heading']['source'] )
 
-        node
+        node = DataShift::NodeContext.new(doc, method_binding, i, nil)
+
+        nodes << node
       end
 
       nodes

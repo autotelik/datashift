@@ -10,12 +10,9 @@ module DataShift
 
     include DataShift::Logging
 
-    attr_accessor :headers
-
     attr_accessor :configuration
 
     def initialize
-      @headers = DataShift::Headers.new(:na)
     end
 
 

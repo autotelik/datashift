@@ -17,7 +17,7 @@ module DataShift
 
     include DataShift::ExcelBase
 
-    # Pptional, otherwise  uses the standard collection of Model Methods for supplied klass
+    # Optional, otherwise  uses the standard collection of Model Methods for supplied klass
 
     attr_accessor :data_flow_schema
 
@@ -62,11 +62,10 @@ module DataShift
 
     def export_headers(klass)
 
-      if(data_flow_schema)
-        @headers = data_flow_schema.sources
+      headers = if(data_flow_schema)
+        data_flow_schema.sources
       else
-        # find details automatically from a class to use as headers
-        @headers = Headers.klass_to_headers(klass)
+        Headers.klass_to_headers(klass)
       end
 
       excel.set_headers( headers )
@@ -86,9 +85,19 @@ module DataShift
 
     # Create an Excel file from list of ActiveRecord objects, includes relationships
     #
-    # Association Options -  See  lib/exporters/configuration.rb
+    # The Associations/relationships to include are driven by Configuration Options
+    #
+    #   See - lib/exporters/configuration.rb
     #
     def export_with_associations(file_name, klass, records, options = {})
+
+      #
+      #   with: [:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
+      #
+      #   with: :all -> all op types
+      #
+
+     puts "Association Types in scope for export #{configuration.op_types_in_scope.inspect}"
 
       @file_name = file_name
 

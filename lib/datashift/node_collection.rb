@@ -16,7 +16,7 @@ module DataShift
 
     def_delegators :@nodes, *Array.delegated_methods_for_fwdable
 
-    def initialize()
+    def initialize
       @nodes = []
       @configuration = DataShift::Configuration.call
     end

@@ -42,7 +42,7 @@ module DataShift
 
       @csv_delimiter = options[:csv_delim] if options[:csv_delim]
 
-      @headers = Headers.klass_to_headers(first.class)
+      headers = Headers.klass_to_headers(first.class)
 
       logger.debug "Writing out CSV Export. Columns delimited by [#{csv_delimiter}]"
 
@@ -74,7 +74,7 @@ module DataShift
 
       logger.info("Association Types in scope for export #{configuration.op_types_in_scope.inspect}")
 
-      @headers = Headers.klass_to_headers(klass)
+      headers = Headers.klass_to_headers(klass)
 
       schema = DataFlowSchema.new
 

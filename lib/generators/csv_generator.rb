@@ -20,14 +20,14 @@ module DataShift
     def generate(file_name, klass)
       @file_name = file_name
 
-      @headers = Headers.klass_to_headers(klass)
+      headers = Headers.klass_to_headers(klass)
 
       logger.info("CSVGenerator saving generated Template #{@file_name}")
 
       csv_delim = DataShift::Exporters::Configuration.call.csv_delimiter
 
       CSV.open(file_name, 'w', col_sep: csv_delim ) do |csv|
-        csv << headers
+        csv << headers.sources
       end
 
     end

@@ -19,7 +19,7 @@ require 'generator_base'
 
 module DataShift
 
-  class FlowProducerFactory < GeneratorBase
+  class DataFlowSchemaProducer < GeneratorBase
 
     attr_accessor :template
 

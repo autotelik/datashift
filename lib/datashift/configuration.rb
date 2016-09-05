@@ -158,10 +158,11 @@ module DataShift
     end
 
 
-    # Prepare the operators types in scope based on options
+    # Prepare the operators types in scope based on number of configuration attributes
     # Default is assignment only
     #
-    # Options
+    # Responds to Configuration params :
+    #
     #   with: [:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
     #
     #   with: :all -> all op types

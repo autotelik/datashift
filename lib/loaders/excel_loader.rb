@@ -29,7 +29,7 @@ module DataShift
     #
     def perform_load( options = {} )
 
-      allow_empty_rows = DataShift::Importers::Configuration.call.destroy_on_failure
+      allow_empty_rows = DataShift::Loaders::Configuration.call.destroy_on_failure
 
       logger.info "Starting bulk load from Excel : #{file_name}"
 
@@ -58,9 +58,10 @@ module DataShift
 
             contains_data = false
 
-            # Iterate over the bindings, creating a context from data in associated Excel column
-
             doc_context.progress_monitor.start_monitoring
+
+            # Iterate over the bindings,
+            # For each column bound to a model operator, create a context from data in associated Excel column
 
             @binder.bindings.each_with_index do |method_binding, i|
               unless method_binding.valid?
@@ -68,7 +69,8 @@ module DataShift
                 next
               end
 
-              value = row[method_binding.inbound_index] # binding contains column number
+              # get the value from the cell, binding contains the column number
+              value = row[method_binding.inbound_index]
 
               context = doc_context.create_node_context(method_binding, current_row_idx, value)
 
@@ -122,7 +124,7 @@ module DataShift
     def start( file_name, options = {} )
       open_excel(file_name, options)
 
-      header_row = DataShift::Importers::Configuration.call.header_row
+      header_row = DataShift::Loaders::Configuration.call.header_row
 
       set_headers( parse_headers(sheet, header_row) )
 

@@ -41,7 +41,7 @@ module DataShift
       @doc_context = DocContext.new(Object)
       @binder      = Binder.new
 
-      @configuration = DataShift::Importers::Configuration.call
+      @configuration = DataShift::Loaders::Configuration.call
     end
 
     def setup_load_class(load_class)
@@ -85,6 +85,8 @@ module DataShift
     end
 
     # Core API
+    #
+    # Returns an instance of DataShift::Binder
     #
     # Given a list of free text column names from inbound headers,
     # map all headers to a domain model containing details on operator, look ups etc.

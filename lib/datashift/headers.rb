@@ -30,7 +30,7 @@ module DataShift
       @configuration = DataShift::Configuration.call
     end
 
-    # Helpers for dealing with Active Record models and collections
+    # Factory for dealing with Active Record models and collections
     # Catalogs the supplied Klass and builds set of expected/valid Headers for Klass
     #
     def self.klass_to_headers(klass)
@@ -56,6 +56,8 @@ module DataShift
 
       collection.each do |mm|
         next if(DataShift::Transformer::Remove.association?(mm))
+
+        # puts "IN class_source_to_headers - #{mm.operator.inspect}"
 
         if(mm.association_type?)
           association_to_headers(mm)

@@ -9,7 +9,7 @@ require 'erubis'
 
 module DataShift
 
-  module Importers
+  module Loaders
 
     class Configuration < DataShift::Configuration
 
@@ -59,24 +59,24 @@ module DataShift
       end
 
 
-      # @return [DataShift::Importers::Configuration] DataShift's current configuration
+      # @return [DataShift::Loaders::Configuration] DataShift's current configuration
       def self.call
-        @configuration ||= Importers::Configuration.new
+        @configuration ||= Loaders::Configuration.new
       end
 
       def self.reset
-        @configuration = Importers::Configuration.new
+        @configuration = Loaders::Configuration.new
       end
 
       # Set DataShift's configure
-      # @param config [DataShift::Importers::Configuration]
+      # @param config [DataShift::Loaders::Configuration]
       class << self
         attr_writer :configuration
       end
 
       # Modify DataShift's current Import configuration
       # ```
-      # DataShift::Importers::Configuration.configure do |config|
+      # DataShift::Loaders::Configuration.configure do |config|
       #   config.verbose = false
       # end
       # ```
@@ -87,7 +87,7 @@ module DataShift
       # Modify DataShift's current Import configuration from an options hash
 
       def self.from_hash( options )
-        DataShift::Importers::Configuration.configure do |config|
+        DataShift::Loaders::Configuration.configure do |config|
           config.mandatory = options[:mandatory] if(options[:mandatory])
         end
       end

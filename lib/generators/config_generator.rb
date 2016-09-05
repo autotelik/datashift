@@ -40,7 +40,7 @@ module DataShift
     # Create an YAML ERB Configuration template for Importing.
     # Includes available transformations and column mapping
     #
-    # For other options See DataShift::Importers::Configuration
+    # For other options See DataShift::Loaders::Configuration
     #
     def create_import_erb(klass_or_name, options = {})
 
