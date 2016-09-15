@@ -184,7 +184,7 @@ module DataShift
 
       elsif  model_method.operator_for(:assignment)
 
-        if model_method.col_type
+        if model_method.connection_adapter_column
           # TOFIX .. enum section probably belongs in prepare_data
           return if check_process_enum(record, model_method )
 
@@ -207,18 +207,15 @@ module DataShift
 
       begin
 
-        if model_method.col_type.respond_to? :type_cast
-          logger.debug("Assignment via [#{operator}] to [#{value}] (CAST TYPE [#{model_method.col_type.type_cast(value).inspect}])")
+        if model_method.connection_adapter_column.respond_to? :type_cast
+          logger.debug("Assignment via [#{operator}] to [#{value}] (CAST TYPE [#{model_method.connection_adapter_column.type_cast(value).inspect}])")
 
-          record.send( operator + '=', model_method.col_type.type_cast( value ) )
+          record.send( operator + '=', model_method.connection_adapter_column.type_cast( value ) )
         else
-          logger.debug("Assignment via [#{operator}] to [#{value}] (CAST [#{model_method.col_type.cast_type.inspect}])")
-
-          # TODO: -investigate if we need cast here and if so what we can do with model_method.col_type.sql_type
+          logger.debug("Assignment via [#{operator}] to [#{value}] (NO CAST)")
 
           # Good guide on diff ways to set attributes
           #   http://www.davidverhasselt.com/set-attributes-in-activerecord/
-
           if(DataShift::Configuration.call.update_and_validate)
             record.update( operator => value)
           else
@@ -226,6 +223,8 @@ module DataShift
           end
         end
       rescue => e
+        logger.error e.backtrace.first
+        logger.error("Assignment failed #{e.inspect}")
         raise DataProcessingError, "Failed to set [#{value}] via [#{operator}] due to ERROR : #{e.message}"
       end
     end

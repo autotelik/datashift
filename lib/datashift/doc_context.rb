@@ -103,7 +103,7 @@ module DataShift
     def save_and_monitor_progress
       if(errors? && all_or_nothing?)
         # Error already logged with doc_context.failure
-        logger.warn "SAVE skipped due to Errors for Row #{node_context.current_row_index} - #{node_context.method_binding.spp}"
+        logger.warn "SAVE skipped due to Errors for Row #{node_context.row_index} - #{node_context.method_binding.spp}"
       else
         if save
           @progress_monitor.success(load_object)
