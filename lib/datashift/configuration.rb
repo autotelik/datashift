@@ -103,6 +103,13 @@ module DataShift
     # @return [Array]
     attr_accessor :force_inclusion_of_columns
 
+    #  All external columns should be included in processing whether or not they automatically map to an operator
+    #
+    # @param [Boolean]
+    # @return [Boolean]
+    #
+    attr_accessor :include_all_columns
+
     def self.rails_columns
       @rails_standard_columns ||= [:id, :created_at, :created_on, :updated_at, :updated_on]
     end
@@ -151,10 +158,11 @@ module DataShift
     end
 
 
-    # Prepare the operators types in scope based on options
+    # Prepare the operators types in scope based on number of configuration attributes
     # Default is assignment only
     #
-    # Options
+    # Responds to Configuration params :
+    #
     #   with: [:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
     #
     #   with: :all -> all op types
@@ -194,8 +202,6 @@ module DataShift
 
       remove_list
     end
-
-
 
     # Modify DataShift's current Export configuration from an options hash
     def self.from_hash( options )

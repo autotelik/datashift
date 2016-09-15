@@ -24,28 +24,19 @@ module DataShift
 
     #  Options
     #
-    #   [:allow_empty_rows]  : Default is to stop processing once we hit a completely empty row. Over ride.
-    #                          WARNING maybe slow, as will process all rows as defined by Excel
-    #
+    #   [:sheet_name]      : Create a new worksheet assign to @sheet. Default is class.name
     #   [:sheet_number]    : Default is 0. The index of the Excel Worksheet to use.
-    #   [:header_row]      : Default is 0. Use alternative row as header definition.
     #
-    #  Options passed through  to :  populate_method_mapper_from_headers
-    #
-    #   [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
-
     def perform_load( options = {} )
 
-      raise MissingHeadersError, "Minimum row for Headers is 0 - passed #{options[:header_row]}" if options[:header_row] && options[:header_row].to_i < 0
-
-      allow_empty_rows = options[:allow_empty_rows]
+      allow_empty_rows = DataShift::Loaders::Configuration.call.destroy_on_failure
 
       logger.info "Starting bulk load from Excel : #{file_name}"
 
       start(file_name, options)
 
       # maps list of headers into suitable calls on the Active Record class
-      bind_headers(headers, options)
+      bind_headers(headers)
 
       begin
         puts 'Dummy Run - Changes will be rolled back' if(configuration.dummy_run)
@@ -67,9 +58,10 @@ module DataShift
 
             contains_data = false
 
-            # Iterate over the bindings, creating a context from data in associated Excel column
-
             doc_context.progress_monitor.start_monitoring
+
+            # Iterate over the bindings,
+            # For each column bound to a model operator, create a context from data in associated Excel column
 
             @binder.bindings.each_with_index do |method_binding, i|
               unless method_binding.valid?
@@ -77,7 +69,8 @@ module DataShift
                 next
               end
 
-              value = row[method_binding.inbound_index] # binding contains column number
+              # get the value from the cell, binding contains the column number
+              value = row[method_binding.inbound_index]
 
               context = doc_context.create_node_context(method_binding, current_row_idx, value)
 
@@ -125,13 +118,15 @@ module DataShift
 
     #  Options  :
     #
+    #   [:sheet_name]      : Create a new worksheet assign to @sheet. Default is class.name
     #   [:sheet_number]    : Default is 0. The index of the Excel Worksheet to use.
-    #   [:header_row]      : Default is 0. Use alternative row as header definition.
     #
     def start( file_name, options = {} )
       open_excel(file_name, options)
 
-      set_headers( parse_headers(sheet, options[:header_row] || 0) )
+      header_row = DataShift::Loaders::Configuration.call.header_row
+
+      set_headers( parse_headers(sheet, header_row) )
 
       if headers.empty?
         raise MissingHeadersError, "No headers found - Check Sheet #{sheet} is complete and Row #{headers.idx} contains headers"

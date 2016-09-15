@@ -30,7 +30,7 @@ describe 'Thor high level command line tasks' do
       opts = { model: 'Project', path: results_path.to_s }
 
       run_in(rails_sandbox_path) do
-        output = capture_stream(:stdout) { Datashift::Generate::Config.new.invoke(:import, [], opts) }
+        output = capture_stream(:stdout) { Datashift::Generate::Config.new.invoke(:create_import_erb, [], opts) }
 
         puts output
 

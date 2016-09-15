@@ -12,6 +12,10 @@ Paperclip.options[:command_path] = '/usr/local/bin/'
 describe 'PaperClip Bulk Loader' do
   include DataShift::Logging
 
+  before(:each) do
+    DataShift::Transformer::Factory.reset
+  end
+
   module Paperclip
     module Interpolations
 
@@ -79,7 +83,7 @@ describe 'PaperClip Bulk Loader' do
       loader.init_from_options attachment_options
     end
 
-    it 'should bulk load from a directory file system' do
+    it 'should bulk load from a directory file system', duff: true do
       loader.split_file_name_on = '_'
 
       loader.run(path, Digital)

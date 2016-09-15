@@ -7,12 +7,8 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 module  DataShift
 
-  describe 'Excel Loader' do
+  describe 'Excel Loader diretced by a DataFlowSchema' do
     include_context 'ClearAllCatalogues'
-
-    before(:each) do
-      DataShift::Transformer::Factory.reset
-    end
 
     let(:loader) { ExcelLoader.new }
 

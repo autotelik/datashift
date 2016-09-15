@@ -74,12 +74,12 @@ module DataShift
         @split_file_name_on = options[:split_file_name_on] if(options[:split_file_name_on])
       end
 
-      def find_bindings(options = {})
+      def find_bindings
         # Map field to a suitable call on the Active Record Owner class e.g Owner.digitals
         bindings = begin
           logger.info("Finding matching field/association [#{attach_to_field}] on class [#{attach_to_klass}]")
 
-          binder.map_inbound_fields(attach_to_klass, attach_to_field, options )
+          binder.map_inbound_fields(attach_to_klass, attach_to_field)
         rescue => e
           logger.error("Failed to map #{attach_to_field} to database operator : #{e.inspect}")
           logger.error( e.backtrace )
@@ -140,7 +140,7 @@ module DataShift
         logger.info("Found #{loading_files_cache.size} files - splitting names on delimiter [#{split_file_name_on}]")
 
         # Map field to a suitable call on the Active Record Owner class e.g Owner.digitals
-        bindings = find_bindings( options )
+        bindings = find_bindings
 
         attach_to_method_binding = if bindings.size != 1
                                      logger.warn("Failed to map #{attach_to_field} to database operator")

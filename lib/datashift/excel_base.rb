@@ -36,8 +36,7 @@ module DataShift
     #
     # Options  :
     #
-    #     :sheet_name : Create a new worksheet assign to @sheet.
-    #                   Default is class.name
+    #     :sheet_name : Create a new worksheet assign to @sheet. Default is class.name
     #
     #     :sheet_number : Select the sheet by index - sheet_name takes precedence
     #

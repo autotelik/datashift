@@ -17,7 +17,7 @@ module DataShift
 
     attr_accessor :load_object
 
-    # The current Node
+    # The current Node Context - method_binding (includes inbound_column), row, data
     attr_accessor :node_context
 
     # The inbound document headers

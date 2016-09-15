@@ -1,6 +1,6 @@
-# Copyright:: (c) Autotelik Media Ltd 2015
+# Copyright:: (c) Autotelik Media Ltd 2016
 # Author ::   Tom Statter
-# Date ::     Jan 2015
+# Date ::     Aug 2016
 # License::   MIT
 #
 # Details::   Holds the current context - the node we are dealing with
@@ -14,18 +14,22 @@ module DataShift
 
     include DataShift::Logging
 
-    attr_accessor :current_row_index, :populator, :doc_context
+    attr_accessor :doc_context, :method_binding, :row_index
 
-    attr_reader :data, :method_binding
+    attr_accessor :populator
+
+    attr_reader :data
 
     def initialize(doc_context, method_binding, row_idx, data)
       @doc_context = doc_context
       @method_binding = method_binding
-      @current_row_index = row_idx
+      @row_index = row_idx
       @data = data
 
       @populator = ContextFactory.get_populator(method_binding)
     end
+
+    delegate :model_method, :operator, to: :method_binding
 
     def contains_data?
       !(data.nil? || data.to_s.empty?)

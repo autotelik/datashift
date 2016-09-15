@@ -46,9 +46,10 @@ module DataShift
 
       headers = excel.worksheets[0].row(0)
 
-      %w(title value_as_string value_as_text value_as_boolean value_as_datetime value_as_integer value_as_double).each do |check|
-        expect(headers).to include(check)
-      end
+      expect(headers).to include('value_as_string')
+
+      expect(headers).to match Project.columns.collect(&:name)
+
     end
 
     # has_one  :owner

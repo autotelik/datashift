@@ -82,7 +82,7 @@ module DataShift
       expect(bindings.size).to eq 4
     end
 
-    it 'should map a list of column names to a set of method details', fail: true do
+    it 'should map a list of column names to a set of method details' do
       headers = %w(value_as_double value_as_string bad_no_such_column value_as_boolean)
 
       bindings = binder.map_inbound_headers( Project, headers )
@@ -105,6 +105,7 @@ module DataShift
       expect(bindings[0]).to be_a MethodBinding
 
       headers.each_with_index do |_c, i|
+        puts bindings[i].inspect
         expect(bindings[i].inbound_index).to eq i
         expect(bindings[i].inbound_column.index).to eq i
       end

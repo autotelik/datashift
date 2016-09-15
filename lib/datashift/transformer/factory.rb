@@ -68,6 +68,10 @@ module DataShift
         @__instance__[locale] ||= new
       end
 
+      def self.reset(locale = :en)
+        @__instance__[locale] = new
+      end
+
       attr_reader :defaults, :overrides, :substitutions
       attr_reader :prefixes, :postfixes
 
