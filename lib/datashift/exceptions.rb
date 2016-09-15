@@ -26,12 +26,6 @@ module DataShift
     end
   end
 
-  class NilDataSuppliedError < DataShiftException
-    def initialize( msg )
-      super( msg )
-    end
-  end
-
   class BadRuby < StandardError; end
 
   class UnsupportedFileType < StandardError; end
@@ -55,8 +49,10 @@ DataShift::DataShiftException.generate( 'CouldNotDeriveAssociationClass')
 DataShift::DataShiftException.generate( 'CreateAttachmentFailed')
 DataShift::DataShiftException.generate( 'DataProcessingError')
 DataShift::DataShiftException.generate( 'FileNotFound')
+DataShift::DataShiftException.generate( 'NilDataSuppliedError')
 DataShift::DataShiftException.generate( 'NoSuchClassError')
 DataShift::DataShiftException.generate( 'NoSuchOperator')
 DataShift::DataShiftException.generate( 'MissingConfigOptionError')
 DataShift::DataShiftException.generate( 'RecordNotFound')
 DataShift::DataShiftException.generate( 'SaveError')
+DataShift::DataShiftException.generate( 'SourceIsNotAClass')

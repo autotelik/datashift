@@ -42,16 +42,14 @@ module DataShift
 
       @csv_delimiter = options[:csv_delim] if options[:csv_delim]
 
-      klass_to_headers(first.class)
-
-      DataShift::Transformer::Remove.unwanted_columns(@headers )
-
-      remove = DataShift::Transformer::Remove.remove_list
+      headers = Headers.klass_to_headers(first.class)
 
       logger.debug "Writing out CSV Export. Columns delimited by [#{csv_delimiter}]"
 
+      remove = DataShift::Transformer::Remove.remove_list
+
       CSV.open(file_name, 'w', col_sep: csv_delimiter ) do |csv|
-        csv << headers
+        csv << headers.sources
 
         records.each do |r|
           next unless r.is_a?(ActiveRecord::Base)
@@ -76,14 +74,16 @@ module DataShift
 
       logger.info("Association Types in scope for export #{configuration.op_types_in_scope.inspect}")
 
-      klass_to_headers(klass)
+      headers = Headers.klass_to_headers(klass)
 
-      model_methods = klass_to_model_methods( klass )
+      schema = DataFlowSchema.new
+
+      model_methods = schema.klass_to_model_methods( klass )
 
       logger.debug "Writing out CSV Export for #{klass} wioth Associations. Columns delimited by [#{csv_delimiter}]"
 
       CSV.open(file_name, 'w', col_sep: csv_delimiter ) do |csv|
-        csv << headers
+        csv << headers.sources
 
         records.each do |record|
           row = []

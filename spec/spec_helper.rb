@@ -35,7 +35,7 @@ RSpec.configure do |config|
   config.before(:each) do
     DataShift::Configuration.reset
     DataShift::Exporters::Configuration.reset
-    DataShift::Importers::Configuration.reset
+    DataShift::Loaders::Configuration.reset
   end
 
   config.include FactoryGirl::Syntax::Methods

@@ -13,7 +13,7 @@ module  DataShift
     let(:loader) { CsvLoader.new }
 
     before(:each) do
-      DataShift::Exporters::Configuration.reset
+      DataShift::Loaders::Configuration.reset
     end
 
     context 'prepare to load' do

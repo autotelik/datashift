@@ -3,7 +3,8 @@
 # Date ::     Mar 2015
 # License::   MIT
 #
-# Details::   Create Configuraiton files for import and export
+# Details::   Generate an empty Configuration file, users can populate
+#             to configure their specific import and export
 #
 require 'generator_base'
 
@@ -29,19 +30,19 @@ module DataShift
     end
 
     def write_import(file_name, klass_or_name, options = {})
-      result = import(klass_or_name, options)
+      result = create_import_erb(klass_or_name, options)
 
       logger.info("Writing Import Config File [#{file_name}]")
 
       File.open(file_name, 'w') { |f| f << result }
     end
 
-    # Create an YAML Configuration template for Importing
-    # includes available transformations and column mapping
+    # Create an YAML ERB Configuration template for Importing.
+    # Includes available transformations and column mapping
     #
-    # For other options See DataShift::Importers::Configuration
+    # For other options See DataShift::Loaders::Configuration
     #
-    def import(klass_or_name, options = {})
+    def create_import_erb(klass_or_name, options = {})
 
       @klass = MapperUtils.ensure_class(klass_or_name)
 
@@ -53,7 +54,7 @@ module DataShift
       @prefixs = options[:prefixs] || []
       @postfixs = options[:postfixs] || []
 
-      klass_to_headers(@klass)
+      @headers = Headers.klass_to_headers(@klass)
 
       Erubis::Eruby.new( File.read(import_template)).result(binding)
     end

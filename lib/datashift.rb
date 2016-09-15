@@ -23,6 +23,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 #
+require_relative 'datashift/guards'
 require_relative 'datashift/logging'
 
 module DataShift
@@ -57,14 +58,6 @@ module DataShift
       end
     end
 
-    require_libs = ['datashift',
-                    'datashift/core_ext',
-                    'datashift/model_methods',
-                    'datashift/transformer',
-                    'datashift/inbound_data',
-                    'loaders', 'loaders/reporters',
-                    'exporters', 'generators', 'helpers', 'applications']
-
     begin
       require_relative 'datashift/delimiters'
       require_relative 'generators/generator_base'
@@ -76,9 +69,24 @@ module DataShift
       puts "Problem initializing gem #{x.inspect}"
     end
 
+    require_libs = %w{
+      datashift/core_ext
+      datashift
+      datashift/mapping
+      datashift/model_methods
+      datashift/transformer
+      datashift/inbound_data
+      loaders
+      loaders/reporters
+      exporters
+      generators
+      helpers
+      applications
+    }
+
     require_libs.each do |base|
       Dir[File.join(library_path, base, '*.rb')].each do |rb|
-        # puts rb
+        #puts rb
         begin
           require_relative rb unless File.directory?(rb)
         rescue => x

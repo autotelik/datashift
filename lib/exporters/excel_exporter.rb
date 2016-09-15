@@ -17,8 +17,14 @@ module DataShift
 
     include DataShift::ExcelBase
 
+    # Optional, otherwise  uses the standard collection of Model Methods for supplied klass
+
+    attr_accessor :data_flow_schema
+
     def initialize
       super
+
+      @data_flow_schema = nil
     end
 
     # Create an Excel file from list of ActiveRecord objects
@@ -35,17 +41,17 @@ module DataShift
 
       first = records[0]
 
-      raise ArgumentError.new('Please supply set of ActiveRecord objects to export') unless first.is_a?(ActiveRecord::Base)
+      raise(ArgumentError, 'Please supply set of ActiveRecord objects to export') unless first.is_a?(ActiveRecord::Base)
 
-      raise ArgumentError.new('Please supply array of records to export') unless records.is_a? Array
+      klass = first.class
 
-      logger.info("Exporting #{records.size} #{first.class} to Excel")
+      excel = start_excel(klass, options)
 
-      excel = start_excel(first.class, options)
+      prepare_data_flow_schema(klass)
 
-      klass_to_headers(first.class)
+      export_headers(klass)
 
-      excel.set_headers( headers )
+      logger.info("Exporting #{records.size} #{klass} to Excel")
 
       excel.ar_to_xls(records)
 
@@ -54,32 +60,66 @@ module DataShift
       excel.write( file_name )
     end
 
-    # Create an Excel file from list of ActiveRecord objects, includes relationships
-    #
-    # Association Options -  See  lib/exporters/configuration.rb
-    #
-    def export_with_associations(file_name, klass, records)
+    def export_headers(klass)
 
-      @file_name = file_name
-
-      start_excel(klass)
-
-      klass_to_headers(klass)
+      headers = if(data_flow_schema)
+        data_flow_schema.sources
+      else
+        Headers.klass_to_headers(klass)
+      end
 
       excel.set_headers( headers )
 
       logger.info("Wrote headers for #{klass} to Excel")
+      headers
+    end
 
-      row = 1
+    def prepare_data_flow_schema(klass)
+      unless(data_flow_schema)
+        @data_flow_schema = DataShift::DataFlowSchema.new
+        @data_flow_schema.prepare_from_klass( klass )
+      end
+
+      data_flow_schema
+    end
+
+    # Create an Excel file from list of ActiveRecord objects, includes relationships
+    #
+    # The Associations/relationships to include are driven by Configuration Options
+    #
+    #   See - lib/exporters/configuration.rb
+    #
+    def export_with_associations(file_name, klass, records, options = {})
+
+      #
+      #   with: [:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
+      #
+      #   with: :all -> all op types
+      #
+
+     puts "Association Types in scope for export #{configuration.op_types_in_scope.inspect}"
+
+      @file_name = file_name
+
+      excel = start_excel(klass, options)
 
       logger.info("Processing #{records.size} records to Excel")
 
-      model_methods = klass_to_model_methods( klass )
+      prepare_data_flow_schema(klass)
+
+      export_headers(klass)
+
+      nodes = data_flow_schema.nodes
+
+      row = 1
 
       records.each do |obj|
         column = 0
 
-        model_methods.each do |model_method|
+        nodes.each do |node|
+
+          model_method = node.model_method
+
           # pack association instances into single column
           if model_method.association_type?
             logger.info("Processing #{model_method.inspect} associations")

@@ -60,7 +60,7 @@ module DataShift
 
       add_failed_object(failure_data)
 
-      failure_data.destroy_failed_object if(DataShift::Importers::Configuration.call.destroy_on_failure)
+      failure_data.destroy_failed_object if(DataShift::Loaders::Configuration.call.destroy_on_failure)
     end
 
 

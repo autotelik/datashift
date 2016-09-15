@@ -2,6 +2,8 @@
 # Author ::   Tom Statter
 #
 require 'csv'
+require 'datashift/column_packer'
+require 'datashift/model_methods/model_method'
 
 class CSV
 

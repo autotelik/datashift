@@ -14,7 +14,7 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 module DataShift
 
-  describe 'CSV Exporter' do
+  describe CsvExporter do
 
     before(:all) do
       results_clear( '*.csv' )
@@ -169,12 +169,11 @@ module DataShift
       end
 
       before(:each) do
-        DataShift::Exporters::Configuration.reset
+        DataShift::Configuration.reset
 
-        DataShift::Exporters::Configuration.configure do |config|
+        DataShift::Configuration.configure do |config|
           config.with = [:all]
         end
-
       end
 
       it 'should export a model and associations to a file' do

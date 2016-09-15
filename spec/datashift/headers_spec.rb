@@ -20,8 +20,6 @@ describe 'Headers' do
       h = DataShift::Headers.new( :csv, 2 )
       expect(h.source).to eq :csv
       expect(h.idx).to eq 2
-      expect(h.mapped?).to eq false
-      expect(h.previous_headers).to eq []
     end
 
     it 'should act like an Array' do
@@ -41,5 +39,18 @@ describe 'Headers' do
       expect(h.size).to eq 1
       expect(h.empty?).to eq false
     end
+
+    it 'should be able to read headers as if using an Array' do
+      h = DataShift::Headers.new( :csv, 0 )
+
+      expect(h.size).to eq 0
+      expect(h.empty?).to eq true
+
+      h << 'sku'
+
+      expect(h.size).to eq 1
+      expect(h.empty?).to eq false
+    end
+
   end
 end
