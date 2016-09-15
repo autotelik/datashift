@@ -28,11 +28,10 @@ module DataShift
       #
       attr_accessor :by_optype
 
-      extend Forwardable
-
       attr_accessor :model_method_list
 
-      # ModelMethod is now Comparable
+      extend Forwardable
+
       def_delegators :@model_method_list, [], :sort, :sort!, :first, :last
 
       def initialize( klass )

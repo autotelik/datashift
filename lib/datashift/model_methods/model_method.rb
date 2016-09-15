@@ -30,14 +30,14 @@ module DataShift
     attr_accessor :klass
 
     # The rel col type from the DB
-    attr_reader :connection_adapter_column
+    attr_reader :col_type
 
     # Operator is a population type method call on klass
     # Type determines the style of operator call; simple assignment, an association or a method call
     #
     # col_types can typically be derived from klass.columns - set of ActiveRecord::ConnectionAdapters::Column
 
-    def initialize(klass, operator, type, connection_adapter_column = nil)
+    def initialize(klass, operator, type, col_type = nil)
 
       super(operator, type)
 
@@ -45,9 +45,9 @@ module DataShift
 
       # Note : Not all assignments will currently have a column type, for example
       # those that are derived from a delegate_belongs_to
-      @conn_aadapter_column = klass.columns.find { |col| col.name == operator } if connection_adapter_column.nil?
+      @col_type = klass.columns.find { |col| col.name == operator } if col_type.nil?
 
-      @connection_adapter_column = DataShift::ModelMethods::Catalogue.column_type_for(klass, operator) if connection_adapter_column.nil?
+      @col_type = DataShift::ModelMethods::Catalogue.column_type_for(klass, operator) if col_type.nil?
     end
 
 
@@ -58,8 +58,8 @@ module DataShift
 
           determine_operator_class.name
 
-        elsif @connection_adapter_column
-          @connection_adapter_column.type.to_s.classify
+        elsif @col_type
+          @col_type.type.to_s.classify
         else
           ''
         end
@@ -105,9 +105,9 @@ module DataShift
       Operator      [#{operator}]
       EOS
 
-      if connection_adapter_column.respond_to?(:cast_type)
+      if col_type.respond_to?(:cast_type)
         x += <<-EOS
-      Col/SqlType   [#{connection_adapter_column.class} - #{connection_adapter_column.cast_type.class.name}]
+      Col/SqlType   [#{col_type.class} - #{col_type.cast_type.class.name}]
         EOS
       end
       x
@@ -151,9 +151,9 @@ module DataShift
 
         result
 
-      elsif @conn_aadapter_column
+      elsif @col_type
         begin
-          Kernel.const_get(@conn_aadapter_column.type.to_s.classify)
+          Kernel.const_get(@col_type.type.to_s.classify)
         rescue
           nil
         end
