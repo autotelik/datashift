@@ -30,10 +30,10 @@ module DataShift
     #
     attr_accessor :exclude
 
-    # @param [Array<#call>] List of columns to remove from exported files
+    # @param [Array<#call>] List of columns to remove from  files
     # @return [Array<#call>]
     #
-    attr_accessor :remove
+    attr_accessor :remove_columns
 
     # @param [Boolean] Remove standard Rails cols like :id, created_at etc
     # Default is false - i.e id, created_at etc are included by default
@@ -117,7 +117,7 @@ module DataShift
     def initialize
       @with = [:assignment, :enum]
       @exclude = []
-      @remove = []
+      @remove_columns = []
 
       @strict = false
       @verbose = false
@@ -196,7 +196,7 @@ module DataShift
     # Specify option :remove_rails to remove them from output
     #
     def prep_remove_list
-      remove_list = [*@remove].compact.collect { |x| x.to_s.downcase.to_sym }
+      remove_list = [*remove_columns].compact.collect { |x| x.to_s.downcase.to_sym }
 
       remove_list += DataShift::Configuration.rails_columns if remove_rails
 

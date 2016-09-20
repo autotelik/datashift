@@ -16,6 +16,10 @@ module DataShift
       @source = source
     end
 
+    def to_s
+      source
+    end
+
   end
 
 end

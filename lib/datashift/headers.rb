@@ -13,7 +13,7 @@ module DataShift
 
   class Headers
 
-    attr_accessor :source, :configuration
+    attr_accessor :source
 
     # Row Index
     attr_reader :idx
@@ -26,8 +26,6 @@ module DataShift
       @source = source
       @idx = idx
       @headers = headers
-
-      @configuration = DataShift::Configuration.call
     end
 
     # Factory for dealing with Active Record models and collections
@@ -39,7 +37,7 @@ module DataShift
 
       headers.class_source_to_headers
 
-      DataShift::Transformer::Remove.unwanted_headers(headers)
+      DataShift::Transformer::Remove.new.unwanted_headers(headers)
 
       headers
     end
@@ -54,10 +52,10 @@ module DataShift
       # TODO: This collection can now be sorted
       collection = ModelMethods::Manager.catalog_class(source)
 
-      collection.each do |mm|
-        next if(DataShift::Transformer::Remove.association?(mm))
+      configuration = DataShift::Configuration.call
 
-        # puts "IN class_source_to_headers - #{mm.operator.inspect}"
+      collection.each do |mm|
+        next if(DataShift::Transformer::Remove.new.association?(mm))
 
         if(mm.association_type?)
           association_to_headers(mm)
@@ -68,6 +66,9 @@ module DataShift
     end
 
     def association_to_headers( model_method )
+
+      configuration = DataShift::Configuration.call
+
       if(configuration.expand_associations)
         model_method.association_columns.each do |c|
           add "#{model_method.operator}::#{c.name}"

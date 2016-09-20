@@ -11,7 +11,13 @@ module DataShift
 
   module Exporters
 
-    class Configuration < Configuration
+    class Configuration < DataShift::Configuration
+
+      # @param [Boolean] Stop processing and abort if a row fails to export
+      # Default is false
+      # @return [Boolean]
+      #
+      attr_accessor :abort_on_failure
 
       # @param [Char] Char to use as the column delimter for csv format
       # @return [Char]
@@ -23,25 +29,17 @@ module DataShift
       #
       attr_accessor :json
 
-
       # @param [String] Name for worksheet, otherwise uses Class name
       # @return [String]
       #
       attr_accessor :sheet_name
 
-      # @param [Boolean] Stop processing and abort if a row fails to export
-      # Default is false
-      # @return [Boolean]
-      #
-      attr_accessor :abort_on_failure
-
       def initialize
         super
-        @remove_rails = false
-        @sheet_name = ''
-        @json = false
-        @csv_delimiter = ','
         @abort_on_failure = false
+        @csv_delimiter = ','
+        @json = false
+        @sheet_name = ''
       end
 
       # @return [DataShift::Exporters::Configuration] DataShift's current configuration
@@ -62,7 +60,7 @@ module DataShift
       # Modify DataShift's current Export configuration
       # ```
       # DataShift::Exporters::Configuration.configure do |config|
-      #   config.verbose = false
+      #   config.abort_on_failure = false
       # end
       # ```
       def self.configure
@@ -76,20 +74,9 @@ module DataShift
         DataShift::Configuration.from_hash(options)
 
         DataShift::Exporters::Configuration.configure do |config|
-
-          config.with = [:all] if(options[:associations])
-
-          config.remove_rails = true if(options[:remove_rails])
-
-          # TODO: DRY by processing all simple assignments as a list
-          config.with = options[:with] if(options[:with])
-          config.exclude = options[:exclude] if(options[:exclude])
-          config.remove = options[:remove] if(options[:remove])
           config.csv_delimiter = options[:csv_delimiter] if(options[:csv_delimiter])
         end
       end
-
-
 
     end
   end

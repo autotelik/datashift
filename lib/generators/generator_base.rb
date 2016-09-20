@@ -15,7 +15,6 @@ module DataShift
     def initialize
     end
 
-
     # Prepare to generate with associations but then
     # calls a **derived generate** method i.e abstract to this base class
     #
@@ -23,13 +22,13 @@ module DataShift
     #
     def generate_with_associations(file_name, klass)
 
-      state = DataShift::Exporters::Configuration.call.with
+      state = DataShift::Configuration.call.with
 
-      DataShift::Exporters::Configuration.call.with = :all
+      DataShift::Configuration.call.with = :all
 
       generate(file_name, klass)
     ensure
-      DataShift::Exporters::Configuration.call.with = state
+      DataShift::Configuration.call.with = state
 
     end
 

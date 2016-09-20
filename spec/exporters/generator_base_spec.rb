@@ -15,7 +15,7 @@ module DataShift
     it 'should initialize' do
       expect(GeneratorBase.new).to be
     end
-
+=begin Headers moved into Schema
     context 'generation' do
       include_context 'ClearThenManageProject'
 
@@ -40,5 +40,6 @@ module DataShift
       end
 
     end
+=end
   end
 end

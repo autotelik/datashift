@@ -46,14 +46,14 @@ module DataShift
 
       logger.debug "Writing out CSV Export. Columns delimited by [#{csv_delimiter}]"
 
-      remove = DataShift::Transformer::Remove.remove_list
+      remove_list = DataShift::Transformer::Remove.new.remove_list
 
       CSV.open(file_name, 'w', col_sep: csv_delimiter ) do |csv|
         csv << headers.sources
 
         records.each do |r|
           next unless r.is_a?(ActiveRecord::Base)
-          csv.ar_to_row(r, remove)
+          csv.ar_to_row(r, remove_list)
         end
       end
 

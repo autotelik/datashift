@@ -15,11 +15,11 @@ module  DataShift
       it 'should process options to remove unwanted columns' do
         headers = [:a, :b, :c, :d, :e, :f]
 
-        DataShift::Exporters::Configuration.configure do |config|
-          config.remove = [:b, :f]
+        DataShift::Configuration.configure do |config|
+          config.remove_columns = [:b, :f]
         end
 
-        DataShift::Transformer::Remove.unwanted_columns(headers )
+        DataShift::Transformer::Remove.new.unwanted_columns(headers )
 
         expect(headers).to_not include [:b, :f]
       end
@@ -27,11 +27,11 @@ module  DataShift
       it 'should process options to remove unwant5ed columns' do
         headers = [:a, :id, :c, :d, :e, :created_on, :f, :updated_on]
 
-        DataShift::Exporters::Configuration.configure do |config|
+        DataShift::Configuration.configure do |config|
           config.remove_rails = true
         end
 
-        DataShift::Transformer::Remove.unwanted_columns(headers)
+        DataShift::Transformer::Remove.new.unwanted_columns(headers)
 
         expect(headers).to_not include [:id, :created_on, :updated_on]
       end

@@ -20,8 +20,8 @@ module Spreadsheet
     def set_headers(headers, _apply_style = nil)
       return if headers.empty?
 
-      headers.each_with_index do |datum, i|
-        self[0, i] = datum
+      headers.each_with_index do |header, i|
+        self[0, i] = header.to_s
       end
     end
 

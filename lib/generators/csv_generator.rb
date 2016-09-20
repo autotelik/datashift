@@ -2,14 +2,14 @@
 # Author ::   Tom Statter
 # License::   MIT
 #
-# Details::   Export a model to CSV
+# Details::   Export a model definition to CSV
 #
 #
 module DataShift
 
-  class CsvGenerator < FileGenerator
+  class CsvGenerator < GeneratorBase
 
-    include DataShift::Logging
+    attr_accessor :file_name
 
     def initialize
       super

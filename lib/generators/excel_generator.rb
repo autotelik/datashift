@@ -8,16 +8,15 @@
 #
 #
 require 'excel'
-require 'file_generator'
 
 module DataShift
 
-  class ExcelGenerator < FileGenerator
+  class ExcelGenerator < GeneratorBase
 
-    include DataShift::Logging
     include DataShift::ExcelBase
 
     attr_accessor :excel
+    attr_accessor :file_name
 
     def initialize
       super

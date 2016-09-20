@@ -139,9 +139,7 @@ module DataShift
       it 'should enable removal of certain columns' do
         expected = result_file('project_remove_export_spec.csv')
 
-        DataShift::Exporters::Configuration.configure do |config|
-          config.remove = [:title, :value_as_integer]
-        end
+        DataShift::Configuration.call.remove_columns = [:title, :value_as_integer]
 
         exporter.export(expected, Project.all)
 

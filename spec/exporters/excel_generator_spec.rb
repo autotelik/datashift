@@ -28,7 +28,7 @@ module DataShift
       expect(generator).to_not be_nil
     end
 
-    it 'should generate template .xls file from model', fail: true do
+    it 'should generate template .xls file from model' do
       expected = result_file('gen_project_template.xls')
 
       generator.generate(expected, Project)
@@ -46,9 +46,7 @@ module DataShift
 
       headers = excel.worksheets[0].row(0)
 
-      expect(headers).to include('value_as_string')
-
-      expect(headers).to match Project.columns.collect(&:name)
+      expect(headers).to include(*Project.columns.collect(&:name))
 
     end
 
@@ -58,7 +56,7 @@ module DataShift
     # has_many :versions, :through => :loader_releases
     # has_and_belongs_to_many :categories
 
-    it 'should include all associations in template .xls file from model' do
+    it 'should include all associations in template .xls file from model', duff: true do
       expected = result_file('gen_project_plus_assoc_template.xls')
 
       generator.generate_with_associations(expected, Project)
@@ -72,7 +70,9 @@ module DataShift
 
       expect(excel.worksheet(0).name).to eq 'Project'
 
-      headers = excel.worksheets[0].row(0)
+      headers = excel.worksheets[0].row(0).to_a
+
+      expect(headers).to include(*Project.columns.collect(&:name))
 
       %w(owner milestones loader_releases versions categories).each do |check|
         expect(headers.include?(check)).to eq true
@@ -82,7 +82,7 @@ module DataShift
     it 'should enable us to exclude associations by type in template .xls file' do
       expected = result_file('gen_project_plus_some_assoc_template.xls')
 
-      DataShift::Exporters::Configuration.configure do |config|
+      DataShift::Configuration.configure do |config|
         config.exclude = :has_many
       end
 
@@ -99,6 +99,9 @@ module DataShift
 
       headers = excel.worksheets[0].row(0)
 
+
+      expect(headers).to include(*Project.columns.collect(&:name))
+
       expect(headers.include?('title')).to eq  true
       expect(headers.include?('owner')).to eq  true
 
@@ -107,12 +110,10 @@ module DataShift
       end
     end
 
-    it 'should enable us to exclude certain associations in template .xls file ' do
+    it 'should enable us to exclude certain associations in template .xls file ', duff: true do
       expected = result_file('gen_project_plus_some_assoc_template.xls')
 
-      DataShift::Exporters::Configuration.configure do |config|
-        config.remove = [:milestones, :versions]
-      end
+      DataShift::Configuration.call.remove_columns = [:milestones, :versions]
 
       generator.generate_with_associations(expected, Project)
 
@@ -139,9 +140,7 @@ module DataShift
     it 'should enable us to remove standard rails feilds from template .xls file ' do
       expected = result_file('gen_project_plus_some_assoc_template.xls')
 
-      DataShift::Exporters::Configuration.configure do |config|
-        config.remove_rails = true
-      end
+      DataShift::Configuration.call.remove_rails = true
 
       generator.generate_with_associations(expected, Project)
 

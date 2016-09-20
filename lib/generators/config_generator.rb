@@ -12,9 +12,6 @@ module DataShift
 
   class ConfigGenerator < GeneratorBase
 
-    include DataShift::Logging
-    include ExcelBase
-
     def self.title
       @mappings_title ||= "datashift_mappings:\n"
     end

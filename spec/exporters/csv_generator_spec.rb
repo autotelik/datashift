@@ -44,14 +44,6 @@ module  DataShift
 
     context 'with associations' do
 
-      before(:each) do
-        DataShift::Configuration.reset
-
-        DataShift::Configuration.configure do |config|
-          config.with = [:all]
-        end
-      end
-
       # has_one  :owner
       # has_many :milestones
       # has_many :loader_releases
@@ -69,9 +61,10 @@ module  DataShift
 
         headers = csv[0]
 
-        expect(headers).to include('value_as_string')
+        expect(headers).to include('owner')
+        expect(headers).to include('categories')
 
-        expect(headers).to match Project.columns.collect(&:name)
+        expect(headers).to include(*Project.columns.collect(&:name))
       end
 
       it 'should enable us to exclude associations by type in template .csv file' do
@@ -89,22 +82,21 @@ module  DataShift
 
         headers = csv[0]
 
-        expect(headers).to match Project.columns.collect(&:name)
+        expect(headers).to include(*Project.columns.collect(&:name))
 
-        has_one :owner
-
-        has_many :milestones
-
-        expect(headers.include?('title')).to eq true
         expect(headers.include?('owner')).to eq true
+        expect(headers.include?('user')).to eq true
+
+       # has_many
+        expect(headers.include?('milestones')).to eq false
+        expect(headers.include?('versions')).to eq false
+
       end
 
-      it 'should enable us to exclude certain associations', fail: true do
+      it 'should enable us to exclude certain associations' do
         expected = result_file('project_plus_some_assoc_template.csv')
 
-        DataShift::Exporters::Configuration.configure do |config|
-          config.remove = [:milestones, :versions]
-        end
+        DataShift::Configuration.call.remove_columns = [:milestones, :versions]
 
         generator.generate_with_associations(expected, Project)
 
@@ -126,9 +118,7 @@ module  DataShift
       it 'should remove standard rails fields from template .csv file' do
         expected = result_file('project_plus_some_assoc_template.csv')
 
-        DataShift::Exporters::Configuration.configure do |config|
-          config.remove_rails = true
-        end
+        DataShift::Configuration.call.remove_rails = true
 
         generator.generate_with_associations(expected, Project)
 

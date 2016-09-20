@@ -39,12 +39,6 @@ if DataShift::Guards.jruby?
       end
     end
 
-    def headers=( headers )
-      headers.each_with_index do |header, column|
-        self[0, column] = (header || '')
-      end
-    end
-
     # Convert array into a header row
     def set_headers(headers, apply_style = nil)
       create_row(0)
@@ -52,7 +46,7 @@ if DataShift::Guards.jruby?
 
       style = apply_style || header_style
 
-      headers.each_with_index do |datum, i|
+      headers.sources.each_with_index do |datum, i|
         c = @row.createCell(i, poi_cell_type(datum))
         c.setCellValue(datum)
         c.setCellStyle(style)

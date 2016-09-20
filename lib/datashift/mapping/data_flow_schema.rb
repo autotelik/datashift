@@ -91,7 +91,9 @@ module DataShift
 
         collection.each { |mm| model_methods << mm if(op_types_in_scope.include? mm.operator_type) }
 
-        DataShift::Transformer::Remove.unwanted_model_methods model_methods
+        remove = DataShift::Transformer::Remove.new
+
+        remove.unwanted_model_methods model_methods
       end
 
       model_methods

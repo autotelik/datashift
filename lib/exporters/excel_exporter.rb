@@ -18,7 +18,6 @@ module DataShift
     include DataShift::ExcelBase
 
     # Optional, otherwise  uses the standard collection of Model Methods for supplied klass
-
     attr_accessor :data_flow_schema
 
     def initialize

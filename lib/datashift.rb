@@ -26,6 +26,8 @@
 require_relative 'datashift/guards'
 require_relative 'datashift/logging'
 
+require 'active_support/core_ext/module/delegation'
+
 module DataShift
 
   def self.gem_name
@@ -61,7 +63,6 @@ module DataShift
     begin
       require_relative 'datashift/delimiters'
       require_relative 'generators/generator_base'
-      require_relative 'generators/file_generator'
       require_relative 'loaders/reporters/reporter'
       require_relative 'loaders/loader_base'
       require_relative 'exporters/exporter_base'
@@ -90,8 +91,7 @@ module DataShift
         begin
           require_relative rb unless File.directory?(rb)
         rescue => x
-          puts "Problem loading file #{rb} - #{x.inspect}"
-          puts x.backtrace.last
+          puts "Problem loading datashift file #{rb} - #{x.inspect}"
         end
       end
     end
