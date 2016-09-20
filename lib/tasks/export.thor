@@ -118,7 +118,7 @@ module Datashift
         model = options[:model]
         result = options[:result]
 
-        DataShift::Exporters::Configuration.from_hash(options)
+        DataShift::Configuration.from_hash(options)
 
         logger.info "Datashift: Starting export with #{exporter.class.name} to #{result}"
 

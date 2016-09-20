@@ -69,7 +69,6 @@ module DataShift
       !! configuration.abort_on_failure
     end
 
-
     def load_object_class
       doc_context.klass
     end
@@ -79,9 +78,8 @@ module DataShift
       doc_context.headers = headings
     end
 
-
     def report
-      reporters.each {|r| r.report }
+      reporters.each(&:report)
     end
 
     # Core API

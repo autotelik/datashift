@@ -8,7 +8,7 @@
 #             into the right format for the style of operator; simple assignment,
 #             appending to an association collection or a method call
 #
-require_relative "operator"
+require_relative 'operator'
 
 module DataShift
 
@@ -49,7 +49,6 @@ module DataShift
 
       @connection_adapter_column = DataShift::ModelMethods::Catalogue.column_type_for(klass, operator) if connection_adapter_column.nil?
     end
-
 
     # Return the operator's expected class name, if can be derived, else nil
     def operator_class_name

@@ -68,11 +68,13 @@ module DataShift
     #
     def export_with_associations(file_name, klass, records, options = {})
 
+      state = DataShift::Configuration.call.with
+
+      DataShift::Configuration.call.with = :all
+
       @file_name = file_name
 
       @csv_delimiter = options[:csv_delim] if(options[:csv_delim])
-
-      logger.info("Association Types in scope for export #{configuration.op_types_in_scope.inspect}")
 
       headers = Headers.klass_to_headers(klass)
 
@@ -80,7 +82,7 @@ module DataShift
 
       model_methods = schema.klass_to_model_methods( klass )
 
-      logger.debug "Writing out CSV Export for #{klass} wioth Associations. Columns delimited by [#{csv_delimiter}]"
+      logger.debug "Writing out CSV Export for #{klass} with Associations. Columns delimited by [#{csv_delimiter}]"
 
       CSV.open(file_name, 'w', col_sep: csv_delimiter ) do |csv|
         csv << headers.sources
@@ -98,6 +100,9 @@ module DataShift
           csv.add_row(row)
         end
       end
+
+    ensure
+      DataShift::Configuration.call.with = state
     end # end write file
 
   end

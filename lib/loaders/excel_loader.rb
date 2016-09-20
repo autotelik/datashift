@@ -63,7 +63,7 @@ module DataShift
             # Iterate over the bindings,
             # For each column bound to a model operator, create a context from data in associated Excel column
 
-            @binder.bindings.each_with_index do |method_binding, i|
+            @binder.bindings.each_with_index do |method_binding, _i|
               unless method_binding.valid?
                 logger.warn("No binding was found for column (#{current_row_idx})")
                 next

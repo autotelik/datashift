@@ -115,32 +115,30 @@ module DataShift
 
     context 'Reading' do
 
-      let(:data_flow_schema_producer) { DataFlowSchemaProducer.new }
+      let(:data_flow_schema) { DataFlowSchema.new }
 
       before(:each) do
         generate_config_file
 
         expect(File.exist?(expected_config_file)).to be true
 
-        data_flow_schema_producer.read(expected_config_file)
+        data_flow_schema.prepare_from_file(expected_config_file)
       end
 
-      it 'should be able to read a mapping' do
-        expect(data_flow_schema_producer.map_file_name).to eq expected_config_file
+      it 'should be able to read a mapping', duff: true do
+        expect(data_flow_schema.raw_data).to_not be_empty
+        expect(data_flow_schema.yaml_data).to_not be_empty
 
-        expect(data_flow_schema_producer.raw_data).to_not be_empty
-        expect(data_flow_schema_producer.yaml_data).to_not be_empty
-
-        expect(data_flow_schema_producer.mappings).to be_a OpenStruct
+        expect(data_flow_schema.mappings).to be_a OpenStruct
       end
 
       it 'should provide access to the top level mapping' do
-        expect(data_flow_schema_producer.mappings.Project).to be_a Hash
-        expect(data_flow_schema_producer.mappings['Project']).to be_a Hash
+        expect(data_flow_schema.mappings.Project).to be_a Hash
+        expect(data_flow_schema.mappings['Project']).to be_a Hash
       end
 
       it 'should provide access to the collection of mappings under top level' do
-        project_mappings = data_flow_schema_producer.mappings['Project']
+        project_mappings = data_flow_schema.mappings['Project']
 
         expect(project_mappings.key?('column_mappings')).to eq true
         expect(project_mappings.key?('defaults')).to eq true

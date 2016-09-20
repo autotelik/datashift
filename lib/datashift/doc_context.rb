@@ -28,7 +28,7 @@ module DataShift
     def initialize( klass )
       reset_klass(klass)
 
-      @headers  = DataShift::Headers.new(:na)
+      @headers = DataShift::Headers.new(:na)
 
       @progress_monitor = ProgressMonitor.new
 
@@ -73,7 +73,6 @@ module DataShift
       progress_monitor.failed_count
     end
 
-
     def current_errors
       load_object.errors.full_messages
     end
@@ -96,7 +95,6 @@ module DataShift
 
       raise DataShift::SaveError, "Cannot Save Invalid #{load_object.class} Record : #{current_errors}"
     end
-
 
     # Save the object and then report the outcome to ProgressMonitor, as either success or failure
     #

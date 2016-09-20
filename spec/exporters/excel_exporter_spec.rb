@@ -85,10 +85,6 @@ module  DataShift
         create_list(:project, expected_projects)
         create( :project_with_user )
         create( :project_with_milestones, milestones_count: 4 )
-
-        DataShift::Configuration.configure do |config|
-          config.with = :all
-        end
       end
 
       it 'should include associations in headers', duff: true do

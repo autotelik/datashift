@@ -58,6 +58,5 @@ module DataShift
       @operator_type == type.to_sym
     end
 
-
   end
 end

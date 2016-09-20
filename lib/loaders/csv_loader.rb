@@ -84,7 +84,7 @@ module DataShift
                   break
                 end
               end
-            end   # end of each column(node)
+            end # end of each column(node)
 
             doc_context.save_and_monitor_progress
 

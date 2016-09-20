@@ -19,7 +19,7 @@
 #
 # Each Node can have these elements
 #
-#   :heading:     
+#   :heading:
 #       source:  The column header
 #       destination:  The column header
 #
@@ -61,7 +61,7 @@ module DataShift
 
     def prepare_from_klass( klass )
 
-      @nodes =  DataShift::NodeCollection.new
+      @nodes = DataShift::NodeCollection.new
 
       klass_to_model_methods( klass ).each_with_index do |mm, i|
         puts "DataFlowSchema - #{mm.operator}"
@@ -100,68 +100,73 @@ module DataShift
 
     end
 
-    def prepare_from_file(file_name, locale_key = "data_flow_schema")
+    def prepare_from_file(file_name, locale_key = 'data_flow_schema')
       yaml = YAML.load( File.read(file_name) )
 
       prepare_from_yaml(yaml, locale_key)
     end
 
-    def prepare_from_string(text, locale_key = "data_flow_schema")
+    def prepare_from_string(text, locale_key = 'data_flow_schema')
       yaml = YAML.load(text)
 
       prepare_from_yaml(yaml, locale_key)
     end
 
-    def prepare_from_yaml(klass, yaml, locale_key = "data_flow_schema")
+    def prepare_from_yaml(yaml, locale_key = 'data_flow_schema')
 
       @nodes = NodeCollection.new
 
       raise RuntimeError.new("Bad YAML syntax  - No key #{locale_key} found in #{yaml}") unless yaml[locale_key]
 
-      klass = yaml[locale_key][klass]
+      klass_section = yaml[locale_key]
 
-      yaml_nodes =yaml[locale_key][klass]['nodes']
+      klass = klass_section.keys.first
 
-      logger.info("Nodes: #{nodes.inspect}")
+      yaml_nodes = klass_section[klass]['nodes']
+
+      logger.info("Read Data Schema Nodes: #{yaml_nodes.inspect}")
 
       unless(yaml_nodes.is_a?(Array))
-        Rails.logger.error("Bad syntax in flow schema YAML - Nodes should be a sequence")
-        raise RuntimeError, "Bad syntax in flow schema YAML - Nodes should be a sequence"
+        Rails.logger.error('Bad syntax in flow schema YAML - Nodes should be a sequence')
+        raise 'Bad syntax in flow schema YAML - Nodes should be a sequence'
       end
 
       nodes = []
 
       # The over all doc context
-      doc = DataShift::DocContext.new( klass )
+      doc = DocContext.new(MapperUtils.class_from_string_or_raise(klass))
 
-      yaml_nodes.each_with_index do |section, i|
+      yaml_nodes.each_with_index do |keyed_node, i|
 
-        unless(section.keys.size == 1)
-          Rails.logger.error("Bad syntax in flow schema YAML - Section should be keyed hash")
-          raise RuntimeError, "Bad syntax in flow schema YAML - Section should be keyed hash"
+        unless(keyed_node.keys.size == 1)
+          Rails.logger.error('Bad syntax in flow schema YAML - Section should be keyed hash')
+          raise 'Bad syntax in flow schema YAML - Section should be keyed hash'
         end
 
         # data_flow_schema:
         #   Project:
         #     nodes:
         #       - project:
-        #         heading:
-        #           source: "title"
-        #           destination: "Title"
-        #         operator: title
-        #         operator_type: has_many
+        #           heading:
+        #             source: "title"
+        #             destination: "Title"
+        #           operator: title
+        #           operator_type: has_many
         #
         #       - project_owner_budget:
-        #         heading:
-        #           destination: "Budget"
-        #         operator: owner.budget
+        #           heading:
+        #             destination: "Budget"
+        #           operator: owner.budget
         #
-        logger.info("Node Data: #{section.inspect}")
+        logger.info("Node Data: #{keyed_node.inspect}")
 
         # type one of ModelMethod.supported_types_enum
-        operator = Operator.new(data['operator'], :method)
 
-        model_method = ModelMethod.new( klass,operator, section['operator_type'])
+        section = keyed_node.values.first
+
+        operator = Operator.new(section['operator'], :method) if(section['operator'])
+
+        model_method = ModelMethod.new( klass, operator, section['operator_type'])  if(section['operator_type'])
 
         method_binding = MethodBinding.new(section['heading']['source'], i, model_method)
 
@@ -206,18 +211,18 @@ module DataShift
     end
 
     def find_association(method_chain)
-      arr = method_chain.to_s.split(".")
+      arr = method_chain.to_s.split('.')
 
-      arr.inject(model_object) {|o, a| o.send(a) }
+      arr.inject(model_object) { |o, a| o.send(a) }
     end
 
     def send_chain(method_chain)
-      arr = method_chain.to_s.split(".")
+      arr = method_chain.to_s.split('.')
       begin
-        arr.inject(current_review_object) {|o, a| o.send(a) }
+        arr.inject(current_review_object) { |o, a| o.send(a) }
       rescue => e
         Rails.logger.error("Failed to process method chain #{method_chain} : #{e.message}")
-        return I18n.t(".enrollment_review.missing_data")
+        return I18n.t('.enrollment_review.missing_data')
       end
     end
   end

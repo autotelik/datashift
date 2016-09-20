@@ -70,7 +70,7 @@ module DataShift
       puts "Problem initializing gem #{x.inspect}"
     end
 
-    require_libs = %w{
+    require_libs = %w(
       datashift/core_ext
       datashift
       datashift/mapping
@@ -83,11 +83,11 @@ module DataShift
       generators
       helpers
       applications
-    }
+    )
 
     require_libs.each do |base|
       Dir[File.join(library_path, base, '*.rb')].each do |rb|
-        #puts rb
+        # puts rb
         begin
           require_relative rb unless File.directory?(rb)
         rescue => x

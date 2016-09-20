@@ -58,7 +58,6 @@ module DataShift
         @header_row
       end
 
-
       # @return [DataShift::Loaders::Configuration] DataShift's current configuration
       def self.call
         @configuration ||= Loaders::Configuration.new

@@ -7,7 +7,7 @@ gemspec
 
 group :test do
 
-  gem "rspec-rails", "~> 3.4"
+  gem 'rspec-rails', '~> 3.4'
 
   platform :jruby do
     gem 'jruby-openssl'

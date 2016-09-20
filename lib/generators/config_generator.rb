@@ -16,7 +16,7 @@ module DataShift
       @mappings_title ||= "datashift_mappings:\n"
     end
 
-    attr_accessor :output_filename
+    attr_accessor :output_filename, :headers
 
     def initialize
       super
@@ -41,9 +41,10 @@ module DataShift
     #
     def create_import_erb(klass_or_name, options = {})
 
-      @klass = MapperUtils.ensure_class(klass_or_name)
+      klass = MapperUtils.ensure_class(klass_or_name)
 
-      @title = @klass.name.to_s
+      @key = 'data_flow_schema'
+      @klass = klass.name.to_s
 
       @defaults = options[:defaults] || []
       @overrides = options[:overrides] || []
@@ -51,7 +52,7 @@ module DataShift
       @prefixs = options[:prefixs] || []
       @postfixs = options[:postfixs] || []
 
-      @headers = Headers.klass_to_headers(@klass)
+      @headers = Headers.klass_to_headers(klass)
 
       Erubis::Eruby.new( File.read(import_template)).result(binding)
     end
@@ -92,8 +93,7 @@ module DataShift
       Erubis::Eruby.new( File.read(export_template)).result(binding)
     end
 
-    # Create an YAML template from a Excel spreadsheet for mapping headers
-    #
+    # Create an YAML template BAASED on an Excel spreadsheet for mapping headers
     #
     # * <tt>:title</tt> - Top level YAML node -defaults to ConfigGenerator.title
     #
@@ -113,7 +113,7 @@ module DataShift
 
       sheet = excel.worksheet( sheet_number )
 
-      @headers = parse_headers(sheet, options[:header_row] || 0)
+      @headers = excel.parse_headers(sheet, options[:header_row] || 0)
 
       mappings = options[:title] || ConfigGenerator.title
 

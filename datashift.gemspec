@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
 
   s.require_paths = ['lib']
 
-  s.add_runtime_dependency "rails", ">= 4.2", "< 5.1"
+  s.add_runtime_dependency 'rails', '>= 4.2', '< 5.1'
 
   s.add_runtime_dependency 'paperclip', '~> 4'
   s.add_runtime_dependency 'spreadsheet', '~> 1.1'
@@ -38,6 +38,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec', '~> 3.4'
   s.add_development_dependency 'factory_girl_rails', '~> 4.5'
   s.add_development_dependency 'database_cleaner', '~> 1.5'
-
 
 end

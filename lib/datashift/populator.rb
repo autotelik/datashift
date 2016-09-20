@@ -134,7 +134,7 @@ module DataShift
         elsif ( )
           @current_value = value.value
         elsif !DataShift::Guards.jruby? &&
-          (data.is_a?(Spreadsheet::Formula) || value.class.ancestors.include?(Spreadsheet::Formula))
+              (data.is_a?(Spreadsheet::Formula) || value.class.ancestors.include?(Spreadsheet::Formula))
           # TOFIX jruby/apache poi equivalent ?
           @value = data.value
         else
@@ -307,7 +307,7 @@ module DataShift
           # ENUM
           logger.debug("[#{operator}] Appears to be an ENUM - setting to [#{value}])")
 
-          # TODO - now we know this column is an enum set operator type to :enum to save this check in future
+          # TODO: - now we know this column is an enum set operator type to :enum to save this check in future
           # probably requires changes above to just assign enum directly without this check
           model_method.operator_for(:assignment)
 

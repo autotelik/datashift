@@ -1,6 +1,6 @@
 Array.class_eval do
 
-  ARRAY_FWDABLE_EXCLUDED_METHODS  = [
+  ARRAY_FWDABLE_EXCLUDED_METHODS = [
     :class, :singleton_class, :clone, :dup, :initialize_dup, :initialize_clone,
     :freeze, :methods, :singleton_methods, :protected_methods, :private_methods, :public_methods,
     :instance_variables, :instance_variable_get, :instance_variable_set, :instance_variable_defined?,

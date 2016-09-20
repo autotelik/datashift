@@ -123,7 +123,7 @@ module DataShift
       @verbose = false
       @dummy_run = false
       @force_inclusion_of_columns = []
-      @exclude_associations=[]
+      @exclude_associations = []
 
       @expand_associations = false
 
@@ -156,7 +156,6 @@ module DataShift
     def self.configure
       yield call
     end
-
 
     # Prepare the operators types in scope based on number of configuration attributes
     # Default is assignment only

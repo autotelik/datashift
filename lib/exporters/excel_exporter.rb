@@ -62,10 +62,10 @@ module DataShift
     def export_headers(klass)
 
       headers = if(data_flow_schema)
-        data_flow_schema.sources
-      else
-        Headers.klass_to_headers(klass)
-      end
+                  data_flow_schema.sources
+                else
+                  Headers.klass_to_headers(klass)
+                end
 
       excel.set_headers( headers )
 
@@ -90,13 +90,9 @@ module DataShift
     #
     def export_with_associations(file_name, klass, records, options = {})
 
-      #
-      #   with: [:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
-      #
-      #   with: :all -> all op types
-      #
+      state = DataShift::Configuration.call.with
 
-     puts "Association Types in scope for export #{configuration.op_types_in_scope.inspect}"
+      DataShift::Configuration.call.with = :all
 
       @file_name = file_name
 
@@ -134,6 +130,9 @@ module DataShift
 
       logger.info("Writing Excel to file [#{file_name}]")
       excel.write( file_name )
+
+    ensure
+      DataShift::Configuration.call.with = state
 
     end
 

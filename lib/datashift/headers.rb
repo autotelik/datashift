@@ -47,7 +47,7 @@ module DataShift
     #
     def class_source_to_headers
 
-      raise SourceIsNotAClass, "Cannot parse source for headers - source must be a Class" unless source.is_a?(Class)
+      raise SourceIsNotAClass, 'Cannot parse source for headers - source must be a Class' unless source.is_a?(Class)
 
       # TODO: This collection can now be sorted
       collection = ModelMethods::Manager.catalog_class(source)

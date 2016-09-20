@@ -26,7 +26,7 @@ module DataShift
     end
 
     def errors
-     error_messages
+      error_messages
     end
 
     def destroy_failed_object
