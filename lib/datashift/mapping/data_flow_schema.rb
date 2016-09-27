@@ -49,7 +49,7 @@ module DataShift
 
     include DataShift::Logging
 
-    attr_reader :configuration, :nodes
+    attr_reader :nodes, :raw_data, :yaml_data
 
     def initialize
       @nodes = DataShift::NodeCollection.new
@@ -59,16 +59,19 @@ module DataShift
       @nodes.collect(&:method_binding).collect(&:source)
     end
 
-    def prepare_from_klass( klass )
+    # Build the node collection from a Class, that is for each operator in scope
+    # create a method binding and a node context, and add to collection.
+    #
+    def prepare_from_klass( klass, doc_context = nil )
+
+      context = doc_context || DocContext.new(klass)
 
       @nodes = DataShift::NodeCollection.new
 
       klass_to_model_methods( klass ).each_with_index do |mm, i|
-        puts "DataFlowSchema - #{mm.operator}"
-
         binding = MethodBinding.new(mm.operator, i, mm)
 
-        @nodes << DataShift::NodeContext.new( DocContext.new(klass), binding, i, nil)
+        @nodes << DataShift::NodeContext.new(context, binding, i, nil)
       end
 
       @nodes
@@ -97,16 +100,17 @@ module DataShift
       end
 
       model_methods
-
     end
 
     def prepare_from_file(file_name, locale_key = 'data_flow_schema')
-      yaml = YAML.load( File.read(file_name) )
+      @raw_data = File.read(file_name)
+      yaml = YAML.load(raw_data)
 
       prepare_from_yaml(yaml, locale_key)
     end
 
     def prepare_from_string(text, locale_key = 'data_flow_schema')
+      @raw_data = text
       yaml = YAML.load(text)
 
       prepare_from_yaml(yaml, locale_key)
@@ -114,15 +118,26 @@ module DataShift
 
     def prepare_from_yaml(yaml, locale_key = 'data_flow_schema')
 
+      @yaml_data = yaml
+
       @nodes = NodeCollection.new
 
       raise RuntimeError.new("Bad YAML syntax  - No key #{locale_key} found in #{yaml}") unless yaml[locale_key]
 
-      klass_section = yaml[locale_key]
+      locale_section = yaml[locale_key]
 
-      klass = klass_section.keys.first
+      klass = locale_section.keys.first
 
-      yaml_nodes = klass_section[klass]['nodes']
+      klass_section = locale_section[klass]
+
+      # The over all doc context
+      doc = DocContext.new(MapperUtils.class_from_string_or_raise(klass))
+
+      nodes.doc_context = doc
+
+      DataShift::Transformer.factory { |f| f.configure_from_yaml(klass, klass_section) }
+
+      yaml_nodes = klass_section['nodes']
 
       logger.info("Read Data Schema Nodes: #{yaml_nodes.inspect}")
 
@@ -130,11 +145,6 @@ module DataShift
         Rails.logger.error('Bad syntax in flow schema YAML - Nodes should be a sequence')
         raise 'Bad syntax in flow schema YAML - Nodes should be a sequence'
       end
-
-      nodes = []
-
-      # The over all doc context
-      doc = DocContext.new(MapperUtils.class_from_string_or_raise(klass))
 
       yaml_nodes.each_with_index do |keyed_node, i|
 
@@ -149,28 +159,23 @@ module DataShift
         #       - project:
         #           heading:
         #             source: "title"
-        #             destination: "Title"
+        #             presentation: "Title"
         #           operator: title
         #           operator_type: has_many
-        #
-        #       - project_owner_budget:
-        #           heading:
-        #             destination: "Budget"
-        #           operator: owner.budget
-        #
         logger.info("Node Data: #{keyed_node.inspect}")
 
         # type one of ModelMethod.supported_types_enum
-
         section = keyed_node.values.first
 
         operator = Operator.new(section['operator'], :method) if(section['operator'])
 
         model_method = ModelMethod.new( klass, operator, section['operator_type'])  if(section['operator_type'])
 
-        method_binding = MethodBinding.new(section['heading']['source'], i, model_method)
+        source = section.fetch('heading', {}).fetch('source', nil)
 
-        doc.headers.add( section['heading']['source'] )
+        method_binding = MethodBinding.new(source, i, model_method)
+
+        doc.headers.add( source )
 
         node = DataShift::NodeContext.new(doc, method_binding, i, nil)
 
@@ -180,50 +185,5 @@ module DataShift
       nodes
     end
 
-    private
-
-    attr_accessor :current_review_object
-
-    attr_accessor :model_object
-
-    def row_to_node_collection(review_object, row)
-      # The section name, can be used as the state, for linking whole section, rather than at field level
-      link_state = row[:link_state] || current_section
-      link_title = row[:link_title]
-
-      @current_review_object = review_object
-
-      # The review partial can support whole objects, or low level data from method call defined in the DSL
-      if(row[:method].blank?)
-        node_collection.add(row[:title], review_object, link_state.to_s, link_title)
-      else
-        # rubocop:disable Style/IfInsideElse
-        if(review_object.respond_to?(:each))
-          review_object.each do |o|
-            @current_review_object = o
-            node_collection.add(row[:title], send_chain(row[:method]), link_state.to_s, link_title)
-          end
-        else
-          node_collection.add(row[:title], send_chain(row[:method]), link_state.to_s, link_title)
-        end
-
-      end
-    end
-
-    def find_association(method_chain)
-      arr = method_chain.to_s.split('.')
-
-      arr.inject(model_object) { |o, a| o.send(a) }
-    end
-
-    def send_chain(method_chain)
-      arr = method_chain.to_s.split('.')
-      begin
-        arr.inject(current_review_object) { |o, a| o.send(a) }
-      rescue => e
-        Rails.logger.error("Failed to process method chain #{method_chain} : #{e.message}")
-        return I18n.t('.enrollment_review.missing_data')
-      end
-    end
   end
 end

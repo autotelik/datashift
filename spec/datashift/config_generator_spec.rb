@@ -2,7 +2,6 @@
 # Author ::   Tom Statter
 # License::   MIT
 #
-#
 require File.join(File.dirname(__FILE__), '/../spec_helper')
 
 module DataShift
@@ -27,7 +26,8 @@ module DataShift
           result = config_generator.create_import_erb Project
 
           expect(result).to be_a String
-          expect(result).to match '#src_column_heading_0:'
+          expect(result).to include 'Project:'
+          expect(result).to include 'nodes:'
         end
 
         it 'should have a consistent starting title' do
@@ -125,24 +125,32 @@ module DataShift
         data_flow_schema.prepare_from_file(expected_config_file)
       end
 
-      it 'should be able to read a mapping', duff: true do
+      it 'should store the raw mapping data' do
         expect(data_flow_schema.raw_data).to_not be_empty
         expect(data_flow_schema.yaml_data).to_not be_empty
-
-        expect(data_flow_schema.mappings).to be_a OpenStruct
       end
 
-      it 'should provide access to the top level mapping' do
-        expect(data_flow_schema.mappings.Project).to be_a Hash
-        expect(data_flow_schema.mappings['Project']).to be_a Hash
+      it 'should read in the nodes for this data schema' do
+        expect(data_flow_schema.nodes).to be_a NodeCollection
+        expect(data_flow_schema.nodes).to_not be_empty
+
+        node = data_flow_schema.nodes[0]
+        expect(node).to be_a NodeContext
       end
 
-      it 'should provide access to the collection of mappings under top level' do
-        project_mappings = data_flow_schema.mappings['Project']
+      it 'should provide access to details of the schema' do
+        expect(data_flow_schema.nodes.doc_context).to be_a DocContext
+        expect(data_flow_schema.nodes.doc_context.klass).to eq Project
 
-        expect(project_mappings.key?('column_mappings')).to eq true
-        expect(project_mappings.key?('defaults')).to eq true
-        expect(project_mappings.key?('substitutions')).to eq true
+      end
+
+      it 'should have configured the Transformer', duff: true do
+
+        puts DataShift::Transformer.factory.inspect
+
+        expect( DataShift::Transformer.factory.key?('column_mappings')).to eq true
+        expect( DataShift::Transformer.factory.key?('defaults')).to eq true
+        expect( DataShift::Transformer.factory.key?('substitutions')).to eq true
       end
     end
 
