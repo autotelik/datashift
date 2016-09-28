@@ -64,11 +64,11 @@ module DataShift
     end
 
     def forced
-      @forced ||= forced_inclusion_columns.compact.collect { |f| f.to_s.downcase }
+      forced_inclusion_columns.compact.collect { |f| f.to_s.downcase }
     end
 
     def forced?(column_name)
-      forced.include?(column_name.downcase)
+      forced.include?(column_name.to_s.downcase)
     end
 
     def include_all?
@@ -126,16 +126,17 @@ module DataShift
         model_method = model_method_mgr.search(raw_col_name)
 
         # if not found via raw name, try various alternatives
+
+        if( model_method.nil? && (include_all? || forced?(raw_col_name)) )
+          logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :method")
+          model_method = model_method_mgr.insert(raw_col_name, :method)
+        end
+
         unless model_method
           Binder.substitutions(raw_col_name).each do |n|
             model_method = model_method_mgr.search(n)
             break if model_method
           end
-        end
-
-        if( model_method.nil? && (include_all? || forced?(raw_col_name)) )
-          logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :method")
-          model_method = model_method_mgr.insert(raw_col_name, :method)
         end
 
         if(model_method)

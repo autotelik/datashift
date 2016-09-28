@@ -10,10 +10,10 @@
 #             Tightly coupled with Binder classes (in lib/engine) which contains full details of
 #             a file's column and it's correlated AR associations.
 #
-module DataShift
+require 'datashift/binder'
+require 'datashift/querying'
 
-  require 'datashift/binder'
-  require 'datashift/querying'
+module DataShift
 
   class LoaderBase
 

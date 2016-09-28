@@ -32,11 +32,9 @@ module DataShift
 
       raise "Cannot load - failed to create a #{klass}" unless load_object
 
-      allow_empty_rows = options[:allow_empty_rows]
-
       logger.info "Starting bulk load from CSV : #{file_name}"
 
-      # TODO: - can we abstract out what a 'parsed file' is - heades plus value of each node
+      # TODO: - can we abstract out what a 'parsed file' is - headers plus value of each node
       # so a common object can represent excel,csv etc
       # then  we can make load() more generic
 

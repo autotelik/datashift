@@ -29,7 +29,7 @@ module DataShift
     #
     def perform_load( options = {} )
 
-      allow_empty_rows = DataShift::Loaders::Configuration.call.destroy_on_failure
+      allow_empty_rows = DataShift::Loaders::Configuration.call.allow_empty_rows
 
       logger.info "Starting bulk load from Excel : #{file_name}"
 

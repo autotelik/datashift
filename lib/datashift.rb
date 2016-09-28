@@ -62,6 +62,7 @@ module DataShift
 
     begin
       require_relative 'datashift/delimiters'
+      require_relative 'datashift/load_object'
       require_relative 'generators/generator_base'
       require_relative 'loaders/reporters/reporter'
       require_relative 'loaders/loader_base'

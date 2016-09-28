@@ -45,7 +45,7 @@ module DataShift
     def reset(object = nil)
       @node_context = DataShift::EmptyContext.new
 
-      @load_object = LoadObject.new(object || new_load_object)
+      @load_object =  DataShift::LoadObject.new(object || new_load_object)
     end
 
     def new_load_object

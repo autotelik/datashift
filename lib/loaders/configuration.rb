@@ -19,13 +19,6 @@ module DataShift
       #
       attr_accessor :allow_empty_rows
 
-      # List of headers/columns that are Mandatory i.e must be present in the inbound data
-      #
-      # @param [Array<#call>] List of headers/columns that are Mandatory
-      # @return [Array<#call>]
-      #
-      attr_accessor :mandatory
-
       # Destroy failed objects - if object.save fails at any point destroy the current object - all or nothing
       # Default is true - database is cleaned up
       # @param [Boolean]

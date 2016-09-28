@@ -43,9 +43,19 @@ module DataShift
       @valid = (name && model_method) ? true : false
     end
 
+    # TODO - use delegators
     def operator
       model_method ? model_method.operator : ''
     end
+
+    def operator?(name, case_sensitive = false)
+      model_method ? model_method.operator?(name, case_sensitive) : false
+    end
+
+    def klass
+      model_method.klass
+    end
+
 
     def inbound_name
       inbound_column.source
@@ -57,10 +67,6 @@ module DataShift
 
     def add_column_data(data)
       inbound_column.data << data
-    end
-
-    def klass
-      model_method.klass
     end
 
     # Example :

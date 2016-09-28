@@ -35,6 +35,13 @@ module DataShift
     #
     attr_accessor :remove_columns
 
+    # List of headers/columns that are Mandatory i.e must be present in the inbound data
+    #
+    # @param [Array<#call>] List of headers/columns that are Mandatory
+    # @return [Array<#call>]
+    #
+    attr_accessor :mandatory
+
     # @param [Boolean] Remove standard Rails cols like :id, created_at etc
     # Default is false - i.e id, created_at etc are included by default
     # @return [Boolean]

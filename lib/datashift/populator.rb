@@ -20,7 +20,7 @@ module DataShift
     extend DataShift::Delimiters
 
     def self.insistent_method_list
-      @insistent_method_list ||= [:to_s, :to_i, :to_f, :to_b]
+      @insistent_method_list ||= [:to_s, :downcase, :to_i, :to_f, :to_b]
     end
 
     # When looking up an association, when no field provided, try each of these in turn till a match
@@ -40,12 +40,16 @@ module DataShift
       @attribute_hash = {}
     end
 
-    # Main client hook :
+    # Main client hooks :
+
     # Prepare the data to be populated, then assign to the Db record
 
     def prepare_and_assign(context, record, data)
       prepare_and_assign_method_binding(context.method_binding, record, data)
     end
+
+    # This is the most pertinent hook for derived Processors, where you can provide custom
+    # population messages for specific Method bindings
 
     def prepare_and_assign_method_binding(method_binding, record, data)
       prepare_data(method_binding, data)
@@ -134,7 +138,7 @@ module DataShift
         elsif ( )
           @current_value = value.value
         elsif !DataShift::Guards.jruby? &&
-              (data.is_a?(Spreadsheet::Formula) || value.class.ancestors.include?(Spreadsheet::Formula))
+          (data.is_a?(Spreadsheet::Formula) || value.class.ancestors.include?(Spreadsheet::Formula))
           # TOFIX jruby/apache poi equivalent ?
           @value = data.value
         else
@@ -197,9 +201,14 @@ module DataShift
           insistent_assignment(record, value, operator)
         end
 
+      elsif model_method.operator_for(:method)
+        logger.debug("Method delegation assignment of value  #{value} => [#{operator}]")
+        insistent_assignment(record, value, operator)
+
       else
-        logger.error("WARNING: No assignment possible on #{record.inspect} using [#{operator}]")
+        logger.warn("Cannot assign via [#{operator}] to #{record.inspect} ")
       end
+
     end
 
     def assignment(record, value, model_method)
@@ -233,45 +242,58 @@ module DataShift
 
       op = operator + '=' unless operator.include?('=')
 
+      # TODO - fix this crap - perhaps recursion ??
       begin
         record.send(op, value)
-      rescue => e
+      rescue
+        begin
+          op = operator.downcase
+          op += '=' unless operator.include?('=')
 
-        Populator.insistent_method_list.each do |f|
-          begin
-            record.send(op, value.send( f) )
-            break
-          rescue => e
-            if f == Populator.insistent_method_list.last
-              logger.error(e.inspect)
-              logger.error("Failed to assign [#{value}] via operator #{operator}")
-              raise DataProcessingError, "Failed to assign [#{value}] to #{operator}" unless value.nil?
+          record.send(op, value)
+
+        rescue => e
+
+          Populator.insistent_method_list.each do |f|
+            begin
+              record.send(op, value.send(f) )
+              break
+            rescue => e
+              if f == Populator.insistent_method_list.last
+                logger.error(e.inspect)
+                logger.error("Failed to assign [#{value}] via operator #{operator}")
+                raise DataProcessingError, "Failed to assign [#{value}] to #{operator}" unless value.nil?
+              end
             end
           end
         end
       end
     end
 
+
     # Attempt to find the associated object via id, name, title ....
     def insistent_belongs_to(method_binding, record, value )
 
       operator = method_binding.operator
 
-      if value.class == method_binding.klass
+      klass = method_binding.model_method.operator_class
+
+      if value.class == klass
         logger.info("Populator assigning #{value} to belongs_to association #{operator}")
         record.send(operator) << value
       else
 
         unless method_binding.klass.respond_to?('where')
-          raise CouldNotAssignAssociation,
-                "Populator failed to assign [#{value}] to belongs_to association [#{operator}]"
+          raise CouldNotAssignAssociation, "Populator failed to assign [#{value}] to belongs_to [#{operator}]"
         end
 
-        # try the default field names
-        ([method_binding.find_by_operator] + Populator.insistent_find_by_list).each do |find_by|
+        # Try the default field names
+
+        # TODO - add find by operators from headers or configuration to  insistent_find_by_list
+        Populator.insistent_find_by_list.each do |find_by|
           begin
 
-            item = method_binding.klass.where(find_by => value).first_or_create
+            item = klass.where(find_by => value).first_or_create
 
             next unless item
 
@@ -339,6 +361,19 @@ module DataShift
       # TODO: - enable clients to register their own transformation methods and call them here
     end
 
+
+    # A single column can contain multiple lookup key:value definitions.
+    # These are delimited by special char defined in Delimiters
+    #
+    # For example:
+    #
+    #   size:large | colour:red,green,blue |
+    #
+    def split_multi_assoc_value
+      value.to_s.split( multi_assoc_delim )
+    end
+
+
     def assign_has_many(method_binding, load_object)
 
       # there are times when we need to save early, for example before assigning to
@@ -362,7 +397,7 @@ module DataShift
       else
         # A single column can contain multiple lookup key:value definitions, delimited by special char
         # size:large | colour:red,green,blue => [where size: 'large'], [where colour: IN ['red,green,blue']
-        columns = value.to_s.split( multi_assoc_delim )
+        columns = split_multi_assoc_value
       end
 
       operator = method_binding.operator

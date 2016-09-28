@@ -12,7 +12,7 @@ module DataShift
 
     def initialize( msg )
       super
-      logger.error( msg)
+      logger.error(msg)
     end
 
     def self.generate(name)
@@ -26,21 +26,25 @@ module DataShift
     end
   end
 
-  class BadRuby < StandardError; end
+  # Non self logging errors
 
-  class UnsupportedFileType < StandardError; end
   class BadFile < StandardError; end
+  class BadRuby < StandardError; end
+  class BadUri < StandardError; end
 
   class MappingDefinitionError < StandardError; end
-
   class MissingHeadersError < StandardError; end
   class MissingMandatoryError < StandardError; end
 
   class PathError < StandardError; end
 
-  class BadUri < StandardError; end
+  class RuntimeError  < StandardError; end
 
+  class UnsupportedFileType < StandardError; end
 end
+
+
+# Self logging errors
 
 DataShift::DataShiftException.generate( 'BadOperatorType')
 DataShift::DataShiftException.generate( 'ConnectionError')

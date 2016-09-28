@@ -64,8 +64,6 @@ module DataShift
       @nodes = DataShift::NodeCollection.new
 
       klass_to_model_methods( klass ).each_with_index do |mm, i|
-        puts "DataFlowSchema - #{mm.operator}"
-
         binding = MethodBinding.new(mm.operator, i, mm)
 
         @nodes << DataShift::NodeContext.new( DocContext.new(klass), binding, i, nil)
@@ -80,8 +78,6 @@ module DataShift
     def klass_to_model_methods(klass)
 
       op_types_in_scope = DataShift::Configuration.call.op_types_in_scope
-
-      puts "DataFlowSchema - OpTypesInScope : #{op_types_in_scope}"
 
       collection = ModelMethods::Manager.catalog_class(klass)
 
