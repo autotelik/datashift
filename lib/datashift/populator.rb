@@ -72,50 +72,6 @@ module DataShift
       @attribute_hash_const_regexp ||= Regexp.new( attribute_list_start + '.*' + attribute_list_end)
     end
 
-    # Transformations
-
-    def default( method_binding )
-      default = Transformer.factory.default(method_binding)
-
-      return unless default
-
-      @previous_value = value
-      @value = default
-    end
-
-    # Checks Transformer for a substitution for column defined in method_binding
-    def substitute( method_binding )
-      sub = Transformer.factory.substitution(method_binding)
-
-      return unless sub
-      @previous_value = value
-      @value = previous_value.gsub(sub.pattern.to_s, sub.replacement.to_s)
-    end
-
-    def override( method_binding )
-      override = Transformer.factory.override(method_binding)
-
-      return unless override
-      @previous_value = value
-      @value = override
-    end
-
-    def prefix( method_binding )
-      prefix = Transformer.factory.prefix(method_binding)
-
-      return unless prefix
-      @previous_value = value
-      @value = prefix + @value
-    end
-
-    def postfix( method_binding )
-      postfix = Transformer.factory.postfix(method_binding)
-
-      return unless postfix
-      @previous_value = value
-      @value += postfix
-    end
-
     # Check supplied value, validate it, and if required :
     #   set to provided default value
     #   prepend any provided prefixes
@@ -348,7 +304,7 @@ module DataShift
     attr_writer :value, :attribute_hash
 
     def run_transforms(method_binding)
-      default( method_binding ) if value.nil? || (value.respond_to?('empty?') && value.empty?)
+      default( method_binding ) if value.blank?
 
       override( method_binding )
 
@@ -448,6 +404,50 @@ module DataShift
 
         logger.info("Assignment to has_many [#{operator}] COMPLETE)")
       end # END HAS_MANY
+    end
+
+    # Transformations
+
+    def default( method_binding )
+      default = Transformer.factory.default(method_binding)
+
+      return unless default
+
+      @previous_value = value
+      @value = default
+    end
+
+    # Checks Transformer for a substitution for column defined in method_binding
+    def substitute( method_binding )
+      sub = Transformer.factory.substitution(method_binding)
+
+      return unless sub
+      @previous_value = value
+      @value = previous_value.gsub(sub.pattern.to_s, sub.replacement.to_s)
+    end
+
+    def override( method_binding )
+      override = Transformer.factory.override(method_binding)
+
+      return unless override
+      @previous_value = value
+      @value = override
+    end
+
+    def prefix( method_binding )
+      prefix = Transformer.factory.prefix(method_binding)
+
+      return unless prefix
+      @previous_value = value
+      @value = prefix + @value
+    end
+
+    def postfix( method_binding )
+      postfix = Transformer.factory.postfix(method_binding)
+
+      return unless postfix
+      @previous_value = value
+      @value += postfix
     end
 
   end

@@ -93,18 +93,13 @@ module DataShift
 
         data = YAML.load( ERB.new( IO.read(yaml_file) ).result )
 
-        logger.info("Setting up Transformations : #{data.inspect}")
+        class_name = load_object_class.name
 
-        klass = load_object_class.name
-
-        configure_from_yaml(klass, data[klass]) if(data[klass])
+        configure_from_yaml(load_object_class, data[class_name]) if(data[class_name])
       end
 
-      def configure_from_yaml(klass, yaml)
+      def configure_from_yaml(load_object_class, yaml)
 
-        logger.info("Setting up Transformations : #{yaml.inspect}")
-
-        puts "HELLO FACTORY", yaml.inspect
         method_map = {
           defaults: :set_default_on,
           overrides: :set_override_on,
@@ -116,13 +111,16 @@ module DataShift
         method_map.each do |key, call|
           settings = yaml[key.to_s]
 
-          puts "FACTORY", settings.inspect
-
           settings.each do |operator, value|
-            send( call, klass, operator, value)
+            logger.info("Configuring Transform [#{key}] for [#{operator.inspect}] to [#{value}]")
+            send( call, load_object_class, operator, value)
           end if(settings && settings.is_a?(Hash))
         end
 
+      end
+
+      def hash_key(method_binding)
+        method_binding.klass
       end
 
       def defaults_for( klass )
@@ -131,11 +129,11 @@ module DataShift
       end
 
       def default( method_binding )
-        defaults_for(method_binding.klass)[method_binding.operator]
+        defaults_for( hash_key(method_binding))[method_binding.operator]
       end
 
       def has_default?( method_binding )
-        defaults_for(method_binding.klass).key?(method_binding.operator)
+        defaults_for( hash_key(method_binding)).key?(method_binding.operator)
       end
 
       # SUBSTITUTIONS
@@ -146,11 +144,11 @@ module DataShift
       end
 
       def substitution( method_binding )
-        substitutions_for(method_binding.klass)[method_binding.operator]
+        substitutions_for( hash_key(method_binding))[method_binding.operator]
       end
 
       def has_substitution?( method_binding )
-        substitution_for(method_binding.klass).key?(method_binding.operator)
+        substitution_for( hash_key(method_binding)).key?(method_binding.operator)
       end
 
       # OVER RIDES
@@ -160,11 +158,11 @@ module DataShift
       end
 
       def override( method_binding )
-        overrides_for(method_binding.klass)[method_binding.operator]
+        overrides_for( hash_key(method_binding))[method_binding.operator]
       end
 
       def has_override?( method_binding )
-        overrides_for(method_binding.klass).key?(method_binding.operator)
+        overrides_for( hash_key(method_binding)).key?(method_binding.operator)
       end
 
       def prefixes_for(klass)
@@ -173,11 +171,11 @@ module DataShift
       end
 
       def prefix( method_binding )
-        prefixes_for(method_binding.klass)[method_binding.operator]
+        prefixes_for( hash_key(method_binding))[method_binding.operator]
       end
 
       def has_prefix?( method_binding )
-        prefixes_for(method_binding.klass).key?(method_binding.operator)
+        prefixes_for( hash_key(method_binding)).key?(method_binding.operator)
       end
 
       def postfixes_for(klass)
@@ -186,34 +184,34 @@ module DataShift
       end
 
       def postfix( method_binding )
-        postfixes_for(method_binding.klass)[method_binding.operator]
+        postfixes_for( hash_key(method_binding))[method_binding.operator]
       end
 
       def has_postfix?( method_binding )
-        postfixes_for(method_binding.klass).key?(method_binding.operator)
+        postfixes_for( hash_key(method_binding)).key?(method_binding.operator)
       end
 
       # use when no inbound data supplied
       def set_default(method_binding, default_value )
-        defaults_for(method_binding.klass)[method_binding.operator] = default_value
+        defaults_for( hash_key(method_binding))[method_binding.operator] = default_value
       end
 
       # use regardless of whether inbound data supplied
       def set_override( method_binding, value )
-        overrides_for(method_binding.klass)[method_binding.operator] = value
+        overrides_for( hash_key(method_binding))[method_binding.operator] = value
       end
 
       def set_substitution( method_binding, rule, replacement )
-        substitutions_for(method_binding.klass)[method_binding.operator] =
+        substitutions_for( hash_key(method_binding))[method_binding.operator] =
           Struct::Substitution.new(rule, replacement)
       end
 
       def set_prefix( method_binding, value)
-        prefixes_for(method_binding.klass)[method_binding.operator] = value
+        prefixes_for( hash_key(method_binding))[method_binding.operator] = value
       end
 
       def set_postfix( method_binding, value)
-        postfixes_for(method_binding.klass)[method_binding.operator] = value
+        postfixes_for( hash_key(method_binding))[method_binding.operator] = value
       end
 
       # Class based versions
