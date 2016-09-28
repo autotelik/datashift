@@ -18,12 +18,18 @@ module DataShift
 
     attr_accessor :output_filename, :headers
 
+    attr_writer :import_template, :export_template
+
     def initialize
       super
     end
 
     def import_template
-      @import_template ||= File.join(DataShift.library_path, 'datashift/templates/standard_import_config.erb')
+      @import_template ||= File.join(DataShift.library_path, 'datashift/templates/import_export_config.erb')
+    end
+
+    def export_template
+      @export_template ||= File.join(DataShift.library_path, 'datashift/templates/import_export_config.erb')
     end
 
     def write_import(file_name, klass_or_name, options = {})
@@ -59,9 +65,7 @@ module DataShift
 
     # FOR EXPORTERS
 
-    def export_template
-      @export_template ||= File.join(DataShift.library_path, 'datashift/templates/standard_export_config.erb')
-    end
+
 
     def write_export(file_name, klass_or_name, options = {})
       result = export(klass_or_name, options)

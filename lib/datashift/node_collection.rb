@@ -14,11 +14,12 @@ module DataShift
 
     extend Forwardable
 
+    attr_accessor :doc_context
+
     def_delegators :@nodes, *Array.delegated_methods_for_fwdable
 
     def initialize
       @nodes = []
-      @configuration = DataShift::Configuration.call
     end
 
   end

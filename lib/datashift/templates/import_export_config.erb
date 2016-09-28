@@ -1,4 +1,4 @@
-# YAML Template for Datashift Import Configuration
+# YAML Template for Datashift Import/Export Configuration
 #
 <%= @key -%>:
   <%= @klass -%>:
@@ -6,12 +6,16 @@
       <%= "#<name>: <value>" if(@defaults.empty?) %>
   <% @defaults.each do |k, v| -%>:
       <%= "#{k}: #{v}" %>
-  <% end -%>
+  <% end %>
+
     overrides:
+  <% if(@overrides.empty?) %>
       <%= "#<name>: <value>" if(@overrides.empty?) %>
+  <% end %>
   <% @overrides.each do |k, v| -%>:
       <% k %>: <% v %>
   <% end -%>
+
     # Expects a tuple (list with 2 entries), the rule and the replacement
     substitutions:
   <% if(@substitutions.empty?) %>
@@ -23,16 +27,19 @@
         - <% v.first %>
         - <% v.last %>
   <% end -%>
+
     prefixes:
       <%= "#<name>: <value>" if(@prefixs.empty?) %>
   <% @prefixs.each do |k, v| -%>:
       <%= k %>: <%= v %>
   <% end -%>
+
     postfixes:
   <%= "    #<name>: <value>" if(@postfixs.empty?) %>
   <% @postfixs.each do |k, v| -%>:
       <%= k %>: <%= v %>
   <% end -%>
+
   <% unless(@headers.empty?) %>
     # Mappings between inbound column names and internal names
     # are only required when datashift cannot guess the mapping itself
@@ -43,6 +50,6 @@
       - <%= s %>:
           heading:
             source: <%= s %>
-            destination: <%= s %>
+            presentation: <%= s %>
     <% end %>
   <% end %>

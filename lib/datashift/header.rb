@@ -3,21 +3,21 @@
 # Date ::     Feb 2016
 # License::   MIT
 #
-# Details::   A header
-#             The source text
+# Details::   A column header
 #
 module DataShift
 
   class Header
 
-    attr_accessor :source
+    attr_accessor :source, :presentation
 
     def initialize(source:)
       @source = source
+      @presentation = source
     end
 
     def to_s
-      source
+      presentation
     end
 
   end

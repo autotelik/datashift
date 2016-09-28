@@ -97,27 +97,32 @@ module DataShift
 
         klass = load_object_class.name
 
-        config_for_class = data[klass]
+        configure_from_yaml(klass, data[klass]) if(data[klass])
+      end
 
-        if(config_for_class)
+      def configure_from_yaml(klass, yaml)
 
-          method_map = {
-            defaults: :set_default_on,
-            overrides: :set_override_on,
-            substitutions: :set_substitution_on_list,
-            prefixes: :set_prefix_on,
-            postfixes: :set_postfix_on
-          }
+        logger.info("Setting up Transformations : #{yaml.inspect}")
 
-          method_map.each do |key, call|
-            settings = config_for_class[key.to_s]
+        puts "HELLO FACTORY", yaml.inspect
+        method_map = {
+          defaults: :set_default_on,
+          overrides: :set_override_on,
+          substitutions: :set_substitution_on_list,
+          prefixes: :set_prefix_on,
+          postfixes: :set_postfix_on
+        }
 
-            settings.each do |operator, value|
-              send( call, load_object_class, operator, value)
-            end if(settings && settings.is_a?(Hash))
-          end
+        method_map.each do |key, call|
+          settings = yaml[key.to_s]
 
+          puts "FACTORY", settings.inspect
+
+          settings.each do |operator, value|
+            send( call, klass, operator, value)
+          end if(settings && settings.is_a?(Hash))
         end
+
       end
 
       def defaults_for( klass )
