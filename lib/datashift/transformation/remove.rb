@@ -8,7 +8,7 @@
 
 module DataShift
 
-  module Transformer
+  module Transformation
 
     class Remove
 

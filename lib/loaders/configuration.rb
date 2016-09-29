@@ -19,13 +19,6 @@ module DataShift
       #
       attr_accessor :allow_empty_rows
 
-      # List of headers/columns that are Mandatory i.e must be present in the inbound data
-      #
-      # @param [Array<#call>] List of headers/columns that are Mandatory
-      # @return [Array<#call>]
-      #
-      attr_accessor :mandatory
-
       # Destroy failed objects - if object.save fails at any point destroy the current object - all or nothing
       # Default is true - database is cleaned up
       # @param [Boolean]
@@ -57,7 +50,6 @@ module DataShift
         raise MissingHeadersError, "Minimum row for Headers is 0 - passed #{@header_row}" if @header_row.to_i < 0
         @header_row
       end
-
 
       # @return [DataShift::Loaders::Configuration] DataShift's current configuration
       def self.call

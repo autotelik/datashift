@@ -37,7 +37,7 @@ module DataShift
 
       headers.class_source_to_headers
 
-      DataShift::Transformer::Remove.new.unwanted_headers(headers)
+      DataShift::Transformation::Remove.new.unwanted_headers(headers)
 
       headers
     end
@@ -47,7 +47,7 @@ module DataShift
     #
     def class_source_to_headers
 
-      raise SourceIsNotAClass, "Cannot parse source for headers - source must be a Class" unless source.is_a?(Class)
+      raise SourceIsNotAClass, 'Cannot parse source for headers - source must be a Class' unless source.is_a?(Class)
 
       # TODO: This collection can now be sorted
       collection = ModelMethods::Manager.catalog_class(source)
@@ -55,7 +55,7 @@ module DataShift
       configuration = DataShift::Configuration.call
 
       collection.each do |mm|
-        next if(DataShift::Transformer::Remove.new.association?(mm))
+        next if(DataShift::Transformation::Remove.new.association?(mm))
 
         if(mm.association_type?)
           association_to_headers(mm)

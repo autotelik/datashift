@@ -25,12 +25,13 @@ describe 'Thor high level command line tasks' do
 
     it 'should provide tasks to generate a mapping doc' do
 
+      pending "proper thor testing"
      # datashift:generate:config:import -m Spree::Product -p ~/blah.yaml
 
       opts = { model: 'Project', path: results_path.to_s }
 
       run_in(rails_sandbox_path) do
-        output = capture_stream(:stdout) { Datashift::Generate::Config.new.invoke(:create_import_erb, [], opts) }
+        output = capture_stream(:stdout) { Datashift::Generate::Config.new.invoke(:create_import_config, [], opts) }
 
         puts output
 

@@ -190,13 +190,13 @@ module  DataShift
       let(:expected)  { ifixture_file('ProjectsSingleCategories.xls') }
 
       before(:each) do
-        DataShift::Transformer.factory.clear
+        DataShift::Transformation.factory.clear
       end
 
       it 'should use global transforms to set default values' do
         texpected = Time.now.to_s(:db)
 
-        DataShift::Transformer.factory do |factory|
+        DataShift::Transformation.factory do |factory|
           factory.set_default_on(Project, 'value_as_string', 'some default text' )
           factory.set_default_on(Project, 'value_as_double', 45.467 )
           factory.set_default_on(Project, 'value_as_boolean', true )
@@ -227,7 +227,7 @@ module  DataShift
       end
 
       it 'should use global transforms to set pre and post fix values' do
-        DataShift::Transformer.factory do |factory|
+        DataShift::Transformation.factory do |factory|
           factory.set_prefix_on(Project, 'value_as_string', 'myprefix' )
           factory.set_postfix_on(Project, 'value_as_string', 'my post fix' )
         end
@@ -246,7 +246,7 @@ module  DataShift
       let(:expected)  { ifixture_file('ProjectsSingleCategories.xls') }
 
       before(:each) do
-        DataShift::Transformer.factory.clear
+        DataShift::Transformation.factory.clear
         loader.setup_load_class(Project)
 
         loader.configure_from( ifixture_file('ProjectConfiguration.yml') )
@@ -277,7 +277,7 @@ module  DataShift
 
       it 'should provide facility to OVER RIDE values via YAML configuration' do
 
-        expected = DataShift::Transformer.factory.overrides_for(Project)[:value_as_double]
+        expected = DataShift::Transformation.factory.overrides_for(Project)[:value_as_double]
 
         Project.all.each { |p|
           # TOFIX - the scale of the DB column from migration is 4 -- can we get that dynamically ?

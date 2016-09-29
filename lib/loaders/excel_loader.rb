@@ -29,7 +29,7 @@ module DataShift
     #
     def perform_load( options = {} )
 
-      allow_empty_rows = DataShift::Loaders::Configuration.call.destroy_on_failure
+      allow_empty_rows = DataShift::Loaders::Configuration.call.allow_empty_rows
 
       logger.info "Starting bulk load from Excel : #{file_name}"
 
@@ -63,7 +63,7 @@ module DataShift
             # Iterate over the bindings,
             # For each column bound to a model operator, create a context from data in associated Excel column
 
-            @binder.bindings.each_with_index do |method_binding, i|
+            @binder.bindings.each_with_index do |method_binding, _i|
               unless method_binding.valid?
                 logger.warn("No binding was found for column (#{current_row_idx})")
                 next

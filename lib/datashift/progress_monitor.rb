@@ -55,14 +55,13 @@ module DataShift
 
       @current_status = :failure
 
-      logger.error "Failure(s) reported :"
+      logger.error 'Failure(s) reported :'
       [*failure_data.errors].each { |e| logger.error "\t#{e}" }
 
       add_failed_object(failure_data)
 
       failure_data.destroy_failed_object if(DataShift::Loaders::Configuration.call.destroy_on_failure)
     end
-
 
     def add_loaded_object(object)
       @success_inbound_count += 1
@@ -75,7 +74,7 @@ module DataShift
       @failed_inbound_count += 1
       @processed_object_count += 1
 
-      @failed_objects << object unless  object.nil? || @failed_objects.include?(object)
+      @failed_objects << object unless object.nil? || @failed_objects.include?(object)
     end
 
     # The database objects created or rejected

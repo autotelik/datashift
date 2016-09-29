@@ -10,10 +10,10 @@
 #             Tightly coupled with Binder classes (in lib/engine) which contains full details of
 #             a file's column and it's correlated AR associations.
 #
-module DataShift
+require 'datashift/binder'
+require 'datashift/querying'
 
-  require 'datashift/binder'
-  require 'datashift/querying'
+module DataShift
 
   class LoaderBase
 
@@ -69,7 +69,6 @@ module DataShift
       !! configuration.abort_on_failure
     end
 
-
     def load_object_class
       doc_context.klass
     end
@@ -79,9 +78,8 @@ module DataShift
       doc_context.headers = headings
     end
 
-
     def report
-      reporters.each {|r| r.report }
+      reporters.each(&:report)
     end
 
     # Core API
@@ -155,7 +153,7 @@ module DataShift
 
       @config.merge!(data[self.class.name]) if data[self.class.name]
 
-      DataShift::Transformer.factory { |f| f.configure_from(load_object_class, yaml_file) }
+      DataShift::Transformation.factory { |f| f.configure_from(load_object_class, yaml_file) }
 
       ContextFactory.configure(load_object_class, yaml_file)
 

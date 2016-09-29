@@ -2,7 +2,6 @@
 # Author ::   Tom Statter
 # License::   MIT
 #
-#
 require File.join(File.dirname(__FILE__), '/../spec_helper')
 
 module DataShift
@@ -24,14 +23,15 @@ module DataShift
 
       context 'basic templates without a class' do
         it 'should generate an standard ERB template containing default mappings & config' do
-          result = config_generator.create_import_erb Project
+          result = config_generator.create_import_config Project
 
           expect(result).to be_a String
-          expect(result).to match '#src_column_heading_0:'
+          expect(result).to include 'Project:'
+          expect(result).to include 'nodes:'
         end
 
         it 'should have a consistent starting title' do
-          result = config_generator.create_import_erb Project
+          result = config_generator.create_import_config Project
 
           expect(result).to include 'Project'
         end
@@ -115,36 +115,70 @@ module DataShift
 
     context 'Reading' do
 
-      let(:data_flow_schema_producer) { DataFlowSchemaProducer.new }
+      let(:data_flow_schema) { DataFlowSchema.new }
+
+      #let(:config_file) { ifixture_file('ProjectConfiguration.yml') }
+
+      let(:expected_config_file) { result_file('mapping_service_project.yaml') }
+
+      let(:options) {
+        {
+          defaults:  {'value_as_string': 'some default text', 'value_as_double': 45.467 },
+          overrides: {'value_as_double': 45.467 },
+          postfixes: {'value_as_text': 'postfix value_as_text' },
+          substitutions:  { 'owner' => ['sub this text', 'for some other text'] }
+          # prefixs
+        }
+      }
+
+      let(:generate_config_file) { config_generator.write_import(expected_config_file, Project, options) }
 
       before(:each) do
-        generate_config_file
+
+        config = generate_config_file
+
+        expect(config).to be_a String
+        expect(config).to_not be_empty
 
         expect(File.exist?(expected_config_file)).to be true
 
-        data_flow_schema_producer.read(expected_config_file)
+        data_flow_schema.prepare_from_file(expected_config_file)
       end
 
-      it 'should be able to read a mapping' do
-        expect(data_flow_schema_producer.map_file_name).to eq expected_config_file
-
-        expect(data_flow_schema_producer.raw_data).to_not be_empty
-        expect(data_flow_schema_producer.yaml_data).to_not be_empty
-
-        expect(data_flow_schema_producer.mappings).to be_a OpenStruct
+      it 'should store the raw mapping data' do
+        expect(data_flow_schema.raw_data).to_not be_empty
+        expect(data_flow_schema.yaml_data).to_not be_empty
       end
 
-      it 'should provide access to the top level mapping' do
-        expect(data_flow_schema_producer.mappings.Project).to be_a Hash
-        expect(data_flow_schema_producer.mappings['Project']).to be_a Hash
+      it 'should read in the nodes for this data schema' do
+        expect(data_flow_schema.nodes).to be_a NodeCollection
+        expect(data_flow_schema.nodes).to_not be_empty
+
+        node = data_flow_schema.nodes[0]
+        expect(node).to be_a NodeContext
       end
 
-      it 'should provide access to the collection of mappings under top level' do
-        project_mappings = data_flow_schema_producer.mappings['Project']
+      it 'should provide access to details of the schema' do
+        expect(data_flow_schema.nodes.doc_context).to be_a DocContext
+        expect(data_flow_schema.nodes.doc_context.klass).to eq Project
 
-        expect(project_mappings.key?('column_mappings')).to eq true
-        expect(project_mappings.key?('defaults')).to eq true
-        expect(project_mappings.key?('substitutions')).to eq true
+      end
+
+      it 'should have configured the Transformer', duff: true do
+
+        postfixes =  DataShift::Transformation.factory.postfixes_for(Project)
+
+        expect(postfixes).to be_a Hash
+        expect(postfixes.has_key?('value_as_integer')).to eq false
+        expect(postfixes.has_key?('value_as_text')).to eq true
+        expect(postfixes.size).to eq 1
+
+        expect(DataShift::Transformation.factory.defaults_for(Project).size).to eq 2
+        expect(DataShift::Transformation.factory.overrides_for(Project).size).to eq 1
+        expect(DataShift::Transformation.factory.substitutions_for(Project).size).to eq 1
+        expect(DataShift::Transformation.factory.prefixes_for(Project).size).to eq 0
+
+        expect(DataShift::Transformation.factory.get_postfix_on(Project, :value_as_text)).to eq 'postfix value_as_text'
       end
     end
 

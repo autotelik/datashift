@@ -27,16 +27,14 @@ module DataShift
     #   [:dummy]           : Perform a dummy run - attempt to load everything but then roll back
     #
     #
-    def perform_load( options = {} )
+    def perform_load( _options = {} )
       require 'csv'
 
       raise "Cannot load - failed to create a #{klass}" unless load_object
 
-      allow_empty_rows = options[:allow_empty_rows]
-
       logger.info "Starting bulk load from CSV : #{file_name}"
 
-      # TODO: - can we abstract out what a 'parsed file' is - heades plus value of each node
+      # TODO: - can we abstract out what a 'parsed file' is - headers plus value of each node
       # so a common object can represent excel,csv etc
       # then  we can make load() more generic
 
@@ -84,7 +82,7 @@ module DataShift
                   break
                 end
               end
-            end   # end of each column(node)
+            end # end of each column(node)
 
             doc_context.save_and_monitor_progress
 

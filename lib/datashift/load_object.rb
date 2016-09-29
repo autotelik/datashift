@@ -1,19 +1,19 @@
 # Copyright:: (c) Autotelik Media Ltd 2015
 # Author ::   Tom Statter
 # Date ::     March 2015
-# License::   MIT
+# License::   MI
 #
 # Details::   Manage the current loader object
 #
-
+#
 module DataShift
 
-  class LoadObject < BasicObject
+  class LoadObject # < BasicObject
 
-    attr_accessor :subject
+    attr_accessor :instance
 
     def initialize(current_object)
-      @subject = current_object
+      @instance = current_object
     end
 
     # This method usually called during processing to avoid errors with associations like
@@ -22,22 +22,20 @@ module DataShift
     # columns on model have not been processed before associations on that model
     #
     def save_if_new
-      return unless @subject.new_record?
+      return false unless instance && instance.new_record?
 
-      if @subject.valid?
-        @subject.save
-      else
-        raise DataShift::SaveError.new("Cannot Save Invalid #{subject.class} Record : #{subject.errors.full_messages.inspect}")
-      end
+      return instance.save if instance.valid?
+
+      raise SaveError, "Cannot Save #{instance.class} : #{instance.errors.full_messages.inspect}"
     end
 
     private
 
     def method_missing(method, *args, &block)
-      if @subject.respond_to? method
-        @subject.send(method, *args, &block)
+      if instance.respond_to? method
+        instance.send(method, *args, &block)
       else
-        raise RuntimeError.new("Cannot call [#{method}] on : #{subject.class.name}")
+        raise "Cannot call [#{method}] on : #{instance.class.name}"
       end
     end
 
