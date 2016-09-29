@@ -260,7 +260,7 @@ module  DataShift
         loader.run(expected, Project)
       end
 
-      it 'should provide facility to set DEFAULT values via YAML configuration'  do
+      it 'should provide facility to set DEFAULT values via YAML configuration', duff: true  do
         loader.run(expected, Project)
 
         p = Project.find_by_title( '099' )

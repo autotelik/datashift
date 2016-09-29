@@ -28,6 +28,7 @@ module DataShift
 
   # Non self logging errors
 
+  class BadConfig < StandardError; end
   class BadFile < StandardError; end
   class BadRuby < StandardError; end
   class BadUri < StandardError; end
@@ -38,11 +39,10 @@ module DataShift
 
   class PathError < StandardError; end
 
-  class RuntimeError  < StandardError; end
+  class RuntimeError < StandardError; end
 
   class UnsupportedFileType < StandardError; end
 end
-
 
 # Self logging errors
 

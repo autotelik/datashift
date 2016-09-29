@@ -4,12 +4,58 @@
 #
 # Details::   Specs around Transforming inbound data
 #
-require File.dirname(__FILE__) + '/../spec_helper'
+require 'spec_helper'
 
 module  DataShift
 
   describe Transformation do
     include_context 'ClearThenManageProject'
+
+    context 'basics' do
+
+      it 'should create standard method formats for all transformations' do
+
+        name = DataShift::Transformation::Factory::TRANSFORMERS_HASH_INSTANCE_NAMES.first
+
+        expect(DataShift::Transformation.factory).to respond_to "#{name}s_for"
+
+        expect(DataShift::Transformation.factory).to respond_to "defaults_for"
+        expect(DataShift::Transformation.factory).to respond_to "set_default"
+        expect(DataShift::Transformation.factory).to respond_to "set_default_on"
+        expect(DataShift::Transformation.factory).to respond_to "default?"
+        expect(DataShift::Transformation.factory).to respond_to "default"
+        expect(DataShift::Transformation.factory).to respond_to "get_default_on"
+      end
+
+
+      it 'should enable settings to be cleared' do
+
+        #  [:default, :override, :substitution, :prefix, :postfix]
+
+        DataShift::Transformation.factory do |factory|
+          factory.set_default_on(Project, "name", 'default name')
+          factory.set_override_on(Project, "name", 'override name')
+          factory.set_prefix_on(Project, "name", 'prefix name')
+          factory.set_postfix_on(Project, "name", 'postfix name')
+
+          factory.set_substitution_on(Project, "name", 'if its blah', 'substitution name')
+        end
+
+        expect(DataShift::Transformation.factory.get_default_on(Project, "name")).to eq 'default name'
+        expect(DataShift::Transformation.factory.get_override_on(Project, "name")).to eq 'override name'
+        expect(DataShift::Transformation.factory.get_prefix_on(Project, "name")).to eq 'prefix name'
+        expect(DataShift::Transformation.factory.get_postfix_on(Project, "name")).to eq 'postfix name'
+        expect(DataShift::Transformation.factory.get_substitution_on(Project, "name")).to be_a Struct::Substitution
+
+        DataShift::Transformation.factory.clear
+
+        expect(DataShift::Transformation.factory.get_default_on(Project, "name")).to be_nil
+        expect(DataShift::Transformation.factory.get_override_on(Project, "blah")).to be_nil
+        expect(DataShift::Transformation.factory.get_prefix_on(Project, "blah")).to be_nil
+        expect(DataShift::Transformation.factory.get_postfix_on(Project, "blah")).to be_nil
+        expect(DataShift::Transformation.factory.get_substitution_on(Project, "blah")).to be_nil
+      end
+    end
 
     context 'over-rides' do
       let(:model_method)    { project_collection.search('value_as_string') }
@@ -93,8 +139,11 @@ module  DataShift
         DataShift::Transformation.factory.configure_from(Project, config_file )
       end
 
-      it 'should provide facility to set default values via YAML configuration' do
-        defaults =  DataShift::Transformation.factory.defaults_for(Project )
+      it 'should provide facility to set default values via YAML configuration', duff: true do
+
+        puts  DataShift::Transformation.factory.inspect
+
+        defaults =  DataShift::Transformation.factory.defaults_for(Project)
         expect(defaults).to be_a Hash
         expect(defaults.size).to eq 3
       end

@@ -3,18 +3,12 @@
 <%= @key -%>:
   <%= @klass -%>:
     defaults:
-      <%= "#<name>: <value>" if(@defaults.empty?) %>
-  <% @defaults.each do |k, v| -%>:
-      <%= "#{k}: #{v}" %>
-  <% end %>
+      <%= "#<name>: <value>" if(@defaults.empty?) -%>
+      <%= @defaults unless(@defaults.empty?) -%>
 
     overrides:
-  <% if(@overrides.empty?) %>
-      <%= "#<name>: <value>" if(@overrides.empty?) %>
-  <% end %>
-  <% @overrides.each do |k, v| -%>:
-      <% k %>: <% v %>
-  <% end -%>
+      <%= "#<name>: <value>" if(@overrides.empty?) -%>
+      <% @overrides.each do |k, v| -%><%= "#{k}: #{v}" %><% end -%>
 
     # Expects a tuple (list with 2 entries), the rule and the replacement
     substitutions:
@@ -22,7 +16,7 @@
       <%= "#- rule"  %>
       <%= "#- replacement" %>
   <% end %>
-  <% @substitutions.each do |k, v| -%>:
+  <% @substitutions.each do |k, v| -%>
       <% k %>:
         - <% v.first %>
         - <% v.last %>
@@ -30,13 +24,13 @@
 
     prefixes:
       <%= "#<name>: <value>" if(@prefixs.empty?) %>
-  <% @prefixs.each do |k, v| -%>:
+  <% @prefixs.each do |k, v| -%>
       <%= k %>: <%= v %>
   <% end -%>
 
     postfixes:
   <%= "    #<name>: <value>" if(@postfixs.empty?) %>
-  <% @postfixs.each do |k, v| -%>:
+  <% @postfixs.each do |k, v| -%>
       <%= k %>: <%= v %>
   <% end -%>
 
