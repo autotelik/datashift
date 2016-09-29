@@ -35,7 +35,7 @@ module DataShift
 
     def initialize(transformer = nil)
       # reset
-      @transformer = transformer || Transformer.factory
+      @transformer = transformer || Transformation.factory
 
       @attribute_hash = {}
     end
@@ -75,7 +75,7 @@ module DataShift
     # Transformations
 
     def default( method_binding )
-      default = Transformer.factory.default(method_binding)
+      default = Transformation.factory.default(method_binding)
 
       return unless default
 
@@ -85,7 +85,7 @@ module DataShift
 
     # Checks Transformer for a substitution for column defined in method_binding
     def substitute( method_binding )
-      sub = Transformer.factory.substitution(method_binding)
+      sub = Transformation.factory.substitution(method_binding)
 
       return unless sub
       @previous_value = value
@@ -93,7 +93,7 @@ module DataShift
     end
 
     def override( method_binding )
-      override = Transformer.factory.override(method_binding)
+      override = Transformation.factory.override(method_binding)
 
       return unless override
       @previous_value = value
@@ -101,7 +101,7 @@ module DataShift
     end
 
     def prefix( method_binding )
-      prefix = Transformer.factory.prefix(method_binding)
+      prefix = Transformation.factory.prefix(method_binding)
 
       return unless prefix
       @previous_value = value
@@ -109,7 +109,7 @@ module DataShift
     end
 
     def postfix( method_binding )
-      postfix = Transformer.factory.postfix(method_binding)
+      postfix = Transformation.factory.postfix(method_binding)
 
       return unless postfix
       @previous_value = value

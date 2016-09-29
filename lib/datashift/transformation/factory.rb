@@ -39,7 +39,7 @@ Struct.new('Substitution', :pattern, :replacement)
 
 module DataShift
 
-  module Transformer
+  module Transformation
 
     extend self
 

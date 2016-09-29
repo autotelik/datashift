@@ -153,7 +153,7 @@ module DataShift
 
       @config.merge!(data[self.class.name]) if data[self.class.name]
 
-      DataShift::Transformer.factory { |f| f.configure_from(load_object_class, yaml_file) }
+      DataShift::Transformation.factory { |f| f.configure_from(load_object_class, yaml_file) }
 
       ContextFactory.configure(load_object_class, yaml_file)
 

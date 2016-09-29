@@ -92,7 +92,7 @@ module DataShift
 
         collection.each { |mm| model_methods << mm if(op_types_in_scope.include? mm.operator_type) }
 
-        remove = DataShift::Transformer::Remove.new
+        remove = DataShift::Transformation::Remove.new
 
         remove.unwanted_model_methods model_methods
       end
@@ -133,7 +133,7 @@ module DataShift
 
       nodes.doc_context = doc
 
-      DataShift::Transformer.factory { |f| f.configure_from_yaml(klass, klass_section) }
+      DataShift::Transformation.factory { |f| f.configure_from_yaml(klass, klass_section) }
 
       yaml_nodes = klass_section['nodes']
 

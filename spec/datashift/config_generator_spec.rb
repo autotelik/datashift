@@ -146,11 +146,11 @@ module DataShift
 
       it 'should have configured the Transformer', duff: true do
 
-        puts DataShift::Transformer.factory.inspect
+        puts DataShift::Transformation.factory.inspect
 
-        expect( DataShift::Transformer.factory.key?('column_mappings')).to eq true
-        expect( DataShift::Transformer.factory.key?('defaults')).to eq true
-        expect( DataShift::Transformer.factory.key?('substitutions')).to eq true
+        expect( DataShift::Transformation.factory.key?('column_mappings')).to eq true
+        expect( DataShift::Transformation.factory.key?('defaults')).to eq true
+        expect( DataShift::Transformation.factory.key?('substitutions')).to eq true
       end
     end
 
