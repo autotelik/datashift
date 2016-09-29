@@ -1,5 +1,9 @@
 ## DataShift
 
+Datashift is a suite of tools to help you import or export data from a Rails application.
+
+Formats currently supported are Excel, CSV files and Paperclip attachments.
+
 Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
 
 [![Build Status](https://travis-ci.org/autotelik/datashift.svg?branch=master)](https://travis-ci.org/autotelik/datashift)
@@ -11,9 +15,6 @@ Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
 - [Testing](#testing)
 - [License](#license)
 
-Datashift is a suite of tools to help you import or export data from a Rails application.
-
-Formats currently supported are Excel, CSV files and paperclip attachments.
 
 ### <a name="Installation">Installation</a>
 
@@ -27,10 +28,10 @@ Win OLE and MS Excel are NOT required to use the Excel functionality.
 
 ### <a name="Introduction">Introduction</a>
 
-Datashift automatically maps your files headers to your active record model attributes.
+Datashift automatically maps the headers in your import data to ActiveRecord model attributes.
 
-When your files differ from your models, it provides tools to generate a mapping
-document, so you can map source headers, to the destination target in your database.
+CLI tools are provided to generate a configuration and mapping document, that can be used to
+map headers to the destination target, when headers can't be mapped automatically to your models, 
 
 Data transformations are supported, again via configuration setttings, which support
 

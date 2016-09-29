@@ -74,10 +74,8 @@ module DataShift
     end
 
     def prepare_data_flow_schema(klass)
-      unless(data_flow_schema)
-        @data_flow_schema = DataShift::DataFlowSchema.new
-        @data_flow_schema.prepare_from_klass( klass )
-      end
+      @data_flow_schema = DataShift::DataFlowSchema.new
+      @data_flow_schema.prepare_from_klass( klass )
 
       data_flow_schema
     end
@@ -98,7 +96,7 @@ module DataShift
 
       excel = start_excel(klass, options)
 
-      logger.info("Processing #{records.size} records to Excel")
+      logger.info("Processing [#{records.size}] #{klass} records to Excel")
 
       prepare_data_flow_schema(klass)
 
@@ -113,15 +111,25 @@ module DataShift
 
         nodes.each do |node|
 
+          logger.info("Send to Excel: #{node.inspect}")
+
           model_method = node.model_method
 
-          # pack association instances into single column
-          if model_method.association_type?
-            logger.info("Processing #{model_method.inspect} associations")
-            excel[row, column] = record_to_column( obj.send( model_method.operator ), configuration.json )
-          else
-            excel[row, column] = obj.send( model_method.operator )
+          logger.info("Send to Excel: #{model_method.pp}")
+
+          begin
+            # pack association instances into single column
+            if model_method.association_type?
+              logger.info("Processing #{model_method.inspect} associations")
+              excel[row, column] = record_to_column( obj.send( model_method.operator ), configuration.json )
+            else
+              excel[row, column] = obj.send( model_method.operator )
+            end
+          rescue => x
+            logger.error("Failed to write #{model_method.inspect} to Excel")
+            logger.error(x.inspect)
           end
+
           column += 1
         end
 

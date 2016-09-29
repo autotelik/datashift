@@ -35,6 +35,12 @@ module DataShift
       result
     end
 
+    # PATHS
+
+    def rails_sandbox_path
+      DataShift::Sandbox.rails_sandbox_path
+    end
+
     def fixtures_path
       File.join(rspec_datashift_root, 'fixtures')
     end
@@ -59,6 +65,19 @@ module DataShift
 
       expect
     end
+
+    def clear_everything
+      DataShift::Configuration.reset
+
+      results_clear
+      db_clear
+    end
+
+    # These are our test models with associations
+    def db_clear
+      [Project, Milestone, Category, Version, LoaderRelease].each(&:delete_all)
+    end
+
 
     def results_clear( glob = nil )
       if glob
@@ -118,11 +137,6 @@ module DataShift
       ActiveRecord::Base.establish_connection( db )
     end
 
-    # These are our test models with associations
-    def db_clear
-      [Project, Milestone, Category, Version, LoaderRelease].each(&:delete_all)
-    end
-
     def load_in_memory
       load "#{Rails.root}/db/schema.rb"
     end
@@ -133,9 +147,7 @@ module DataShift
       ActiveRecord::Migrator.up(p)
     end
 
-    def rails_sandbox_path
-      DataShift::Sandbox.rails_sandbox_path
-    end
+
   end
 
 end

@@ -5,6 +5,8 @@ FactoryGirl.define do
     cost 100
     datetime Time.new
 
+    association :project, factory: :project
+
     factory :milestone_with_project do
       project
     end

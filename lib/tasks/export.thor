@@ -5,23 +5,46 @@
 #
 # Usage::
 #
-#  To pull Datashift commands into your main application :
 #
-#     require 'datashift'
-#
-#     DataShift::load_commands
-#
-require_relative 'thor_export_base'
+require 'thor'
 
 # Note, for thor not DataShift, case sensitive, want namespace for cmd line to be : datashift
 module Datashift
 
-  class Export < DataShift::ThorExportBase
+  class Export < Thor
+
+    include DataShift::Logging
+
+    class_option :associations, aliases: '-a',
+                 type: :boolean,
+                 desc: 'Include associations. Can be further refined by :with & :exclude'
+
+    class_option :expand_associations, type: :boolean,
+                 desc: 'Expand association data to multiple columns i.e 1 column per attribute'
+
+    class_option :methods, type: :array,
+                 desc: 'List of additional methods to call on model, useful for situations like delegated methods'
+
+    class_option :with, type: :array,
+                 desc: "Restrict association types. Choose from #{DataShift::ModelMethod.supported_types_enum.inspect}"
+
+    class_option :exclude, type: :array,
+                 desc: "Exclude association types. Choose from #{DataShift::ModelMethod.supported_types_enum.inspect}"
+
+    class_option :remove,  type: :array,
+                 desc: "Don't include this list of supplied fields"
+
+    class_option :remove_rails, type: :boolean,
+                 desc: "Remove standard Rails cols :  #{DataShift::Configuration.rails_columns.inspect}"
+
+    class_option :json, type: :boolean,
+                 desc: 'Export association data as json rather than hash'
 
     desc "excel", "export any active record model (with optional associations)"
 
     method_option :model, :aliases => '-m', :required => true, desc: "The active record model to export"
     method_option :result, :aliases => '-r', :required => true, desc: "Create template of model in supplied file"
+
     method_option :sheet_name, :type => :string, desc: "Name to use for Excel worksheet instead of model name"
 
     def excel()
@@ -49,7 +72,9 @@ module Datashift
 
     desc "db", "Export every Active Record model"
 
-    method_option :path, :aliases => '-p', :required => true, desc: "Path in which to create export files"
+    method_option :model, :aliases => '-m', :required => true, desc: "The active record model to export"
+    method_option :result, :aliases => '-r', :required => true, desc: "Create template of model in supplied file"
+
     method_option :csv, :aliases => '-c', desc: "Export to CSV instead - Excel is default."
 
     method_option :prefix_map, :aliases => '-x', type: :hash, :default => {},
@@ -62,10 +87,9 @@ module Datashift
 
       start_connections
 
-      unless File.directory?(options[:path])
-        puts "WARNING : No such PATH found #{options[:path]} - trying mkdir"
-        FileUtils::mkdir_p(options[:path])
-      end
+      FileUtils::mkdir_p(options[:result]) unless File.directory?(options[:result])
+
+      raise "WARNING : One file per model - results expects a DIRECTORY" unless File.directory?(options[:result])
 
       exporter = options[:csv] ?  DataShift::CsvExporter.new :  DataShift::ExcelExporter.new
 
@@ -76,6 +100,8 @@ module Datashift
       modules = [nil] + options[:modules]
 
       ActiveRecord::Base.connection.tables.each do |table|
+
+        logger.info("Starting Export process for Table #{table}")
 
         modules.each do |m|
           @klass = DataShift::MapperUtils.table_to_arclass(table, m)
@@ -92,9 +118,11 @@ module Datashift
           next
         end
 
-        result = File.join(options[:path], "#{table}#{ext}")
+        result = File.join(options[:result], "#{table}#{ext}")
 
         puts "Datashift: Start export to #{result} for [#{table}]"
+
+        logger.info("Starting Export to #{result} for [#{@klass}]")
 
         begin
 
@@ -113,6 +141,21 @@ module Datashift
     end
 
     no_commands do
+
+      def start_connections
+
+        if File.exist?(File.expand_path('config/environment.rb'))
+          begin
+            require File.expand_path('config/environment.rb')
+          rescue => e
+            logger.error("Failed to initialise ActiveRecord : #{e.message}")
+            raise ConnectionError.new("Failed to initialise ActiveRecord : #{e.message}")
+          end
+
+        else
+          raise PathError.new('No config/environment.rb found - cannot initialise ActiveRecord')
+        end
+      end
 
       def export(exporter)
         model = options[:model]

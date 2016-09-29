@@ -82,9 +82,16 @@ module  DataShift
       let(:expected_projects) { 7 }
 
       before(:each) do
-        create_list(:project, expected_projects)
-        create( :project_with_user )
+
         create( :project_with_milestones, milestones_count: 4 )
+
+        create_list(:project, expected_projects)
+
+        create( :project_with_user )
+
+        DataShift::Configuration.configure do |config|
+          config.with = :all
+        end
       end
 
       it 'should include associations in headers', duff: true do
@@ -117,10 +124,14 @@ module  DataShift
         expect(excel.num_rows).to eq expected_rows
 
         user_inx = excel.row(0).index 'user'
+        owner_inx = excel.row(0).index 'owner'
 
         expect(user_inx).to be > -1
+        expect(owner_inx).to be > -1
 
-        expect( excel[1, user_inx] ).to be_nil
+        # not all rows have an Owner
+        expect( excel[3, owner_inx] ).to be_nil
+        expect( excel[3, user_inx] ).to include "title: mr,first_name: ben}"
 
         # project_with_user has real associated user data
         expect( excel[last_idx, user_inx] ).to include 'mr'
@@ -148,10 +159,10 @@ module  DataShift
         # project_with_milestones has real associated user data
         last_row_idx = Project.count
 
-        expect( excel[last_row_idx, milestone_inx].to_s ).to include ColumnPacker.multi_assoc_delim
-        expect( excel[last_row_idx, milestone_inx].to_s ).to include '{'
-        expect( excel[last_row_idx, milestone_inx].to_s ).to match(/name: milestone/)
-        expect( excel[last_row_idx, milestone_inx].to_s ).to match(/project_id: \d+/)
+        expect( excel[1, milestone_inx].to_s ).to include ColumnPacker.multi_assoc_delim
+        expect( excel[1, milestone_inx].to_s ).to include '{'
+        expect( excel[1, milestone_inx].to_s ).to match(/name: milestone/)
+        expect( excel[1, milestone_inx].to_s ).to match(/project_id: \d+/)
       end
 
       it 'should export a model and  assocs in json to .xls file' do
@@ -173,9 +184,9 @@ module  DataShift
 
         last_row_idx = Project.count
 
-        expect( excel[last_row_idx, milestone_inx].to_s ).to include '['
-        expect( excel[last_row_idx, milestone_inx].to_s ).to match(/name\":\"milestone/)
-        expect( excel[last_row_idx, milestone_inx].to_s ).to match(/"project_id":\d+/)
+        expect( excel[1, milestone_inx].to_s ).to include '['
+        expect( excel[1, milestone_inx].to_s ).to match(/name\":\"milestone/)
+        expect( excel[1, milestone_inx].to_s ).to match(/"project_id":\d+/)
       end
     end
   end
