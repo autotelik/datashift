@@ -23,7 +23,7 @@ module DataShift
 
       context 'basic templates without a class' do
         it 'should generate an standard ERB template containing default mappings & config' do
-          result = config_generator.create_import_erb Project
+          result = config_generator.create_import_config Project
 
           expect(result).to be_a String
           expect(result).to include 'Project:'
@@ -31,7 +31,7 @@ module DataShift
         end
 
         it 'should have a consistent starting title' do
-          result = config_generator.create_import_erb Project
+          result = config_generator.create_import_config Project
 
           expect(result).to include 'Project'
         end
@@ -117,18 +117,30 @@ module DataShift
 
       let(:data_flow_schema) { DataFlowSchema.new }
 
-      let(:expected_config_file) { result_file('created_by_config_generator.yaml') }
+      #let(:config_file) { ifixture_file('ProjectConfiguration.yml') }
+
+      let(:expected_config_file) { result_file('mapping_service_project.yaml') }
+
+      let(:options) {
+        {
+          defaults:  {'value_as_string': 'some default text', 'value_as_double': 45.467 },
+          overrides: {'value_as_double': 45.467 },
+          postfixes: {'value_as_text': 'postfix value_as_text' },
+          substitutions:  { 'owner' => ['sub this text', 'for some other text'] }
+          # prefixs
+        }
+      }
+
+      let(:generate_config_file) { config_generator.write_import(expected_config_file, Project, options) }
 
       before(:each) do
 
-        options = { defaults: {value_as_string: "Default Project Value"} }
+        config = generate_config_file
 
-        config_generator.write_import(expected_config_file, Project, options)
+        expect(config).to be_a String
+        expect(config).to_not be_empty
 
         expect(File.exist?(expected_config_file)).to be true
-
-        DataShift::Transformer.factory.clear
-        expect( DataShift::Transformer.factory.defaults_for(Project)).to be_empty
 
         data_flow_schema.prepare_from_file(expected_config_file)
       end
@@ -154,13 +166,19 @@ module DataShift
 
       it 'should have configured the Transformer', duff: true do
 
-        puts DataShift::Transformer.factory.inspect
+        postfixes =  DataShift::Transformation.factory.postfixes_for(Project)
 
-        expect( DataShift::Transformer.factory.defaults_for(Project)).to_not be_empty
+        expect(postfixes).to be_a Hash
+        expect(postfixes.has_key?('value_as_integer')).to eq false
+        expect(postfixes.has_key?('value_as_text')).to eq true
+        expect(postfixes.size).to eq 1
 
-        #expect( DataShift::Transformer.factory.key?('column_mappings')).to eq true
-        #expect( DataShift::Transformer.factory.key?('defaults')).to eq true
+        expect(DataShift::Transformation.factory.defaults_for(Project).size).to eq 2
+        expect(DataShift::Transformation.factory.overrides_for(Project).size).to eq 1
+        expect(DataShift::Transformation.factory.substitutions_for(Project).size).to eq 1
+        expect(DataShift::Transformation.factory.prefixes_for(Project).size).to eq 0
 
+        expect(DataShift::Transformation.factory.get_postfix_on(Project, :value_as_text)).to eq 'postfix value_as_text'
       end
     end
 

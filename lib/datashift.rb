@@ -76,7 +76,7 @@ module DataShift
       datashift
       datashift/mapping
       datashift/model_methods
-      datashift/transformer
+      datashift/transformation
       datashift/inbound_data
       loaders
       loaders/reporters

@@ -4,11 +4,11 @@
 #
 # Details::   Specs around Transforming inbound data
 #
-require File.dirname(__FILE__) + '/../spec_helper'
+require 'spec_helper'
 
 module  DataShift
 
-  describe 'Transformer Remove' do
+  describe 'Transformation Remove' do
     include_context 'ClearThenManageProject'
 
     context 'Column removals' do
@@ -19,7 +19,7 @@ module  DataShift
           config.remove_columns = [:b, :f]
         end
 
-        DataShift::Transformer::Remove.new.unwanted_columns(headers )
+        DataShift::Transformation::Remove.new.unwanted_columns(headers )
 
         expect(headers).to_not include [:b, :f]
       end
@@ -31,7 +31,7 @@ module  DataShift
           config.remove_rails = true
         end
 
-        DataShift::Transformer::Remove.new.unwanted_columns(headers)
+        DataShift::Transformation::Remove.new.unwanted_columns(headers)
 
         expect(headers).to_not include [:id, :created_on, :updated_on]
       end

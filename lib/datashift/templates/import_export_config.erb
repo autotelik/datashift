@@ -3,18 +3,12 @@
 <%= @key -%>:
   <%= @klass -%>:
     defaults:
-      <%= "#<name>: <value>" if(@defaults.empty?) %>
-  <% @defaults.each do |k, v| -%>
-      <%= "#{k}: #{v}" %>
-  <% end %>
+      <%= "#<name>: <value>" if(@defaults.empty?) -%>
+      <%= @defaults unless(@defaults.empty?) -%>
 
     overrides:
-  <% if(@overrides.empty?) %>
-      <%= "#<name>: <value>" if(@overrides.empty?) %>
-  <% end %>
-  <% @overrides.each do |k, v| -%>
-      <% k %>: <% v %>
-  <% end -%>
+      <%= "#<name>: <value>" if(@overrides.empty?) -%>
+      <% @overrides.each do |k, v| -%><%= "#{k}: #{v}" %><% end -%>
 
     # Expects a tuple (list with 2 entries), the rule and the replacement
     substitutions:

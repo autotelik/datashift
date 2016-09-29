@@ -41,7 +41,7 @@ module DataShift
       file = begin
         File.new(attachment_path, 'rb')
       rescue => e
-        puts e.inspect
+        logger.error(e.inspect)
         raise PathError.new("ERROR : Failed to read image from #{attachment_path}")
       end
 

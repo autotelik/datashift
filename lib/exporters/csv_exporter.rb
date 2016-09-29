@@ -46,7 +46,7 @@ module DataShift
 
       logger.debug "Writing out CSV Export. Columns delimited by [#{csv_delimiter}]"
 
-      remove_list = DataShift::Transformer::Remove.new.remove_list
+      remove_list = DataShift::Transformation::Remove.new.remove_list
 
       CSV.open(file_name, 'w', col_sep: csv_delimiter ) do |csv|
         csv << headers.sources

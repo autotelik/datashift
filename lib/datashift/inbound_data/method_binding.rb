@@ -56,6 +56,10 @@ module DataShift
       model_method.klass
     end
 
+    def class_name
+      model_method.klass.name
+    end
+
     def inbound_name
       inbound_column.source
     end

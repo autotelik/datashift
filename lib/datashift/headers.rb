@@ -37,7 +37,7 @@ module DataShift
 
       headers.class_source_to_headers
 
-      DataShift::Transformer::Remove.new.unwanted_headers(headers)
+      DataShift::Transformation::Remove.new.unwanted_headers(headers)
 
       headers
     end
@@ -55,7 +55,7 @@ module DataShift
       configuration = DataShift::Configuration.call
 
       collection.each do |mm|
-        next if(DataShift::Transformer::Remove.new.association?(mm))
+        next if(DataShift::Transformation::Remove.new.association?(mm))
 
         if(mm.association_type?)
           association_to_headers(mm)

@@ -23,11 +23,12 @@ module DataShift
                 heading:
                   source: "Budget"
                 operator: owner.budget
+            - value_as_integer:
+                heading:
+                  source: "This Column goes to value_as_string"
       EOS
       x
     }
-
-    let(:node_tags) { %w{ project_title value_as_string project_owner_budget } }
 
     context "DataFlowSchema" do
 
@@ -39,7 +40,7 @@ module DataShift
 
         it "build node collection from a locale based DSL" do
           expect(@collection).to be_instance_of NodeCollection
-          expect(@collection.size).to eq node_tags.size
+          expect(@collection.size).to eq operators_in_config.size
         end
 
         it "each section is an instance of Node" do
@@ -47,13 +48,16 @@ module DataShift
           expect(@collection.first).to be_instance_of DataShift::NodeContext
         end
 
-      it "should preserve order of the nodes" do
-         @collection.each_with_index {|n, i| puts n.inspect; expect(n.operator).to eq node_tags[i] }
+        let(:operators_in_config) { ['title', 'value_as_string', 'owner.budget', ''] }
 
-         tags = @collection.collect(&:tag)
 
-         expect(tags).to eq node_tags
-      end
+        it "should preserve order of the nodes and cope with nil" do
+          @collection.each_with_index {|n, i| expect(n.operator).to eq operators_in_config[i] }
+
+          operators = @collection.collect(&:operator)
+
+          expect(operators).to eq operators_in_config
+        end
 =begin
       it "each row contains columns required to build view" do
         review_data_column = review_data_sections.first.rows.first

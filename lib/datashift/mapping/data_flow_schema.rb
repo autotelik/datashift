@@ -92,7 +92,7 @@ module DataShift
 
         collection.each { |mm| model_methods << mm if(op_types_in_scope.include? mm.operator_type) }
 
-        remove = DataShift::Transformer::Remove.new
+        remove = DataShift::Transformation::Remove.new
 
         remove.unwanted_model_methods model_methods
       end
@@ -124,18 +124,17 @@ module DataShift
 
       locale_section = yaml[locale_key]
 
-      klass_name = locale_section.keys.first
+      class_name = locale_section.keys.first
 
-      klass = MapperUtils.class_from_string_or_raise(klass_name)
-
-      klass_section = locale_section[klass_name]
+      klass = MapperUtils.class_from_string_or_raise(class_name)
 
       # The over all doc context
       doc = DocContext.new(klass)
-
       nodes.doc_context = doc
 
-      DataShift::Transformer.factory { |f| f.configure_from_yaml(klass, klass_section) }
+      klass_section = locale_section[class_name]
+
+      DataShift::Transformation.factory { |f| f.configure_from_yaml(class_name, klass_section) }
 
       yaml_nodes = klass_section['nodes']
 
@@ -145,6 +144,8 @@ module DataShift
         Rails.logger.error('Bad syntax in flow schema YAML - Nodes should be a sequence')
         raise 'Bad syntax in flow schema YAML - Nodes should be a sequence'
       end
+
+      model_method_mgr = ModelMethods::Manager.catalog_class(klass)
 
       yaml_nodes.each_with_index do |keyed_node, i|
 
@@ -162,25 +163,28 @@ module DataShift
         #             presentation: "Title"
         #           operator: title
         #           operator_type: has_many
+        #
         logger.info("Node Data: #{keyed_node.inspect}")
 
         # type one of ModelMethod.supported_types_enum
         section = keyed_node.values.first
 
-        puts section
-
         if(section['operator'])
-          operator = section['operator']
-          operator_type =  section['operator_type'] || :method
+          # Find the domain model method details
+          model_method = model_method_mgr.search(section['operator'])
 
-          model_method = ModelMethod.new( klass, operator, operator_type)
+          unless model_method
+            operator_type = section['operator_type'] || :method
+
+            model_method = model_method_mgr.insert(section['operator'], operator_type)
+          end
         end
 
         source = section.fetch('heading', {}).fetch('source', nil)
 
-        method_binding = MethodBinding.new(source, i, model_method)
-
         doc.headers.add( source )
+
+        method_binding = MethodBinding.new(source, i, model_method)
 
         node = DataShift::NodeContext.new(doc, method_binding, i, nil)
 

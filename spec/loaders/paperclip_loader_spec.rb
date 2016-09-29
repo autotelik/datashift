@@ -13,7 +13,7 @@ describe 'PaperClip Bulk Loader' do
   include DataShift::Logging
 
   before(:each) do
-    DataShift::Transformer::Factory.reset
+    DataShift::Transformation::Factory.reset
   end
 
   module Paperclip
