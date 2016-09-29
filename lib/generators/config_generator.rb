@@ -65,8 +65,6 @@ module DataShift
 
     # FOR EXPORTERS
 
-
-
     def write_export(file_name, klass_or_name, options = {})
       result = export(klass_or_name, options)
 

@@ -10,6 +10,8 @@ Gemfile.lock
 coverage
 coverage.data
 
+.byebug_history
+
 *.gem
 .~lock.*
 *~

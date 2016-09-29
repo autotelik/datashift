@@ -9,19 +9,20 @@ module DataShift
     let(:yaml_text) {
       x=<<-EOS
       data_flow_schema:
-        nodes:
-          - project_title:
-              heading:
-                source: "title"
-              operator: title
-          - value_as_string:
-              heading:
-                source: "Value:"
-              operator: value_as_string
-          - project_owner_budget:
-              heading:
-                source: "Budget"
-              operator: owner.budget
+        Project:
+          nodes:
+            - project_title:
+                heading:
+                  source: "title"
+                operator: title
+            - value_as_string:
+                heading:
+                  source: "Value:"
+                operator: value_as_string
+            - project_owner_budget:
+                heading:
+                  source: "Budget"
+                operator: owner.budget
       EOS
       x
     }
@@ -43,11 +44,11 @@ module DataShift
 
         it "each section is an instance of Node" do
           @collection = data_flow_schema.prepare_from_string(yaml_text)
-          expect(@collection.first).to be_instance_of DataShift::Node
+          expect(@collection.first).to be_instance_of DataShift::NodeContext
         end
 
       it "should preserve order of the nodes" do
-         @collection.each_with_index {|n, i| expect(n.tag).to eq node_tags[i] }
+         @collection.each_with_index {|n, i| puts n.inspect; expect(n.operator).to eq node_tags[i] }
 
          tags = @collection.collect(&:tag)
 

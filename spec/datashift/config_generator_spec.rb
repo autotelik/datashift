@@ -117,10 +117,18 @@ module DataShift
 
       let(:data_flow_schema) { DataFlowSchema.new }
 
+      let(:expected_config_file) { result_file('created_by_config_generator.yaml') }
+
       before(:each) do
-        generate_config_file
+
+        options = { defaults: {value_as_string: "Default Project Value"} }
+
+        config_generator.write_import(expected_config_file, Project, options)
 
         expect(File.exist?(expected_config_file)).to be true
+
+        DataShift::Transformer.factory.clear
+        expect( DataShift::Transformer.factory.defaults_for(Project)).to be_empty
 
         data_flow_schema.prepare_from_file(expected_config_file)
       end
@@ -148,9 +156,11 @@ module DataShift
 
         puts DataShift::Transformer.factory.inspect
 
-        expect( DataShift::Transformer.factory.key?('column_mappings')).to eq true
-        expect( DataShift::Transformer.factory.key?('defaults')).to eq true
-        expect( DataShift::Transformer.factory.key?('substitutions')).to eq true
+        expect( DataShift::Transformer.factory.defaults_for(Project)).to_not be_empty
+
+        #expect( DataShift::Transformer.factory.key?('column_mappings')).to eq true
+        #expect( DataShift::Transformer.factory.key?('defaults')).to eq true
+
       end
     end
 

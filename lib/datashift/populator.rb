@@ -94,7 +94,7 @@ module DataShift
         elsif ( )
           @current_value = value.value
         elsif !DataShift::Guards.jruby? &&
-          (data.is_a?(Spreadsheet::Formula) || value.class.ancestors.include?(Spreadsheet::Formula))
+              (data.is_a?(Spreadsheet::Formula) || value.class.ancestors.include?(Spreadsheet::Formula))
           # TOFIX jruby/apache poi equivalent ?
           @value = data.value
         else
@@ -198,7 +198,7 @@ module DataShift
 
       op = operator + '=' unless operator.include?('=')
 
-      # TODO - fix this crap - perhaps recursion ??
+      # TODO: - fix this crap - perhaps recursion ??
       begin
         record.send(op, value)
       rescue
@@ -226,7 +226,6 @@ module DataShift
       end
     end
 
-
     # Attempt to find the associated object via id, name, title ....
     def insistent_belongs_to(method_binding, record, value )
 
@@ -245,7 +244,7 @@ module DataShift
 
         # Try the default field names
 
-        # TODO - add find by operators from headers or configuration to  insistent_find_by_list
+        # TODO: - add find by operators from headers or configuration to  insistent_find_by_list
         Populator.insistent_find_by_list.each do |find_by|
           begin
 
@@ -317,7 +316,6 @@ module DataShift
       # TODO: - enable clients to register their own transformation methods and call them here
     end
 
-
     # A single column can contain multiple lookup key:value definitions.
     # These are delimited by special char defined in Delimiters
     #
@@ -328,7 +326,6 @@ module DataShift
     def split_multi_assoc_value
       value.to_s.split( multi_assoc_delim )
     end
-
 
     def assign_has_many(method_binding, load_object)
 

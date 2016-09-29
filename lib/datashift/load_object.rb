@@ -8,7 +8,7 @@
 #
 module DataShift
 
-  class LoadObject #< BasicObject
+  class LoadObject # < BasicObject
 
     attr_accessor :instance
 
@@ -35,7 +35,7 @@ module DataShift
       if instance.respond_to? method
         instance.send(method, *args, &block)
       else
-        raise RuntimeError, "Cannot call [#{method}] on : #{instance.class.name}"
+        raise "Cannot call [#{method}] on : #{instance.class.name}"
       end
     end
 

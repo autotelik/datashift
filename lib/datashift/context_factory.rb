@@ -60,17 +60,15 @@ module DataShift
     #                    DataShift::Populator.new
     #                  end
 
-
     # Set a Populator to be used against an INBOUND operator
 
-    def self.global_populator_class=(klass)
-      @global_populator_class = klass
+    class << self
+      attr_writer :global_populator_class
     end
 
     def self.global_populator_class
       @global_populator_class || DataShift::Populator
     end
-
 
     def self.set_populator(method_binding, klass)
       operator = method_binding.is_a?(DataShift::MethodBinding) ? method_binding.operator : method_binding

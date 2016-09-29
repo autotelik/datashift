@@ -27,7 +27,7 @@ module DataShift
     #   [:dummy]           : Perform a dummy run - attempt to load everything but then roll back
     #
     #
-    def perform_load( options = {} )
+    def perform_load( _options = {} )
       require 'csv'
 
       raise "Cannot load - failed to create a #{klass}" unless load_object

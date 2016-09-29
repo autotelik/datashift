@@ -38,11 +38,10 @@ module DataShift
 
   class PathError < StandardError; end
 
-  class RuntimeError  < StandardError; end
+  class RuntimeError < StandardError; end
 
   class UnsupportedFileType < StandardError; end
 end
-
 
 # Self logging errors
 

@@ -89,11 +89,13 @@ module DataShift
 
       # Default values and over rides per class can be provided in YAML config file.
       #
-      def configure_from(load_object_class, yaml_file)
+      def configure_from(load_object_class, yaml_file, locale_key = nil)
 
-        data = YAML.load( ERB.new( IO.read(yaml_file) ).result )
+        data = YAML.load( ERB.new(IO.read(yaml_file)).result )
 
         class_name = load_object_class.name
+
+        data = data[locale_key] if(locale_key)
 
         configure_from_yaml(load_object_class, data[class_name]) if(data[class_name])
       end
@@ -108,10 +110,13 @@ module DataShift
           postfixes: :set_postfix_on
         }
 
+        puts("Configuring Transforms for load_object_class [#{load_object_class}]")
+
         method_map.each do |key, call|
           settings = yaml[key.to_s]
 
           settings.each do |operator, value|
+            puts("Configuring Transform [#{key}] for [#{operator.inspect}] to [#{value}]")
             logger.info("Configuring Transform [#{key}] for [#{operator.inspect}] to [#{value}]")
             send( call, load_object_class, operator, value)
           end if(settings && settings.is_a?(Hash))
@@ -119,28 +124,37 @@ module DataShift
 
       end
 
-      def hash_key(method_binding)
-        method_binding.klass
+      def hash_key(key)
+        key.is_a?(MethodBinding) ? key.klass.name : key
+      end
+      
+      # DEFAULTS
+
+      def set_default_on(class_name, operator, default_value )
+        # puts "In set_default_on ", klass, operator, default_value
+        defaults_for(class_name)[operator] = default_value
       end
 
-      def defaults_for( klass )
-        defaults[klass] ||= new_hash_instance
-        defaults[klass]
+      def defaults_for( class_name )
+        defaults[hash_key(class_name)] ||= new_hash_instance
       end
 
       def default( method_binding )
-        defaults_for( hash_key(method_binding))[method_binding.operator]
+        defaults_for(hash_key(method_binding))[method_binding.operator]
+      end
+
+      def default?(class_name, operator)
+        defaults_for(hash_key(class_name)).key?(operator)
       end
 
       def has_default?( method_binding )
-        defaults_for( hash_key(method_binding)).key?(method_binding.operator)
+        defaults_for(hash_key(method_binding)).key?(method_binding.operator)
       end
 
       # SUBSTITUTIONS
 
-      def substitutions_for( klass )
-        substitutions[klass] ||= new_hash_instance
-        substitutions[klass]
+      def substitutions_for( class_name )
+        substitutions[hash_key(class_name)] ||= new_hash_instance
       end
 
       def substitution( method_binding )
@@ -152,9 +166,8 @@ module DataShift
       end
 
       # OVER RIDES
-      def overrides_for(klass)
-        overrides[klass] ||= new_hash_instance
-        overrides[klass]
+      def overrides_for(class_name)
+        overrides[hash_key(class_name)] ||= new_hash_instance
       end
 
       def override( method_binding )
@@ -165,9 +178,8 @@ module DataShift
         overrides_for( hash_key(method_binding)).key?(method_binding.operator)
       end
 
-      def prefixes_for(klass)
-        prefixes[klass] ||= new_hash_instance
-        prefixes[klass]
+      def prefixes_for(class_name)
+        prefixes[hash_key(class_name)] ||= new_hash_instance
       end
 
       def prefix( method_binding )
@@ -178,9 +190,8 @@ module DataShift
         prefixes_for( hash_key(method_binding)).key?(method_binding.operator)
       end
 
-      def postfixes_for(klass)
-        postfixes[klass] ||= new_hash_instance
-        postfixes[klass]
+      def postfixes_for(class_name)
+        postfixes[hash_key(class_name)] ||= new_hash_instance
       end
 
       def postfix( method_binding )
@@ -216,10 +227,7 @@ module DataShift
 
       # Class based versions
 
-      def set_default_on(klass, operator, default_value )
-        # puts "In set_default_on ", klass, operator, default_value
-        defaults_for(klass)[operator] = default_value
-      end
+
 
       # use regardless of whether inbound data supplied
       def set_override_on(klass, operator, value )
@@ -241,7 +249,7 @@ module DataShift
       private
 
       def set_substitution_on_list(klass, operator, list )
-        substitutions_for(klass)[operator] = Struct::Substitution.new(list[0], list[1])
+        substitutions_for(hash_key(klass))[operator] = Struct::Substitution.new(list[0], list[1])
       end
 
       def new_hash_instance

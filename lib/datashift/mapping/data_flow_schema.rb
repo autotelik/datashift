@@ -124,12 +124,14 @@ module DataShift
 
       locale_section = yaml[locale_key]
 
-      klass = locale_section.keys.first
+      klass_name = locale_section.keys.first
 
-      klass_section = locale_section[klass]
+      klass = MapperUtils.class_from_string_or_raise(klass_name)
+
+      klass_section = locale_section[klass_name]
 
       # The over all doc context
-      doc = DocContext.new(MapperUtils.class_from_string_or_raise(klass))
+      doc = DocContext.new(klass)
 
       nodes.doc_context = doc
 
@@ -165,9 +167,14 @@ module DataShift
         # type one of ModelMethod.supported_types_enum
         section = keyed_node.values.first
 
-        operator = Operator.new(section['operator'], :method) if(section['operator'])
+        puts section
 
-        model_method = ModelMethod.new( klass, operator, section['operator_type'])  if(section['operator_type'])
+        if(section['operator'])
+          operator = section['operator']
+          operator_type =  section['operator_type'] || :method
+
+          model_method = ModelMethod.new( klass, operator, operator_type)
+        end
 
         source = section.fetch('heading', {}).fetch('source', nil)
 

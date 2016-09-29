@@ -4,7 +4,7 @@
   <%= @klass -%>:
     defaults:
       <%= "#<name>: <value>" if(@defaults.empty?) %>
-  <% @defaults.each do |k, v| -%>:
+  <% @defaults.each do |k, v| -%>
       <%= "#{k}: #{v}" %>
   <% end %>
 
@@ -12,7 +12,7 @@
   <% if(@overrides.empty?) %>
       <%= "#<name>: <value>" if(@overrides.empty?) %>
   <% end %>
-  <% @overrides.each do |k, v| -%>:
+  <% @overrides.each do |k, v| -%>
       <% k %>: <% v %>
   <% end -%>
 
@@ -22,7 +22,7 @@
       <%= "#- rule"  %>
       <%= "#- replacement" %>
   <% end %>
-  <% @substitutions.each do |k, v| -%>:
+  <% @substitutions.each do |k, v| -%>
       <% k %>:
         - <% v.first %>
         - <% v.last %>
@@ -30,13 +30,13 @@
 
     prefixes:
       <%= "#<name>: <value>" if(@prefixs.empty?) %>
-  <% @prefixs.each do |k, v| -%>:
+  <% @prefixs.each do |k, v| -%>
       <%= k %>: <%= v %>
   <% end -%>
 
     postfixes:
   <%= "    #<name>: <value>" if(@postfixs.empty?) %>
-  <% @postfixs.each do |k, v| -%>:
+  <% @postfixs.each do |k, v| -%>
       <%= k %>: <%= v %>
   <% end -%>
 
