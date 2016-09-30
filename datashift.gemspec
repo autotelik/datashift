@@ -39,4 +39,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'factory_girl_rails', '~> 4.5'
   s.add_development_dependency 'database_cleaner', '~> 1.5'
 
+  # not required locally but travis chokes without this
+  s.add_development_dependency 'listen'
+
 end
