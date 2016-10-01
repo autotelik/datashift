@@ -3,12 +3,22 @@
 # Date ::     Mar 2016
 # License::   MIT.
 #
-require_relative 'thor_import_base'
+require 'thor'
 
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
 module Datashift
 
-  class Import < DataShift::ThorImportBase
+  class Import < Thor
+
+    class_option :model, aliases: '-m', required: true, desc: 'The related active record model'
+
+    class_option :input, aliases: '-i', required: true, desc: 'The input file'
+
+    class_option :loader, aliases: '-l', required: false, desc: 'Loader class to use'
+
+    class_option :verbose, aliases: '-v', type: :boolean, desc: 'Verbose logging'
+
+    class_option :config, aliases: '-c', desc: 'YAML config file with defaults, over-rides etc'
 
     include DataShift::Logging
 
@@ -64,6 +74,20 @@ module Datashift
     end
 
     no_commands do
+      def start_connections
+
+        if File.exist?(File.expand_path('config/environment.rb'))
+          begin
+            require File.expand_path('config/environment.rb')
+          rescue => e
+            logger.error("Failed to initialise ActiveRecord : #{e.message}")
+            raise ConnectionError.new("Failed to initialise ActiveRecord : #{e.message}")
+          end
+
+        else
+          raise PathError.new('No config/environment.rb found - cannot initialise ActiveRecord')
+        end
+      end
 
       def import(importer)
         logger.info "Datashift: Starting Import from #{options[:input]}"
@@ -72,7 +96,6 @@ module Datashift
 
         importer.run(options[:input], options[:model])
       end
-
     end
 
   end
