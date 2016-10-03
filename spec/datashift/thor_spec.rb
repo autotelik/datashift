@@ -1,9 +1,13 @@
-# Copyright:: (c) Autotelik Media Ltd 2015
+# Copyright:: (c) Autotelik Media Ltd 2016
 # Author ::   Tom Statter
 #
 # License::   MIT - Free, OpenSource
 #
 # Details::   Specification for Thor tasks supplied with datashift
+#
+#             Test are often within a call to
+#                 run_in(rails_sandbox_path)
+#             so we can access real model data from the dummy app
 #
 require 'thor'
 require 'thor/group'
@@ -26,7 +30,6 @@ module DataShift
           capture_stream(:stdout){ require 'datashift' ; Thor::Runner.start(["list"]) }
         end
 
-        puts x
         expect(x).to start_with("datashift\n--------")
 
         expect(x).to include "csv"
@@ -55,18 +58,38 @@ module DataShift
         results_clear
       end
 
-      it 'should provide tasks to generate a mapping doc', duff: true do
+      it 'should generate skeleton import config for a model' do
+        expected = File.join(results_path, 'thor_spec_project_coonfig.yaml')
+
+        expect(File.exists?(expected)).to eq false
+
+        #t datashift:config:import -m Spree::Variant -r /tmp
+
+        run_in(rails_sandbox_path) do
+          options = ['--model', 'Project', '--result', File.join(results_path, 'thor_spec_project_coonfig.yaml')]
+
+          output = capture_stream(:stdout) { Datashift::Config.new.invoke(:import, [], options) }
+
+          puts output
+          expect(File.exists?(expected)).to eq true
+          expect(output).to include('Creating new configuration file')
+        end
+      end
+
+      it 'should provide tasks to import data from a CSV file', duff: true do
+
+        pending "Seems to be no way to set class options for invoke"
         # datashift:generate:config:import -m Spree::Product -p ~/blah.yaml
 
-        # cmd = ['--model', 'Project', '--result', results_path.to_s]
+        cmd = ['--model', 'Project', '--result', results_path.to_s]
 
-        cmd = { 'model' => 'Project', 'input' => results_path.to_s}
+        #options = { 'model' => 'Project', 'input' => results_path.to_s}
 
-        #output = capture_stream(:stdout) {
+        output = capture_stream(:stdout) {
         # byebug
-        # Datashift::Import.class_options(cmd)
-        # Datashift::Import.invoke(:csv, cmd, cmd)
-        #}
+         #Datashift::Import.class_options(options)
+         Datashift::Import.new.invoke(:csv, [], cmd)
+        }
       end
     end
 
@@ -78,7 +101,6 @@ module DataShift
       it 'should provide tasks to generate a mapping doc' do
 
         # Access real model in dummy
-
         run_in(rails_sandbox_path) do
           cmd = ['--model', 'Project', '--result', File.join(results_path, 'thor_spec_gen_project.csv')]
 

@@ -12,22 +12,25 @@ module Datashift
 
   class Config < Thor
 
+    DEFAULT_IMPORT_TEMPLTE="import_mapping_template.yaml"
+
     include DataShift::Logging
 
-    desc "import", "Generate a YAML Import configuration template"
+    desc "import", "Generate an Import configuration template (YAML)"
 
     method_option :model, aliases: '-m', required: true, desc: "The active record model to use for mappings"
 
-    method_option :path, aliases: '-p', required: true, desc: "Path or file, to create YAML config"
+    method_option :result, aliases: '-r', required: true,
+                  desc: "Path or file to create resulting YAML config\nIf PATH, filename is [#{DEFAULT_IMPORT_TEMPLTE}]"
 
     def import()
 
       start_connections
 
-      result = options[:path]
+      result = options[:result]
 
       if(File.directory?(result))
-        result = File.join(result, "mapping_template.yaml")
+        result = File.join(result, DEFAULT_IMPORT_TEMPLTE)
       end
 
       logger.info "Datashift: Starting Import mapping template generation to [#{result}]"
