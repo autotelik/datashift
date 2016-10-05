@@ -153,28 +153,23 @@ thor help datashift:generate:config:import
 
 ### <a name="Testing">Testing</a>
 
-    Specs run against a rails sandbox app, so have own Gemfile, so you can specify versions of 
-    active record that you want  specs to run against :
+Specs need to run against a Rails sandbox app. 
 
-    Edit
-
-```ruby
-spec/Gemfile.
-```
-
-    Then run :
-
-```ruby
-    cd spec
-    bundle install
-```
-
+A sandbox will be generated in `spec/dummy` if no such directory exists.
+    
+There are spec helpers to build the dummy app, via shelling out to `rails new`
+ 
+The rails version used will be based on the latest you have installed, via the gemspec.
+ 
 #### Changing Versions
+ 
+To test different versions *update the gemspec* and run `bundle update rails`
 
-    A sandbox will be generated in spec/sandbox if no such directory exists.
 
     **N.B Manual Step**
-    When changing versions you probably need to **delete this whole directory**  spec/sandbox. Next time you run spree specs it will be auto generated using latest Rails versions
+    When changing versions you should **delete this whole directory**  `spec/dummy`
+     
+    Next time you run rspec it will auto generate a new dummy app using latest Rails versions
 
     The database are created in sqlite3 and are stored in spec/fixtures. When switching versions, of say Spree,
      you will probably want to and to clear out old versions and retrigger the migrations
