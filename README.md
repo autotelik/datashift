@@ -165,24 +165,10 @@ The rails version used will be based on the latest you have installed, via the g
  
 To test different versions *update the gemspec* and run `bundle update rails`
 
-
     **N.B Manual Step**
     When changing versions you should **delete this whole directory**  `spec/dummy`
      
     Next time you run rspec it will auto generate a new dummy app using latest Rails versions
-
-    The database are created in sqlite3 and are stored in spec/fixtures. When switching versions, of say Spree,
-     you will probably want to and to clear out old versions and retrigger the migrations
-
-        rm spec/fixtures/*.sqlite
-
-    You will probably also want to remove lock file :
-
-        rm spec/Gemfile.lock
-
-    First time the sandbox is regenerated, alot of tests may fail,perhaps not everything loads correctly during regeneration process.
-
-    Invariably the next run, the specs pass, so a fix is low priority.
 
 #### Run the Tests
 

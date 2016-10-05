@@ -8,13 +8,16 @@
 #
 module DataShift
 
-  class LoadObject # < BasicObject
+  class LoadObject < SimpleDelegator
 
     attr_accessor :instance
 
     def initialize(current_object)
+      super
       @instance = current_object
     end
+
+   # delegate :errors, to: :instance
 
     # This method usually called during processing to avoid errors with associations like
     #   <ActiveRecord::RecordNotSaved: You cannot call create unless the parent is saved>
@@ -31,13 +34,16 @@ module DataShift
 
     private
 
+=begin
     def method_missing(method, *args, &block)
+      raise "Cannot call [#{method}] on : #{instance.class.name}"
       if instance.respond_to? method
         instance.send(method, *args, &block)
       else
         raise "Cannot call [#{method}] on : #{instance.class.name}"
       end
     end
+=end
 
   end
 

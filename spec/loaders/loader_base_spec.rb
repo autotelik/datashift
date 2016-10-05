@@ -14,7 +14,7 @@ module DataShift
     let(:loader) { LoaderBase.new }
 
     it 'should be able to create an empty loader with basic load object' do
-      expect(loader.load_object).to be_a Object
+      expect(loader.load_object).to be_a DataShift::LoadObject
       expect(loader.file_name).to eq ''
       expect(loader.doc_context).to be_a(DocContext)
       expect(loader.binder).to be_a(Binder)

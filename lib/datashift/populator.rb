@@ -81,22 +81,38 @@ module DataShift
     #
     def prepare_data(method_binding, data)
 
+      connection_adapter_column = method_binding.model_method.connection_adapter_column
+
+
       raise NilDataSuppliedError, 'No method_binding supplied for prepare_data' unless method_binding
 
       @original_data = data
 
       begin
 
-        if data.is_a? ActiveRecord::Relation # Rails 4 - query no longer returns an array
+        if(data.is_a?(ActiveRecord::Relation)) # Rails 4 - query no longer returns an array
           @value = data.to_a
-        elsif data.class.ancestors.include?(ActiveRecord::Base) || data.is_a?(Array)
+
+        elsif(data.class.ancestors.include?(ActiveRecord::Base) || data.is_a?(Array))
           @value = data
-        elsif ( )
-          @current_value = value.value
-        elsif !DataShift::Guards.jruby? &&
-              (data.is_a?(Spreadsheet::Formula) || value.class.ancestors.include?(Spreadsheet::Formula))
-          # TOFIX jruby/apache poi equivalent ?
-          @value = data.value
+
+        elsif(!DataShift::Guards.jruby? &&
+          (data.is_a?(Spreadsheet::Formula) || data.class.ancestors.include?(Spreadsheet::Formula)) )
+
+          @value = data.value  # TOFIX jruby/apache poi equivalent ?
+
+        elsif(connection_adapter_column && connection_adapter_column.cast_type.is_a?(ActiveRecord::Type::Boolean))
+
+          # DEPRECATION WARNING: You attempted to assign a value which is not explicitly `true` or `false` ("0.00")
+          # to a boolean column. Currently this value casts to `false`.
+          # This will change to match Ruby's semantics, and will cast to `true` in Rails 5.
+          # If you would like to maintain the current behavior, you should explicitly handle the values you would like cast to `false`.
+
+          @value = if(data.in? [true, false])
+                     data
+                   else
+                     (data.to_s.downcase == "true" || data.to_s.to_i == 1) ? true : false
+                   end
         else
           @value = data.to_s
 
@@ -145,8 +161,8 @@ module DataShift
       elsif  model_method.operator_for(:assignment)
 
         if model_method.connection_adapter_column
-          # TOFIX .. enum section probably belongs in prepare_data
-          return if check_process_enum(record, model_method )
+
+          return if check_process_enum(record, model_method )  # TOFIX .. enum section probably belongs in prepare_data
 
           assignment(record, value, model_method)
 
@@ -168,14 +184,16 @@ module DataShift
     end
 
     def assignment(record, value, model_method)
+
       operator = model_method.operator
+      connection_adapter_column = model_method.connection_adapter_column
 
       begin
-
-        if model_method.connection_adapter_column.respond_to? :type_cast
+        if(connection_adapter_column.respond_to? :type_cast)
           logger.debug("Assignment via [#{operator}] to [#{value}] (CAST TYPE [#{model_method.connection_adapter_column.type_cast(value).inspect}])")
 
           record.send( operator + '=', model_method.connection_adapter_column.type_cast( value ) )
+
         else
           logger.debug("Assignment via [#{operator}] to [#{value}] (NO CAST)")
 
@@ -302,6 +320,7 @@ module DataShift
 
     attr_writer :value, :attribute_hash
 
+    # TOFIX - Does not belong in this class
     def run_transforms(method_binding)
       default( method_binding ) if value.blank?
 

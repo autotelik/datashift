@@ -28,20 +28,20 @@ module DataShift
         FileUtils.rm_rf(sandbox)
       end
 
-
       if File.exist?(sandbox)
         puts "RSPEC - Found and using existing Rails sandbox [#{sandbox}]"
       else
 
         sandbox_parent_dir =  File.expand_path( "#{sandbox}/.." )
 
-        puts "RSPEC DUMMY - Creating new Rails sandbox in : #{sandbox_parent_dir}"
+        puts "RSPEC SANDBOX - Creating new Rails sandbox in : #{sandbox_parent_dir}"
 
         run_in( sandbox_parent_dir ) do
+          puts "RSPEC DUMMY - Sandbox created with Rails VERSION : #{system('rails -v')}"
           system('rails new ' + File.basename(rails_sandbox_path))
         end
 
-        puts "RSPEC DUMMY - Configuring gems and DB in rails sandbox Gemfile"
+        puts "RSPEC SANDBOX - Configuring gems and DB in rails sandbox Gemfile"
 
         run_in(rails_sandbox_path) do
           sandbox_gem_list
