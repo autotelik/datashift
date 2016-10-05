@@ -1,5 +1,9 @@
 ## DataShift
 
+Datashift is a suite of tools to help you import or export data from a Rails application.
+
+Formats currently supported are Excel, CSV files and Paperclip attachments.
+
 Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
 
 [![Build Status](https://travis-ci.org/autotelik/datashift.svg?branch=master)](https://travis-ci.org/autotelik/datashift)
@@ -11,9 +15,6 @@ Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
 - [Testing](#testing)
 - [License](#license)
 
-Datashift is a suite of tools to help you import or export data from a Rails application.
-
-Formats currently supported are Excel, CSV files and paperclip attachments.
 
 ### <a name="Installation">Installation</a>
 
@@ -27,10 +28,10 @@ Win OLE and MS Excel are NOT required to use the Excel functionality.
 
 ### <a name="Introduction">Introduction</a>
 
-Datashift automatically maps your files headers to your active record model attributes.
+Datashift automatically maps the headers in your import data to ActiveRecord model attributes.
 
-When your files differ from your models, it provides tools to generate a mapping
-document, so you can map source headers, to the destination target in your database.
+CLI tools are provided to generate a configuration and mapping document, that can be used to
+map headers to the destination target, when headers can't be mapped automatically to your models, 
 
 Data transformations are supported, again via configuration setttings, which support
 
@@ -152,41 +153,22 @@ thor help datashift:generate:config:import
 
 ### <a name="Testing">Testing</a>
 
-    Specs run against a rails sandbox app, so have own Gemfile, so you can specify versions of 
-    active record that you want  specs to run against :
+Specs need to run against a Rails sandbox app. 
 
-    Edit
-
-```ruby
-spec/Gemfile.
-```
-
-    Then run :
-
-```ruby
-    cd spec
-    bundle install
-```
-
+A sandbox will be generated in `spec/dummy` if no such directory exists.
+    
+There are spec helpers to build the dummy app, via shelling out to `rails new`
+ 
+The rails version used will be based on the latest you have installed, via the gemspec.
+ 
 #### Changing Versions
-
-    A sandbox will be generated in spec/sandbox if no such directory exists.
+ 
+To test different versions *update the gemspec* and run `bundle update rails`
 
     **N.B Manual Step**
-    When changing versions you probably need to **delete this whole directory**  spec/sandbox. Next time you run spree specs it will be auto generated using latest Rails versions
-
-    The database are created in sqlite3 and are stored in spec/fixtures. When switching versions, of say Spree,
-     you will probably want to and to clear out old versions and retrigger the migrations
-
-        rm spec/fixtures/*.sqlite
-
-    You will probably also want to remove lock file :
-
-        rm spec/Gemfile.lock
-
-    First time the sandbox is regenerated, alot of tests may fail,perhaps not everything loads correctly during regeneration process.
-
-    Invariably the next run, the specs pass, so a fix is low priority.
+    When changing versions you should **delete this whole directory**  `spec/dummy`
+     
+    Next time you run rspec it will auto generate a new dummy app using latest Rails versions
 
 #### Run the Tests
 

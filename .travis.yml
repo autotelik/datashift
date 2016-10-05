@@ -1,8 +1,8 @@
 language: ruby
 cache: bundler
 rvm:
-  - 2.2.3
+  - 2.2.5
 #  - jruby-head
 
-script: 'cd ./spec && bundle exec rspec -c .'
+script: 'cd ./spec && bundle exec bundle exec rspec --format doc --colour -I . .'
 

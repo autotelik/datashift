@@ -33,6 +33,7 @@
 #   languages can be specified. If not specified, defaults to <tt>:en</tt>.
 #
 require 'thread_safe'
+require 'active_support/inflector'
 
 # Helper class
 Struct.new('Substitution', :pattern, :replacement)

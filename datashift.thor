@@ -21,18 +21,41 @@ require 'thor'
 $:.push File.expand_path("lib", __FILE__)
 
 require 'datashift'
+require 'factory_girl_rails'
+require 'database_cleaner'
 
-require File.join(File.dirname(__FILE__), 'spec', "support/sandbox")
+require_relative File.join('spec', 'support/sandbox')
+require_relative File.join('spec' ,'support/datashift_test_helpers')
 
 module Datashift
 
   class Utils < Thor
 
-    desc "sandbox", 'Rebuild the rails sandbox app required for testing'
+    include DataShift::TestHelpers
+
+    desc "lint", "Run in spec - Verify that FactoryGirl factories are valid"
+
+    def lint
+
+      ENV['RAILS_ENV'] = 'test'
+
+      environment
+
+      begin
+        DatabaseCleaner.start
+
+        puts "Running FactoryGirl.lint"
+        FactoryGirl.lint
+      ensure
+        DatabaseCleaner.clean
+      end
+
+    end
+
+
+    desc "sandbox", 'Rebuild the dummy rails app in spec - required for testing'
 
     def sandbox
-      puts File.join(File.dirname(__FILE__), 'spec', "support/sandbox")
-
       # Need an active record DB to test against, so we manage own Rails sandbox
       DataShift::Sandbox.gen_rails_sandbox( :force )
     end
@@ -76,6 +99,25 @@ module Datashift
         puts "Pushing version #{version} to rubygems"
         cmd = "gem push #{gem}"
         system(cmd)
+      end
+    end
+
+    no_commands do
+      def environment
+
+        env = File.expand_path('dummy/config/environment.rb')
+
+        if File.exist?(env)
+          begin
+            require env
+          rescue => e
+            logger.error("Failed to initialise ActiveRecord : #{e.message}")
+            raise ConnectionError.new("Failed to initialise ActiveRecord : #{e.message}")
+          end
+
+        else
+          raise DataShift::PathError.new('No config/environment.rb found - cannot initialise ActiveRecord')
+        end
       end
     end
 

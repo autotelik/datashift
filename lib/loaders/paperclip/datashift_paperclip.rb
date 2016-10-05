@@ -78,19 +78,17 @@ module DataShift
 
       has_attached_file_attribute = options[:has_attached_file_name] ? options[:has_attached_file_name].to_sym : :attachment
 
-      # e.g  (:attachment => File.read)
-
       attachment_file = get_file(attachment_path)
-      paperclip_attributes = { has_attached_file_attribute => attachment_file }
+
+      paperclip_attributes = { "#{has_attached_file_attribute}": attachment_file}
 
       paperclip_attributes.merge!(options[:attributes]) if options[:attributes]
 
       begin
-        @attachment = klass.new(paperclip_attributes, without_protection: true)
+        @attachment = klass.new(paperclip_attributes)
       rescue => e
         logger.error( e.backtrace)
-        logger.error("Failed to create PaperClip Attachment for class #{klass} : #{e.inspect}")
-        raise CreateAttachmentFailed.new("Failed to create PaperClip Attachment from : #{attachment_path}")
+        raise CreateAttachmentFailed.new("Failed [#{e.message}] creating PaperClip Attachment on #{klass} for [#{attachment_path}]")
       ensure
         attachment_file.close unless attachment_file.closed?
       end
