@@ -56,29 +56,32 @@ module DataShift
           logger.info "Processing #{parsed_file.size} rows"
 
           parsed_file.each_with_index do |row, i|
-            current_row_idx = i
 
             logger.info "Processing Row #{i} : #{row}"
 
             # Iterate over the bindings, creating a context from data in associated Excel column
 
             @binder.bindings.each_with_index do |method_binding, i|
+
               unless method_binding.valid?
-                logger.warn("No binding was found for column (#{i})")
+                logger.warn("No binding was found for column (#{i}) [#{method_binding.pp}]")
                 next
               end
 
-              value = row[method_binding.inbound_index] # binding contains column number
+              # If binding to a column, get the value from the cell (bindings can be to internal methods)
+              value = method_binding.index ? row[method_binding.index] : nil
 
               context = doc_context.create_node_context(method_binding, i, value)
 
-              logger.info "Processing Column #{method_binding.inbound_index} (#{method_binding.pp})"
+              logger.info "Processing Column #{method_binding.index} (#{method_binding.pp})"
 
               begin
                 context.process
               rescue => x
                 if doc_context.all_or_nothing?
-                  logger.error('All or nothing set and Current Columnfailed so complete Row aborted')
+                  logger.error('Complete Row aborted - All or nothing set and Current Column failed.')
+                  logger.error(x.backtrace.first.inspect)
+                  logger.error(x.inspect)
                   break
                 end
               end

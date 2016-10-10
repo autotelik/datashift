@@ -33,13 +33,15 @@ module DataShift
     #
     def initialize(operator, type = :method)
 
-      if ModelMethod.supported_types_enum.include?(type.to_sym)
-        @operator_type = type.to_sym
+      type_as_sym = type.to_sym
+
+      if ModelMethod.supported_types_enum.include?(type_as_sym)
+        @operator_type = type_as_sym
       else
-        raise BadOperatorType, "No such operator Type [#{type}] cannot instantiate ModelMethod for #{operator}"
+        raise BadOperatorType, "No such operator Type [#{type_as_sym}] cannot instantiate ModelMethod for #{operator}"
       end
 
-      @operator = operator
+      @operator = operator.to_s.strip
     end
 
     # Return the actual operator's name for supplied method type

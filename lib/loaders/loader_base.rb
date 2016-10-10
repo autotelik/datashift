@@ -30,7 +30,7 @@ module DataShift
 
     def_delegators :doc_context,
                    :load_object,
-                   :loaded_count, :failed_count,
+                   :loaded_count, :failed_count, :processed_object_count,
                    :headers, :reporters, :reporters=
 
     attr_reader :configuration
@@ -48,10 +48,10 @@ module DataShift
       @doc_context = DocContext.new( MapperUtils.ensure_class(load_class) )
     end
 
-    def run(file_name, object_class)
+    def run(file_name, load_class)
       @file_name = file_name
 
-      setup_load_class(object_class)
+      setup_load_class(load_class)
 
       logger.info("Loading objects of type #{load_object_class}")
 
@@ -110,7 +110,7 @@ module DataShift
 
       unless binder.missing_bindings.empty?
         logger.warn("Following headings couldn't be mapped to #{load_object_class}:")
-        binder.missing_bindings.each { |m| logger.warn("Heading [#{m.inbound_name}] - Index (#{m.inbound_index})") }
+        binder.missing_bindings.each { |m| logger.warn("Heading [#{m.source}] - Index (#{m.index})") }
 
         raise MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}" if configuration.strict
       end
@@ -141,7 +141,9 @@ module DataShift
     #    LoaderClass:
     #     option: value
     #
-    def configure_from(yaml_file)
+    def configure_from(yaml_file, klass = nil, locale_key = 'data_flow_schema')
+
+      setup_load_class(klass) if(klass)
 
       logger.info("Reading Datashift loader config from: #{yaml_file.inspect}")
 
@@ -153,9 +155,16 @@ module DataShift
 
       @config.merge!(data[self.class.name]) if data[self.class.name]
 
-      DataShift::Transformation.factory { |f| f.configure_from(load_object_class, yaml_file) }
+      @binder ||= DataShift::Binder.new
 
-      ContextFactory.configure(load_object_class, yaml_file)
+      data_flow_schema = DataShift::DataFlowSchema.new
+
+      # Includes configuring DataShift::Transformation
+      nodes = data_flow_schema.prepare_from_file(yaml_file, locale_key)
+
+      @binder.add_bindings_from_nodes( nodes )
+
+      PopulatorFactory.configure(load_object_class, yaml_file)
 
       logger.info("Loader Options : #{@config.inspect}")
     end

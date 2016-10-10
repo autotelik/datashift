@@ -12,26 +12,6 @@ module Datashift
 
     include DataShift::Logging
 
-=begin - These class_option don't seem to currently bet fit for purpose for example
-
-    >>thor help datashift:import:csv
-
-    No value provided for required options '--model', '--input'
-=end
-
-=begin -
-    class_option :model, aliases: '-m', required: true, desc: 'The related active record model'
-
-    class_option :input, aliases: '-i', required: true, desc: 'The input file'
-
-    class_option :loader, aliases: '-l', required: false, desc: 'Loader class to use'
-
-    class_option :verbose, aliases: '-v', type: :boolean, desc: 'Verbose logging'
-
-    class_option :config, aliases: '-c', desc: 'YAML config file with defaults, over-rides etc'
-=end
-
-
     desc "load", "Import data from file for specific active record model"
 
     method_option :model, aliases: '-m', required: true, desc: 'The related active record model'

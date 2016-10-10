@@ -83,7 +83,6 @@ module DataShift
 
       connection_adapter_column = method_binding.model_method.connection_adapter_column
 
-
       raise NilDataSuppliedError, 'No method_binding supplied for prepare_data' unless method_binding
 
       @original_data = data
@@ -147,8 +146,10 @@ module DataShift
 
       if model_method.operator_for(:belongs_to)
         insistent_belongs_to(method_binding, record, value)
+
       elsif  model_method.operator_for(:has_many)
         assign_has_many(method_binding, record)
+
       elsif  model_method.operator_for(:has_one)
 
         if value.is_a?(model_method.klass)
@@ -158,7 +159,7 @@ module DataShift
           logger.error("Value was Type (#{value.class}) - Required Type for has_one #{operator} is [#{klass}]")
         end
 
-      elsif  model_method.operator_for(:assignment)
+      elsif model_method.operator_for(:assignment)
 
         if model_method.connection_adapter_column
 
@@ -174,8 +175,14 @@ module DataShift
         end
 
       elsif model_method.operator_for(:method)
-        logger.debug("Method delegation assignment of value  #{value} => [#{operator}]")
-        insistent_assignment(record, value, operator)
+        logger.debug("Custom Method assignment of value  #{value} => [#{operator}]")
+
+        begin
+          value ? record.send(operator, value) : record.send(operator)
+        rescue => e
+          logger.error e.backtrace.first
+          raise DataProcessingError, "Method [#{operator}] could not process #{value} - #{e.inspect}"
+        end
 
       else
         logger.warn("Cannot assign via [#{operator}] to #{record.inspect} ")
@@ -385,8 +392,7 @@ module DataShift
         # we are looking up an association so need the Class of the Association
         klass = method_binding.model_method.operator_class
 
-        raise CouldNotDeriveAssociationClass,
-              "Failed to find class for has_many Association : #{method_binding.pp}" unless klass
+        raise CouldNotDeriveAssociationClass, "Failed to find class for has_many Association : #{method_binding.pp}" unless klass
 
         logger.info("Running where clause on #{klass} : [#{field} IN #{find_by_values.inspect}]")
 

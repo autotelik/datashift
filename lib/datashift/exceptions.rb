@@ -48,6 +48,7 @@ end
 
 DataShift::DataShiftException.generate( 'BadOperatorType')
 DataShift::DataShiftException.generate( 'ConnectionError')
+DataShift::DataShiftException.generate( 'ConfigFormatError')
 DataShift::DataShiftException.generate( 'CouldNotAssignAssociation')
 DataShift::DataShiftException.generate( 'CouldNotDeriveAssociationClass')
 DataShift::DataShiftException.generate( 'CreateAttachmentFailed')

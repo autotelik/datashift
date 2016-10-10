@@ -117,6 +117,14 @@ module DataShift
     #
     attr_accessor :include_all_columns
 
+    #  A directory path to be used to prefix all inbound PATHs
+    #
+    # @param [Path]
+    # @return [Path]
+    #
+    attr_accessor :image_path_prefix
+
+
     def self.rails_columns
       @rails_standard_columns ||= [:id, :created_at, :created_on, :updated_at, :updated_on]
     end
@@ -136,6 +144,8 @@ module DataShift
 
       # default to more efficient attribute writing - no write to DB/no validations run
       @update_and_validate = false
+
+      @image_path_prefix = nil
     end
 
     # @return [DataShift::Configuration] DataShift's current configuration

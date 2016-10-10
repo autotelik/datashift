@@ -5,12 +5,13 @@
 # Details::   Maps transformations to internal Class methods.
 #
 #             Stores :
+#               defaults
 #               substitutions
 #               over rides
 #               prefixes
 #               postfixes
 #
-# These are keyed on the associated method binding operator, which is
+# These are keyed on the associated method binding ** OPERATOR ** which is
 # essentially the method call/active record column on the class.
 #
 # Clients can decide exactly how these can be applied to incoming data.
@@ -96,7 +97,7 @@ module DataShift
       # key:
       #  klass:
       #
-      def configure_from(load_object_class, yaml_file, locale_key = nil)
+      def configure_from(load_object_class, yaml_file, locale_key = 'data_flow_schema')
 
         data = YAML.load( ERB.new( IO.read(yaml_file) ).result )
 

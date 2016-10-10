@@ -1,16 +1,16 @@
 # YAML Template for Datashift Import/Export Configuration
-#
+#  Defaults, overrides etc are keyed by CLASS and the OPERATOR
 <%= @key -%>:
   <%= @klass -%>:
     defaults:
-      <%= "#<name>: <value>" if(@defaults.empty?) %>
+      <%= "#<operator>: <value>" if(@defaults.empty?) %>
   <% @defaults.each do |k, v| -%>
       <%= "#{k}: #{v}" %>
   <% end %>
 
     overrides:
   <% if(@overrides.empty?) %>
-      <%= "#<name>: <value>" if(@overrides.empty?) %>
+      <%= "#<operator>: <value>" if(@overrides.empty?) %>
   <% end %>
   <% @overrides.each do |k, v| -%>
       <% k %>: <% v %>
@@ -29,13 +29,13 @@
   <% end -%>
 
     prefixes:
-      <%= "#<name>: <value>" if(@prefixs.empty?) %>
+      <%= "#<operator>: <value>" if(@prefixs.empty?) %>
   <% @prefixs.each do |k, v| -%>
       <%= k %>: <%= v %>
   <% end -%>
 
     postfixes:
-  <%= "    #<name>: <value>" if(@postfixs.empty?) %>
+  <%= "    #<operator>: <value>" if(@postfixs.empty?) %>
   <% @postfixs.each do |k, v| -%>
       <%= k %>: <%= v %>
   <% end -%>
@@ -45,11 +45,16 @@
     # are only required when datashift cannot guess the mapping itself
     # It will automatically map headings like :
     #  'Product properties' or 'Product_Properties', 'product Properties' etc to product_properties
+    #
+    # Heading is optional - Custom/internal operators can be provided called on a per row basis
+    #
     nodes:
     <% @headers.each_with_index do |s, i| %>
       - <%= s %>:
-          heading:
-            source: <%= s %>
-            presentation: <%= s %>
+          # heading:
+          #   source: <%= s %>
+          #   presentation: <%= s %>
+          # operator
+          # operator_type: (defaults to :method)
     <% end %>
   <% end %>

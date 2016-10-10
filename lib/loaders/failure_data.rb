@@ -32,7 +32,6 @@ module DataShift
     def destroy_failed_object
       if load_object.respond_to?('destroy') && !load_object.new_record?
         load_object.destroy
-        reset
       end if load_object
     end
 

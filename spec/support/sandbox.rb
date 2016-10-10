@@ -28,11 +28,11 @@ module DataShift
         FileUtils.rm_rf(sandbox)
       end
 
+      sandbox_parent_dir =  File.expand_path( "#{sandbox}/.." )
+
       if File.exist?(sandbox)
         puts "RSPEC - Found and using existing Rails sandbox [#{sandbox}]"
       else
-
-        sandbox_parent_dir =  File.expand_path( "#{sandbox}/.." )
 
         puts "RSPEC SANDBOX - Creating new Rails sandbox in : #{sandbox_parent_dir}"
 
@@ -55,23 +55,21 @@ module DataShift
         end
 
         setup_db_install
-
-        run_in( sandbox_parent_dir ) do |_path|
-          name = File.basename(rails_sandbox_path)
-
-          puts "RSPEC DUMMY - Copying models from #{Dir.glob(File.join(fixtures_path, 'models'))}"
-
-          FileUtils.cp_r( Dir.glob(File.join(fixtures_path, 'models', '*.rb')), File.join(name, 'app/models'))
-
-          FileUtils.cp_r( File.join(fixtures_path, 'sandbox_example.thor'), rails_sandbox_path)
-
-          #factories = File.expand_path(File.join(fixtures_path, '..', 'factories'), __FILE__)
-         # FileUtils.cp_r( factories, rails_sandbox_path)
-        end
-
-        puts "RSPEC DUMMY - Build Complete"
-
       end
+
+      # Copy over the latest versions to pick up any local development during testing
+      run_in( sandbox_parent_dir ) do
+        name = File.basename(rails_sandbox_path)
+
+        puts "RSPEC DUMMY - Copying models from #{Dir.glob(File.join(fixtures_path, 'models'))}"
+
+        FileUtils.cp_r( Dir.glob(File.join(fixtures_path, 'models', '*.rb')), File.join(name, 'app/models'))
+
+        FileUtils.cp_r( File.join(fixtures_path, 'sandbox_example.thor'), rails_sandbox_path)
+      end
+
+      puts "RSPEC DUMMY - Build Complete"
+
       sandbox
     end
 

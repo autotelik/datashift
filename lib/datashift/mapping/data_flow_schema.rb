@@ -100,8 +100,13 @@ module DataShift
       model_methods
     end
 
+    # Supports YAML with optional ERB snippets
+    #
+    # See Config generation or lib/datashift/templates/import_export_config.erb for full syntax
+    #
     def prepare_from_file(file_name, locale_key = 'data_flow_schema')
-      @raw_data = File.read(file_name)
+      @raw_data = ERB.new(File.read(file_name)).result
+
       yaml = YAML.load(raw_data)
 
       prepare_from_yaml(yaml, locale_key)
@@ -109,7 +114,7 @@ module DataShift
 
     def prepare_from_string(text, locale_key = 'data_flow_schema')
       @raw_data = text
-      yaml = YAML.load(text)
+      yaml = YAML.load(raw_data)
 
       prepare_from_yaml(yaml, locale_key)
     end
@@ -150,8 +155,7 @@ module DataShift
       yaml_nodes.each_with_index do |keyed_node, i|
 
         unless(keyed_node.keys.size == 1)
-          Rails.logger.error('Bad syntax in flow schema YAML - Section should be keyed hash')
-          raise 'Bad syntax in flow schema YAML - Section should be keyed hash'
+          raise ConfigFormatError, "Bad syntax in flow schema YAML - Section #{keyed_node} should be keyed hash"
         end
 
         # data_flow_schema:
@@ -169,6 +173,10 @@ module DataShift
         # type one of ModelMethod.supported_types_enum
         section = keyed_node.values.first
 
+        source = section.fetch('heading', {}).fetch('source', nil)
+
+        doc.headers.add( source ) if(source)
+
         if(section['operator'])
           # Find the domain model method details
           model_method = model_method_mgr.search(section['operator'])
@@ -178,13 +186,11 @@ module DataShift
 
             model_method = model_method_mgr.insert(section['operator'], operator_type)
           end
+
+          method_binding = InternalMethodBinding.new(model_method)
         end
 
-        source = section.fetch('heading', {}).fetch('source', nil)
-
-        doc.headers.add( source )
-
-        method_binding = MethodBinding.new(source, i, model_method)
+        method_binding ||= MethodBinding.new(source, i, model_method)
 
         node = DataShift::NodeContext.new(doc, method_binding, i, nil)
 
