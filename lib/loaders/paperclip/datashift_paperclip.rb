@@ -59,9 +59,12 @@ module DataShift
     #
     #   :has_attached_file_name
     #
-    #     Paperclip attachment name defined with macro 'has_attached_file :name'
+    #     The attribute to attach to i.e tPaperclip attachment name defined with macro 'has_attached_file :name'
     #
-    #     This is usually called/defaults  :attachment
+    #         class Image
+    #               has_attached_file :attachment
+    #
+    #     This is usually called or defaults to  :attachment
     #
     #     e.g
     #       When : has_attached_file :avatar
@@ -74,8 +77,6 @@ module DataShift
     #
     def create_paperclip_attachment(klass, attachment_path, options = {})
 
-      logger.info("Paperclip::create_paperclip_attachment on Class #{klass}")
-
       has_attached_file_attribute = options[:has_attached_file_name] ? options[:has_attached_file_name].to_sym : :attachment
 
       attachment_file = get_file(attachment_path)
@@ -85,10 +86,12 @@ module DataShift
       paperclip_attributes.merge!(options[:attributes]) if options[:attributes]
 
       begin
+        logger.info("Create paperclip attachment on Class #{klass} - #{paperclip_attributes}")
+
         @attachment = klass.new(paperclip_attributes)
       rescue => e
-        logger.error( e.backtrace)
-        raise CreateAttachmentFailed.new("Failed [#{e.message}] creating PaperClip Attachment on #{klass} for [#{attachment_path}]")
+        logger.error(e.backtrace.first)
+        raise CreateAttachmentFailed.new("Failed [#{e.message}] - Creating Attachment [#{attachment_path}] on #{klass}")
       ensure
         attachment_file.close unless attachment_file.closed?
       end

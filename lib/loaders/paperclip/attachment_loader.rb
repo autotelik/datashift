@@ -120,8 +120,6 @@ module DataShift
       # a matching record to attach the file to.
       #
       # Options
-      #   :split_file_name_on   Used in scan process to progressively split file_name to find
-      #
       #   :add_prefix
       #
       def perform_load(options = {} )
@@ -158,7 +156,10 @@ module DataShift
 
           owner_record = find_owner(in_file_name, options)
 
-          next if(configuration.dummy_run) # Don't actually create/upload to DB if we are doing dummy run
+          # Don't actually create/upload to DB if we are doing dummy run
+          # Don't create the Attachment if the Owner was not found
+          
+          next if(configuration.dummy_run || owner_record.nil?)
 
           attachment = create_paperclip_attachment(load_object_class, in_file_name, options)
 
