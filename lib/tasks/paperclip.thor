@@ -7,12 +7,15 @@
 #
 #     thor help datashift:paperclip:attach
 #
+require 'datashift'
 require 'thor'
 
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
 module Datashift
 
   class Paperclip < Thor
+
+    include DataShift::Logging
 
     desc "attach", "Create paperclip attachments and attach to a Model from files in a directory.
     This is specifically for the use case where the paperclip attachments are stored in a class, such as Image, Icon, Asset,
@@ -86,7 +89,7 @@ module Datashift
         exit(-1)
       end
 
-      start_connections
+     start_connections unless(Rails.application.initialized?)
 
       require 'paperclip/attachment_loader'
 
@@ -105,12 +108,14 @@ module Datashift
 
       def start_connections
 
+        puts "WTFFFFFFFFF", Rails.application.inspect
+
         if File.exist?(File.expand_path('config/environment.rb'))
           begin
             require File.expand_path('config/environment.rb')
           rescue => e
             logger.error("Failed to initialise ActiveRecord : #{e.message}")
-            raise ConnectionError.new("Failed to initialise ActiveRecord : #{e.message}")
+            raise DataShift::ConnectionError.new("Failed to initialise ActiveRecord : #{e.message}")
           end
 
         else

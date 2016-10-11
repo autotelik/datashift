@@ -17,7 +17,7 @@ module DataShift
       @instance = current_object
     end
 
-   # delegate :errors, to: :instance
+    # delegate :errors, to: :instance
 
     # This method usually called during processing to avoid errors with associations like
     #   <ActiveRecord::RecordNotSaved: You cannot call create unless the parent is saved>

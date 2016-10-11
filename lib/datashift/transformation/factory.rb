@@ -139,7 +139,9 @@ module DataShift
 
         plural_tname = tname.to_s.pluralize
 
-        # Example  : defaults_for(key)
+        # NAME  : defaults_for(key)
+        #
+        # Return the defaults for the supplied KEY (Class or String)
         #
         class_eval <<-end_eval
           def #{plural_tname}_for(key)
@@ -147,9 +149,9 @@ module DataShift
           end
         end_eval
 
-        # Is there a transform for this MethodBinding ?
+        # NAME :  default?( method_binding )
         #
-        # Example :  default?( method_binding )
+        # Is there a transform for this MethodBinding ?
         #
         class_eval <<-end_eval
           def #{tname}?( method_binding )
@@ -179,7 +181,9 @@ module DataShift
 
         next if(tname == :substitution)
 
-        # Example : set_default_on(key, operator, default_value )
+        # NAME : set_default_on(key, operator, default_value )
+        #
+        # Set the defaults for the supplied KEY (Class or String) and Operator
         #
         class_eval <<-end_eval
           def set_#{tname}_on(key, operator, default_value )

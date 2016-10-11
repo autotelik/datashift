@@ -24,7 +24,6 @@ module DataShift
     delegate :source, to: :inbound_column, allow_nil: true
     delegate :index, to: :inbound_column, allow_nil: true
 
-
     # Is this method detail a valid mapping, aids identifying unmapped/unmappable columns
     attr_accessor :valid
 
@@ -61,8 +60,6 @@ module DataShift
     def class_name
       model_method.klass.name
     end
-
-
 
     def add_column_data(data)
       inbound_column.data << data if(inbound_column)

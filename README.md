@@ -28,27 +28,28 @@ Win OLE and MS Excel are NOT required to use the Excel functionality.
 
 ### <a name="Introduction">Introduction</a>
 
-Datashift automatically maps the headers in your import data to ActiveRecord model attributes.
+Import and Export direct to Excel (.xls) files.
 
-CLI tools are provided to generate a configuration and mapping document, that can be used to
-map headers to the destination target, when headers can't be mapped automatically to your models, 
+Bulk upload [Paperclip](https://github.com/thoughtbot/paperclip)  supported filetypes from the filesystem,
+such as images, documents and auto-attach them to the parent class.
 
-Data transformations are supported, again via configuration setttings, which support
+For example bulk uploading product images and attaching them to an existing Product entry in your database.
+
+Smart import - Datashift will try its best to automatically map the headers in your import data to 
+your ActiveRecord model **attributes** and **associations**
+
+Easy to configure and map columns to your database when automatic mapping doesn't quite cut it.
+
+Provides CLI tools to generate these configuration and mapping documents, to aid quickly
+mapping your data to the destination target. 
+
+Easily Apply different Data transformations during import or export.
 
 * Defaults - Where your column is empty, provide a default value to be used.
 
-* Overrides - When you want to provide a default value in all cases, or set a value even when you have no inbound data.
+* Overrides - When you want to provide a set value in all cases, or when you have no inbound data.
 
 * Prefixes/Postfixes - Amend data on the fly. e.g if you wish to prepend a string id to a reference type field.
-
-[Paperclip](https://github.com/thoughtbot/paperclip) support enables the bulk load of
-paperclip supported filetypes from the filesystem.
-
-The loaded content is automatically attached to the model containing the `has_attached_file` directive.
-
-Matching to this right attachment model instance, is performed using the filename.
-
-The database field to match on, and the filename matching pattern are all configurable.
 
 There are specific import/export loaders for [Spree E-Commerce](http://spreecommerce.com/) here @ [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
 
@@ -106,17 +107,60 @@ Bulk import tools from filesystem, for Paperclip attachments, takes folder of at
 and use the file name to find and attach to DB models. For example look up a product, by it's '''SKU''',
 based on the **SKU being present the image filename**, and attache that image to the product's '''images''' association
 
-Supports export of all association types, in either hash or json formats.
+Export association data inline, in either hash or json formats, covering all association types.
 
 Association types to include/exclude can be set in configuration as well as speciifc columsn to exclude.
 
 Rails standard columns such as id, created_at etc can also be easily excluded via Configuration.
 
+#### <a name="Configuration">Configuration</a>
+
+You can now configure datashift options with a typical initialisation block, for example
+
+```ruby
+DataShift::Configuration.call do |c|
+  c.verbose = false
+  c.remove_columns = [:milestones, :versions]
+  c.remove_rails = true
+  c.with = :all
+end
+ ```
+
+See lib/datashift/configuration.rb for all the options
+
+Imports/export can also be directed from YAML configuration file, to setup 
+column mappings, transformations and custom methods for columns/data that require non trivial processing.
+    
+There is a generator, to create a skeleton configuration file template for you :
+
+```ruby
+thor help datashift:generate:config:import
+```
+
+##### Transformations
+
 Set default values, substitutions and transformations per column for Imports.
 
-Generate sample templates, with only headers.
+```ruby
+        DataShift::Transformation.factory do |factory|
+          factory.set_default_on(Project, 'value_as_string',  'some default text' )
+          factory.set_default_on(Project, 'value_as_double',   45.467 )
+          factory.set_default_on(Project, 'value_as_boolean',  true )
+          factory.set_default_on(Project, 'value_as_datetime', Time.now )
+        end
+```
 
-Export template and populate with model data.
+  N.B The operator/column (2nd parameter) must match the inbound HEADER
+ 
+  For example given a header **SKU**, for a class with real operator `sku=`, even though we know assignment will eventually
+  use `sku=` this will not work :
+       `factory.set_prefix_on(Spree::Product, 'sku', 'SPEC_')`
+      
+  
+  But this will set the right prefix, because the header in the FILE is SKU 
+      
+      `factory.set_prefix_on(Spree::Product, 'SKU', 'SPEC_')`
+      
 
 #### <a name="ImportCLI">Active Record - Import CLI</a>
 
@@ -141,15 +185,14 @@ via either multiple columns, or via single column containing multiple entries in
 
 See Wiki for more details on DSL syntax.
 
-#### <a name="Configuration">Configuration</a>
+##### Paperclip
 
-You can now configure datashift with a standard initialisation block
+The loaded content is automatically attached to the model containing the `has_attached_file` directive.
 
-To generate a configuration file template, for import see
+Matching to this right attachment model instance, is performed using the filename.
 
-```ruby
-thor help datashift:generate:config:import
-```
+The database field to match on, and the filename matching pattern are all configurable.
+
 
 ### <a name="Testing">Testing</a>
 

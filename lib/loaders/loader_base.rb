@@ -115,7 +115,7 @@ module DataShift
         raise MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}" if configuration.strict
       end
 
-      mandatory = DataShift::Mandatory.new(configuration.mandatory)
+      mandatory = DataShift::Mandatory.new(DataShift::Configuration.call.mandatory)
 
       unless mandatory.contains_all?(binder)
         mandatory.missing_columns.each do |er|

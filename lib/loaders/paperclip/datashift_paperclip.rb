@@ -80,7 +80,7 @@ module DataShift
 
       attachment_file = get_file(attachment_path)
 
-      paperclip_attributes = { "#{has_attached_file_attribute}": attachment_file}
+      paperclip_attributes = { "#{has_attached_file_attribute}": attachment_file }
 
       paperclip_attributes.merge!(options[:attributes]) if options[:attributes]
 

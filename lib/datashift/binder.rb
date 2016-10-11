@@ -113,7 +113,10 @@ module DataShift
         end
 
         # Header DSL Name::Where::Value:Misc
-
+        # For example :
+        #     product_properties:name:test_pp_003
+        #       => ProductProperty.where()name: "test_pp_003")
+        #
         raw_col_name, where_field, where_value, *data = raw_col_data.split(column_delim).map(&:strip)
 
         # Find the domain model method details
@@ -144,9 +147,9 @@ module DataShift
 
             begin
               binding.add_lookup(model_method, where_field, where_value)
-            rescue
-              add_missing(raw_col_data, col_index,
-                          "Field [#{where_field}] Not Found for [#{raw_col_name}] (#{model_method.operator})")
+            rescue => e
+              logger.error(e.message)
+              add_missing(raw_col_data, col_index, "Field [#{where_field}] Not Found for [#{raw_col_name}] (#{model_method.operator})")
               next
             end
 
@@ -165,7 +168,7 @@ module DataShift
 
     def add_bindings_from_nodes( nodes )
       logger.debug("Adding  [#{nodes.size}] custom bindings")
-      nodes.each {|n| bindings << n.method_binding }
+      nodes.each { |n| bindings << n.method_binding }
     end
 
     # Essentially we map any string collection of field names, not just headers from files

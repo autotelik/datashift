@@ -13,7 +13,7 @@ module DataShift
 
     def initialize(columns)
 
-      @mandatory_columns = columns
+      @mandatory_columns = [*columns]
 
       logger.info("Mandatory columns set to #{@mandatory_columns.inspect}") unless @mandatory_columns.empty?
 

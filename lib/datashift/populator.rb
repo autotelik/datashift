@@ -9,6 +9,9 @@
 #
 #             Enables users to assign values to AR object, without knowing much about that receiving object.
 #
+require_relative 'populators/has_many'
+require_relative 'populators/insistent_assignment'
+
 module DataShift
 
   class Populator
@@ -98,7 +101,7 @@ module DataShift
         elsif(!DataShift::Guards.jruby? &&
           (data.is_a?(Spreadsheet::Formula) || data.class.ancestors.include?(Spreadsheet::Formula)) )
 
-          @value = data.value  # TOFIX jruby/apache poi equivalent ?
+          @value = data.value # TOFIX jruby/apache poi equivalent ?
 
         elsif(connection_adapter_column && connection_adapter_column.cast_type.is_a?(ActiveRecord::Type::Boolean))
 
@@ -110,7 +113,7 @@ module DataShift
           @value = if(data.in? [true, false])
                      data
                    else
-                     (data.to_s.downcase == "true" || data.to_s.to_i == 1) ? true : false
+                     (data.to_s.casecmp('true').zero? || data.to_s.to_i == 1) ? true : false
                    end
         else
           @value = data.to_s
@@ -147,8 +150,9 @@ module DataShift
       if model_method.operator_for(:belongs_to)
         insistent_belongs_to(method_binding, record, value)
 
-      elsif  model_method.operator_for(:has_many)
-        assign_has_many(method_binding, record)
+      elsif(model_method.operator_for(:has_many))
+
+        DataShift::Populators::HasMany.call(record, value, method_binding)
 
       elsif  model_method.operator_for(:has_one)
 
@@ -163,15 +167,14 @@ module DataShift
 
         if model_method.connection_adapter_column
 
-          return if check_process_enum(record, model_method )  # TOFIX .. enum section probably belongs in prepare_data
+          return if check_process_enum(record, model_method ) # TOFIX .. enum section probably belongs in prepare_data
 
           assignment(record, value, model_method)
 
         else
-          logger.debug("Brute force assignment of value  #{value} => [#{operator}]")
-          # brute force case for assignments without a column type (which enables us to do correct type_cast)
-          # so in this case, attempt straightforward assignment then if that fails, basic ops such as to_s, to_i, to_f etc
-          insistent_assignment(record, value, operator)
+          DataShift::Populators::InsistentAssignment.call(record, value, operator)
+
+          logger.debug("Assigned #{value} => [#{operator}]")
         end
 
       elsif model_method.operator_for(:method)
@@ -216,38 +219,6 @@ module DataShift
         logger.error e.backtrace.first
         logger.error("Assignment failed #{e.inspect}")
         raise DataProcessingError, "Failed to set [#{value}] via [#{operator}] due to ERROR : #{e.message}"
-      end
-    end
-
-    def insistent_assignment(record, value, operator)
-
-      op = operator + '=' unless operator.include?('=')
-
-      # TODO: - fix this crap - perhaps recursion ??
-      begin
-        record.send(op, value)
-      rescue
-        begin
-          op = operator.downcase
-          op += '=' unless operator.include?('=')
-
-          record.send(op, value)
-
-        rescue => e
-
-          Populator.insistent_method_list.each do |f|
-            begin
-              record.send(op, value.send(f) )
-              break
-            rescue => e
-              if f == Populator.insistent_method_list.last
-                logger.error(e.inspect)
-                logger.error("Failed to assign [#{value}] via operator #{operator}")
-                raise DataProcessingError, "Failed to assign [#{value}] to #{operator}" unless value.nil?
-              end
-            end
-          end
-        end
       end
     end
 
@@ -340,92 +311,6 @@ module DataShift
       postfix( method_binding )
 
       # TODO: - enable clients to register their own transformation methods and call them here
-    end
-
-    # A single column can contain multiple lookup key:value definitions.
-    # These are delimited by special char defined in Delimiters
-    #
-    # For example:
-    #
-    #   size:large | colour:red,green,blue |
-    #
-    def split_multi_assoc_value
-      value.to_s.split( multi_assoc_delim )
-    end
-
-    def assign_has_many(method_binding, load_object)
-
-      # there are times when we need to save early, for example before assigning to
-      # has_and_belongs_to associations which require the load_object has an id for the join table
-
-      load_object.save_if_new
-
-      collection = []
-      columns = []
-
-      if value.is_a?(Array)
-
-        value.each do |record|
-          if record.class.ancestors.include?(ActiveRecord::Base)
-            collection << record
-          else
-            columns << record
-          end
-        end
-
-      else
-        # A single column can contain multiple lookup key:value definitions, delimited by special char
-        # size:large | colour:red,green,blue => [where size: 'large'], [where colour: IN ['red,green,blue']
-        columns = split_multi_assoc_value
-      end
-
-      operator = method_binding.operator
-
-      columns.each do |col_str|
-        # split into usable parts ; size:large or colour:red,green,blue
-        field, find_by_values = Querying.where_field_and_values(method_binding, col_str )
-
-        raise "Cannot perform DB find by #{field}. Expected format key:value" unless field && find_by_values
-
-        found_values = []
-
-        # we are looking up an association so need the Class of the Association
-        klass = method_binding.model_method.operator_class
-
-        raise CouldNotDeriveAssociationClass, "Failed to find class for has_many Association : #{method_binding.pp}" unless klass
-
-        logger.info("Running where clause on #{klass} : [#{field} IN #{find_by_values.inspect}]")
-
-        find_by_values.each do |v|
-          begin
-            found_values << klass.where(field => v).first_or_create
-          rescue => e
-            logger.error(e.inspect)
-            logger.error("Failed to find or create #{klass} where #{field} => #{v}")
-            # TODO: some way to define if this is a fatal error or not ?
-          end
-        end
-
-        logger.info("Scan result #{found_values.inspect}")
-
-        unless find_by_values.size == found_values.size
-          found = found_values.collect { |f| f.send(field) }
-          load_object.errors.add( operator, "Association with key(s) #{(find_by_values - found).inspect} NOT found")
-          logger.error "Association [#{operator}] with key(s) #{(find_by_values - found).inspect} NOT found - Not added."
-          next if found_values.empty?
-        end
-
-        logger.info("Assigning to has_many [#{operator}] : #{found_values.inspect} (#{found_values.class})")
-
-        begin
-          load_object.send(operator) << found_values
-        rescue => e
-          logger.error e.inspect
-          logger.error "Cannot assign #{found_values.inspect} to has_many [#{operator}] "
-        end
-
-        logger.info("Assignment to has_many [#{operator}] COMPLETE)")
-      end # END HAS_MANY
     end
 
     # Transformations
