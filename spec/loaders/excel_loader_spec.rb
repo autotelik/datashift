@@ -167,10 +167,10 @@ module  DataShift
         expect { loader.run(expected, Project) }.to_not raise_error
       end
 
-      it 'should NOT process excel spreadsheet with extra undefined columns when strict mode' do
+      it 'should NOT process excel spreadsheet with extra undefined columns when strict_inbound_mapping true' do
         expected = ifixture_file('BadAssociationName.xls')
 
-        loader.configuration.strict = true
+        DataShift::Configuration.call.strict_inbound_mapping = true
 
         expect { loader.run(expected, Project) }.to raise_error(MappingDefinitionError)
       end
@@ -180,7 +180,7 @@ module  DataShift
 
         expect {
 
-          loader.configuration.mandatory = %w(not_an_option must_be_there)
+          DataShift::Configuration.call.mandatory = %w(not_an_option must_be_there)
 
           loader.run(expected, Project)
         }.to raise_error(DataShift::MissingMandatoryError)

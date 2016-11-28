@@ -49,21 +49,18 @@ module DataShift
     attr_accessor :remove_rails
 
     # When performing import, default is to ignore any columns that cannot be mapped  (via headers)
-    # To raise an error set strict => true
-    # Defaults to `false`. Set to `true` to cause exceptions to be thrown
-    # The setting is ignored if routes are disabled.
+    # To raise an error instead, set this to  true
+    # Defaults to `false`.
     # @param [Boolean] value
     # @return [Boolean]
-    attr_accessor :strict
+    attr_accessor :strict_inbound_mapping
 
     # When performing writes use update methods that write immediately to DB
     # and use validations.
     #
-    # Validations can ensure business logic but this can be far less efficient as writes to DB once per column
+    # Validations can ensure business logic, but can be less efficient as writes to DB once per column
     #
-    # To raise an error set strict => true
-    # Default  is to use more efficient but less strict attribute writing,
-    # no write to DB/No validations run
+    # Default  is to use more efficient but less strict attribute writing - no write to DB/No validations run
     # @param [Boolean] value
     # @return [Boolean]
     attr_accessor :update_and_validate
@@ -135,7 +132,7 @@ module DataShift
 
       @mandatory = []
 
-      @strict = false
+      @strict_inbound_mapping = false
       @verbose = false
       @dummy_run = false
       @force_inclusion_of_columns = []

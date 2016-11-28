@@ -128,6 +128,8 @@ module DataShift
 
         raise "The field to search for attachment's owner has not been set (:attach_to_find_by_field)" unless @attach_to_find_by_field
 
+        is_dummy_run = DataShift::Configuration.call.dummy_run
+
         @missing_records = []
 
         @load_object = options[:attachment] if options[:attachment]
@@ -159,7 +161,7 @@ module DataShift
           # Don't actually create/upload to DB if we are doing dummy run
           # Don't create the Attachment if the Owner was not found
           
-          next if(configuration.dummy_run || owner_record.nil?)
+          next if(is_dummy_run || owner_record.nil?)
 
           attachment = create_paperclip_attachment(load_object_class, in_file_name, options)
 
@@ -179,7 +181,7 @@ module DataShift
 
         puts "Created #{created} / #{loading_files_cache.size} attachments of type #{load_object_class} attached to #{@attach_to_klass}"
 
-        puts 'Dummy Run Complete - if happy run with full commit' if(configuration.dummy_run)
+        puts 'Dummy Run Complete - if happy run with full commit' if(is_dummy_run)
 
       end
 
@@ -193,7 +195,7 @@ module DataShift
         puts "For your convenience copying files with MISSING #{attach_to_klass} to : MissingAttachmentRecords"
         missing_records.each do |i|
           logger.info("Copying #{i} to MissingAttachmentRecords folder")
-          FileUtils.cp( i, 'MissingAttachmentRecords') unless(configuration.dummy_run)
+          FileUtils.cp( i, 'MissingAttachmentRecords') unless(DataShift::Configuration.call.dummy_run)
         end
       end
     end

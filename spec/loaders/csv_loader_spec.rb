@@ -107,9 +107,9 @@ module  DataShift
         expect { loader.run(expected, Project) }.to_not raise_error
       end
 
-      it 'should NOT process CSV with extra undefined columns when strict mode' do
+      it 'should NOT process CSV with extra undefined columns when strict_inbound_mapping true' do
         expected = ifixture_file('csv/BadAssociationName.csv')
-        loader.configuration.strict = true
+        DataShift::Configuration.call.strict_inbound_mapping = true
 
         expect { loader.run(expected, Project) }.to raise_error(MappingDefinitionError)
       end
@@ -117,10 +117,20 @@ module  DataShift
       it 'should raise an error when mandatory columns missing', fail: true do
         expected = ifixture_file('csv/ProjectsMultiCategories.csv')
         expect {
-          loader.configuration.mandatory = %w(not_an_option must_be_there)
+          DataShift::Configuration.call.mandatory = %w(not_an_option must_be_there)
 
           loader.run(expected, Project)
         }.to raise_error(DataShift::MissingMandatoryError)
+      end
+
+
+      it 'should raise an error when mandatory columns missing', fail: true do
+
+        DataShift::Configuration.call.mandatory = %w(not_an_option must_be_there)
+
+        expected = ifixture_file('csv/ProjectsMultiCategories.csv')
+
+        expect { loader.run(expected, Project) }.to raise_error(DataShift::MissingMandatoryError)
       end
 
       #       it "should provide facility to set default values", :focus => true do

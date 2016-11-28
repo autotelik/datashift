@@ -50,7 +50,7 @@ module DataShift
       bind_headers(headers)
 
       begin
-        puts 'Dummy Run - Changes will be rolled back' if(configuration.dummy_run)
+        puts 'Dummy Run - Changes will be rolled back' if(DataShift::Configuration.call.dummy_run)
 
         load_object_class.transaction do
           logger.info "Processing #{parsed_file.size} rows"
@@ -92,7 +92,7 @@ module DataShift
             doc_context.reset unless doc_context.node_context.next_update?
           end # all rows processed
 
-          if(configuration.dummy_run)
+          if(DataShift::Configuration.call.dummy_run)
             puts 'CSV loading stage done - Dummy run so Rolling Back.'
             raise ActiveRecord::Rollback # Don't actually create/upload to DB if we are doing dummy run
           end

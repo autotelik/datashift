@@ -38,8 +38,10 @@ module DataShift
       # maps list of headers into suitable calls on the Active Record class
       bind_headers(headers)
 
+      is_dummy_run = DataShift::Configuration.call.dummy_run
+
       begin
-        puts 'Dummy Run - Changes will be rolled back' if(configuration.dummy_run)
+        puts 'Dummy Run - Changes will be rolled back' if is_dummy_run
 
         load_object_class.transaction do
           sheet.each_with_index do |row, current_row_idx|
@@ -98,7 +100,7 @@ module DataShift
             doc_context.reset unless doc_context.node_context.next_update?
           end # all rows processed
 
-          if(configuration.dummy_run)
+          if is_dummy_run
             puts 'Excel loading stage done - Dummy run so Rolling Back.'
             raise ActiveRecord::Rollback # Don't actually create/upload to DB if we are doing dummy run
           end

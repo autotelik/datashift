@@ -33,15 +33,11 @@ module DataShift
                    :loaded_count, :failed_count, :processed_object_count,
                    :headers, :reporters, :reporters=
 
-    attr_reader :configuration
-
     def initialize
       @file_name = ''
 
       @doc_context = DocContext.new(Object)
       @binder      = Binder.new
-
-      @configuration = DataShift::Loaders::Configuration.call
     end
 
     def setup_load_class(load_class)
@@ -66,7 +62,7 @@ module DataShift
     end
 
     def abort_on_failure?
-      !! configuration.abort_on_failure
+      !! DataShift::Configuration.call.abort_on_failure
     end
 
     def load_object_class
@@ -89,11 +85,6 @@ module DataShift
     # Given a list of free text column names from inbound headers,
     # map all headers to a domain model containing details on operator, look ups etc.
     #
-    # See configuration options
-    #
-    #    [:ignore]          : List of column headers to ignore when building operator ma
-    #    [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
-    #
     def bind_headers( headers )
 
       logger.info("Binding #{headers.size} inbound headers to #{load_object_class.name}")
@@ -112,7 +103,10 @@ module DataShift
         logger.warn("Following headings couldn't be mapped to #{load_object_class}:")
         binder.missing_bindings.each { |m| logger.warn("Heading [#{m.source}] - Index (#{m.index})") }
 
-        raise MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}" if configuration.strict
+        if DataShift::Configuration.call.strict_inbound_mapping
+          raise MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}"
+        end
+
       end
 
       mandatory = DataShift::Mandatory.new(DataShift::Configuration.call.mandatory)
