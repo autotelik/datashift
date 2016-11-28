@@ -32,7 +32,11 @@ module DataShift
       end
 
       def verbose
-        add(STDOUT)
+        target = "stdout"
+        unless @names.include?(target)
+          add(STDOUT)
+          @names << target
+        end
       end
 
       def method_missing(method, *args, &block)
@@ -64,7 +68,7 @@ module DataShift
     end
 
     def verbose
-      @verbose_logger ||= logger.add(STDOUT)
+      @verbose_logger ||= logger.verbose
     end
 
     private
@@ -76,7 +80,7 @@ module DataShift
 
       ActiveRecord::Base.logger = MultiIO.instance if defined?(ActiveRecord) && ActiveRecord::Base.logger
 
-      verbose if(DataShift::Configuration.call.verbose)
+      MultiIO.instance.verbose if(DataShift::Configuration.call.verbose)
 
       MultiIO.instance
     end
