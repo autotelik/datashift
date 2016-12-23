@@ -23,6 +23,8 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 #
+require 'forwardable'
+
 require_relative 'datashift/guards'
 require_relative 'datashift/logging'
 
