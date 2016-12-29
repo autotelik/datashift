@@ -47,6 +47,7 @@ end
 # Self logging errors
 
 DataShift::DataShiftException.generate( 'BadOperatorType')
+DataShift::DataShiftException.generate( 'ConfigFormatError')
 DataShift::DataShiftException.generate( 'ConnectionError')
 DataShift::DataShiftException.generate( 'CouldNotAssignAssociation')
 DataShift::DataShiftException.generate( 'CouldNotDeriveAssociationClass')

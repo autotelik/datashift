@@ -26,7 +26,7 @@ module DataShift
       @row_index = row_idx
       @data = data
 
-      @populator = ContextFactory.get_populator(method_binding)
+      @populator = PopulatorFactory.get_populator(method_binding)
     end
 
     delegate :model_method, :operator, to: :method_binding

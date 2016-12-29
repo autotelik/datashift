@@ -5,12 +5,13 @@
 # Details::   Maps transformations to internal Class methods.
 #
 #             Stores :
+#               defaults
 #               substitutions
 #               over rides
 #               prefixes
 #               postfixes
 #
-# These are keyed on the associated method binding operator, which is
+# These are keyed on the associated method binding ** OPERATOR ** which is
 # essentially the method call/active record column on the class.
 #
 # Clients can decide exactly how these can be applied to incoming data.
@@ -96,7 +97,7 @@ module DataShift
       # key:
       #  klass:
       #
-      def configure_from(load_object_class, yaml_file, locale_key = nil)
+      def configure_from(load_object_class, yaml_file, locale_key = 'data_flow_schema')
 
         data = YAML.load( ERB.new( IO.read(yaml_file) ).result )
 
@@ -138,7 +139,9 @@ module DataShift
 
         plural_tname = tname.to_s.pluralize
 
-        # Example  : defaults_for(key)
+        # NAME  : defaults_for(key)
+        #
+        # Return the defaults for the supplied KEY (Class or String)
         #
         class_eval <<-end_eval
           def #{plural_tname}_for(key)
@@ -146,9 +149,9 @@ module DataShift
           end
         end_eval
 
-        # Is there a transform for this MethodBinding ?
+        # NAME :  default?( method_binding )
         #
-        # Example :  default?( method_binding )
+        # Is there a transform for this MethodBinding ?
         #
         class_eval <<-end_eval
           def #{tname}?( method_binding )
@@ -178,7 +181,9 @@ module DataShift
 
         next if(tname == :substitution)
 
-        # Example : set_default_on(key, operator, default_value )
+        # NAME : set_default_on(key, operator, default_value )
+        #
+        # Set the defaults for the supplied KEY (Class or String) and Operator
         #
         class_eval <<-end_eval
           def set_#{tname}_on(key, operator, default_value )

@@ -34,8 +34,6 @@ module DataShift
     include DataShift::Delimiters
     extend DataShift::Delimiters
 
-    attr_reader :mapped_class
-
     attr_accessor :bindings, :missing_bindings
 
     def initialize
@@ -52,11 +50,11 @@ module DataShift
     end
 
     def headers_missing_bindings
-      missing_bindings.collect(&:inbound_name)
+      missing_bindings.collect(&:source)
     end
 
     def indexes_missing_bindings
-      missing_bindings.collect(&:inbound_index)
+      missing_bindings.collect(&:index)
     end
 
     def forced_inclusion_columns
@@ -101,16 +99,12 @@ module DataShift
     #
     def map_inbound_headers(klass, columns)
 
-      @mapped_class = klass
-
       # If klass not in Dictionary yet, add to dictionary all possible operators on klass
       # which can be used to map headers and populate an object of type klass
       model_method_mgr = ModelMethods::Manager.catalog_class(klass)
 
-      reset
-
       [*columns].each_with_index do |col_data, col_index|
-        raw_col_data = col_data.to_s
+        raw_col_data = col_data.to_s.strip
 
         if raw_col_data.nil? || raw_col_data.empty?
           logger.warn("Column list contains empty or null header at index #{col_index}")
@@ -119,17 +113,19 @@ module DataShift
         end
 
         # Header DSL Name::Where::Value:Misc
-
-        raw_col_name, where_field, where_value, *data = raw_col_data.split(column_delim)
+        # For example :
+        #     product_properties:name:test_pp_003
+        #       => ProductProperty.where()name: "test_pp_003")
+        #
+        raw_col_name, where_field, where_value, *data = raw_col_data.split(column_delim).map(&:strip)
 
         # Find the domain model method details
         model_method = model_method_mgr.search(raw_col_name)
 
-        # if not found via raw name, try various alternatives
-
+        # No such column, but if config set to include it, for example for delegated methods, add as op type :assignment
         if( model_method.nil? && (include_all? || forced?(raw_col_name)) )
-          logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :method")
-          model_method = model_method_mgr.insert(raw_col_name, :method)
+          logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :assignment")
+          model_method = model_method_mgr.insert(raw_col_name, :assignment)
         end
 
         unless model_method
@@ -151,26 +147,28 @@ module DataShift
 
             begin
               binding.add_lookup(model_method, where_field, where_value)
-            rescue
-              add_missing(raw_col_data, col_index,
-                          "Field [#{where_field}] Not Found for [#{raw_col_name}] (#{model_method.operator})")
+            rescue => e
+              logger.error(e.message)
+              add_missing(raw_col_data, col_index, "Field [#{where_field}] Not Found for [#{raw_col_name}] (#{model_method.operator})")
               next
             end
 
           end
 
-          logger.debug("Column [#{col_data}] (#{col_index}) - mapped to :\n#{model_method.pp}")
+          logger.debug("Column [#{raw_col_data}] (#{col_index}) - mapped to :\n#{model_method.pp}")
 
           bindings << binding
-
         else
-          logger.debug("No operator or association found for Header [#{raw_col_name}]")
-
           add_missing(raw_col_data, col_index, "No operator or association found for Header [#{raw_col_name}]")
         end
       end
 
       bindings
+    end
+
+    def add_bindings_from_nodes( nodes )
+      logger.debug("Adding  [#{nodes.size}] custom bindings")
+      nodes.each { |n| bindings << n.method_binding }
     end
 
     # Essentially we map any string collection of field names, not just headers from files
@@ -204,7 +202,7 @@ module DataShift
 
     # The raw client supplied names
     def method_names
-      bindings.collect( &:inbound_name )
+      bindings.collect( &:source )
     end
 
     # The true operator names discovered from model

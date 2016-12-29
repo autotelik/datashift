@@ -17,13 +17,15 @@ module DataShift
     let(:binder) { Binder.new }
 
     context 'errors binding headers' do
-      let(:headers) { [:value_as_string, :owner, :bad_no_such_column, :value_as_boolean, :value_as_double, :more_rubbish_as_nil] }
+      let(:headers) {
+        [:value_as_string, :owner, :bad_no_such_column, :value_as_boolean, :value_as_double, :more_rubbish_as_nil]
+      }
 
       before(:each) do
-        @bindings = binder.map_inbound_headers( Project, headers )
+        binder.map_inbound_headers( Project, headers )
       end
 
-      let(:bindings) { @bindings }
+      let(:bindings) { binder.bindings }
 
       it 'uses NoMethodBinding object methods when no such operator' do
         expect(bindings.size).to eq 6
@@ -34,7 +36,7 @@ module DataShift
         expect(bindings[0]).to be_a MethodBinding
       end
 
-      it 'should populate missing_bindings  when no such operator' do
+      it 'should populate missing_bindings  when no such operator', duff: true do
         expect(binder.missing_bindings.size).to eq 2
       end
 
@@ -58,14 +60,18 @@ module DataShift
         expect(missing[1]).to eq 5
       end
 
-      it 'uses NoMethodBinding object methods when operator has no such lookup field', fail: true do
+    end
+
+    context 'errors binding headers with lookup data' do
+
+      it 'uses NoMethodBinding object methods when operator has no such lookup field' do
         # Owner  has_many :digitals which has field attachment_file_name
         headers = ['digitals:attachment_file_name',
                    'Digitals:nonsense_lookup_field',
                    'Digitals:nonsense:with a value',
                    'Digitals:nonsense:with a value:and random data']
 
-        binder.map_inbound_headers( Owner, headers)
+        binder.map_inbound_headers(Owner, headers)
 
         expect(binder.bindings.size).to eq 4
         expect(binder.missing_bindings.size).to eq 3
@@ -75,6 +81,9 @@ module DataShift
       end
     end
 
+    context 'errors binding headers' do
+
+    end
     let (:headers) { [:value_as_string, :owner, :value_as_boolean, :value_as_double] }
 
     it 'should find a set of methods based on a list of column symbols' do
@@ -105,7 +114,7 @@ module DataShift
       expect(bindings[0]).to be_a MethodBinding
 
       headers.each_with_index do |_c, i|
-        expect(bindings[i].inbound_index).to eq i
+        expect(bindings[i].index).to eq i
         expect(bindings[i].inbound_column.index).to eq i
       end
     end
@@ -121,8 +130,8 @@ module DataShift
 
       headers.each_with_index do |c, i|
         expect(bindings[i].valid?).to eq true
-        expect(bindings[i].inbound_index).to eq i
-        expect(bindings[i].inbound_name).to eq c.to_s
+        expect(bindings[i].index).to eq i
+        expect(bindings[i].source).to eq c.to_s
         expect(bindings[i].operator).to eq operators[i]
       end
     end
@@ -139,8 +148,8 @@ module DataShift
 
       headers.each_with_index do |c, i|
         expect(bindings[i].valid?).to eq true
-        expect(bindings[i].inbound_index).to eq i
-        expect(bindings[i].inbound_name).to eq c.to_s
+        expect(bindings[i].index).to eq i
+        expect(bindings[i].source).to eq c.to_s
         expect(bindings[i].operator).to eq operators[i]
       end
     end
@@ -157,8 +166,8 @@ module DataShift
 
       headers.each_with_index do |c, i|
         expect(bindings[i].valid?).to eq true
-        expect(bindings[i].inbound_index).to eq i
-        expect(bindings[i].inbound_name).to eq c.to_s
+        expect(bindings[i].index).to eq i
+        expect(bindings[i].source).to eq c.to_s
         expect(bindings[i].operator).to eq operators[i]
       end
     end

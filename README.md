@@ -1,5 +1,9 @@
 ## DataShift
 
+Datashift is a suite of tools to help you import or export data from a Rails application.
+
+Formats currently supported are Excel, CSV files and Paperclip attachments.
+
 Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
 
 [![Build Status](https://travis-ci.org/autotelik/datashift.svg?branch=master)](https://travis-ci.org/autotelik/datashift)
@@ -11,9 +15,6 @@ Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
 - [Testing](#testing)
 - [License](#license)
 
-Datashift is a suite of tools to help you import or export data from a Rails application.
-
-Formats currently supported are Excel, CSV files and paperclip attachments.
 
 ### <a name="Installation">Installation</a>
 
@@ -27,27 +28,28 @@ Win OLE and MS Excel are NOT required to use the Excel functionality.
 
 ### <a name="Introduction">Introduction</a>
 
-Datashift automatically maps your files headers to your active record model attributes.
+Import and Export direct to Excel (.xls) files.
 
-When your files differ from your models, it provides tools to generate a mapping
-document, so you can map source headers, to the destination target in your database.
+Bulk upload [Paperclip](https://github.com/thoughtbot/paperclip)  supported filetypes from the filesystem,
+such as images, documents and auto-attach them to the parent class.
 
-Data transformations are supported, again via configuration setttings, which support
+For example bulk uploading product images and attaching them to an existing Product entry in your database.
+
+Smart import - Datashift will try its best to automatically map the headers in your import data to 
+your ActiveRecord model **attributes** and **associations**
+
+Easy to configure and map columns to your database when automatic mapping doesn't quite cut it.
+
+Provides CLI tools to generate these configuration and mapping documents, to aid quickly
+mapping your data to the destination target. 
+
+Easily Apply different Data transformations during import or export.
 
 * Defaults - Where your column is empty, provide a default value to be used.
 
-* Overrides - When you want to provide a default value in all cases, or set a value even when you have no inbound data.
+* Overrides - When you want to provide a set value in all cases, or when you have no inbound data.
 
 * Prefixes/Postfixes - Amend data on the fly. e.g if you wish to prepend a string id to a reference type field.
-
-[Paperclip](https://github.com/thoughtbot/paperclip) support enables the bulk load of
-paperclip supported filetypes from the filesystem.
-
-The loaded content is automatically attached to the model containing the `has_attached_file` directive.
-
-Matching to this right attachment model instance, is performed using the filename.
-
-The database field to match on, and the filename matching pattern are all configurable.
 
 There are specific import/export loaders for [Spree E-Commerce](http://spreecommerce.com/) here @ [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
 
@@ -105,17 +107,60 @@ Bulk import tools from filesystem, for Paperclip attachments, takes folder of at
 and use the file name to find and attach to DB models. For example look up a product, by it's '''SKU''',
 based on the **SKU being present the image filename**, and attache that image to the product's '''images''' association
 
-Supports export of all association types, in either hash or json formats.
+Export association data inline, in either hash or json formats, covering all association types.
 
 Association types to include/exclude can be set in configuration as well as speciifc columsn to exclude.
 
 Rails standard columns such as id, created_at etc can also be easily excluded via Configuration.
 
+#### <a name="Configuration">Configuration</a>
+
+You can now configure datashift options with a typical initialisation block, for example
+
+```ruby
+DataShift::Configuration.call do |c|
+  c.verbose = false
+  c.remove_columns = [:milestones, :versions]
+  c.remove_rails = true
+  c.with = :all
+end
+ ```
+
+See lib/datashift/configuration.rb for all the options
+
+Imports/export can also be directed from YAML configuration file, to setup 
+column mappings, transformations and custom methods for columns/data that require non trivial processing.
+    
+There is a generator, to create a skeleton configuration file template for you :
+
+```ruby
+thor help datashift:generate:config:import
+```
+
+##### Transformations
+
 Set default values, substitutions and transformations per column for Imports.
 
-Generate sample templates, with only headers.
+```ruby
+        DataShift::Transformation.factory do |factory|
+          factory.set_default_on(Project, 'value_as_string',  'some default text' )
+          factory.set_default_on(Project, 'value_as_double',   45.467 )
+          factory.set_default_on(Project, 'value_as_boolean',  true )
+          factory.set_default_on(Project, 'value_as_datetime', Time.now )
+        end
+```
 
-Export template and populate with model data.
+  N.B The operator/column (2nd parameter) must match the inbound HEADER
+ 
+  For example given a header **SKU**, for a class with real operator `sku=`, even though we know assignment will eventually
+  use `sku=` this will not work :
+       `factory.set_prefix_on(Spree::Product, 'sku', 'SPEC_')`
+      
+  
+  But this will set the right prefix, because the header in the FILE is SKU 
+      
+      `factory.set_prefix_on(Spree::Product, 'SKU', 'SPEC_')`
+      
 
 #### <a name="ImportCLI">Active Record - Import CLI</a>
 
@@ -140,53 +185,33 @@ via either multiple columns, or via single column containing multiple entries in
 
 See Wiki for more details on DSL syntax.
 
-#### <a name="Configuration">Configuration</a>
+##### Paperclip
 
-You can now configure datashift with a standard initialisation block
+The loaded content is automatically attached to the model containing the `has_attached_file` directive.
 
-To generate a configuration file template, for import see
+Matching to this right attachment model instance, is performed using the filename.
 
-```ruby
-thor help datashift:generate:config:import
-```
+The database field to match on, and the filename matching pattern are all configurable.
+
 
 ### <a name="Testing">Testing</a>
 
-    Specs run against a rails sandbox app, so have own Gemfile, so you can specify versions of 
-    active record that you want  specs to run against :
+Specs need to run against a Rails sandbox app. 
 
-    Edit
-
-```ruby
-spec/Gemfile.
-```
-
-    Then run :
-
-```ruby
-    cd spec
-    bundle install
-```
-
+A sandbox will be generated in `spec/dummy` if no such directory exists.
+    
+There are spec helpers to build the dummy app, via shelling out to `rails new`
+ 
+The rails version used will be based on the latest you have installed, via the gemspec.
+ 
 #### Changing Versions
-
-    A sandbox will be generated in spec/sandbox if no such directory exists.
+ 
+To test different versions *update the gemspec* and run `bundle update rails`
 
     **N.B Manual Step**
-    When changing versions you probably need to **delete this whole directory**  spec/sandbox. Next time you run spree specs it will be auto generated using latest Rails versions
-
-    The database are created in sqlite3 and are stored in spec/fixtures. When switching versions, of say Spree,
-     you will probably want to and to clear out old versions and retrigger the migrations
-
-        rm spec/fixtures/*.sqlite
-
-    You will probably also want to remove lock file :
-
-        rm spec/Gemfile.lock
-
-    First time the sandbox is regenerated, alot of tests may fail,perhaps not everything loads correctly during regeneration process.
-
-    Invariably the next run, the specs pass, so a fix is low priority.
+    When changing versions you should **delete this whole directory**  `spec/dummy`
+     
+    Next time you run rspec it will auto generate a new dummy app using latest Rails versions
 
 #### Run the Tests
 

@@ -22,6 +22,7 @@ module DataShift
     attr_reader :inbound_column
 
     delegate :source, to: :inbound_column, allow_nil: true
+    delegate :index, to: :inbound_column, allow_nil: true
 
     # Is this method detail a valid mapping, aids identifying unmapped/unmappable columns
     attr_accessor :valid
@@ -60,16 +61,8 @@ module DataShift
       model_method.klass.name
     end
 
-    def inbound_name
-      inbound_column.source
-    end
-
-    def inbound_index
-      inbound_column.index
-    end
-
     def add_column_data(data)
-      inbound_column.data << data
+      inbound_column.data << data if(inbound_column)
     end
 
     # Example :
@@ -89,7 +82,7 @@ module DataShift
         inbound_column.add_lookup(association.klass, field, value)
         logger.info("Complex Lookup specified for [#{model_method.operator}] : on field [#{field}] (optional value [#{value}])")
       else
-        logger.error("Check MethodBinding [#{inbound_name}](#{inbound_index}) - Association field names are case sensitive")
+        logger.error("Check MethodBinding [#{source}](#{index}) - Association field names are case sensitive")
         raise NoSuchOperator.new("Field [#{field}] Not Found on Association [#{model_method.operator}] within Class #{klass.name}")
       end
     end
@@ -103,11 +96,32 @@ module DataShift
     end
 
     def pp
-      "Binding: Column [#{inbound_index}] : Header [#{inbound_name}] : Operator [#{model_method.operator}]"
+      "Binding: Column [#{index}] : Header [#{source}] : Operator [#{model_method.operator}]"
     end
 
     def spp
-      "Column [#{inbound_index}] : Header [#{inbound_name}]"
+      "Column [#{index}] : Header [#{source}]"
+    end
+
+  end
+
+  class InternalMethodBinding < MethodBinding
+
+    # Store an internal custom Operator to be called on klass
+    # Enables data to be set on a klass when no header/inbound data present
+    # For example to set default data, or for custom processing of inbound data
+
+    def initialize(model_method)
+      @model_method = model_method
+      @valid = true
+    end
+
+    def index
+      nil
+    end
+
+    def source
+      :internal
     end
 
   end
@@ -131,7 +145,7 @@ module DataShift
     end
 
     def pp
-      "No Binding Found : Row [#{inbound_index}] : Header [#{inbound_name}]"
+      "No Binding Found : Row [#{index}] : Header [#{source}]"
     end
 
   end

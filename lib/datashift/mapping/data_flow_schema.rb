@@ -100,8 +100,13 @@ module DataShift
       model_methods
     end
 
+    # Supports YAML with optional ERB snippets
+    #
+    # See Config generation or lib/datashift/templates/import_export_config.erb for full syntax
+    #
     def prepare_from_file(file_name, locale_key = 'data_flow_schema')
-      @raw_data = File.read(file_name)
+      @raw_data = ERB.new(File.read(file_name)).result
+
       yaml = YAML.load(raw_data)
 
       prepare_from_yaml(yaml, locale_key)
@@ -109,7 +114,7 @@ module DataShift
 
     def prepare_from_string(text, locale_key = 'data_flow_schema')
       @raw_data = text
-      yaml = YAML.load(text)
+      yaml = YAML.load(raw_data)
 
       prepare_from_yaml(yaml, locale_key)
     end
@@ -136,59 +141,63 @@ module DataShift
 
       DataShift::Transformation.factory { |f| f.configure_from_yaml(class_name, klass_section) }
 
-      yaml_nodes = klass_section['nodes']
+      if(klass_section && klass_section.has_key?('nodes'))
 
-      logger.info("Read Data Schema Nodes: #{yaml_nodes.inspect}")
+        yaml_nodes = klass_section['nodes']
 
-      unless(yaml_nodes.is_a?(Array))
-        Rails.logger.error('Bad syntax in flow schema YAML - Nodes should be a sequence')
-        raise 'Bad syntax in flow schema YAML - Nodes should be a sequence'
-      end
+        logger.info("Read Data Schema Nodes: #{yaml_nodes.inspect}")
 
-      model_method_mgr = ModelMethods::Manager.catalog_class(klass)
-
-      yaml_nodes.each_with_index do |keyed_node, i|
-
-        unless(keyed_node.keys.size == 1)
-          Rails.logger.error('Bad syntax in flow schema YAML - Section should be keyed hash')
-          raise 'Bad syntax in flow schema YAML - Section should be keyed hash'
+        unless(yaml_nodes.is_a?(Array))
+          Rails.logger.error('Bad syntax in flow schema YAML - Nodes should be a sequence')
+          raise 'Bad syntax in flow schema YAML - Nodes should be a sequence'
         end
 
-        # data_flow_schema:
-        #   Project:
-        #     nodes:
-        #       - project:
-        #           heading:
-        #             source: "title"
-        #             presentation: "Title"
-        #           operator: title
-        #           operator_type: has_many
-        #
-        logger.info("Node Data: #{keyed_node.inspect}")
+        model_method_mgr = ModelMethods::Manager.catalog_class(klass)
 
-        # type one of ModelMethod.supported_types_enum
-        section = keyed_node.values.first
+        yaml_nodes.each_with_index do |keyed_node, i|
 
-        if(section['operator'])
-          # Find the domain model method details
-          model_method = model_method_mgr.search(section['operator'])
-
-          unless model_method
-            operator_type = section['operator_type'] || :method
-
-            model_method = model_method_mgr.insert(section['operator'], operator_type)
+          unless(keyed_node.keys.size == 1)
+            raise ConfigFormatError, "Bad syntax in flow schema YAML - Section #{keyed_node} should be keyed hash"
           end
+
+          # data_flow_schema:
+          #   Project:
+          #     nodes:
+          #       - project:
+          #           heading:
+          #             source: "title"
+          #             presentation: "Title"
+          #           operator: title
+          #           operator_type: has_many
+          #
+          logger.info("Node Data: #{keyed_node.inspect}")
+
+          # type one of ModelMethod.supported_types_enum
+          section = keyed_node.values.first
+
+          source = section.fetch('heading', {}).fetch('source', nil)
+
+          doc.headers.add( source ) if(source)
+
+          if(section['operator'])
+            # Find the domain model method details
+            model_method = model_method_mgr.search(section['operator'])
+
+            unless model_method
+              operator_type = section['operator_type'] || :method
+
+              model_method = model_method_mgr.insert(section['operator'], operator_type)
+            end
+
+            method_binding = InternalMethodBinding.new(model_method)
+          end
+
+          method_binding ||= MethodBinding.new(source, i, model_method)
+
+          node = DataShift::NodeContext.new(doc, method_binding, i, nil)
+
+          nodes << node
         end
-
-        source = section.fetch('heading', {}).fetch('source', nil)
-
-        doc.headers.add( source )
-
-        method_binding = MethodBinding.new(source, i, model_method)
-
-        node = DataShift::NodeContext.new(doc, method_binding, i, nil)
-
-        nodes << node
       end
 
       nodes

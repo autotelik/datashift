@@ -4,7 +4,7 @@
 #
 # Details::   Specs around Transforming inbound data
 #
-require 'spec_helper'
+require File.join(File.dirname(__FILE__), '/../../spec_helper')
 
 module  DataShift
 

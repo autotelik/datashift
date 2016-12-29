@@ -25,6 +25,8 @@ module DataShift
 
     attr_accessor :progress_monitor, :reporters
 
+    delegate :loaded_count, :failed_count, :processed_object_count, to: :progress_monitor
+
     def initialize( klass )
       reset_klass(klass)
 
@@ -62,15 +64,6 @@ module DataShift
     def all_or_nothing?
       true
       # TODO: - read in from configration
-    end
-
-    # TOFIX - use delegation to doc_context.progress_monitor
-    def loaded_count
-      progress_monitor.loaded_count
-    end
-
-    def failed_count
-      progress_monitor.failed_count
     end
 
     def current_errors

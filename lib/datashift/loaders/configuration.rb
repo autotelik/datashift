@@ -37,7 +37,6 @@ module DataShift
       attr_writer :header_row
 
       def initialize
-        @mandatory = []
         @allow_empty_rows = false
         @abort_on_failure = false
         @destroy_on_failure = true
@@ -76,13 +75,7 @@ module DataShift
         yield call
       end
 
-      # Modify DataShift's current Import configuration from an options hash
 
-      def self.from_hash( options )
-        DataShift::Loaders::Configuration.configure do |config|
-          config.mandatory = options[:mandatory] if(options[:mandatory])
-        end
-      end
 
     end
   end

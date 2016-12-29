@@ -7,14 +7,10 @@ module DataShift
     include DataShift::TestHelpers
     extend DataShift::TestHelpers
 
-
     def self.sandbox_gem_list
       add_gem 'datashift', path:  File.expand_path('../../..', __FILE__)
       add_gem 'awesome_print'
       add_gem 'factory_girl_rails'
-
-      # we use this to help gen the sandbox
-      add_gem 'active_scaffold'
     end
 
     def self.rails_sandbox_path
@@ -32,49 +28,48 @@ module DataShift
         FileUtils.rm_rf(sandbox)
       end
 
+      sandbox_parent_dir =  File.expand_path( "#{sandbox}/.." )
 
       if File.exist?(sandbox)
         puts "RSPEC - Found and using existing Rails sandbox [#{sandbox}]"
       else
 
-        sandbox_exe_path =  File.expand_path( "#{sandbox}/.." )
+        puts "RSPEC SANDBOX - Creating new Rails sandbox in : #{sandbox_parent_dir}"
 
-        puts "RSPEC - Creating new Rails sandbox in : #{sandbox_exe_path}"
+        run_in( sandbox_parent_dir ) do
+          puts "RSPEC DUMMY - Sandbox created with Rails VERSION : #{system('rails -v')}"
+          system('rails new ' + File.basename(rails_sandbox_path))
+        end
 
-        run_in( sandbox_exe_path ) do |_path|
-          name = File.basename(rails_sandbox_path)
+        puts "RSPEC SANDBOX - Configuring gems and DB in rails sandbox Gemfile"
 
-          system('rails new ' + name)
-
-          puts 'Copying over models :', Dir.glob(File.join(fixtures_path, 'models', '*.rb')).inspect
-
-          FileUtils.cp_r( Dir.glob(File.join(fixtures_path, 'models', '*.rb')), File.join(name, 'app/models'))
+        run_in(rails_sandbox_path) do
+          sandbox_gem_list
+          system("cat #{File.join(rails_sandbox_path, 'Gemfile')}")
 
           migrations = File.expand_path(File.join(fixtures_path, 'db', 'migrate'), __FILE__)
           FileUtils.cp_r( migrations, File.join(rails_sandbox_path, 'db'))
 
-          FileUtils.cp_r( File.join(fixtures_path, 'sandbox_example.thor'), rails_sandbox_path)
-
-          factories = File.expand_path(File.join(fixtures_path, '..', 'factories'), __FILE__)
-
-          FileUtils.cp_r( factories, rails_sandbox_path)
-
           seeds = File.expand_path(File.join(fixtures_path, 'db', 'seeds.rb'), __FILE__)
           FileUtils.cp_r( seeds, File.join(rails_sandbox_path, 'db'))
-
-        end
-
-        puts 'Configuring gems in rails sandbox Gemfile'
-
-        run_in(rails_sandbox_path) do
-          sandbox_gem_list
-
-          system("cat #{File.join(rails_sandbox_path, 'Gemfile')}")
         end
 
         setup_db_install
-
       end
+
+      # Copy over the latest versions to pick up any local development during testing
+      run_in( sandbox_parent_dir ) do
+        name = File.basename(rails_sandbox_path)
+
+        puts "RSPEC DUMMY - Copying models from #{Dir.glob(File.join(fixtures_path, 'models'))}"
+
+        FileUtils.cp_r( Dir.glob(File.join(fixtures_path, 'models', '*.rb')), File.join(name, 'app/models'))
+
+        FileUtils.cp_r( File.join(fixtures_path, 'sandbox_example.thor'), rails_sandbox_path)
+      end
+
+      puts "RSPEC DUMMY - Build Complete"
+
       sandbox
     end
 
@@ -110,7 +105,7 @@ module DataShift
         threads = []
 
         Dir.glob(File.join(fixtures_path, 'models', '*.rb')).each do |m|
-          threads << Thread.new { system("RAILS_ENV=development bundle exec rails g active_scaffold #{File.basename(m, '.*')}") }
+          threads << Thread.new { system("RAILS_ENV=development bundle exec rails g scaffold #{File.basename(m, '.*')}") }
 
           threads << Thread.new { system("RAILS_ENV=development bundle exec rails g resource_route #{File.basename(m, '.*')}") }
         end

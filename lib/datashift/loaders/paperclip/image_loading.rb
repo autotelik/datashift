@@ -49,6 +49,8 @@ module DataShift
         populator.prepare_and_assign(attach_to_record_field, record, attachment)
       end
 
+      attachment
+
     end
 
     # Set of file extensions ImageMagik can process so default glob

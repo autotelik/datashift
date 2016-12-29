@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.homepage = 'http://github.com/autotelik/datashift'
   s.summary = 'Shift data between Excel/CSV and any Ruby app'
   s.description = 'Comprehensive import/export tools between Excel/CSV & ActiveRecord Databases, Rails apps, and any Ruby project.'
-  s.license     = 'Open Source - MIT'
+  s.license     = 'MIT'
 
   s.required_ruby_version = '~> 2.0'
 

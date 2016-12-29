@@ -7,11 +7,14 @@
 #
 #
 require 'thor'
+require_relative 'thor_behaviour'
 
 # Note, for thor not DataShift, case sensitive, want namespace for cmd line to be : datashift
 module Datashift
 
   class Export < Thor
+
+    include DataShift::ThorBehavior
 
     class_option :associations, aliases: '-a',
                  type: :boolean,
@@ -43,7 +46,6 @@ module Datashift
     method_option :model, :aliases => '-m', :required => true, desc: "The active record model to export"
     method_option :result, :aliases => '-r', :required => true, desc: "Create template of model in supplied file"
     method_option :sheet_name, :type => :string, desc: "Name to use for Excel worksheet instead of model name"
-
 
     def excel()
       start_connections

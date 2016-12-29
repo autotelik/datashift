@@ -30,28 +30,24 @@ module DataShift
 
     def_delegators :doc_context,
                    :load_object,
-                   :loaded_count, :failed_count,
+                   :loaded_count, :failed_count, :processed_object_count,
                    :headers, :reporters, :reporters=
-
-    attr_reader :configuration
 
     def initialize
       @file_name = ''
 
       @doc_context = DocContext.new(Object)
       @binder      = Binder.new
-
-      @configuration = DataShift::Loaders::Configuration.call
     end
 
     def setup_load_class(load_class)
       @doc_context = DocContext.new( MapperUtils.ensure_class(load_class) )
     end
 
-    def run(file_name, object_class)
+    def run(file_name, load_class)
       @file_name = file_name
 
-      setup_load_class(object_class)
+      setup_load_class(load_class)
 
       logger.info("Loading objects of type #{load_object_class}")
 
@@ -66,7 +62,7 @@ module DataShift
     end
 
     def abort_on_failure?
-      !! configuration.abort_on_failure
+      !! DataShift::Configuration.call.abort_on_failure
     end
 
     def load_object_class
@@ -89,11 +85,6 @@ module DataShift
     # Given a list of free text column names from inbound headers,
     # map all headers to a domain model containing details on operator, look ups etc.
     #
-    # See configuration options
-    #
-    #    [:ignore]          : List of column headers to ignore when building operator ma
-    #    [:include_all]     : Include all headers in processing - takes precedence of :force_inclusion
-    #
     def bind_headers( headers )
 
       logger.info("Binding #{headers.size} inbound headers to #{load_object_class.name}")
@@ -110,12 +101,15 @@ module DataShift
 
       unless binder.missing_bindings.empty?
         logger.warn("Following headings couldn't be mapped to #{load_object_class}:")
-        binder.missing_bindings.each { |m| logger.warn("Heading [#{m.inbound_name}] - Index (#{m.inbound_index})") }
+        binder.missing_bindings.each { |m| logger.warn("Heading [#{m.source}] - Index (#{m.index})") }
 
-        raise MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}" if configuration.strict
+        if DataShift::Configuration.call.strict_inbound_mapping
+          raise MappingDefinitionError, "Missing mappings for columns : #{binder.missing_bindings.join(',')}"
+        end
+
       end
 
-      mandatory = DataShift::Mandatory.new(configuration.mandatory)
+      mandatory = DataShift::Mandatory.new(DataShift::Configuration.call.mandatory)
 
       unless mandatory.contains_all?(binder)
         mandatory.missing_columns.each do |er|
@@ -141,7 +135,9 @@ module DataShift
     #    LoaderClass:
     #     option: value
     #
-    def configure_from(yaml_file)
+    def configure_from(yaml_file, klass = nil, locale_key = 'data_flow_schema')
+
+      setup_load_class(klass) if(klass)
 
       logger.info("Reading Datashift loader config from: #{yaml_file.inspect}")
 
@@ -153,9 +149,16 @@ module DataShift
 
       @config.merge!(data[self.class.name]) if data[self.class.name]
 
-      DataShift::Transformation.factory { |f| f.configure_from(load_object_class, yaml_file) }
+      @binder ||= DataShift::Binder.new
 
-      ContextFactory.configure(load_object_class, yaml_file)
+      data_flow_schema = DataShift::DataFlowSchema.new
+
+      # Includes configuring DataShift::Transformation
+      nodes = data_flow_schema.prepare_from_file(yaml_file, locale_key)
+
+      @binder.add_bindings_from_nodes( nodes )
+
+      PopulatorFactory.configure(load_object_class, yaml_file)
 
       logger.info("Loader Options : #{@config.inspect}")
     end

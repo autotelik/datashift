@@ -62,8 +62,8 @@ module  DataShift
         binding = loader.binder.bindings[1]
 
         expect(binding.valid?).to eq true
-        expect(binding.inbound_index).to eq 1
-        expect(binding.inbound_name).to eq 'Value as Text'
+        expect(binding.index).to eq 1
+        expect(binding.source).to eq 'Value as Text'
         expect(binding.operator).to eq 'value_as_text'
 
         expect(Project.new.respond_to?(binding.operator)).to eq true
@@ -167,10 +167,10 @@ module  DataShift
         expect { loader.run(expected, Project) }.to_not raise_error
       end
 
-      it 'should NOT process excel spreadsheet with extra undefined columns when strict mode' do
+      it 'should NOT process excel spreadsheet with extra undefined columns when strict_inbound_mapping true' do
         expected = ifixture_file('BadAssociationName.xls')
 
-        loader.configuration.strict = true
+        DataShift::Configuration.call.strict_inbound_mapping = true
 
         expect { loader.run(expected, Project) }.to raise_error(MappingDefinitionError)
       end
@@ -180,7 +180,7 @@ module  DataShift
 
         expect {
 
-          loader.configuration.mandatory = %w(not_an_option must_be_there)
+          DataShift::Configuration.call.mandatory = %w(not_an_option must_be_there)
 
           loader.run(expected, Project)
         }.to raise_error(DataShift::MissingMandatoryError)
@@ -246,49 +246,5 @@ module  DataShift
       end
     end
 
-    context 'external configuration of loader' do
-      let(:expected)  { ifixture_file('ProjectsSingleCategories.xls') }
-
-      before(:each) do
-        DataShift::Transformation.factory.clear
-        loader.setup_load_class(Project)
-
-        loader.configure_from( ifixture_file('ProjectConfiguration.yml') )
-
-        expect(Project.where(title: '099').first).to be_nil
-
-        loader.run(expected, Project)
-      end
-
-      it 'should provide facility to set DEFAULT values via YAML configuration', duff: true  do
-        loader.run(expected, Project)
-
-        p = Project.find_by_title( '099' )
-
-        expect(p).to_not be_nil
-
-        # yaml has snippet to set Time to 'now' .. at least match the date part
-        expect(p.value_as_datetime.to_s).to include(Date.today.to_s)
-      end
-
-      it 'should combine PREFIX and POSTFIX transformations set via YAML configuration' do
-        p = Project.find_by_title( '099' )
-
-        expect(p).to_not be_nil
-
-        expect(p.value_as_string).to eq 'prefix me every-time Default Project Value postfix me every-time'
-      end
-
-      it 'should provide facility to OVER RIDE values via YAML configuration' do
-
-        expected = DataShift::Transformation.factory.overrides_for(Project)[:value_as_double]
-
-        Project.all.each { |p|
-          # TOFIX - the scale of the DB column from migration is 4 -- can we get that dynamically ?
-          expect(p.value_as_double).to be_within(0.0001).of(expected)
-        }
-      end
-
-    end
   end
 end

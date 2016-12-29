@@ -2,24 +2,10 @@
 # Author ::   Tom Statter
 # License::   MIT
 #
-# Details::   Creates, configures and caches objects for use by current context
-#
-# SomeModule::MyAboutToBeLoadedClass:
-#     datashift_defaults:
-#       password: 'ns_spree_123'
-#       available_on: <%= Time.now.to_s(:db) %>
-#       shipping_category: 'Default'
-#       phone: '9999999999'
-#
-#     datashift_substitutions:
-#       order: ['#', 'NUMBER-']
-#       "Lineitems": ['10PAC', '5PAC']
-#
-#     datashift_populators:
-#       promo_code: PromoCodePopulator
+# Details::   Creates, configures and caches Populator objects for use by current context
 #
 module DataShift
-  class ContextFactory
+  class PopulatorFactory
 
     class << self; attr_accessor :config end
 

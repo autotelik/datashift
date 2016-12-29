@@ -23,6 +23,8 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 #
+require 'forwardable'
+
 require_relative 'datashift/guards'
 require_relative 'datashift/logging'
 
@@ -63,10 +65,10 @@ module DataShift
     begin
       require_relative 'datashift/delimiters'
       require_relative 'datashift/load_object'
-      require_relative 'generators/generator_base'
-      require_relative 'loaders/reporters/reporter'
-      require_relative 'loaders/loader_base'
-      require_relative 'exporters/exporter_base'
+      require_relative 'datashift/generators/generator_base'
+      require_relative 'datashift/loaders/reporters/reporter'
+      require_relative 'datashift/loaders/loader_base'
+      require_relative 'datashift/exporters/exporter_base'
     rescue => x
       puts "Problem initializing gem #{x.inspect}"
     end
@@ -78,12 +80,13 @@ module DataShift
       datashift/model_methods
       datashift/transformation
       datashift/inbound_data
-      loaders
-      loaders/reporters
-      exporters
-      generators
-      helpers
-      applications
+      datashift/loaders
+      datashift/loaders/reporters
+      datashift/exporters
+      datashift/generators
+      datashift/helpers
+      datashift/applications
+      datashift/populators
     )
 
     require_libs.each do |base|
@@ -116,10 +119,10 @@ module DataShift
     Dir["#{base}/*.rake"].sort.each { |ext| load ext }
   end
 
-  # Load all the datashift Thor commands and make them available throughout app
+  # Load all public datashift Thor commands and make them available throughout app
 
   def self.load_commands
-    base = File.join(library_path, 'tasks', '**')
+    base = File.join(library_path, 'tasks')
 
     Dir["#{base}/*.thor"].each do |f|
       next unless File.file?(f)
