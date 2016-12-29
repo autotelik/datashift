@@ -13,41 +13,16 @@
 #
 #
 require 'thor'
+require_relative 'thor_behaviour'
 
 require 'csv_generator'
 
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
-
 module Datashift
 
   class Generate  < Thor
 
-    include DataShift::Logging
-
-    class_option :associations, aliases: '-a',
-                 type: :boolean,
-                 desc: 'Include associations. Can be further refined by :with & :exclude'
-
-    class_option :expand_associations, type: :boolean,
-                 desc: 'Expand association data to multiple columns i.e 1 column per attribute'
-
-    class_option :methods, type: :array,
-                 desc: 'List of additional methods to call on model, useful for situations like delegated methods'
-
-    class_option :with, type: :array,
-                 desc: "Restrict association types. Choose from #{DataShift::ModelMethod.supported_types_enum.inspect}"
-
-    class_option :exclude, type: :array,
-                 desc: "Exclude association types. Choose from #{DataShift::ModelMethod.supported_types_enum.inspect}"
-
-    class_option :remove,  type: :array,
-                 desc: "Don't include this list of supplied fields"
-
-    class_option :remove_rails, type: :boolean,
-                 desc: "Remove standard Rails cols :  #{DataShift::Configuration.rails_columns.inspect}"
-
-    class_option :json, type: :boolean,
-                 desc: 'Export association data as json rather than hash'
+    include DataShift::ThorBehavior
 
     desc "excel", "generate a template from an active record model (with optional associations)"
 
@@ -141,21 +116,6 @@ module Datashift
 
     no_commands do
 
-      def start_connections
-
-        if File.exist?(File.expand_path('config/environment.rb'))
-          begin
-            require File.expand_path('config/environment.rb')
-          rescue => e
-            logger.error("Failed to initialise ActiveRecord : #{e.message}")
-            raise ConnectionError.new("Failed to initialise ActiveRecord : #{e.message}")
-          end
-
-        else
-          raise PathError.new('No config/environment.rb found - cannot initialise ActiveRecord')
-        end
-      end
-
       def generate(generater)
         model = options[:model]
         result = options[:result]
@@ -187,4 +147,5 @@ module Datashift
     end   # no_commands
 
   end
+
 end

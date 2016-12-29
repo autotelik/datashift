@@ -9,8 +9,8 @@
 #
 #             Enables users to assign values to AR object, without knowing much about that receiving object.
 #
-require_relative 'populators/has_many'
-require_relative 'populators/insistent_assignment'
+require_relative 'has_many'
+require_relative 'insistent_assignment'
 
 module DataShift
 
@@ -82,15 +82,15 @@ module DataShift
     #
     # Rtns : tuple of [:value, :attribute_hash]
     #
-    def prepare_data(method_binding, data)
 
-      connection_adapter_column = method_binding.model_method.connection_adapter_column
+    def prepare_data(method_binding, data)
 
       raise NilDataSuppliedError, 'No method_binding supplied for prepare_data' unless method_binding
 
       @original_data = data
 
       begin
+        model_method = method_binding.model_method
 
         if(data.is_a?(ActiveRecord::Relation)) # Rails 4 - query no longer returns an array
           @value = data.to_a
@@ -103,7 +103,7 @@ module DataShift
 
           @value = data.value # TOFIX jruby/apache poi equivalent ?
 
-        elsif(connection_adapter_column && connection_adapter_column.cast_type.is_a?(ActiveRecord::Type::Boolean))
+        elsif( model_method.can_cast? && model_method.cast_type.is_a?(ActiveRecord::Type::Boolean))
 
           # DEPRECATION WARNING: You attempted to assign a value which is not explicitly `true` or `false` ("0.00")
           # to a boolean column. Currently this value casts to `false`.

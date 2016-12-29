@@ -32,7 +32,7 @@ describe 'MapperUtils' do
   end
 
   it 'should throw when invalid class supplied' do
-    expect { DataShift::MapperUtils.ensure_class("Proj") }.to raise_error
+    expect { DataShift::MapperUtils.ensure_class("Proj") }.to raise_error DataShift::NoSuchClassError
   end
 
 end

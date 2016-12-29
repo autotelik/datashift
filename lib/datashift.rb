@@ -65,10 +65,10 @@ module DataShift
     begin
       require_relative 'datashift/delimiters'
       require_relative 'datashift/load_object'
-      require_relative 'generators/generator_base'
-      require_relative 'loaders/reporters/reporter'
-      require_relative 'loaders/loader_base'
-      require_relative 'exporters/exporter_base'
+      require_relative 'datashift/generators/generator_base'
+      require_relative 'datashift/loaders/reporters/reporter'
+      require_relative 'datashift/loaders/loader_base'
+      require_relative 'datashift/exporters/exporter_base'
     rescue => x
       puts "Problem initializing gem #{x.inspect}"
     end
@@ -80,12 +80,13 @@ module DataShift
       datashift/model_methods
       datashift/transformation
       datashift/inbound_data
-      loaders
-      loaders/reporters
-      exporters
-      generators
-      helpers
-      applications
+      datashift/loaders
+      datashift/loaders/reporters
+      datashift/exporters
+      datashift/generators
+      datashift/helpers
+      datashift/applications
+      datashift/populators
     )
 
     require_libs.each do |base|

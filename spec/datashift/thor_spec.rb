@@ -38,10 +38,80 @@ module DataShift
       end
 
       it "tasks have been instantiated" do
-        expect(Datashift.constants.include?(:Import)).to be
-
         expect(Datashift::Generate.new).to be
-        expect(Datashift::Config.new).to be
+        expect(Datashift::Config.constants.include?(:Generate)).to be_truthy
+        expect(Datashift::Config::Generate.new).to be
+        expect(Datashift::Export.new).to be
+        expect(Datashift.constants.include?(:Import)).to be
+        expect(Datashift::Generate.new).to be
+        expect(Datashift::Paperclip.new).to be
+      end
+
+    end
+
+    context 'Import CLI' do
+
+      before(:all) do
+        DataShift.load_commands
+      end
+
+      before(:each) do
+        results_clear
+      end
+
+      it 'should generate skeleton import config for a model' do
+        expected = File.join(results_path, 'thor_spec_project_config.yaml')
+
+        expect(File.exists?(expected)).to eq false
+
+        #t datashift:config:import -m Spree::Variant -r /tmp
+
+        run_in(rails_sandbox_path) do
+          options = ['--model', 'Project', '--result', File.join(results_path, 'thor_spec_project_config.yaml')]
+
+          output = capture_stream(:stdout) { Datashift::Config::Generate.new.invoke(:import, [], options) }
+
+          puts output
+          expect(File.exists?(expected)).to eq true
+          expect(output).to include('Creating new configuration file')
+        end
+      end
+
+      it 'should provide tasks to import data from a CSV file', duff: true do
+
+        pending "Seems to be no way to set class options for invoke"
+        # datashift:generate:config:import -m Spree::Product -p ~/blah.yaml
+
+        cmd = ['--model', 'Project', '--result', results_path.to_s]
+
+        #options = { 'model' => 'Project', 'input' => results_path.to_s}
+
+        output = capture_stream(:stdout) {
+        # byebug
+         #Datashift::Import.class_options(options)
+         Datashift::Import.new.invoke(:csv, [], cmd)
+        }
+      end
+    end
+
+    context 'Generate CLI' do
+      before(:each) do
+        results_clear
+      end
+      it 'should list available datashift thor tasks' do
+        x = run_in(rails_sandbox_path) do
+          capture_stream(:stdout){ require 'datashift' ; Thor::Runner.start(["list"]) }
+        end
+
+        expect(x).to start_with("datashift\n--------")
+
+        expect(x).to include "csv"
+        expect(x).to include "excel"
+        expect(x).to include "csv"
+      end
+
+      it "tasks have been instantiated" do
+        expect(Datashift.constants.include?(:Import)).to be
         expect(Datashift::Export.new).to be
         expect(Datashift::Import.new).to be
         expect(Datashift::Generate.new).to be
@@ -127,7 +197,7 @@ module DataShift
         # Writes one file per model into a PATH
         expected_path =  results_path
 
-        args = ['--model', 'Project', '--result', expected_path, '--associations']
+        args = ['--path', expected_path, '--associations']
 
         run_in(rails_sandbox_path) do
 
@@ -175,23 +245,6 @@ module DataShift
 
       before(:each) do
         clear_everything
-      end
-
-      it 'should run datashift:config:import - generate skeleton import config for a model' do
-        expected = result_file('thor_spec_project_config.yaml')
-
-        expect(File.exists?(expected)).to eq false
-
-        #t datashift:config:import -m Spree::Variant -r /tmp
-
-        run_in(rails_sandbox_path) do
-          options = ['--model', 'Project', '--result', expected]
-
-          output = capture_stream(:stdout) { Datashift::Config.new.invoke(:import, [], options) }
-
-          expect(File.exists?(expected)).to eq true
-          expect(output).to include('Creating new configuration file')
-        end
       end
 
       it 'should run datashift:import:csv to import data from a CSV file' do
