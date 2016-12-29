@@ -5,14 +5,12 @@ FactoryGirl.define do
     first_name 'ben'
   end
 
-  factory :owner do
-    name 'i am the owner'
-    budget 10000.23
-  end
-
-
   factory :loader_release do
     sequence(:name) { |n| "Loader Release V#{n}" }
+
+    project
+
+    version
   end
 
 end

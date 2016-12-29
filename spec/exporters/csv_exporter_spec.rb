@@ -157,13 +157,13 @@ module DataShift
     end
 
     context 'with associations' do
-      let(:basic_projects) { 7 }
+      let(:project_create_count) { 7 }
 
       let(:expected) { result_file('exp_project_plus_assoc_export_spec.csv') }
 
       before(:each) do
         @user = create( :project_with_user ).user
-        create_list(:project, basic_projects)
+        create_list(:project, project_create_count)
       end
 
       before(:each) do
@@ -175,13 +175,14 @@ module DataShift
       end
 
       it 'should export a model and associations to a file' do
+        expect(Project.count).to be > project_create_count
         exporter.export_with_associations(expected, Project, Project.all)
 
         expect(File.exist?(expected)).to eq true
 
         File.foreach(expected) {}
         count = $INPUT_LINE_NUMBER
-        expect(count).to eq basic_projects + 2
+        expect(count).to eq Project.count + 1
       end
 
       it 'should include headers and association names in row 0' do

@@ -143,7 +143,7 @@ module  DataShift
         expect( excel[last_idx, owner_idx] ).to include '10000.23'
       end
 
-      it 'should export associations in hash format by default to .xls file' do
+      it 'should export associations in hash format by default to .xls file', fail: true do
 
         expected = result_file('project_and_assoc_in_hash_export.xls')
 
@@ -154,15 +154,12 @@ module  DataShift
         excel = Excel.new
         excel.open(expected)
 
-        milestone_inx = excel.row(0).index 'milestones'
+        row_with_milestone_data = find_row_with_milestone(excel)
 
-        # project_with_milestones has real associated user data
-        last_row_idx = Project.count
-
-        expect( excel[1, milestone_inx].to_s ).to include ColumnPacker.multi_assoc_delim
-        expect( excel[1, milestone_inx].to_s ).to include '{'
-        expect( excel[1, milestone_inx].to_s ).to match(/name: milestone/)
-        expect( excel[1, milestone_inx].to_s ).to match(/project_id: \d+/)
+        expect( row_with_milestone_data ).to include ColumnPacker.multi_assoc_delim
+        expect( row_with_milestone_data ).to include '{'
+        expect( row_with_milestone_data ).to match(/name: milestone/)
+        expect( row_with_milestone_data ).to match(/project_id: \d+/)
       end
 
       it 'should export a model and  assocs in json to .xls file' do
@@ -180,13 +177,24 @@ module  DataShift
         excel = Excel.new
         excel.open(expected)
 
+        row_with_milestone_data = find_row_with_milestone(excel)
+
+        expect( row_with_milestone_data ).to include '['
+        expect( row_with_milestone_data ).to match(/name\":\"milestone/)
+        expect( row_with_milestone_data ).to match(/"project_id":\d+/)
+      end
+
+      def find_row_with_milestone(excel)
         milestone_inx = excel.row(0).index 'milestones'
 
-        last_row_idx = Project.count
+        idx_milestone_data = 1
 
-        expect( excel[1, milestone_inx].to_s ).to include '['
-        expect( excel[1, milestone_inx].to_s ).to match(/name\":\"milestone/)
-        expect( excel[1, milestone_inx].to_s ).to match(/"project_id":\d+/)
+        while(idx_milestone_data < Project.count) do
+          break if excel[idx_milestone_data, milestone_inx].to_s.present?
+          idx_milestone_data += 1
+        end
+
+        excel[idx_milestone_data, milestone_inx].to_s
       end
     end
   end

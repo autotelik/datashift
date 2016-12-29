@@ -45,4 +45,14 @@ RSpec.configure do |config|
   # particularly slow.
   config.profile_examples = 10
 
+  config.before do |example|
+    md = example.metadata
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.start
+  end
+
+  config.after do
+    DatabaseCleaner.clean_with :truncation, except: %w(ar_internal_metadata)
+  end
+
 end

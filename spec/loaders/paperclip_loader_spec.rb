@@ -75,15 +75,20 @@ describe 'PaperClip Bulk Loader' do
     let(:owner_names) { %w(DEMO_001 DEMO_002 DEMO_003 DEMO_004) }
 
     before(:each) do
-      # these Owner names should be embeeded in the attachment FILE NAME somewhere
+      # these Owner names should be embedded in the attachment FILE NAME somewhere
       owner_names.each do |n|
-        Owner.create( name: n )
+        create( :owner, name: n )
       end
+
+      expect(Owner.count).to eq 4
 
       loader.init_from_options attachment_options
     end
 
     it 'should bulk load from a directory file system', duff: true do
+
+      expect(Owner.count).to eq 4
+
       loader.split_file_name_on = '_'
 
       loader.run(path, Digital)

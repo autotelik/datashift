@@ -1,5 +1,5 @@
 # Used by spec helper to build test databases
-# These entires can be used in call to db_connect ( see spec_helper )
+# These entries can be used in call to db_connect ( see spec_helper )
 
 <% adapter = 'sqlite3' %>
 <% adapter = 'jdbcsqlite3' if(DataShift::Guards::jruby? ) %>

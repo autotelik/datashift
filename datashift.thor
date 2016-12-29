@@ -74,7 +74,7 @@ module Datashift
       version = options[:version] || DataShift::VERSION
 
       # Bump the VERSION file in library
-      File.open( File.join('lib/datashift/version.rb'), 'w') do |f|
+      File.open( File.join('lib/datashift/version_factory.rb'), 'w') do |f|
         f << "module DataShift\n"
         f << "    VERSION = '#{version}'.freeze\n"
         f << "end\n"

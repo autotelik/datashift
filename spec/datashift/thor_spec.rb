@@ -133,13 +133,17 @@ module DataShift
 
         create_list(:project, number_of_projects)
 
-        @user = create( :project_with_user ).user   # creates a Project with associations
+        create( :project_with_user ) # creates a Project with associations
       end
 
       it 'should run datashift:export:csv to export a model to CSV file' do
         expected =  result_file 'rspec_thor_project_export.csv'
 
         args = ['--model', 'Project', '--result', expected, '--associations']
+
+        current = Project.count
+
+        expect(current).to be  > 7
 
         run_in(rails_sandbox_path) do
 
@@ -149,7 +153,7 @@ module DataShift
 
           File.foreach(expected) {}
           count = $INPUT_LINE_NUMBER
-          expect(count).to eq number_of_projects + 2     # + 2 cos - 1 header row, 1 row for project_with_user
+          expect(count).to eq current + 1     # +1 for the header row
         end
       end
 
@@ -192,7 +196,7 @@ module DataShift
         end
       end
 
-      it 'should run datashift:export:db to export whole DB to EXCEL', duff: true do
+      it 'should run datashift:export:db to export whole DB to EXCEL' do
 
         # Writes one file per model into a PATH
         expected_path =  results_path

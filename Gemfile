@@ -8,7 +8,7 @@ gemspec
 group :test do
 
   gem 'byebug'
-
+  gem 'ffaker'
   gem 'rspec-rails', '~> 3.4'
 
   platform :jruby do

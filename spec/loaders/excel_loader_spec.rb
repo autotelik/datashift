@@ -72,6 +72,8 @@ module  DataShift
 
     context 'creates new records' do
 
+      let(:expected) { ifixture_file('SimpleProjects.xls') }
+
       it 'should process a simple .xls spreedsheet' do
         count = Project.count
 
