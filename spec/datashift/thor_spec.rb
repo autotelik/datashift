@@ -199,7 +199,7 @@ module DataShift
         # Writes one file per model into a PATH
         expected_path =  results_path
 
-        args = ['--model', 'Project', '--result', expected_path, '--associations']
+        args = ['--path', expected_path, '--associations']
 
         run_in(rails_sandbox_path) do
 
