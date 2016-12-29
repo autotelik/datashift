@@ -4,5 +4,5 @@ rvm:
   - 2.3.2
 #  - jruby-head
 
-script: 'cd ./spec && bundle exec bundle exec rspec --format doc --colour -I . .'
+script: 'cd ./spec && bundle exec rspec --format doc --colour -I . .'
 

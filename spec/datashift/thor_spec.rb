@@ -39,7 +39,8 @@ module DataShift
 
       it "tasks have been instantiated" do
         expect(Datashift::Generate.new).to be
-        expect(Datashift::Config.new).to be
+        expect(Datashift::Config.constants.include?(:Generate)).to be_truthy
+        expect(Datashift::Config::Generate.new).to be
         expect(Datashift::Export.new).to be
         expect(Datashift.constants.include?(:Import)).to be
         expect(Datashift::Generate.new).to be
@@ -59,16 +60,16 @@ module DataShift
       end
 
       it 'should generate skeleton import config for a model' do
-        expected = File.join(results_path, 'thor_spec_project_coonfig.yaml')
+        expected = File.join(results_path, 'thor_spec_project_config.yaml')
 
         expect(File.exists?(expected)).to eq false
 
         #t datashift:config:import -m Spree::Variant -r /tmp
 
         run_in(rails_sandbox_path) do
-          options = ['--model', 'Project', '--result', File.join(results_path, 'thor_spec_project_coonfig.yaml')]
+          options = ['--model', 'Project', '--result', File.join(results_path, 'thor_spec_project_config.yaml')]
 
-          output = capture_stream(:stdout) { Datashift::Config.new.invoke(:import, [], options) }
+          output = capture_stream(:stdout) { Datashift::Config::Generate.new.invoke(:import, [], options) }
 
           puts output
           expect(File.exists?(expected)).to eq true
@@ -111,9 +112,6 @@ module DataShift
 
       it "tasks have been instantiated" do
         expect(Datashift.constants.include?(:Import)).to be
-
-        expect(Datashift::Generate.new).to be
-        expect(Datashift::Config.new).to be
         expect(Datashift::Export.new).to be
         expect(Datashift::Import.new).to be
         expect(Datashift::Generate.new).to be
@@ -247,23 +245,6 @@ module DataShift
 
       before(:each) do
         clear_everything
-      end
-
-      it 'should run datashift:config:import - generate skeleton import config for a model' do
-        expected = result_file('thor_spec_project_config.yaml')
-
-        expect(File.exists?(expected)).to eq false
-
-        #t datashift:config:import -m Spree::Variant -r /tmp
-
-        run_in(rails_sandbox_path) do
-          options = ['--model', 'Project', '--result', expected]
-
-          output = capture_stream(:stdout) { Datashift::Config.new.invoke(:import, [], options) }
-
-          expect(File.exists?(expected)).to eq true
-          expect(output).to include('Creating new configuration file')
-        end
       end
 
       it 'should run datashift:import:csv to import data from a CSV file' do
