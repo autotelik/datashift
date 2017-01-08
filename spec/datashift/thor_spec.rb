@@ -13,7 +13,7 @@ require 'thor'
 require 'thor/group'
 require 'thor/runner'
 
-require File.dirname(__FILE__) + '/../spec_helper'
+require_relative '../spec_helper'
 
 module DataShift
 

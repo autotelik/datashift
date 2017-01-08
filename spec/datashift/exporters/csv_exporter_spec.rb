@@ -10,7 +10,7 @@
 #
 # Details::   Specs for CSV aspect of export
 #
-require File.dirname(__FILE__) + '/../spec_helper'
+require_relative '../../spec_helper'
 
 module DataShift
 

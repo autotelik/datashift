@@ -4,7 +4,7 @@
 #
 # Details::   Specs for Excel aspect of Active Record Loader
 #
-require File.dirname(__FILE__) + '/../spec_helper'
+require_relative '../../spec_helper'
 
 require 'erb'
 require 'excel_exporter'

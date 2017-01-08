@@ -12,7 +12,7 @@ data_flow_schema:
     substitutions:
       value_as_text:
         - 'change me'
-        - 'i only gone and got meself changed by datashift'
+        - 'i only gone and got myself changed by datashift'
     prefixes:
       value_as_string: "prefix me every-time "
     postfixes:

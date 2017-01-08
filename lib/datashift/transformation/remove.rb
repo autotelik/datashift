@@ -21,7 +21,7 @@ module DataShift
         DataShift::Configuration.call.exclude_associations.include?(mm.operator)
       end
 
-      # Specify columns to remove via DataShift::Exporters::Configuration
+      # Specify columns to remove via DataShift::Configuration
       #
       def unwanted_columns( columns )
         columns.delete_if { |r| remove_list.include?( r.to_sym ) } unless remove_list.empty?
@@ -31,7 +31,7 @@ module DataShift
         headers.delete_if { |r| remove_list.include?( r.source.to_sym ) } unless remove_list.empty?
       end
 
-      # Specify columns to remove via DataShift::Exporters::Configuration
+      # Specify columns to remove via DataShift::Configuration
       #
       def unwanted_model_methods( model_methods )
         model_methods.delete_if { |r| remove_list.include?( r.operator.to_sym ) } unless remove_list.empty?

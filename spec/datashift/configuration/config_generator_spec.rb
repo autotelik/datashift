@@ -2,7 +2,7 @@
 # Author ::   Tom Statter
 # License::   MIT
 #
-require File.join(File.dirname(__FILE__), '/../spec_helper')
+require_relative '../../spec_helper'
 
 module DataShift
 
@@ -47,7 +47,7 @@ module DataShift
           expect( File.read(expected_config_file) ).to include 'Project:'
         end
 
-        it 'should be able to extract headers from_excel', fail: true do
+        it 'should be able to extract headers from_excel' do
           config_generator.generate_from_excel(ifixture_file('SimpleProjects.xls') )
 
           expect(config_generator.headers.empty?).to eq false
@@ -95,7 +95,7 @@ module DataShift
       end
 
 
-      it 'a basic mapping document can be configures to contain associations as well' do
+      it 'a basic mapping document can be configures to contain associations as well', duff: true do
 
         DataShift::Exporters::Configuration.configure do |config|
           config.with = [:all]
@@ -106,8 +106,17 @@ module DataShift
         expect(File.exist?(expected_config_file)).to be true
 
         File.foreach(expected_config_file)
+
+        puts File.read expected_config_file
+
         expect( $.).to be > expected_columns.size
       end
+
+
+      it 'should enable us to exclude certain headers', duff: true do
+
+        DataShift::Configuration.call.remove_columns = [:milestones, :versions]
+        end
 
     end
 
@@ -116,8 +125,6 @@ module DataShift
     context 'Reading' do
 
       let(:data_flow_schema) { DataFlowSchema.new }
-
-      #let(:config_file) { ifixture_file('ProjectConfiguration.yml') }
 
       let(:expected_config_file) { result_file('mapping_service_project.yaml') }
 

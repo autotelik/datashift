@@ -45,7 +45,7 @@ class Project < ActiveRecord::Base
     10 * value_as_double
   end
 
-  def a_custom_user_id_setter( value )
+  def a_custom_user_id_setter
     self.user_id = 123456789
   end
 

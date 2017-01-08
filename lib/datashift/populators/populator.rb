@@ -178,10 +178,18 @@ module DataShift
         end
 
       elsif model_method.operator_for(:method)
-        logger.debug("Custom Method assignment of value  #{value} => [#{operator}]")
 
         begin
-          value ? record.send(operator, value) : record.send(operator)
+          params_num = record.method(operator.to_sym).arity
+
+          # think this should be == 0 but seen situations where -1 returned even though method accepts ZERO params
+          if(params_num < 1)
+            logger.debug("Calling Custom Method (no value) [#{operator}]")
+            record.send(operator)
+          elsif(value)
+            logger.debug("Custom Method assignment of value  #{value} => [#{operator}]")
+            record.send(operator, value)
+          end
         rescue => e
           logger.error e.backtrace.first
           raise DataProcessingError, "Method [#{operator}] could not process #{value} - #{e.inspect}"

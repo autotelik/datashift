@@ -130,7 +130,7 @@ module  DataShift
       end
     end
 
-    let(:config_file) {ifixture_file('ProjectConfiguration.yml') }
+    let(:config_file) {ifixture_file('config/ProjectConfiguration.yml') }
 
     context 'Configuration of Transformations' do
 
@@ -139,10 +139,7 @@ module  DataShift
         DataShift::Transformation.factory.configure_from(Project, config_file )
       end
 
-      it 'should provide facility to set default values via YAML configuration', duff: true do
-
-        puts  DataShift::Transformation.factory.inspect
-
+      it 'should provide facility to set default values via YAML configuration' do
         defaults =  DataShift::Transformation.factory.defaults_for(Project)
         expect(defaults).to be_a Hash
         expect(defaults.size).to eq 3
@@ -164,7 +161,7 @@ module  DataShift
 
         expect(sub).to be_a Struct::Substitution
         expect(sub.pattern).to eq "change me"
-        expect(sub.replacement).to eq "i only gone and got meself changed by datashift"
+        expect(sub.replacement).to eq "i only gone and got myself changed by datashift"
 
         expect(substitutes.size).to eq 1
       end

@@ -25,6 +25,10 @@ module Datashift
       method_option :result, aliases: '-r', required: true,
                     desc: "Path or file to create resulting YAML config\nIf PATH, filename is [#{DEFAULT_IMPORT_TEMPLTE}]"
 
+      #   :remove_columns - List of columns to remove from files
+      #
+      #   :remove_rails - Remove standard Rails cols like :id, created_at etc
+
       def import()
 
         start_connections
@@ -40,7 +44,12 @@ module Datashift
         mapper = DataShift::ConfigGenerator.new
 
         puts "Creating new configuration file : [#{result}]"
-        mapper.write_import(result, options[:model], options)
+        begin
+          mapper.write_import(result, options[:model], options)
+        rescue => x
+          puts "ERROR - Failed to create config file #{result}"
+          puts x.message
+        end
 
       end
     end

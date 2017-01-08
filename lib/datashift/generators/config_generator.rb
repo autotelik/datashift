@@ -72,6 +72,15 @@ module DataShift
       section
     end
 
+    # Includes a column mapping section, generated from klass_to_headers.
+    #
+    # The column set to be exported to the config file
+    # can be manipulated via configuration options such as
+    #
+    #   :remove_columns - List of columns to remove from files
+    #
+    #   :remove_rails - Remove standard Rails cols like :id, created_at etc
+    #
     def create_import_config(klass_or_name, options = {})
 
       klass = MapperUtils.ensure_class(klass_or_name)
@@ -98,7 +107,7 @@ module DataShift
         EOS
       end
 
-      @headers = Headers.klass_to_headers(klass)
+      @headers = Headers.klass_to_operators(klass)
 
       nodes_section = <<-EOS
     # Mappings between inbound column names and internal names
@@ -113,7 +122,6 @@ EOS
         - #{s}:
             heading:
                source: #{s}
-               presentation: #{s}
         EOS
       end
 

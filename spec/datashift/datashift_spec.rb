@@ -5,7 +5,7 @@
 #
 # Details::   Specs for high level apsects of DataShift library
 #
-require File.dirname(__FILE__) + '/../spec_helper'
+require_relative '../spec_helper'
 
 require 'datashift/version'
 

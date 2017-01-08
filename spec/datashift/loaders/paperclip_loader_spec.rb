@@ -3,7 +3,7 @@
 # License::   MIT
 #
 #
-require File.dirname(__FILE__) + '/../spec_helper'
+require_relative '../../spec_helper'
 
 require 'paperclip/attachment_loader'
 

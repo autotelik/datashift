@@ -3,7 +3,7 @@
 # License::   MIT
 #
 #
-require File.dirname(__FILE__) + '/../spec_helper'
+require_relative '../../spec_helper'
 
 module  DataShift
 
@@ -14,13 +14,20 @@ module  DataShift
     let(:loader) { ExcelLoader.new }
 
     context 'external configuration of loader' do
+
       let(:expected)  { ifixture_file('ProjectsSingleCategories.xls') }
+
+      before(:all) do
+        Project.class_eval do
+
+        end
+      end
 
       before(:each) do
 
         DataShift::Transformation.factory.clear
 
-        loader.configure_from( ifixture_file('ProjectConfiguration.yml'), Project)
+        loader.configure_from( ifixture_file('config/ProjectConfiguration.yml'), Project)
 
         expect(Project.where(title: '099').first).to be_nil
 
@@ -49,6 +56,8 @@ module  DataShift
         Project.all.each { |p|
           expect(p.value_as_string).to include 'prefix me every-time '
           expect(p.value_as_string).to include 'postfix me every-time'
+
+          expect(p.value_as_text).to include "postfix for value_as_text"
         }
       end
 
@@ -61,7 +70,15 @@ module  DataShift
         }
       end
 
-      it 'should provide facility to call custom methods on nodes via YAML configuration', duff: true  do
+      it 'should provide facility to SUBSTITUTE values via YAML configuration' do
+        expect(Project.first.value_as_text).to_not include "i only gone and got myself changed by datashift"
+        expect(Project.last.value_as_text).to_not include "change me"
+        expect(Project.last.value_as_text).to include "i only gone and got myself changed by datashift"
+      end
+
+      it 'should provide facility to call custom methods on nodes via YAML configuration' do
+        expected = Project.first.a_custom_user_id_setter
+
         Project.all.each { |p| expect(p.user_id).to eq 123456789 }
       end
 
