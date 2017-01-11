@@ -7,6 +7,7 @@ Formats currently supported are Excel, CSV files and Paperclip attachments.
 Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
 
 [![Build Status](https://travis-ci.org/autotelik/datashift.svg?branch=master)](https://travis-ci.org/autotelik/datashift)
+[![Code Climate](https://codeclimate.com/github/autotelik/datashift/badges/gpa.svg)](https://codeclimate.com/github/autotelik/datashift)
 
 - [Installation](#Installation)
 - [Introduction](#Introduction)
