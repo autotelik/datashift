@@ -165,8 +165,8 @@ module DataShift
           #     nodes:
           #       - project:
           #           heading:
-          #             source: "title"
-          #             presentation: "Title"
+          #             source: "title"           # import
+          #             presentation: "Title"     # export
           #           operator: title
           #           operator_type: has_many
           #

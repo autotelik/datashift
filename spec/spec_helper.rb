@@ -5,6 +5,8 @@
 #
 ENV["RAILS_ENV"] ||= 'test'
 
+require "simplecov"
+SimpleCov.start
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
