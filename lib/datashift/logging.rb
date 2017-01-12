@@ -32,7 +32,7 @@ module DataShift
       end
 
       def verbose
-        target = "stdout"
+        target = 'stdout'
         unless @names.include?(target)
           add(STDOUT)
           @names << target

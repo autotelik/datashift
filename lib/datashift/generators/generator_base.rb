@@ -12,8 +12,7 @@ module DataShift
 
     attr_accessor :configuration
 
-    def initialize
-    end
+    def initialize; end
 
     # Prepare to generate with associations but then
     # calls a **derived generate** method i.e abstract to this base class

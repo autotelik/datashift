@@ -121,10 +121,11 @@ module DataShift
         setter_method_map.each do |key, call|
           settings = yaml[key.to_s]
 
+          next unless settings && settings.is_a?(Hash)
           settings.each do |operator, value|
             logger.info("Configuring Transform [#{key}] for [#{operator.inspect}] to [#{value}]")
             send( call, load_object_class, operator, value)
-          end if(settings && settings.is_a?(Hash))
+          end
         end
 
       end

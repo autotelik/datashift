@@ -125,7 +125,7 @@ module DataShift
 
       @nodes = NodeCollection.new
 
-      raise RuntimeError.new("Bad YAML syntax  - No key #{locale_key} found in #{yaml}") unless yaml[locale_key]
+      raise "Bad YAML syntax  - No key #{locale_key} found in #{yaml}" unless yaml[locale_key]
 
       locale_section = yaml[locale_key]
 
@@ -141,7 +141,7 @@ module DataShift
 
       DataShift::Transformation.factory { |f| f.configure_from_yaml(class_name, klass_section) }
 
-      if(klass_section && klass_section.has_key?('nodes'))
+      if(klass_section && klass_section.key?('nodes'))
 
         yaml_nodes = klass_section['nodes']
 

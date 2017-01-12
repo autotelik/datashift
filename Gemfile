@@ -22,7 +22,7 @@ group :test do
     gem 'sqlite3', '~> 1.3'
   end
 
-  gem "simplecov"
-  gem "codeclimate-test-reporter", "~> 1.0.0"
+  gem 'simplecov'
+  gem 'codeclimate-test-reporter', '~> 1.0.0'
 
 end

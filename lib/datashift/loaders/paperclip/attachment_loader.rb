@@ -160,7 +160,7 @@ module DataShift
 
           # Don't actually create/upload to DB if we are doing dummy run
           # Don't create the Attachment if the Owner was not found
-          
+
           next if(is_dummy_run || owner_record.nil?)
 
           attachment = create_paperclip_attachment(load_object_class, in_file_name, options)

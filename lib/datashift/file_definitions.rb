@@ -214,9 +214,11 @@ module FileDefinitions
       unless filtered.empty?
         log :info, "Writing seperate streams to #{path}"
 
-        filtered.each do |strm, objects|
-          RecsBase.write( { "keys_#{field}_#{strm}.csv" => objects.collect(&:key).join("\n") }, path)
-        end if options.key?(:keys)
+        if options.key?(:keys)
+          filtered.each do |strm, objects|
+            RecsBase.write( { "keys_#{field}_#{strm}.csv" => objects.collect(&:key).join("\n") }, path)
+          end
+        end
 
         filtered.each do |strm, objects|
           RecsBase.write( { "#{field}_#{strm}.csv" => objects.collect(&:current_line).join("\n") }, path)

@@ -124,12 +124,14 @@ module DataShift
         end
 
         # this time try incrementally scanning i.e "A_B_C_D" => A, A_B, A_B_C etc
-        search_term.split(split_on).inject('') do |str, term|
-          z = split_on_prefix ? "#{split_on_prefix}#{str}#{split_on}#{term}" : "#{str}#{split_on}#{term}"
-          record = search_for_record(klazz, field, z, options)
-          break if record
-          term
-        end unless record
+        unless record
+          search_term.split(split_on).inject('') do |str, term|
+            z = split_on_prefix ? "#{split_on_prefix}#{str}#{split_on}#{term}" : "#{str}#{split_on}#{term}"
+            record = search_for_record(klazz, field, z, options)
+            break if record
+            term
+          end
+        end
 
         return record
       rescue => e

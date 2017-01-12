@@ -18,8 +18,7 @@ module DataShift
       end
 
       # an abstract method
-      def report
-      end
+      def report; end
 
     end
   end

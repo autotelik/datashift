@@ -38,7 +38,7 @@ module DataShift
 
       first = records[0]
 
-      raise ArgumentError.new('Please supply set of ActiveRecord objects to export') unless first.is_a?(ActiveRecord::Base)
+      raise ArgumentError, 'Please supply set of ActiveRecord objects to export' unless first.is_a?(ActiveRecord::Base)
 
       @csv_delimiter = options[:csv_delim] if options[:csv_delim]
 

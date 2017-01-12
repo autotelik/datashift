@@ -113,7 +113,7 @@ module DataShift
           @value = if(data.in? [true, false])
                      data
                    else
-                     (data.to_s.casecmp('true').zero? || data.to_s.to_i == 1) ? true : false
+                     data.to_s.casecmp('true').zero? || data.to_s.to_i == 1 ? true : false
                    end
         else
           @value = data.to_s
@@ -154,7 +154,7 @@ module DataShift
 
         DataShift::Populators::HasMany.call(record, value, method_binding)
 
-      elsif  model_method.operator_for(:has_one)
+      elsif model_method.operator_for(:has_one)
 
         if value.is_a?(model_method.klass)
           record.send(operator + '=', value)
@@ -264,8 +264,10 @@ module DataShift
             logger.error(e.inspect)
             logger.error("Failed attempting to find belongs_to for #{method_binding.pp}")
             if find_by == Populator.insistent_method_list.last
-              raise CouldNotAssignAssociation,
-                    "Populator failed to assign [#{value}] to belongs_to association [#{operator}]" unless value.nil?
+              unless value.nil?
+                raise CouldNotAssignAssociation,
+                      "Populator failed to assign [#{value}] to belongs_to association [#{operator}]"
+              end
             end
           end
         end

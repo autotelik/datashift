@@ -111,7 +111,7 @@ module DataShift
       x
     end
 
-    delegate :cast_type, to: :connection_adapter_column, :allow_nil => true
+    delegate :cast_type, to: :connection_adapter_column, allow_nil: true
 
     def can_cast?
       connection_adapter_column && connection_adapter_column.respond_to?(:cast_type)

@@ -41,7 +41,7 @@ module DataShift
 
       @model_method = model_method
 
-      @valid = (name && model_method) ? true : false
+      @valid = name && model_method ? true : false
     end
 
     # TODO: - use delegators
@@ -83,7 +83,7 @@ module DataShift
         logger.info("Complex Lookup specified for [#{model_method.operator}] : on field [#{field}] (optional value [#{value}])")
       else
         logger.error("Check MethodBinding [#{source}](#{index}) - Association field names are case sensitive")
-        raise NoSuchOperator.new("Field [#{field}] Not Found on Association [#{model_method.operator}] within Class #{klass.name}")
+        raise NoSuchOperator, "Field [#{field}] Not Found on Association [#{model_method.operator}] within Class #{klass.name}"
       end
     end
 

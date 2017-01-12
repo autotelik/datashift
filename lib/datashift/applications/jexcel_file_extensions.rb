@@ -15,11 +15,13 @@ if DataShift::Guards.jruby?
     # If term supplied find sheet and set active
     #
     def active_worksheet(term = nil)
-      if  term.nil?
-        @sheet ||= @workbook.getSheetAt(@current_sheet_index)
-      else
-        activate_sheet(term)
-      end if @workbook
+      if @workbook
+        if term.nil?
+          @sheet ||= @workbook.getSheetAt(@current_sheet_index)
+        else
+          activate_sheet(term)
+        end
+      end
       @sheet
     end
 

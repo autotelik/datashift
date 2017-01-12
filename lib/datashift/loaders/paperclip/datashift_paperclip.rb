@@ -26,7 +26,7 @@ module DataShift
     def self.get_files(path, options = {})
       return [path] if File.file?(path)
       glob = options[:glob] ? options[:glob] : '*.*'
-      glob = (options['recursive'] || options[:recursive]) ? "**/#{glob}" : glob
+      glob = options['recursive'] || options[:recursive] ? "**/#{glob}" : glob
 
       Dir.glob("#{path}/#{glob}", File::FNM_CASEFOLD)
     end
@@ -35,14 +35,14 @@ module DataShift
 
       unless File.exist?(attachment_path) && File.readable?(attachment_path)
         logger.error("Cannot process Image from #{Dir.pwd}: Invalid Path #{attachment_path}")
-        raise PathError.new("Cannot process Image : Invalid Path #{attachment_path}")
+        raise PathError, "Cannot process Image : Invalid Path #{attachment_path}"
       end
 
       file = begin
         File.new(attachment_path, 'rb')
       rescue => e
         logger.error(e.inspect)
-        raise PathError.new("ERROR : Failed to read image from #{attachment_path}")
+        raise PathError, "ERROR : Failed to read image from #{attachment_path}"
       end
 
       file
@@ -91,7 +91,7 @@ module DataShift
         @attachment = klass.new(paperclip_attributes)
       rescue => e
         logger.error(e.backtrace.first)
-        raise CreateAttachmentFailed.new("Failed [#{e.message}] - Creating Attachment [#{attachment_path}] on #{klass}")
+        raise CreateAttachmentFailed, "Failed [#{e.message}] - Creating Attachment [#{attachment_path}] on #{klass}"
       ensure
         attachment_file.close unless attachment_file.closed?
       end
@@ -103,7 +103,7 @@ module DataShift
       else
         logger.error('Problem creating and saving Paperclip Attachment')
         logger.error(@attachment.errors.messages.inspect)
-        raise CreateAttachmentFailed.new('PaperClip error - Problem saving Attachment')
+        raise CreateAttachmentFailed, 'PaperClip error - Problem saving Attachment'
       end
     end
 

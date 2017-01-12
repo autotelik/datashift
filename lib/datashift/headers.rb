@@ -53,7 +53,7 @@ module DataShift
         headers
       end
 
-      alias_method :klass_to_headers, :klass_to_operators
+      alias klass_to_headers klass_to_operators
     end
 
     # Helpers for dealing with source = class, usually an Active Record model
@@ -71,18 +71,21 @@ module DataShift
 
       configuration = DataShift::Configuration.call
 
-      collection.each do |mm|
-        next if(DataShift::Transformation::Remove.new.association?(mm))
+      if collection
+        collection.each do |mm|
+          next if(DataShift::Transformation::Remove.new.association?(mm))
 
-        if(mm.association_type?)
-          association_to_headers(mm)
-        else
-          add mm.operator
-        end if(configuration.op_type_in_scope?(mm))
-      end if collection
+          next unless configuration.op_type_in_scope?(mm)
+          if(mm.association_type?)
+            association_to_headers(mm)
+          else
+            add mm.operator
+          end
+        end
+      end
     end
 
-    alias_method :class_source_to_headers, :class_source_to_operators
+    alias class_source_to_headers class_source_to_operators
 
     def association_to_headers( model_method )
 

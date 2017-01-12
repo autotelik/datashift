@@ -75,8 +75,6 @@ module DataShift
         yield call
       end
 
-
-
     end
   end
 

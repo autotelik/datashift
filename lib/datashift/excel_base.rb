@@ -97,7 +97,7 @@ module DataShift
       return if !records.first.is_a?(ActiveRecord::Base) || records.empty?
 
       # assume headers present
-      row_index = (options[:start_row]) ? (options[:start_row]) : 1
+      row_index = options[:start_row] ? (options[:start_row]) : 1
 
       records.each do |record|
         ar_to_xls_row(row_index, 0, record)
