@@ -8,6 +8,7 @@ Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
 
 [![Build Status](https://travis-ci.org/autotelik/datashift.svg?branch=master)](https://travis-ci.org/autotelik/datashift)
 [![Code Climate](https://codeclimate.com/github/autotelik/datashift/badges/gpa.svg)](https://codeclimate.com/github/autotelik/datashift)
+[![Test Coverage](https://codeclimate.com/github/autotelik/datashift/badges/coverage.svg)](https://codeclimate.com/github/autotelik/datashift/coverage)
 
 - [Installation](#Installation)
 - [Introduction](#Introduction)
