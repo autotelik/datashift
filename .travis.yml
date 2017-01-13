@@ -6,7 +6,7 @@ rvm:
 
 # We run from inside spec as this is an engine, so have a dummy app, but code climate needs
 # to run from root dir (after_success)
-script: 'cd ./spec && bundle exec rspec --format doc --colour -I . . && cd ..'
+script: 'bundle exec rspec --format doc --colour -I . spec'
 
 addons:
     code_climate:
