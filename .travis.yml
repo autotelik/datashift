@@ -4,7 +4,9 @@ rvm:
   - 2.3.2
 #  - jruby-head
 
-script: 'cd ./spec && bundle exec rspec --format doc --colour -I . .'
+# We run from inside spec as this is an engine, so have a dummy app, but code climate needs
+# to run from root dir (after_success)
+script: 'cd ./spec && bundle exec rspec --format doc --colour -I . . && cd ..'
 
 addons:
     code_climate:
