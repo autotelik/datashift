@@ -28,6 +28,7 @@ require 'forwardable'
 require_relative 'datashift/guards'
 require_relative 'datashift/logging'
 
+require 'active_record'
 require 'active_support/core_ext/module/delegation'
 
 module DataShift

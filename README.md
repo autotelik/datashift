@@ -4,6 +4,10 @@ Datashift is a suite of tools to help you import or export data from a Rails app
 
 Formats currently supported are Excel, CSV files and Paperclip attachments.
 
+Use CSV or Excel/OpenOffice/LibraOffice etc (.xls) files to Import or Export your database (ActiveRecord) models
+
+Bulk import tools for Paperclip attachments from filesystem.
+
 Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
 
 [![Build Status](https://travis-ci.org/autotelik/datashift.svg?branch=master)](https://travis-ci.org/autotelik/datashift)
@@ -28,39 +32,11 @@ gem 'datashift'
 
 Win OLE and MS Excel are NOT required to use the Excel functionality.
 
-### <a name="Introduction">Introduction</a>
-
-Import and Export direct to Excel (.xls) files.
-
-Bulk upload [Paperclip](https://github.com/thoughtbot/paperclip)  supported filetypes from the filesystem,
-such as images, documents and auto-attach them to the parent class.
-
-For example bulk uploading product images and attaching them to an existing Product entry in your database.
-
-Smart import - Datashift will try its best to automatically map the headers in your import data to 
-your ActiveRecord model **attributes** and **associations**
-
-Easy to configure and map columns to your database when automatic mapping doesn't quite cut it.
-
-Provides CLI tools to generate these configuration and mapping documents, to aid quickly
-mapping your data to the destination target. 
-
-Easily Apply different Data transformations during import or export.
-
-* Defaults - Where your column is empty, provide a default value to be used.
-
-* Overrides - When you want to provide a set value in all cases, or when you have no inbound data.
-
-* Prefixes/Postfixes - Amend data on the fly. e.g if you wish to prepend a string id to a reference type field.
-
-There are specific import/export loaders for [Spree E-Commerce](http://spreecommerce.com/) here @ [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
-
 ### <a name="CLI">CLI</a>
 
-Current high level applications, are provided through command line tasks, although the API is
-available to use throughout your app.
+High level applications are provided through command line tasks.
 
-An engine version with MVC applications is in the pipeline.
+The API is available throughout your app.
 
 To use the Thor command line applications, pull in the tasks.
 
@@ -95,15 +71,44 @@ To get usage information use thor help <command>, for example
 bundle exec thor help datashift:generate:excel
 ```
 
-It's simple to use a loader in standard Ruby, for example, loading from csv in standard seeds.rb (rake db:seed)
+It's simple to use in standard Ruby, for example
 
 ```ruby
-DataShift::CsvLoader.new.run('db/seeds/permit.csv', Permit)
+    DataShift::CsvLoader.new.run('db/seeds/permit.csv', PermitModel)
+
+    DataShift::ExcelExporter.new.export('/tmp/mp3_dump.xls', MP3.where(style: 'banging techno').all)
 ```
+
 
 #### <a name="Features">Features</a>
 
-Use CSV or Excel/OpenOffice/LibraOffice etc (.xls) files to Import or Export your database (ActiveRecord) models
+Import and Export direct to Excel (.xls) files.
+
+Bulk upload [Paperclip](https://github.com/thoughtbot/paperclip)  supported filetypes from the filesystem,
+such as images, documents.
+ 
+Uploaded assets can be auto-attached to associated instances of the parent model.
+
+For example bulk uploading product images to attach them to existing Products.
+
+Smart import - Datashift will try its best to automatically map the headers in your import data to 
+your ActiveRecord model **attributes** and **associations**
+
+Easy to configure and map columns to your database when automatic mapping doesn't quite cut it.
+
+Provides CLI tools to generate these configuration and mapping documents, to aid quickly
+mapping your data to the destination target. 
+
+Easily Apply different Data transformations during import or export.
+
+* Defaults - Where your column is empty, provide a default value to be used.
+
+* Overrides - When you want to provide a set value in all cases, or when you have no inbound data.
+
+* Prefixes/Postfixes - Amend data on the fly. e.g if you wish to prepend a string id to a reference type field.
+
+There are specific import/export loaders for [Spree E-Commerce](http://spreecommerce.com/) here @ [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
+
 
 Bulk import tools from filesystem, for Paperclip attachments, takes folder of attachments such as images/mp3s/files
 and use the file name to find and attach to DB models. For example look up a product, by it's '''SKU''',
