@@ -92,9 +92,18 @@ module DataShift
       name.gsub(/[\[\]:\*\/\\\?]/, '')
     end
 
+    # TODO: DRY
+    def exportable?(record)
+      return true if record.is_a?(ActiveRecord::Base)
+
+      return true if Module.const_defined?(:Mongoid) && record.is_a?(Mongoid::Document)
+
+      false
+    end
+
     # Pass a set of AR records
     def ar_to_xls(records, options = {})
-      return if !records.first.is_a?(ActiveRecord::Base) || records.empty?
+      return if (!exportable?(records.first) || records.empty?)
 
       # assume headers present
       row_index = options[:start_row] ? (options[:start_row]) : 1
@@ -109,26 +118,23 @@ module DataShift
     # Save data from an AR record to the current row, based on the record's columns [c1,c2,c3]
     # Returns the number of the final column written to
     def ar_to_xls_row(row, start_column, record)
-      return unless record.is_a?(ActiveRecord::Base)
-
       column = start_column
-      record.class.columns.each do |connection_column|
+      ModelMethods::Catalogue.column_names(record.class).each do |connection_column|
         ar_to_xls_cell(row, column, record, connection_column)
         column += 1
       end
       column
     end
 
-    def ar_to_xls_cell(row, column, record, connection_column)
+    def ar_to_xls_cell(row_idx, col_idx, record, connection_column)
+      datum = record.send(connection_column)
 
-      datum = record.send(connection_column.name)
-
-      self[row, column] = datum
+      puts datum
+      self[row_idx, col_idx] = datum
     rescue => e
-      logger.error("Failed to export #{datum} from #{connection_column.inspect} to column #{column}")
-      logger.error( e.message )
+      logger.error("Failed to export #{datum} from #{connection_column.inspect} to column #{col_idx}")
+      logger.error(e.message)
       logger.error(e.backtrace)
-
     end
   end
 

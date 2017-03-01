@@ -43,10 +43,14 @@ module DataShift
 
         # Find the has_many associations which can be populated via <<
         if options[:reload] || has_many[klass].nil?
-          has_many[klass] = klass.reflect_on_all_associations(:has_many).map { |i| i.name.to_s }
+          if Module.const_defined?(:Mongoid)
+            has_many[klass] = klass.reflect_on_all_associations(:embeds_many).map { |i| i.name.to_s }
+          else
+            has_many[klass] = klass.reflect_on_all_associations(:has_many).map { |i| i.name.to_s }
 
-          klass.reflect_on_all_associations(:has_and_belongs_to_many).inject(has_many[klass]) do |x, i|
-            x << i.name.to_s
+            klass.reflect_on_all_associations(:has_and_belongs_to_many).inject(has_many[klass]) do |x, i|
+              x << i.name.to_s
+            end
           end
         end
 
@@ -57,7 +61,11 @@ module DataShift
 
         # Find the has_one associations which can be populated via  Model.has_one_name = OtherArModelObject
         if options[:reload] || has_one[klass].nil?
-          has_one[klass] = klass.reflect_on_all_associations(:has_one).map { |i| i.name.to_s }
+          if Module.const_defined?(:Mongoid)
+            has_one[klass] = klass.reflect_on_all_associations(:embeds_one).map { |i| i.name.to_s }
+          else
+            has_one[klass] = klass.reflect_on_all_associations(:has_one).map { |i| i.name.to_s }
+          end
         end
 
         # Find the model's column associations which can be populated via xxxxxx= value
@@ -135,6 +143,10 @@ module DataShift
         column_types[klass] ? column_types[klass][column] : []
       end
 
+      def self.column_names( klass )
+        Module.const_defined?(:Mongoid) ? klass.fields.keys : klass.column_names
+      end
+
       # rubocop:enable Style/PredicateName
 
       class << self
@@ -142,7 +154,7 @@ module DataShift
 
         def build_assignments(klass, include_instance_methods)
           begin
-            assignments[klass] = klass.column_names
+            assignments[klass] = Catalogue.column_names(klass)
           rescue => x
             raise DataShiftException, "Failed to process column_names for class #{klass} - #{x.message}"
           end
@@ -164,7 +176,7 @@ module DataShift
             column_types[klass] ||= {}
             column_def = klass.columns.find { |col| col.name == assign }
             column_types[klass].merge!( assign => column_def) if column_def
-          end
+          end unless (Module.const_defined?(:Mongoid))
         end
 
         def catalogued

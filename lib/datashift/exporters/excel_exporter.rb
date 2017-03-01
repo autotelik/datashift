@@ -26,6 +26,15 @@ module DataShift
       @data_flow_schema = nil
     end
 
+    def exportable?(record)
+
+      return true if record.is_a?(ActiveRecord::Base)
+
+      return true if Module.const_defined?(:Mongoid) && record.is_a?(Mongoid::Document)
+
+      false
+    end
+
     # Create an Excel file from list of ActiveRecord objects
     def export(file_name, export_records, options = {})
 
@@ -40,7 +49,7 @@ module DataShift
 
       first = records[0]
 
-      raise(ArgumentError, 'Please supply set of ActiveRecord objects to export') unless first.is_a?(ActiveRecord::Base)
+      raise(ArgumentError, 'Please supply set of ActiveRecord objects to export') unless exportable?(first)
 
       klass = first.class
 

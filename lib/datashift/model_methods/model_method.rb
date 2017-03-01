@@ -45,7 +45,8 @@ module DataShift
 
       # Note : Not all assignments will currently have a column type, for example
       # those that are derived from a delegate_belongs_to
-      @connection_adapter_column = klass.columns.find { |col| col.name == operator } if connection_adapter_column.nil?
+      keys =  Module.const_defined?(:Mongoid) ? klass.fields.keys : klass.columns.map(&:name)
+      @connection_adapter_column = keys.find { |col| col == operator } if connection_adapter_column.nil?
 
       @connection_adapter_column = DataShift::ModelMethods::Catalogue.column_type_for(klass, operator) if connection_adapter_column.nil?
     end
