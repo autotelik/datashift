@@ -7,19 +7,17 @@
 Datashift is a suite of tools to help you import or export data from a Rails application,
 including all associations, in either hash or json formats.
 
-Formats currently supported are `.xls` files (Excel/OpenOffice/LibraOffice), CSV files and Paperclip attachments.
+Formats currently supported are `.xls` files (Excel/OpenOffice/LibraOffice) and CSV files.
 
-Bulk import tools for Paperclip to attach uploads (attachments) to model instances, from filesystem.
+Paperclip bulk import tools for attaching uploads from filesystem, to Rails model instances.
 
-Wiki : **<https://github.com/autotelik/datashift/wiki>**
+[Wiki :](https://github.com/autotelik/datashift/wiki)
 
 - [Installation](#Installation)
-- [Introduction](#Introduction)
-- [CLI](#cli)
 - [Features](#features)
+- [Usage](#usage)
 - [Import / Export](#ImportExport)
 - [Testing](#testing)
-- [License](#license)
 
 ### <a name="Installation">Installation</a>
 
@@ -28,9 +26,42 @@ Add gem 'datashift' to your Gemfile/bundle or use ```gem install```
 ```ruby
 gem 'datashift'
 ```
+
+#### <a name="Features">Features</a>
+
+Import and Export direct to Excel (.xls) or CSV files.
+
 Win OLE and MS Excel are NOT required to use the Excel functionality.
 
-### <a name="CLI">CLI</a>
+Bulk upload [Paperclip](https://github.com/thoughtbot/paperclip) supported filetypes,
+ from the filesystem, such as images, documents, mp3s, files.
+
+Auto attach the **uploaded** assets to associated instances of the parent model,
+using the file name to find and attach to DB models. For example :
+
+ - Upload the image to Rails storage
+ - Looks up a product by it's '''SKU''', which **is present in the image filename** - my_sku_2017.jpg
+ - Attaches new image to the Product `my_sku_2017` '''images''' association
+
+Smart import - Datashift will try its best to automatically map the headers in your import data to 
+your ActiveRecord model **attributes** and **associations**
+
+Easy to configure and map columns to your database when automatic mapping doesn't quite cut it.
+
+Fast mapping - Generate configuration and mapping documents automatically, to speed up mapping data to the destination target. 
+
+Transform the data during import or export with defaults, substitutions etc.
+
+There are specific import/export loaders for [Spree E-Commerce](http://spreecommerce.com/) here @ [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
+
+Associations supported, with ability to define lookup column, and to find existing associated models 
+to attach to the main Upload model,
+ 
+Association types to include/exclude can be set in configuration as well as specific columns to exclude.
+
+Rails standard columns such as id, created_at etc can be easily excluded via Configuration.
+
+### <a name="Usage">Usage</a>
 
 Multiple apps are provided through command line tasks via [Thor](https://github.com/erikhuda/thor).
 
@@ -65,43 +96,11 @@ To get usage information use thor help <command>, for example
 bundle exec thor help datashift:generate:excel
 ```
 
-#### <a name="Features">Features</a>
-
-Import and Export direct to Excel (.xls) or CSV files.
-
-Bulk upload [Paperclip](https://github.com/thoughtbot/paperclip) supported filetypes,
- from the filesystem, such as images, documents, mp3s, files.
-
-Auto attach the Uploaded assets to associated instances of the parent model,
-using the file name to find and attach to DB models. For example :
-
- - Looks up a product by it's '''SKU''', which **is present in the image filename** - my_sku_2017.jpg
- - Uploads the image
- - Attaches new image to the `my_sku_2017` product's '''images''' association
-
-Smart import - Datashift will try its best to automatically map the headers in your import data to 
-your ActiveRecord model **attributes** and **associations**
-
-Easy to configure and map columns to your database when automatic mapping doesn't quite cut it.
-
-Fast mapping - Generate configuration and mapping documents automatically, to speed up mapping data to the destination target. 
-
-Transform the data during import or export with defaults, substitutions etc.
-
-There are specific import/export loaders for [Spree E-Commerce](http://spreecommerce.com/) here @ [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
-
-Associations supported, with ability to define lookup column, and to find existing associated models 
-to attach to the main Upload model,
- 
-Association types to include/exclude can be set in configuration as well as specific columns to exclude.
-
-Rails standard columns such as id, created_at etc can be easily excluded via Configuration.
-
 #### <a name="ImportExport">Active Record - Import/Export CLI</a>
 
 Please use `thor list` and thor help <cli>` to get latest command lines
 
-'''ruby
+```ruby
 thor datashift:config:generate:import -m, --model=MODEL -r, --result=RESULT                                                                                                     ...
 thor datashift:export:csv -m, --model=MODEL -r, --result=RESULT                                                                                                                 ...
 thor datashift:export:db -p, --path=PATH                                                                                                                                        ...
@@ -112,13 +111,12 @@ thor datashift:generate:excel -m, --model=MODEL -r, --result=RESULT             
 thor datashift:import:csv -i, --input=INPUT -m, --model=MODEL                                                                                                                   ...
 thor datashift:import:excel -i, --input=INPUT -m, --model=MODEL                                                                                                                 ...
 thor datashift:import:load -i, --input=INPUT -m, --model=MODEL 
-'''
+````
 
-Exports are currently based around a single main DB model to a single Worksheet,
-but can include associations of that model. 
+Exports are currently based around a *single fundemental DB model* represented in a single Worksheet,
+but can include all the associations of that model. 
 
-Column headings will simply reflect the database columns names and association names, 
-although this is configurable.
+Column headings will normally simply reflect the database columns names and association names, but this is configurable.
 
 A mapping configuration can be used for both imports and exports, to explicitly map
 between headers and database names, when automatic mapping not suitable.
