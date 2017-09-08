@@ -96,7 +96,8 @@ module DataShift
         begin
           require_relative rb unless File.directory?(rb)
         rescue => x
-          puts "Problem loading datashift file #{rb} - #{x.inspect}"
+          puts "WARNING - Problem loading datashift file #{rb} - #{x.inspect}"
+          puts x.backtrace
         end
       end
     end
