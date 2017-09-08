@@ -1,12 +1,13 @@
 ## DataShift
 
-Datashift is a suite of tools to help you import or export data from a Rails application.
+Datashift is a suite of tools to help you import or export data from a Rails application,
+including all associations, in either hash or json formats.
 
 Formats currently supported are Excel, CSV files and Paperclip attachments.
 
 Use CSV or Excel/OpenOffice/LibraOffice etc (.xls) files to Import or Export your database (ActiveRecord) models
 
-Bulk import tools for Paperclip attachments from filesystem.
+Bulk import tools for Paperclip to attach uploads (attachments) to model instances, from filesystem.
 
 Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
 
@@ -29,7 +30,6 @@ Add gem 'datashift' to your Gemfile/bundle or use ```gem install```
 ```ruby
 gem 'datashift'
 ```
-
 Win OLE and MS Excel are NOT required to use the Excel functionality.
 
 ### <a name="CLI">CLI</a>
@@ -79,46 +79,70 @@ It's simple to use in standard Ruby, for example
     DataShift::ExcelExporter.new.export('/tmp/mp3_dump.xls', MP3.where(style: 'banging techno').all)
 ```
 
-
 #### <a name="Features">Features</a>
 
-Import and Export direct to Excel (.xls) files.
+Import and Export direct to Excel (.xls) or CSV files.
 
-Bulk upload [Paperclip](https://github.com/thoughtbot/paperclip)  supported filetypes from the filesystem,
-such as images, documents.
- 
-Uploaded assets can be auto-attached to associated instances of the parent model.
+Bulk upload [Paperclip](https://github.com/thoughtbot/paperclip) supported filetypes,
+ from the filesystem, such as images, documents, mp3s, files.
 
-For example bulk uploading product images to attach them to existing Products.
+Auto attach the Uploaded assets to associated instances of the parent model,
+using the file name to find and attach to DB models. For example :
+
+ - Looks up a product by it's '''SKU''', which **is present in the image filename** - my_sku_2017.jpg
+ - Uploads the image
+ - Attaches new image to the `my_sku_2017` product's '''images''' association
 
 Smart import - Datashift will try its best to automatically map the headers in your import data to 
 your ActiveRecord model **attributes** and **associations**
 
 Easy to configure and map columns to your database when automatic mapping doesn't quite cut it.
 
-Provides CLI tools to generate these configuration and mapping documents, to aid quickly
-mapping your data to the destination target. 
+Fast mapping - Generate configuration and mapping documents automatically, to speed up mapping data to the destination target. 
 
-Easily Apply different Data transformations during import or export.
-
-* Defaults - Where your column is empty, provide a default value to be used.
-
-* Overrides - When you want to provide a set value in all cases, or when you have no inbound data.
-
-* Prefixes/Postfixes - Amend data on the fly. e.g if you wish to prepend a string id to a reference type field.
+Transform the data during import or export with defaults, substitutions etc.
 
 There are specific import/export loaders for [Spree E-Commerce](http://spreecommerce.com/) here @ [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
 
+Associations supported, with ability to define lookup column, and to find existing associated models 
+to attach to the main Upload model,
+ 
+Association types to include/exclude can be set in configuration as well as specific columns to exclude.
 
-Bulk import tools from filesystem, for Paperclip attachments, takes folder of attachments such as images/mp3s/files
-and use the file name to find and attach to DB models. For example look up a product, by it's '''SKU''',
-based on the **SKU being present the image filename**, and attache that image to the product's '''images''' association
+Rails standard columns such as id, created_at etc can be easily excluded via Configuration.
 
-Export association data inline, in either hash or json formats, covering all association types.
+#### <a name="ImportCLI">Active Record - Import/Export CLI</a>
 
-Association types to include/exclude can be set in configuration as well as speciifc columsn to exclude.
+Please use `thor list` and thor help <cli>` to get latest command lines
 
-Rails standard columns such as id, created_at etc can also be easily excluded via Configuration.
+'''ruby
+thor datashift:config:generate:import -m, --model=MODEL -r, --result=RESULT                                                                                                     ...
+thor datashift:export:csv -m, --model=MODEL -r, --result=RESULT                                                                                                                 ...
+thor datashift:export:db -p, --path=PATH                                                                                                                                        ...
+thor datashift:export:excel -m, --model=MODEL -r, --result=RESULT                                                                                                               ...
+thor datashift:generate:csv -m, --model=MODEL -r, --result=RESULT                                                                                                               ...
+thor datashift:generate:db -p, --path=PATH                                                                                                                                      ...
+thor datashift:generate:excel -m, --model=MODEL -r, --result=RESULT                                                                                                             ...
+thor datashift:import:csv -i, --input=INPUT -m, --model=MODEL                                                                                                                   ...
+thor datashift:import:excel -i, --input=INPUT -m, --model=MODEL                                                                                                                 ...
+thor datashift:import:load -i, --input=INPUT -m, --model=MODEL 
+'''
+
+Exports are based around a single main DB model is supplied. Column headings will simply
+reflect the database columns names and association names, although this is configurable.
+
+A mapping configuration can be sued for both imports and exports to explicitly map
+between headers and database names, when automatic generation not suitable.
+ 
+On Import, a main DB model is supplied, for which a dictionary of all possible attributes
+ and associations is created.
+  
+The Import is then based on column headings with *Semi-Smart Name Lookup*,
+managing white space, pluralisation, under_scores etc.
+
+So the user supplied name (column heading) need only be an approximation of the actual name,
+
+For Example given column heading 'Product Properties' will still find real association 'product_properties'
 
 #### <a name="Configuration">Configuration</a>
 
@@ -146,7 +170,14 @@ thor help datashift:generate:config:import
 
 ##### Transformations
 
-Set default values, substitutions and transformations per column for Imports.
+Transform the data during an import in various ways.
+
+* Defaults - Where your column is empty, provide a default value to be used.
+
+* Overrides - When you want to provide a set value in all cases, or when you have no inbound data.
+
+* Prefixes/Postfixes - Amend data on the fly. e.g if you wish to prepend a string id to a reference type field.
+
 
 ```ruby
         DataShift::Transformation.factory do |factory|
@@ -169,28 +200,7 @@ Set default values, substitutions and transformations per column for Imports.
       `factory.set_prefix_on(Spree::Product, 'SKU', 'SPEC_')`
       
 
-#### <a name="ImportCLI">Active Record - Import CLI</a>
 
-Please use thor list and thor help <xxx> to get latest command lines, for example
-
-'''ruby
-bundle exec thor datashift:import:csv --model BlogPost --input BlogPostImport.csv
-'''
-
-Imports are based on column headings with *Semi-Smart Name Lookup*
-
-  On import, a dictionary of all possible attributes and associations is created for the AR class.
-  
-  This enables lookup, of a user supplied name (column heading), managing white space, pluralisation etc .
-
-  Example usage, load from a file or spreadsheet where the column names are only
-  an approximation of the actual associations, so given 'Product Properties' heading,
-  finds real association 'product_properties' to send or call on the AR object
-
-Can import 'belongs_to, 'has_many' and 'has_one' associations, including assignment of multiple objects
-via either multiple columns, or via single column containing multiple entries in json/HASH format.
-
-See Wiki for more details on DSL syntax.
 
 ##### Paperclip
 
