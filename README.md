@@ -11,55 +11,57 @@ Formats currently supported are `.xls` files (Excel/OpenOffice/LibraOffice) and 
 
 Paperclip bulk import tools for attaching uploads from filesystem, to Rails model instances.
 
-[Wiki :](https://github.com/autotelik/datashift/wiki)
+##### Table of Contents
 
 - [Installation](#Installation)
 - [Features](#features)
 - [Usage](#usage)
 - [Import / Export](#ImportExport)
 - [Testing](#testing)
+- [Wiki](https://github.com/autotelik/datashift/wiki)
 
 ### <a name="Installation">Installation</a>
 
-Add gem 'datashift' to your Gemfile/bundle or use ```gem install```
+Add gem 'datashift' to your Gemfile
 
 ```ruby
 gem 'datashift'
 ```
+ 
+Direct install via usual ```gem install datashift```
+ 
+There are also specific import/export loaders for [Spree E-Commerce](http://spreecommerce.com/) here @ [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
 
 #### <a name="Features">Features</a>
 
-Import and Export direct to Excel (.xls) or CSV files.
+* Import and Export direct to .xls files (Excel/OpenOffice etc) -  Win OLE and MS Excel are NOT required.
 
-Win OLE and MS Excel are NOT required to use the Excel functionality.
+* Import and Export direct to CSV files.
 
-Bulk upload [Paperclip](https://github.com/thoughtbot/paperclip) supported filetypes,
+* Bulk upload [Paperclip](https://github.com/thoughtbot/paperclip) supported filetypes,
  from the filesystem, such as images, documents, mp3s, files.
 
-Auto attach the **uploaded** assets to associated instances of the parent model,
-using the file name to find and attach to DB models. For example :
+  - Auto attach the **uploaded** assets to associated instances of the parent model, using the file name to find and attach to DB models. For example :
 
- - Upload the image to Rails storage
- - Looks up a product by it's '''SKU''', which **is present in the image filename** - my_sku_2017.jpg
- - Attaches new image to the Product `my_sku_2017` '''images''' association
+        - Upload the image to Rails storage
+        - Looks up a product by it's '''SKU''', which **is present in the image filename** - my_sku_2017.jpg
+        - Attaches new image to the Product `my_sku_2017` '''images''' association
 
-Smart import - Datashift will try its best to automatically map the headers in your import data to 
+* Smart import - Datashift will try its best to automatically map the headers in your import data to 
 your ActiveRecord model **attributes** and **associations**
 
-Easy to configure and map columns to your database when automatic mapping doesn't quite cut it.
+* Easy to configure and map columns to your database when automatic mapping doesn't quite cut it.
 
-Fast mapping - Generate configuration and mapping documents automatically, to speed up mapping data to the destination target. 
+* Fast mapping - Generate configuration and mapping documents automatically, to speed up mapping data to the destination target. 
 
-Transform the data during import or export with defaults, substitutions etc.
+* Transform the data during import or export with defaults, substitutions etc.
 
-There are specific import/export loaders for [Spree E-Commerce](http://spreecommerce.com/) here @ [datashift_spree](https://github.com/autotelik/datashift_spree "Datashift Spree")
-
-Associations supported, with ability to define lookup column, and to find existing associated models 
+* Associations supported, with ability to define lookup column, and to find existing associated models 
 to attach to the main Upload model,
  
-Association types to include/exclude can be set in configuration as well as specific columns to exclude.
+* Association types to include/exclude can be set in configuration as well as specific columns to exclude.
 
-Rails standard columns such as id, created_at etc can be easily excluded via Configuration.
+* Easily exclude Rails standard columns such as id, created_at, updated_at etc.
 
 ### <a name="Usage">Usage</a>
 
@@ -96,7 +98,7 @@ To get usage information use thor help <command>, for example
 bundle exec thor help datashift:generate:excel
 ```
 
-#### <a name="ImportExport">Active Record - Import/Export CLI</a>
+### <a name="ImportExport">Active Record - Import/Export CLI</a>
 
 Please use `thor list` and thor help <cli>` to get latest command lines
 
@@ -131,7 +133,7 @@ So the user supplied name (column heading) need only be an approximation of the 
 
 For Example given column heading 'Product Properties', will still find real association 'product_properties'
 
-#### <a name="Configuration">Configuration</a>
+### <a name="Configuration">Configuration</a>
 
 Configuration can be done either through a typical Rails initialisation code block,
  or a YAML configuration file provided at run time.
@@ -158,7 +160,7 @@ There is a generator, to create a skeleton configuration file template for you :
 thor help datashift:generate:config:import
 ```
 
-##### Transformations
+#### Transformations
 
 Transform the data during an import in various ways.
 
@@ -189,7 +191,7 @@ Transform the data during an import in various ways.
       
       `factory.set_prefix_on(Spree::Product, 'SKU', 'SPEC_')`
    
-##### Paperclip Import
+#### Paperclip Import
 
 Bulk upload from filesystem usign paperclip.
    
@@ -270,4 +272,4 @@ Thanks to all [contributors](https://github.com/autotelik/datashift/contributors
 
 Copyright:: (c) Autotelik Media Ltd 2016
 
-This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/autotelik/datashift/LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/autotelik/datashift/blob/master/LICENSE.md) file for details
