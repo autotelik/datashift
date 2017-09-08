@@ -20,9 +20,17 @@ require 'csv_generator'
 # Note, not DataShift, case sensitive, create namespace for command line : datashift
 module Datashift
 
-  class Generate  < Thor
+  class Generate < Thor
 
     include DataShift::ThorBehavior
+
+    class_option :associations, aliases: '-a',
+                 type: :boolean,
+                 desc: 'Include associations. Can be further refined by :with & :exclude'
+
+    class_option :expand_associations, type: :boolean,
+                 desc: 'Expand association data to multiple columns i.e 1 column per attribute'
+
 
     desc "excel", "generate a template from an active record model (with optional associations)"
 
