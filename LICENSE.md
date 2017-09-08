@@ -2,9 +2,9 @@
 
 ## License
 
-Copyright:: (c) Autotelik Media Ltd 2011
+Copyright:: (c) Autotelik Media Ltd 2017
 Author ::   Tom Statter
-Date ::     Sept 2011
+Date ::     Sept 2017
 
 The MIT License
 

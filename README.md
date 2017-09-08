@@ -1,27 +1,25 @@
 ## DataShift
 
-Datashift is a suite of tools to help you import or export data from a Rails application,
-including all associations, in either hash or json formats.
-
-Formats currently supported are Excel, CSV files and Paperclip attachments.
-
-Use CSV or Excel/OpenOffice/LibraOffice etc (.xls) files to Import or Export your database (ActiveRecord) models
-
-Bulk import tools for Paperclip to attach uploads (attachments) to model instances, from filesystem.
-
-Comprehensive Wiki here : **<https://github.com/autotelik/datashift/wiki>**
-
 [![Build Status](https://travis-ci.org/autotelik/datashift.svg?branch=master)](https://travis-ci.org/autotelik/datashift)
 [![Code Climate](https://codeclimate.com/github/autotelik/datashift/badges/gpa.svg)](https://codeclimate.com/github/autotelik/datashift)
 [![Test Coverage](https://codeclimate.com/github/autotelik/datashift/badges/coverage.svg)](https://codeclimate.com/github/autotelik/datashift/coverage)
+
+Datashift is a suite of tools to help you import or export data from a Rails application,
+including all associations, in either hash or json formats.
+
+Formats currently supported are `.xls` files (Excel/OpenOffice/LibraOffice), CSV files and Paperclip attachments.
+
+Bulk import tools for Paperclip to attach uploads (attachments) to model instances, from filesystem.
+
+Wiki : **<https://github.com/autotelik/datashift/wiki>**
 
 - [Installation](#Installation)
 - [Introduction](#Introduction)
 - [CLI](#cli)
 - [Features](#features)
+- [Import / Export](#ImportExport)
 - [Testing](#testing)
 - [License](#license)
-
 
 ### <a name="Installation">Installation</a>
 
@@ -34,17 +32,13 @@ Win OLE and MS Excel are NOT required to use the Excel functionality.
 
 ### <a name="CLI">CLI</a>
 
-High level applications are provided through command line tasks.
+Multiple apps are provided through command line tasks via [Thor](https://github.com/erikhuda/thor).
 
-The API is available throughout your app.
+To use the command line applications, pull in the tasks.
 
-To use the Thor command line applications, pull in the tasks.
+Create or add to a high level `.thor` file e.g mysite.thor in your `lib/tasks` or Rails root directory
 
-Create or add to a high level .thor file in your lib/tasks or root directory
-
-    e.g mysite.thor
-
-Edit the file and add the following to pull in the datashift thor commands :
+Add the following lines, to pull in the datashift thor commands :
 
 ```ruby
     require 'thor'
@@ -53,7 +47,7 @@ Edit the file and add the following to pull in the datashift thor commands :
     DataShift::load_commands
 ```
 
-To keep the availability to only development mode use
+To keep the availability to only development mode you can use
 
 ```ruby
 DataShift::load_commands if(Rails.env.development?)
@@ -69,14 +63,6 @@ To get usage information use thor help <command>, for example
 
 ```ruby
 bundle exec thor help datashift:generate:excel
-```
-
-It's simple to use in standard Ruby, for example
-
-```ruby
-    DataShift::CsvLoader.new.run('db/seeds/permit.csv', PermitModel)
-
-    DataShift::ExcelExporter.new.export('/tmp/mp3_dump.xls', MP3.where(style: 'banging techno').all)
 ```
 
 #### <a name="Features">Features</a>
@@ -111,7 +97,7 @@ Association types to include/exclude can be set in configuration as well as spec
 
 Rails standard columns such as id, created_at etc can be easily excluded via Configuration.
 
-#### <a name="ImportCLI">Active Record - Import/Export CLI</a>
+#### <a name="ImportExport">Active Record - Import/Export CLI</a>
 
 Please use `thor list` and thor help <cli>` to get latest command lines
 
@@ -128,11 +114,14 @@ thor datashift:import:excel -i, --input=INPUT -m, --model=MODEL                 
 thor datashift:import:load -i, --input=INPUT -m, --model=MODEL 
 '''
 
-Exports are based around a single main DB model is supplied. Column headings will simply
-reflect the database columns names and association names, although this is configurable.
+Exports are currently based around a single main DB model to a single Worksheet,
+but can include associations of that model. 
 
-A mapping configuration can be sued for both imports and exports to explicitly map
-between headers and database names, when automatic generation not suitable.
+Column headings will simply reflect the database columns names and association names, 
+although this is configurable.
+
+A mapping configuration can be used for both imports and exports, to explicitly map
+between headers and database names, when automatic mapping not suitable.
  
 On Import, a main DB model is supplied, for which a dictionary of all possible attributes
  and associations is created.
@@ -140,13 +129,16 @@ On Import, a main DB model is supplied, for which a dictionary of all possible a
 The Import is then based on column headings with *Semi-Smart Name Lookup*,
 managing white space, pluralisation, under_scores etc.
 
-So the user supplied name (column heading) need only be an approximation of the actual name,
+So the user supplied name (column heading) need only be an approximation of the actual name.
 
-For Example given column heading 'Product Properties' will still find real association 'product_properties'
+For Example given column heading 'Product Properties', will still find real association 'product_properties'
 
 #### <a name="Configuration">Configuration</a>
 
-You can now configure datashift options with a typical initialisation block, for example
+Configuration can be done either through a typical Rails initialisation code block,
+ or a YAML configuration file provided at run time.
+
+To create configurations, loaded during server start, use a typical initialisation block, for example
 
 ```ruby
 DataShift::Configuration.call do |c|
@@ -198,18 +190,47 @@ Transform the data during an import in various ways.
   But this will set the right prefix, because the header in the FILE is SKU 
       
       `factory.set_prefix_on(Spree::Product, 'SKU', 'SPEC_')`
-      
+   
+##### Paperclip Import
 
+Bulk upload from filesystem usign paperclip.
+   
+The general usage of paperclip is to define a model, which has associated attachments, for example
+ 
+```ruby
+   class Product < ActiveRecord::Base
+     has_attached_file :image, styles: { medium: "300x300>", thumb: "100x100>" }, default_url: "/images/:style/missing.png"
+     validates_attachment_content_type :image, content_type: /\Aimage\/.*\z/
+   end
+```
 
-
-##### Paperclip
-
-The loaded content is automatically attached to the model containing the `has_attached_file` directive.
-
-Matching to this right attachment model instance, is performed using the filename.
-
+Where datashift shines is when you want to bulk upload a hole load of images and attach
+them to *existing* Products.
+   
+The loaded content is automatically attached to the model -  containing the `has_attached_file` directive - 
+by matching the filename to a column of the model, in the case of our Product, perhaps the SKU or name.
+   
 The database field to match on, and the filename matching pattern are all configurable.
 
+So in this example, to fix a set of products without images, the setup required would be :
+
+- Create a directory of images, with the SKU of the product in the filename
+- Configure datashift the upload with model Product and column matching on 'SKU' 
+- Run `datashift:paperclip:attach --input /tmp/images --attach-to-klass Product --attach-to-find-by-field SKU --attachment-klass Image  --attach-to-field image` 
+   
+[See wiki](https://github.com/autotelik/datashift/wiki/Import-paperclip-facilities)
+
+### <a name="API">General Ruby API</a>   
+
+It's simple to use the facilites in standard Ruby, for example
+
+```ruby
+    DataShift::CsvLoader.new.run('db/seeds/permit.csv', PermitModel)
+
+
+    records_for_export = MP3.where(style: 'banging techno').all
+    DataShift::ExcelExporter.new.export('/tmp/mp3_dump.xls', records_for_export)
+```
 
 ### <a name="Testing">Testing</a>
 
@@ -238,35 +259,17 @@ To test different versions *update the gemspec* and run `bundle update rails`
         bundle exec rspec -c .
 ```
 
-    A datashift **log **will be written within **spec/logs**, which hooks into the standard active record logger
+ A datashift *log* will be written within **spec/logs**, which hooks into the standard active record logger
 
-          /log/datashift.log
-          spec/logs/datashift_spec.log
 
-## License
+### Authors
+
+    Thomas Statter - Initial idea and dev
+
+Thanks to all [contributors](https://github.com/autotelik/datashift/contributors) who have participated in this project.
+
+### License
 
 Copyright:: (c) Autotelik Media Ltd 2016
 
-Author ::   Tom Statter
-
-Date ::     April 2016
-
-The MIT License
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/autotelik/datashift/LICENSE.md) file for details
