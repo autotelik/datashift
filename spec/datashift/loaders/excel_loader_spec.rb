@@ -104,7 +104,7 @@ module  DataShift
         expect(loaded.value_as_double).to eq 520.00
       end
 
-      it 'should process multiple associations from single column' do
+      it 'should find multiple associations from single column' do
         expect(Project.find_by_title('001')).to be_nil
 
         count = Project.count
@@ -117,12 +117,12 @@ module  DataShift
 
         expect(loader.loaded_count).to eq (Project.count - count)
 
-        { '001' => 2, '002' => 1, '003' => 3, '099' => 0 }.each do |title, expected|
+        { '001' => 2, '002' => 1, '003' => 3, '099' => 0 }.each do |title, count|
           project = Project.find_by_title(title)
 
           expect(project).to_not be_nil
 
-          expect(project.categories.size).to eq expected
+          expect(project.categories.size).to eq count
         end
       end
 
