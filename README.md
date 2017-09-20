@@ -135,10 +135,20 @@ For Example given column heading 'Product Properties', will still find real asso
 
 ### <a name="Configuration">Configuration</a>
 
-Configuration can be done either through a typical Rails initialisation code block,
- or a YAML configuration file provided at run time.
+#### Global
 
-To create configurations, loaded during server start, use a typical initialisation block, for example
+Configuration of datashift can be done through a typical Rails initialisation code block,
+ a YAML configuration file provided at run time, or both in which case run time options over ride global ones.
+
+The easiest way to create a global configuration file, loaded during server start, 
+is to run our rail's install generator : 
+
+```ruby
+rails g datashift:install
+```
+ 
+To create such a file manually, create an initialisation file within `config/initializers`, 
+and see `lib/datashift/configuration.rb` for details of options, for example
 
 ```ruby
 DataShift::Configuration.call do |c|
@@ -149,15 +159,18 @@ DataShift::Configuration.call do |c|
 end
  ```
 
-See lib/datashift/configuration.rb for all the options
+#### Mapping
 
-Imports/export can also be directed from YAML configuration file, to setup 
-column mappings, transformations and custom methods for columns/data that require non trivial processing.
+Individual Imports/Export runs can also be directed from YAML configuration file.
+
+This allows more fine grained control of the process, and can include column mappings instructions, 
+data transformations and custom processing methods for columns/data that require non standard processing,
+as well as global configuration parameters.
     
-There is a generator, to create a skeleton configuration file template for you :
+There is another generator, to create a skeleton configuration file, based on the model to be imported :
 
 ```ruby
-thor help datashift:generate:config:import
+thor help datashift:generate:config:import -m <MyModelToImport> -r config/datashift.rb
 ```
 
 #### Transformations

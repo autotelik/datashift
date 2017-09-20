@@ -2,7 +2,7 @@
 # Author ::   Tom Statter
 # License::   MIT
 #
-# Details::   Export a model definition to CSV
+# Details::   Create CSV file representing supplied Model
 #
 #
 module DataShift
@@ -15,8 +15,6 @@ module DataShift
       super
     end
 
-    # Create CSV file representing supplied Model
-    #
     def generate(file_name, klass)
       @file_name = file_name
 

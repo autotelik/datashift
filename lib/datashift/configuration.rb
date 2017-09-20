@@ -3,7 +3,7 @@
 # Date ::     Feb 2015
 # License::   MIT
 #
-# Details::   Read mappings and provide cache type services for source=>destination mappings
+# Details::   Configure Datashift operations
 #
 require 'erubis'
 

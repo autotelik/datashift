@@ -23,7 +23,7 @@ module Datashift
       method_option :model, aliases: '-m', required: true, desc: "The active record model to use for mappings"
 
       method_option :result, aliases: '-r', required: true,
-                    desc: "Path or file to create resulting YAML config\nIf PATH, filename is [#{DEFAULT_IMPORT_TEMPLTE}]"
+                    desc: "Path or file to create resulting YAML config\n\nIf a PATH supplied, filename will be [#{DEFAULT_IMPORT_TEMPLTE}]"
 
       #   :remove_columns - List of columns to remove from files
       #
