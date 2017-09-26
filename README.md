@@ -133,6 +133,29 @@ So the user supplied name (column heading) need only be an approximation of the 
 
 For Example given column heading 'Product Properties', will still find real association 'product_properties'
 
+### <a name="Associations">Associations</a>
+
+Datashift can search for records Associations with your main model and assign them to the model being loaded.
+
+To this it support an in column DSL, for identifyign which field on the association to search on,
+and the value to search for. So in this example our main Project object has an has_many association with Category,
+which has a field called reference. We want to attach existing Categories to our newly created Project, based on values of this reference. Our Excel (or CSV) column might look like this :
+
+project name | categories 
+--- | --- 
+aphex | *reference*:category_001,category_002`
+boc | *reference*:category_003
+autechre | *reference*:category_001,category_002,category_003
+
+The field name, here 'reference', is seperated from the values by `:`
+
+Multiple values can be specified (since this is an has_many relationship).
+
+These should be seperated by `,`
+
+So datashift will perform searches like Project.where('reference' IN [category_001,category_002,category_003])
+and assign the results to the new Project.categories
+
 ### <a name="Configuration">Configuration</a>
 
 #### Global
