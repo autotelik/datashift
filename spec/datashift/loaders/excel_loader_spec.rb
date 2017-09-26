@@ -83,15 +83,6 @@ module  DataShift
         expect(Project.count).to eq count + 3
       end
 
-      #         it "should provide access to main subject class of the load" do
-      #           expect(loader.load_object_class).to eq Project
-      #         end
-      #
-      #         it "should provide access to main subject of the load" do
-      #           expect(loader.load_object).to be_a Project
-      #           expect(loader.load_object.new_record?).to eq true
-      #         end
-
       it 'should populate database objects from a simple .xls spreedsheet' do
         loader.run(expected, Project)
 

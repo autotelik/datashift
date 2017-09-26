@@ -17,6 +17,7 @@ Paperclip bulk import tools for attaching uploads from filesystem, to Rails mode
 - [Features](#features)
 - [Usage](#usage)
 - [Import / Export](#ImportExport)
+- [Associations](#Associations)
 - [Testing](#testing)
 - [Wiki](https://github.com/autotelik/datashift/wiki)
 
@@ -135,26 +136,45 @@ For Example given column heading 'Product Properties', will still find real asso
 
 ### <a name="Associations">Associations</a>
 
-Datashift can search for records Associations with your main model and assign them to the model being loaded.
+Datashift can populate your main model's associations, searching for matching objects and assigning them to the model being loaded.
 
-To this it support an in column DSL, for identifyign which field on the association to search on,
-and the value to search for. So in this example our main Project object has an has_many association with Category,
-which has a field called reference. We want to attach existing Categories to our newly created Project, based on values of this reference. Our Excel (or CSV) column might look like this :
+To achieve this it supports an in column syntax to specify :
+
+- The field on the association model to search on.
+- The specific values to attempt to match. 
+
+So in the following example our main Project object has an has_many association with Category.
+
+Category has a field called reference. We want to attach existing Categories to our newly created Project, based on values of this reference. 
+
+So, our Excel (or CSV) column might look like this :
 
 project name | categories 
 --- | --- 
-aphex | *reference*:category_001,category_002`
+aphex | *reference*:category_001,category_002
 boc | *reference*:category_003
 autechre | *reference*:category_001,category_002,category_003
 
-The field name, here 'reference', is seperated from the values by `:`
 
-Multiple values can be specified (since this is an has_many relationship).
+##### Lookup Syntax
 
-These should be seperated by `,`
+- `:` - Seperates lookup field name, here 'reference', from the values.
+- `,` - Seperates *multiple* lookup values for has_many relationships
 
-So datashift will perform searches like Project.where('reference' IN [category_001,category_002,category_003])
+
+So in this example, datashift will perform searches like Project.where('reference' IN [category_001,category_002,category_003])
 and assign the results to the new Project.categories
+
+When specify has_many relationships multiple columns can also be specified.
+
+The following would lead to exactly the same end result, as the first example.
+
+project name | categories  | categories 
+--- | ---  | --- 
+aphex | *reference*:category_001| *reference*:category_002
+boc | *reference*:category_003| 
+autechre | *reference*:category_001,category_002| *reference*:category_003
+
 
 ### <a name="Configuration">Configuration</a>
 
