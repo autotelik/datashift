@@ -162,12 +162,15 @@ autechre | *reference*:category_001,category_002,category_003
 - `,` - Seperates *multiple* lookup values for has_many relationships
 
 
-So in this example, datashift will perform searches like Project.where('reference' IN [category_001,category_002,category_003])
-and assign the results to the new Project.categories
+So in this example, datashift will perform searches like :
 
-When specify has_many relationships multiple columns can also be specified.
+```ruby
+Project.where("reference IN (?)", [category_001,category_002,category_003])
+```
+`
+The resulting DB objects, will be assigned to the Project.categories
 
-The following would lead to exactly the same end result, as the first example.
+When specify has_many relationships multiple file columns can also be used. The following would lead to exactly the same end result, as the first example.
 
 project name | categories  | categories 
 --- | ---  | --- 
