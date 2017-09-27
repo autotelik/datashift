@@ -104,6 +104,7 @@ module DataShift
 
         threads = []
 
+        # SCAFFOLD THE TEST MODELS
         Dir.glob(File.join(fixtures_path, 'models', '*.rb')).each do |m|
           threads << Thread.new { system("RAILS_ENV=development bundle exec rails g scaffold #{File.basename(m, '.*')}") }
 

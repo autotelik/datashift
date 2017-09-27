@@ -52,6 +52,7 @@ class CreateTestBed < ActiveRecord::Migration
     # has_belongs_to_many :project
     create_table :categories do |t|
       t.string :reference
+      t.string :name
       t.timestamps null: false
     end
 

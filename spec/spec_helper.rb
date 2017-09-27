@@ -15,10 +15,8 @@ Dir[File.join(File.dirname(__FILE__), "support/**/*.rb")].each { |f| require f }
 # Need an active record DB to test against, so we manage own Rails sandbox
 DataShift::Sandbox.gen_rails_sandbox
 
-
 require File.join( DataShift::Sandbox.rails_sandbox_path, "config/environment.rb")
 require "rspec/rails"
-
 
 require 'factory_girl_rails'
 require 'database_cleaner'

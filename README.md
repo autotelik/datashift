@@ -5,9 +5,12 @@
 [![Test Coverage](https://codeclimate.com/github/autotelik/datashift/badges/coverage.svg)](https://codeclimate.com/github/autotelik/datashift/coverage)
 
 Datashift is a suite of tools to help you import or export data from a Rails application,
-including all associations, in either hash or json formats.
+including all association data.
 
 Formats currently supported are `.xls` files (Excel/OpenOffice/LibraOffice) and CSV files.
+
+It's not the fastest, but a key feature of the import is that unlike say a pure DB load,
+inbound data is validated by your Rail's business logic, as defined by your validations, associations etc.
 
 Paperclip bulk import tools for attaching uploads from filesystem, to Rails model instances.
 
@@ -138,7 +141,7 @@ For Example given column heading 'Product Properties', will still find real asso
 
 Datashift can populate your main model's associations, searching for matching objects and assigning them to the model being loaded.
 
-To achieve this it supports an in column syntax to specify :
+To achieve this it supports both column headings, or an in-column syntax to specify :
 
 - The field on the association model to search on.
 - The specific values to attempt to match. 
@@ -147,7 +150,18 @@ So in the following example our main Project object has an has_many association 
 
 Category has a field called reference. We want to attach existing Categories to our newly created Project, based on values of this reference. 
 
-So, our Excel (or CSV) column might look like this :
+##### Header or Cell based lookup
+
+Specify the lookup field in the column headings, our Excel (or CSV) column might look like this :
+
+project name | *Categories:reference*
+--- | ---  | --- 
+aphex | category_001
+boc | category_003| 
+autechre | category_001,category_002
+
+
+Note, you can also specify the lookup at the individual cell level,
 
 project name | categories 
 --- | --- 
@@ -162,21 +176,24 @@ autechre | *reference*:category_001,category_002,category_003
 - `,` - Seperates *multiple* lookup values for has_many relationships
 
 
-So in this example, datashift will perform searches like :
+So in our example, datashift will perform searches like :
 
 ```ruby
-Project.where("reference IN (?)", [category_001,category_002,category_003])
+Category.where("reference IN (?)", [category_001,category_002,category_003])
 ```
 `
 The resulting DB objects, will be assigned to the Project.categories
 
 When specify has_many relationships multiple file columns can also be used. The following would lead to exactly the same end result, as the first example.
 
+N.B You can specify different lookup fields in different columns or cells.
+
 project name | categories  | categories 
 --- | ---  | --- 
 aphex | *reference*:category_001| *reference*:category_002
 boc | *reference*:category_003| 
 autechre | *reference*:category_001,category_002| *reference*:category_003
+
 
 
 ### <a name="Configuration">Configuration</a>

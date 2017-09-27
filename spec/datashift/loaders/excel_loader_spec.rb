@@ -12,6 +12,12 @@ module  DataShift
 
     before(:each) do
       DataShift::Transformation::Factory.reset
+
+      create_list(:category, 5)
+
+      create(:category, name: 'cat_abc')
+      create(:category, name: 'cat_def')
+      create(:category, name: 'cat_ghi')
     end
 
     let(:loader) { ExcelLoader.new }
@@ -35,10 +41,6 @@ module  DataShift
     end
 
     context 'basic load operations' do
-
-      before(:each) do
-        create_list(:category, 5)
-      end
 
       it 'should provide access to the file_name' do
         loader.run(expected, Project)
@@ -136,14 +138,11 @@ module  DataShift
       end
 
       it 'should process multiple associations with lookup specified in column from excel spreadsheet' do
-        count = Project.count
-
         expected = ifixture_file('ProjectsMultiCategoriesHeaderLookup.xls')
 
-        loader.run(expected, Project)
+        expect { loader.run(expected, Project) }.to change(Project, :count).by(4)
 
         expect(loader.loaded_count).to eq 4
-        expect(Project.count).to eq count + 4
 
         { '004' => 4, '005' => 1, '006' => 0, '007' => 1 }.each do |title, expected|
           project = Project.find_by_title(title)
@@ -152,6 +151,22 @@ module  DataShift
 
           expect(project.categories.size).to eq expected
         end
+      end
+
+      it 'should process associations however they are specified column, header, mixed fields' do
+        expected = ifixture_file('ProjectsFullCategoriesLookup.xls')
+
+        expect { loader.run(expected, Project) }.to change(Project, :count).by(4)
+
+        project = Project.where(title: '004').first
+
+        expect(project.categories.size).to eq 4
+
+        cats = Category.where("reference IN (?)", [:category_001, :category_002, :category_003]).all
+
+        cats += Category.where("name IN (?)", [:cat_abc]).all
+
+        expect(project.categories).to match_array cats
       end
 
       it 'should process excel spreadsheet with extra undefined columns' do
