@@ -139,12 +139,12 @@ For Example given column heading 'Product Properties', will still find real asso
 
 ### <a name="Associations">Associations</a>
 
-Datashift can populate your main model's associations, searching for matching objects and assigning them to the model being loaded.
+Datashift can populate your main model's associations, searching for matching objects and assigning them to the load object.
 
-To achieve this it supports both column headings, or an in-column syntax to specify :
+To achieve this it supports a syntax within either column headings or individual cells to specify :
 
-- The field on the association model to search on.
-- The specific values to attempt to match. 
+- Search Attribute - the field on the association model to search on.
+- Search Value - the specific value(s) to attempt to find. 
 
 So in the following example our main Project object has an has_many association with Category.
 
@@ -152,16 +152,17 @@ Category has a field called reference. We want to attach existing Categories to 
 
 ##### Header or Cell based lookup
 
-Specify the lookup field in the column headings, our Excel (or CSV) column might look like this :
+Specifying the lookup field in the column headings, our Excel (or CSV) file might look like this :
 
 project name | *Categories:reference*
---- | ---  | --- 
+--- | ---
 aphex | category_001
-boc | category_003| 
+boc | category_003
 autechre | category_001,category_002
 
 
-Note, you can also specify the lookup at the individual cell level,
+> Note: Lookup can be specified at the individual cell level
+        You can specify different lookup fields in different columns or cells.
 
 project name | categories 
 --- | --- 
@@ -181,12 +182,11 @@ So in our example, datashift will perform searches like :
 ```ruby
 Category.where("reference IN (?)", [category_001,category_002,category_003])
 ```
-`
+
 The resulting DB objects, will be assigned to the Project.categories
 
 When specify has_many relationships multiple file columns can also be used. The following would lead to exactly the same end result, as the first example.
 
-N.B You can specify different lookup fields in different columns or cells.
 
 project name | categories  | categories 
 --- | ---  | --- 
