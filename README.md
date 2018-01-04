@@ -69,6 +69,50 @@ to attach to the main Upload model,
 
 ### <a name="Usage">Usage</a>
 
+#### <a name="API">General API</a>   
+
+It's simple to use the facilites in standard Ruby, for example
+
+```ruby
+    DataShift::CsvLoader.new.run('db/seeds/permit.csv', PermitModel)
+
+
+    music_to_export = MP3.where(style: 'banging techno').all
+    DataShift::ExcelExporter.new.export('/tmp/mp3_dump.xls', music_to_export)
+```
+
+In Rails, generally you would drive this via a Controller Action
+
+For example
+```ruby
+class CategoriesController < ApplicationController
+
+  def index
+     @categories = Category.all
+ 
+     respond_to do |format|
+         format.xls do
+             t = Tempfile.new(['categories', '.xls'])
+             begin
+               DataShift::ExcelExporter.new.export(t.path, @categories)
+               File.open(t.path, 'r') { |f| send_data f.read, type: 'application/xls' }
+             ensure
+               t.close!
+             end
+           end
+         end
+   end
+```
+
+> N.B You need to have registered the *xls* format as mime type, somewhere like `config/initializers/mime_types.rb`
+
+```ruby
+Mime::Type.register "application/xls", :xls
+```
+
+#### <a name="API">CLI</a>   
+
+
 Multiple apps are provided through command line tasks via [Thor](https://github.com/erikhuda/thor).
 
 To use the command line applications, pull in the tasks.
@@ -296,17 +340,6 @@ So in this example, to fix a set of products without images, the setup required 
    
 [See wiki](https://github.com/autotelik/datashift/wiki/Import-paperclip-facilities)
 
-### <a name="API">General Ruby API</a>   
-
-It's simple to use the facilites in standard Ruby, for example
-
-```ruby
-    DataShift::CsvLoader.new.run('db/seeds/permit.csv', PermitModel)
-
-
-    records_for_export = MP3.where(style: 'banging techno').all
-    DataShift::ExcelExporter.new.export('/tmp/mp3_dump.xls', records_for_export)
-```
 
 ### <a name="Testing">Testing</a>
 

@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
 
   factory :owner do
     name { FFaker::Name.name_with_prefix }

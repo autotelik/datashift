@@ -33,7 +33,7 @@ module Datashift
 
     include DataShift::TestHelpers
 
-    desc "lint", "Run in spec - Verify that FactoryGirl factories are valid"
+    desc "lint", "Run in spec - Verify that FactoryBot factories are valid"
 
     def lint
 
@@ -44,8 +44,8 @@ module Datashift
       begin
         DatabaseCleaner.start
 
-        puts "Running FactoryGirl.lint"
-        FactoryGirl.lint
+        puts "Running FactoryBot.lint"
+        FactoryBot.lint
       ensure
         DatabaseCleaner.clean
       end

@@ -9,12 +9,30 @@ module DataShift
 
     def self.sandbox_gem_list
       add_gem 'datashift', path:  File.expand_path('../../..', __FILE__)
-      add_gem 'awesome_print'
-      add_gem 'factory_girl_rails'
+      add_gem 'factory_bot_rails'
+      add_gem 'ffaker'
+    end
+
+    def self.rails_sandbox_name
+      'dummy'
+    end
+
+    def self.rails_sandbox_parent
+      @rails_sandbox_parent ||= File.expand_path('../..', __FILE__)
     end
 
     def self.rails_sandbox_path
-      File.expand_path('../../dummy', __FILE__)
+      File.join(rails_sandbox_parent, rails_sandbox_name)
+    end
+
+    def self.rails_sandbox_gemfile
+      File.join(rails_sandbox_path, 'Gemfile')
+    end
+
+    def self.rails_sandbox_spec_path
+      @rails_sandbox_spec_path ||= File.join(rails_sandbox_path, 'spec')
+      FileUtils.mkdir_p(@rails_sandbox_spec_path) unless File.exists?(@rails_sandbox_spec_path)
+      @rails_sandbox_spec_path
     end
 
     def self.gen_rails_sandbox( force = false)
@@ -28,53 +46,55 @@ module DataShift
         FileUtils.rm_rf(sandbox)
       end
 
-      sandbox_parent_dir =  File.expand_path( "#{sandbox}/.." )
-
       if File.exist?(sandbox)
         puts "RSPEC - Found and using existing Rails sandbox [#{sandbox}]"
       else
 
-        puts "RSPEC SANDBOX - Creating new Rails sandbox in : #{sandbox_parent_dir}"
+        puts "RSPEC SANDBOX - Creating sandbox in : #{rails_sandbox_parent}"
 
-        run_in( sandbox_parent_dir ) do
-          puts "RSPEC DUMMY - Sandbox created with Rails VERSION : #{system('rails -v')}"
-          system('rails new ' + File.basename(rails_sandbox_path))
+        rails_new_opts = ' --skip-bundle --skip-action-mailer --quiet --skip-test '
+        cmd = "rails new #{rails_sandbox_name} #{rails_new_opts}"
+
+        run_in( rails_sandbox_parent ) do
+          puts "RSPEC SANDBOX - Creating new Rails app : #{cmd}"
+          system(cmd)
+          puts "RSPEC SANDBOX - Sandbox created with Rails VERSION : #{system('rails -v')}"
         end
 
-        puts "RSPEC SANDBOX - Configuring gems and DB in rails sandbox Gemfile"
-
+        puts 'RSPEC SANDBOX - Configuring gems in Gemfile'
         run_in(rails_sandbox_path) do
           sandbox_gem_list
-          system("cat #{File.join(rails_sandbox_path, 'Gemfile')}")
 
-          migrations = File.expand_path(File.join(fixtures_path, 'db', 'migrate'), __FILE__)
-          FileUtils.cp_r( migrations, File.join(rails_sandbox_path, 'db'))
-
-          seeds = File.expand_path(File.join(fixtures_path, 'db', 'seeds.rb'), __FILE__)
-          FileUtils.cp_r( seeds, File.join(rails_sandbox_path, 'db'))
+          puts "Running bundle install for [#{rails_sandbox_gemfile}]"
+          Bundler.with_clean_env { system("bundle install  --gemfile #{rails_sandbox_gemfile}") }
         end
 
         setup_db_install
       end
 
       # Copy over the latest versions to pick up any local development during testing
-      run_in( sandbox_parent_dir ) do
-        name = File.basename(rails_sandbox_path)
+      run_in( rails_sandbox_parent ) do
+        puts "RSPEC SANDBOX - Manually copying models, factories etc from #{fixtures_path}"
+        src = File.join(rails_sandbox_parent, 'factories')
+        dest = File.join(rails_sandbox_spec_path, 'factories')
+        FileUtils.rm_rf(dest) if File.exist?(dest)
+        FileUtils.copy_entry(src, dest)
 
-        puts "RSPEC DUMMY - Copying models from #{Dir.glob(File.join(fixtures_path, 'models'))}"
-
-        FileUtils.cp_r( Dir.glob(File.join(fixtures_path, 'models', '*.rb')), File.join(name, 'app/models'))
+        FileUtils.cp_r( Dir.glob(File.join(fixtures_path, 'models', '*.rb')), File.join(rails_sandbox_path, 'app/models'))
 
         FileUtils.cp_r( File.join(fixtures_path, 'sandbox_example.thor'), rails_sandbox_path)
       end
 
-      puts "RSPEC DUMMY - Build Complete"
+      File.open(File.join(rails_sandbox_path, 'config/initializers/mime_types.rb'), 'ab') do |file|
+        file.write("Mime::Type.register 'application/xls', :xls\n")
+      end
 
+      puts "RSPEC SANDBOX - Build Complete"
       sandbox
     end
 
     def self.run_in(dir)
-      puts "Sandbox .. switching context to run tests in path [#{dir}]"
+      puts "RSPEC SANDBOX - Switching context to run in [#{dir}]"
       original_dir = Dir.pwd
       begin
         Dir.chdir dir
@@ -87,33 +107,32 @@ module DataShift
     def self.setup_db_install
 
       run_in(rails_sandbox_path) do
-        puts "Running bundle install for [#{File.join(rails_sandbox_path, 'Gemfile')}]"
 
-        Bundler.with_clean_env do
-          system("bundle install  --gemfile #{File.join(rails_sandbox_path, 'Gemfile')}")
-        end
-
-        puts 'Creating and migrating DB'
-
+        puts 'RSPEC SANDBOX - Creating DB'
         system('bundle exec rake db:create')
 
-        puts 'Running db:migrate'
-
-        system('RAILS_ENV=development bundle exec rake db:migrate')
-        system('RAILS_ENV=test bundle exec rake db:migrate')
-
-        threads = []
-
         # SCAFFOLD THE TEST MODELS
-        Dir.glob(File.join(fixtures_path, 'models', '*.rb')).each do |m|
-          threads << Thread.new { system("RAILS_ENV=development bundle exec rails g scaffold #{File.basename(m, '.*')}") }
+        puts 'RSPEC SANDBOX - Scaffold the Test Models'
 
-          threads << Thread.new { system("RAILS_ENV=development bundle exec rails g resource_route #{File.basename(m, '.*')}") }
+        # TODO - Move the columns from fixtures_path migration to the scaffolds and auto generate migration
+        scaffold_opts = " -f -q --no-migration --no-stylesheets --no-assets "
+        Dir.glob(File.join(fixtures_path, 'models', '*.rb')).each do |m|
+          cmd = "RAILS_ENV=development bundle exec rails g scaffold #{File.basename(m, '.*')} #{scaffold_opts}"
+          puts cmd
+          system(cmd)
         end
 
-        threads.each(&:join)
+        # TODO - Move this to scaffolding above
+        puts 'Creating Migrations and Seed Data'
+        migrations = File.expand_path(File.join(fixtures_path, 'db', 'migrate'), __FILE__)
+        FileUtils.cp_r( migrations, File.join(rails_sandbox_path, 'db'))
 
-        system('bundle install')
+        seeds = File.expand_path(File.join(fixtures_path, 'db', 'seeds.rb'), __FILE__)
+        FileUtils.cp_r( seeds, File.join(rails_sandbox_path, 'db'))
+
+        puts 'Running db:migrate'
+        system('bundle exec rake db:migrate RAILS_ENV=development')
+        system('bundle exec rake db:migrate RAILS_ENV=test')
       end
 
     end

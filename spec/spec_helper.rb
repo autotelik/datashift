@@ -18,7 +18,7 @@ DataShift::Sandbox.gen_rails_sandbox
 require File.join( DataShift::Sandbox.rails_sandbox_path, "config/environment.rb")
 require "rspec/rails"
 
-require 'factory_girl_rails'
+require 'factory_bot_rails'
 require 'database_cleaner'
 
 require File.expand_path("../../lib/datashift", __FILE__)
@@ -38,7 +38,7 @@ RSpec.configure do |config|
     DataShift::Loaders::Configuration.reset
   end
 
-  config.include FactoryGirl::Syntax::Methods
+  config.include FactoryBot::Syntax::Methods
 
   # Print the 10 slowest examples and example groups at the
   # end of the spec run, to help surface which specs are running
