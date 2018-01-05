@@ -4,7 +4,7 @@
 # License::
 #
 #
-# Extend the Sporeadsheet classes with some of our common methods
+# Extend the Spreadsheet classes with some of our common methods
 #
 # ... to do extract into separate module with pure ruby that works with both POI and Spreadsheet
 

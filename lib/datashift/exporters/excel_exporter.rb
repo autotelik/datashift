@@ -35,11 +35,14 @@ module DataShift
       false
     end
 
-    # Create an Excel file from list of ActiveRecord objects
-    def export(file_name, export_records, options = {})
-
-      @file_name = file_name
-
+    # Creates an Excel file from list of ActiveRecord objects.
+    # Supply the full path to write XLS file to, OR to access output as String,
+    # rather than writing to disc, pass StringIO
+    # e.g
+    #       file_contents = StringIO.new
+    #       exporter.export(file_contents, some_records)
+    #
+    def export(file, export_records, options = {})
       records = [*export_records]
 
       if(records.nil? || records.empty?)
@@ -63,9 +66,11 @@ module DataShift
 
       excel.ar_to_xls(records)
 
-      logger.info("Writing Excel to file [#{file_name}]")
+      logger.info("Writing Excel to file [#{file}]")
 
-      excel.write( file_name )
+      excel.write( file )
+
+      excel
     end
 
     def export_headers(klass)

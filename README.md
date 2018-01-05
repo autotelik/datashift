@@ -92,16 +92,11 @@ class CategoriesController < ApplicationController
  
      respond_to do |format|
          format.xls do
-             t = Tempfile.new(['categories', '.xls'])
-             begin
-               DataShift::ExcelExporter.new.export(t.path, @categories)
-               File.open(t.path, 'r') { |f| send_data f.read, type: 'application/xls' }
-             ensure
-               t.close!
-             end
-           end
+              contents = StringIO.new
+              DataShift::ExcelExporter.new.export(contents, @categories)
+              send_data contents.string.force_encoding('binary'), type: 'application/xls'
          end
-   end
+      end
 ```
 
 > N.B You need to have registered the *xls* format as mime type, somewhere like `config/initializers/mime_types.rb`
