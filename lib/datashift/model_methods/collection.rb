@@ -32,9 +32,7 @@ module DataShift
 
       extend Forwardable
 
-      # TOFIX - Fine with 2.3.2 but this breaks in Ruby 2.4.0 with
-      # NoMethodError: undefined method `to_sym' for []:Array Did you mean?  to_s  to_set
-      def_delegators :@model_method_list, [], :sort, :sort!, :first, :last
+      def_delegators :@model_method_list, :[], :sort, :sort!, :first, :last
 
       def initialize( klass )
         @managed_class = klass
