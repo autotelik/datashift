@@ -1,3 +1,3 @@
 module DataShift
-  VERSION = '0.40.1'.freeze
+    VERSION = '0.40.2'.freeze unless defined?(VERSION)
 end
