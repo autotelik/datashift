@@ -60,11 +60,13 @@ module DataShift
 
       prepare_data_flow_schema(klass)
 
-      export_headers(klass)
+      headers = export_headers(klass)
 
       logger.info("Exporting #{records.size} #{klass} to Excel")
 
-      excel.ar_to_xls(records)
+      excel.ar_to_xls(records, headers: headers, data_flow_schema: data_flow_schema)
+
+      excel.auto_fit_rows.auto_fit_columns
 
       logger.info("Writing Excel to file [#{file}]")
 
@@ -76,10 +78,12 @@ module DataShift
     def export_headers(klass)
 
       headers = if(data_flow_schema)
-                  data_flow_schema.sources
+                  data_flow_schema.headers
                 else
                   Headers.klass_to_headers(klass)
                 end
+
+      puts headers.class, headers.inspect
 
       excel.set_headers( headers )
 
@@ -88,6 +92,8 @@ module DataShift
     end
 
     def prepare_data_flow_schema(klass)
+      return @data_flow_schema if @data_flow_schema
+
       @data_flow_schema = DataShift::DataFlowSchema.new
       @data_flow_schema.prepare_from_klass( klass )
 

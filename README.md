@@ -78,7 +78,8 @@ It's simple to use the facilites in standard Ruby, for example
 
 
     music_to_export = MP3.where(style: 'banging techno').all
-    DataShift::ExcelExporter.new.export('/tmp/mp3_dump.xls', music_to_export)
+    
+    DataShift::ExcelExporter.new.tap {|d| d.export('/tmp/mp3_dump.xls', music_to_export) }
 ```
 
 In Rails, generally you would drive this via a Controller Action

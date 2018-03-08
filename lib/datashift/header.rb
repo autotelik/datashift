@@ -3,7 +3,9 @@
 # Date ::     Feb 2016
 # License::   MIT
 #
-# Details::   A column header
+# Details::   A column header.
+#
+#             Calling to_s on a header object will return the presentation value
 #
 module DataShift
 
@@ -11,9 +13,9 @@ module DataShift
 
     attr_accessor :source, :presentation
 
-    def initialize(source:)
+    def initialize(source:, presentation: nil)
       @source = source
-      @presentation = source
+      @presentation = presentation || source
     end
 
     def to_s

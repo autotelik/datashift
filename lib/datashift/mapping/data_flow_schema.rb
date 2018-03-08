@@ -55,6 +55,16 @@ module DataShift
       @nodes = DataShift::NodeCollection.new
     end
 
+    # @headers=
+    #<DataShift::Header:0x00000004bc37f8
+    #  @presentation="status_str",
+    #  @source="status_str">],
+
+    def headers
+      # TODO fix doc context so it can be created 'empty' i.e without AR klass, and always has empty headers
+      @nodes.doc_context.try(:headers) || []
+    end
+
     def sources
       @nodes.collect(&:method_binding).collect(&:source)
     end
@@ -135,7 +145,7 @@ module DataShift
 
       # The over all doc context
       doc = DocContext.new(klass)
-      nodes.doc_context = doc
+      @nodes.doc_context = doc
 
       klass_section = locale_section[class_name]
 
@@ -152,6 +162,7 @@ module DataShift
           raise 'Bad syntax in flow schema YAML - Nodes should be a sequence'
         end
 
+        # for operator and type
         model_method_mgr = ModelMethods::Manager.catalog_class(klass)
 
         yaml_nodes.each_with_index do |keyed_node, i|
@@ -164,20 +175,26 @@ module DataShift
           #   Project:
           #     nodes:
           #       - project:
-          #           heading:
-          #             source: "title"           # import
-          #             presentation: "Title"     # export
+          #           source: "title"           # source of data, defaults to node name (project) if not specified
+          #           presentation: "Title"     # e.g for export headers
           #           operator: title
           #           operator_type: has_many
           #
           logger.info("Node Data: #{keyed_node.inspect}")
 
-          # type one of ModelMethod.supported_types_enum
-          section = keyed_node.values.first
+          node = keyed_node.keys.first
 
+          section = keyed_node.values.first || {}
+
+          # TODO - layout with heading is verbose for no benefit - defunct, simply node.source, node.presentation
           source = section.fetch('heading', {}).fetch('source', nil)
 
-          doc.headers.add( source ) if(source)
+          # Unless a specific source mentioned assume the node is the source
+          source ||= section.fetch('source', node)
+
+          presentation = section.fetch('presentation', nil)
+
+          doc.headers.add( source, presentation: presentation)
 
           if(section['operator'])
             # Find the domain model method details
@@ -186,6 +203,7 @@ module DataShift
             unless model_method
               operator_type = section['operator_type'] || :method
 
+              # expect one of ModelMethod.supported_types_enum
               model_method = model_method_mgr.insert(section['operator'], operator_type)
             end
 
@@ -194,13 +212,13 @@ module DataShift
 
           method_binding ||= MethodBinding.new(source, i, model_method)
 
-          node = DataShift::NodeContext.new(doc, method_binding, i, nil)
+          node_context = DataShift::NodeContext.new(doc, method_binding, i, nil)
 
-          nodes << node
+          @nodes << node_context
         end
       end
 
-      nodes
+      @nodes
     end
 
   end
