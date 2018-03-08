@@ -28,7 +28,8 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'paperclip', '~> 5.2.0'
   s.add_runtime_dependency 'spreadsheet', '~> 1.1'
-  s.add_runtime_dependency 'rubyzip', '<= 1.2',  '>= 0.9.9'
+
+  s.add_runtime_dependency 'rubyzip', '~> 1.2.1'
 
   s.add_runtime_dependency 'thread_safe', '~> 0.3', '>= 0.3'
   s.add_runtime_dependency 'erubis', '~> 2.7.0'
