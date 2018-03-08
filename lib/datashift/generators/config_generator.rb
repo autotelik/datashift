@@ -197,8 +197,6 @@ EOS
 
       excel = Excel.new
 
-      puts "\n\n\nGenerating mapping from Excel file: #{excel_file_name}"
-
       excel.open(excel_file_name)
 
       sheet_number = options[:sheet_number] || 0

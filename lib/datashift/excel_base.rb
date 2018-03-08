@@ -2,6 +2,8 @@ module DataShift
 
   module ExcelBase
 
+    include DataShift::Logging
+
     def self.max_columns
       1024
     end
@@ -102,37 +104,44 @@ module DataShift
     end
 
     # Pass a set of AR records
-    def ar_to_xls(records, options = {})
+    def ar_to_xls(records, start_row: 1, headers: nil, data_flow_schema: nil)
       return if (!exportable?(records.first) || records.empty?)
 
-      # assume headers present
-      row_index = options[:start_row] ? (options[:start_row]) : 1
-
+      # assume header row present
+      row_index = start_row
       records.each do |record|
-        ar_to_xls_row(row_index, 0, record)
-
+        ar_to_xls_row(row_index, record, headers: headers, data_flow_schema: data_flow_schema)
         row_index += 1
       end
     end
 
     # Save data from an AR record to the current row, based on the record's columns [c1,c2,c3]
     # Returns the number of the final column written to
-    def ar_to_xls_row(row, start_column, record)
+    def ar_to_xls_row(row, record, start_column: 0, headers: nil, data_flow_schema: nil)
+
       column = start_column
-      ModelMethods::Catalogue.column_names(record.class).each do |connection_column|
-        ar_to_xls_cell(row, column, record, connection_column)
+
+      record_methods_to_call = if(data_flow_schema)
+                                 data_flow_schema.sources
+                               elsif headers.present?
+                                 headers.collect(&:source)
+                               else
+                                 ModelMethods::Catalogue.column_names(record.class)
+                               end
+      record_methods_to_call.each do |method|
+        ar_to_xls_cell(row, column, record, method)
         column += 1
       end
       column
     end
 
-    def ar_to_xls_cell(row_idx, col_idx, record, connection_column)
-      datum = record.send(connection_column)
+    # Expect to be able to send ar_method to the record i.e callable method to retrieve actual data to export
 
-      puts datum
+    def ar_to_xls_cell(row_idx, col_idx, record, ar_method)
+      datum = record.send(ar_method)
       self[row_idx, col_idx] = datum
     rescue => e
-      logger.error("Failed to export #{datum} from #{connection_column.inspect} to column #{col_idx}")
+      logger.error("Failed to export #{datum} from #{ar_method.inspect} to column #{col_idx}")
       logger.error(e.message)
       logger.error(e.backtrace)
     end

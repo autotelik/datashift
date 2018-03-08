@@ -71,14 +71,15 @@ to attach to the main Upload model,
 
 #### <a name="API">General API</a>   
 
-It's simple to use the facilites in standard Ruby, for example
+It's simple to use the facilities in standard Ruby, for example
 
 ```ruby
     DataShift::CsvLoader.new.run('db/seeds/permit.csv', PermitModel)
 
 
     music_to_export = MP3.where(style: 'banging techno').all
-    DataShift::ExcelExporter.new.export('/tmp/mp3_dump.xls', music_to_export)
+    
+    DataShift::ExcelExporter.new.tap {|d| d.export('/tmp/mp3_dump.xls', music_to_export) }
 ```
 
 In Rails, generally you would drive this via a Controller Action
@@ -158,7 +159,7 @@ thor datashift:import:excel -i, --input=INPUT -m, --model=MODEL                 
 thor datashift:import:load -i, --input=INPUT -m, --model=MODEL 
 ````
 
-Exports are currently based around a *single fundemental DB model* represented in a single Worksheet,
+Exports are currently based around a *single fundamental DB model* represented in a single Worksheet,
 but can include all the associations of that model. 
 
 Column headings will normally simply reflect the database columns names and association names, but this is configurable.
@@ -260,6 +261,44 @@ DataShift::Configuration.call do |c|
   c.with = :all
 end
  ```
+
+#### Export
+
+You can use a YAML file or snippet to configure the column headers, and set of columns to include in an export
+
+In this code based example, we only want 4 columns from our model.
+
+DataFlowSchema is the class that represents a schema for the data flows, that is it directs an import or export.
+
+We can use the `presentatio`n keyword to over ride rhe normal header (default is simply the column name).
+
+```ruby
+yaml= <<EOS
+ data_flow_schema:
+   MyRailsModelName:
+     nodes:
+       - id:
+       - status_str:
+           presentation: "Status Str"
+       - user:
+           presentation: "User Name"
+       - status:
+ EOS
+
+         data_flow_schema = DataShift::DataFlowSchema.new.tap { |dfs| dfs.prepare_from_string(yaml) }
+ 
+         DataShift::ExcelExporter.new.tap do |d|
+           d.data_flow_schema = data_flow_schema
+           d.export(File.join('tmp', 'conversion_for_removal.xls'), conversions)
+         end
+```
+
+In this example we stored the YAML in memory, but you can also use a file, 
+in which case the only change, is that the call to create a DataFlowSchema becomes : 
+```ruby
+  data_flow_schema = DataShift::DataFlowSchema.new.tap { |dfs| dfs.prepare_from_file(file_name) }
+```
+
 
 #### Mapping
 

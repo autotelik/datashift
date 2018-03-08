@@ -206,6 +206,7 @@ module DataShift
         run_in(rails_sandbox_path) do
 
           output = capture_stream(:stdout) { Datashift::Export.new.invoke(:db, [], args) }
+          # puts output
 
           ['users', 'projects', 'milestones', 'owners', 'categories', 'versions', 'loader_releases',
            'long_and_complex_table_linked_to_versions', 'empties', 'digitals', 'categories'].each do |f|

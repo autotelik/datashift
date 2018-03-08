@@ -21,7 +21,7 @@ require 'thor'
 $:.push File.expand_path("lib", __FILE__)
 
 require 'datashift'
-require 'factory_girl_rails'
+require 'factory_bot_rails'
 require 'database_cleaner'
 
 require_relative File.join('spec', 'support/sandbox')

@@ -100,8 +100,8 @@ module DataShift
       end
     end
 
-    def add(source)
-      @headers << Header.new(source: source)
+    def add(source, presentation: nil)
+      @headers << Header.new(source: source, presentation: presentation)
     end
 
     def sources

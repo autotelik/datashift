@@ -22,8 +22,6 @@ module DataShift
 
     def initialize
       super
-
-      @data_flow_schema = nil
     end
 
     def exportable?(record)
@@ -58,13 +56,15 @@ module DataShift
 
       excel = start_excel(klass, options)
 
-      prepare_data_flow_schema(klass)
+      prepare_data_flow_schema(klass) unless @data_flow_schema && @data_flow_schema.nodes.klass == klass
 
-      export_headers(klass)
+      headers = export_headers(klass)
 
       logger.info("Exporting #{records.size} #{klass} to Excel")
 
-      excel.ar_to_xls(records)
+      excel.ar_to_xls(records, headers: headers, data_flow_schema: data_flow_schema)
+
+      excel.auto_fit_rows.auto_fit_columns
 
       logger.info("Writing Excel to file [#{file}]")
 
@@ -74,16 +74,12 @@ module DataShift
     end
 
     def export_headers(klass)
-
       headers = if(data_flow_schema)
-                  data_flow_schema.sources
+                  data_flow_schema.headers
                 else
                   Headers.klass_to_headers(klass)
                 end
-
       excel.set_headers( headers )
-
-      logger.info("Wrote headers for #{klass} to Excel")
       headers
     end
 
@@ -112,7 +108,8 @@ module DataShift
 
       logger.info("Processing [#{records.size}] #{klass} records to Excel")
 
-      prepare_data_flow_schema(klass)
+      # TODO - prepare_data_flow_schema here in middle of export, plus reaching through nodes to klass, does not smell right
+      prepare_data_flow_schema(klass) unless @data_flow_schema && @data_flow_schema.nodes.klass == klass
 
       export_headers(klass)
 

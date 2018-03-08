@@ -76,7 +76,7 @@ module Datashift
     method_option :csv, :aliases => '-c', desc: "Export to CSV instead - Excel is default."
 
     method_option :prefix_map, :aliases => '-x', type: :hash, :default => {},
-                  desc: "For namespaced tables/models specify the table prefix to module map e.g spree_:Spree"
+                  desc: "For namespaced tables/models map table prefix to module name e.g spree_: Spree"
 
     method_option :modules, :aliases => '-m', type: :array, :default => [],
                   desc: "List of Modules to search for namespaced models"
@@ -120,7 +120,6 @@ module Datashift
         puts "Datashift: Start export to #{result} for [#{table}]"
 
         begin
-
           if(options[:associations])
             logger.info("Datashift: Exporting with associations")
             exporter.export_with_associations(result, @klass, @klass.all)
