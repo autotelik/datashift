@@ -49,10 +49,12 @@ module  DataShift
 
       it 'should export model object to .xls file' do
         expected = result_file('exp_project_first_export.xls')
-
         exporter.export(expected, Project.all.first)
-
         expect(File.exist?(expected)).to eq true
+
+        excel = Excel.new
+        excel.open(expected)
+        expect(excel.row(0)).to match Project.columns.collect(&:name)
       end
 
       it 'should export model attributes as headers' do
@@ -62,7 +64,6 @@ module  DataShift
 
         excel = Excel.new
         excel.open(expected)
-
         expect(excel.row(0)).to match Project.columns.collect(&:name)
       end
 
@@ -73,7 +74,6 @@ module  DataShift
 
         excel = Excel.new
         excel.open(expected)
-
         expect(excel.num_rows).to eq expected_projects + 1
       end
     end
@@ -94,7 +94,7 @@ module  DataShift
         end
       end
 
-      it 'should include associations in headers', duff: true do
+      it 'should include associations in headers' do
         expected = result_file('exp_project_assoc_headers.xls')
 
         exporter.export_with_associations(expected, Project, Project.all)

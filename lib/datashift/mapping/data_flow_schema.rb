@@ -69,19 +69,26 @@ module DataShift
       @nodes.collect(&:method_binding).collect(&:source)
     end
 
+    def create_node_collections(klass, doc_context: nil)
+      context = doc_context || DocContext.new(klass)
+      @nodes = DataShift::NodeCollection.new(doc_context: context)
+      @nodes
+    end
+
     # Build the node collection from a Class, that is for each operator in scope
     # create a method binding and a node context, and add to collection.
     #
     def prepare_from_klass( klass, doc_context = nil )
 
-      context = doc_context || DocContext.new(klass)
-
-      @nodes = DataShift::NodeCollection.new
+      @nodes = create_node_collections(klass, doc_context: doc_context)
 
       klass_to_model_methods( klass ).each_with_index do |mm, i|
+        @nodes.headers.add(mm.operator)   # for a class, the header names, default to the operators (methods)
+
         binding = MethodBinding.new(mm.operator, i, mm)
 
-        @nodes << DataShift::NodeContext.new(context, binding, i, nil)
+        # TODO - do we really need to pass in the doc context when parent nodes already has it ?
+        @nodes << DataShift::NodeContext.new(@nodes.doc_context, binding, i, nil)
       end
 
       @nodes
@@ -133,8 +140,6 @@ module DataShift
 
       @yaml_data = yaml
 
-      @nodes = NodeCollection.new
-
       raise "Bad YAML syntax  - No key #{locale_key} found in #{yaml}" unless yaml[locale_key]
 
       locale_section = yaml[locale_key]
@@ -143,13 +148,11 @@ module DataShift
 
       klass = MapperUtils.class_from_string_or_raise(class_name)
 
-      # The over all doc context
-      doc = DocContext.new(klass)
-      @nodes.doc_context = doc
-
       klass_section = locale_section[class_name]
 
       DataShift::Transformation.factory { |f| f.configure_from_yaml(class_name, klass_section) }
+
+      @nodes = create_node_collections(klass)
 
       if(klass_section && klass_section.key?('nodes'))
 
@@ -194,7 +197,7 @@ module DataShift
 
           presentation = section.fetch('presentation', nil)
 
-          doc.headers.add( source, presentation: presentation)
+          @nodes.headers.add(source, presentation: presentation)
 
           if(section['operator'])
             # Find the domain model method details
@@ -212,7 +215,7 @@ module DataShift
 
           method_binding ||= MethodBinding.new(source, i, model_method)
 
-          node_context = DataShift::NodeContext.new(doc, method_binding, i, nil)
+          node_context = DataShift::NodeContext.new(@nodes.doc_context, method_binding, i, nil)
 
           @nodes << node_context
         end

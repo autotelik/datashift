@@ -109,28 +109,27 @@ module DataShift
 
       # assume header row present
       row_index = start_row
-
       records.each do |record|
-        ar_to_xls_row(row_index, 0, record, headers: headers)
+        ar_to_xls_row(row_index, record, headers: headers, data_flow_schema: data_flow_schema)
         row_index += 1
       end
     end
 
     # Save data from an AR record to the current row, based on the record's columns [c1,c2,c3]
     # Returns the number of the final column written to
-    def ar_to_xls_row(row, start_column, record, headers: nil, data_flow_schema: nil)
+    def ar_to_xls_row(row, record, start_column: 0, headers: nil, data_flow_schema: nil)
+
       column = start_column
 
-      columns_to_export = if(data_flow_schema)
-                            data_flow_schema.headers
-                          elsif headers.present?
-                            headers.collect(&:source)
-                          else
-                            ModelMethods::Catalogue.column_names(record.class)
-                          end
-
-      columns_to_export.each do |ar_method|
-        ar_to_xls_cell(row, column, record, ar_method)
+      record_methods_to_call = if(data_flow_schema)
+                                 data_flow_schema.sources
+                               elsif headers.present?
+                                 headers.collect(&:source)
+                               else
+                                 ModelMethods::Catalogue.column_names(record.class)
+                               end
+      record_methods_to_call.each do |method|
+        ar_to_xls_cell(row, column, record, method)
         column += 1
       end
       column

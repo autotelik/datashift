@@ -25,7 +25,6 @@ module DataShift
 
       def add_file(target)
         unless @names.include?(target)
-          puts "Logging going to target [#{target}]"
           add( File.open(target, 'a') )
           @names << target
         end
