@@ -43,7 +43,7 @@ module DataShift
     def export(file, export_records, options = {})
       records = [*export_records]
 
-      if(records.nil? || records.empty?)
+      if records.blank?
         logger.warn('Excel Export - No objects supplied for export - no file written')
         return
       end
