@@ -40,7 +40,7 @@ module DataShift
 
       heading_lookups = method_binding.inbound_column.lookup_list
 
-      if (part1.nil? || part1.empty?) && (part2.nil? || part2.empty?)
+      if part1.blank? && part2.blank?
 
         # Column completely empty - check for lookup supplied via the
         # inbound column headers/config
@@ -50,7 +50,7 @@ module DataShift
         part1 = heading_lookups.find_by_operator
         part2 = heading_lookups.collect(&:value)
 
-      elsif part2.nil? || part2.empty?
+      elsif part2.blank?
 
         # Only **value(s)** in column, so use field from header/config field
 

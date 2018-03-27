@@ -121,14 +121,11 @@ module DataShift
         #
         raw_col_name, where_field, where_value, *data = raw_col_data.split(column_delim).map(&:strip)
 
-        puts "WTF #{raw_col_name}", bound.include?(raw_col_name)
+        # Config loaded details trump internal mappings
         next if bound.include?(raw_col_name)
-
-        pp bindings.map(&:source).inspect
 
         # Find the domain model method details
         model_method = model_methods_collection.search(raw_col_name)
-
 
         # No such column, but if config set to include it, for example for delegated methods, add as op type :assignment
         if( model_method.nil? && (include_all? || forced?(raw_col_name)) )
