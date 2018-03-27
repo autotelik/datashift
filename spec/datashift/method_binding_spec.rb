@@ -38,7 +38,7 @@ module DataShift
         binding = MethodBinding.new(valid_column_on_project, model_method, idx: 2)
         expect(binding.inbound_column.index).to eq 2
 
-        binding = MethodBinding.new(valid_column_on_project, 99999, model_method)
+        binding = MethodBinding.new(valid_column_on_project, model_method, idx: 99999)
         expect(binding.inbound_column.index).to eq 99999
       end
 

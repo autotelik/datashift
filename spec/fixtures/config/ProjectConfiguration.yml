@@ -19,6 +19,6 @@ data_flow_schema:
       value_as_string: " postfix me every-time"
       value_as_text: " postfix for value_as_text"
     nodes:
-        - user_id:
-            operator: a_custom_user_id_setter
-            operator_type: :method
+      - user_id:
+          operator: a_custom_user_id_setter
+          operator_type: :method

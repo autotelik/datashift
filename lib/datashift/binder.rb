@@ -121,8 +121,13 @@ module DataShift
         #
         raw_col_name, where_field, where_value, *data = raw_col_data.split(column_delim).map(&:strip)
 
-        # Config loaded details trump internal mappings
-        next if bound.include?(raw_col_name)
+        # Config loaded details trump internal mappings. User may not bother setting index of the column
+        # in config, so attempt now to match it to actual header
+        if bound.include?(raw_col_name)
+          external = bindings.find{|b| b.source == raw_col_name }
+          external.index = col_index if(external && external.index.nil?)
+          next
+        end
 
         # Find the domain model method details
         model_method = model_methods_collection.search(raw_col_name)
@@ -172,10 +177,7 @@ module DataShift
     end
 
     def add_bindings_from_nodes( nodes )
-      logger.debug("Adding  [#{nodes.size}] custom bindings")
       nodes.each { |n| bindings << n.method_binding unless n.is_a?(NoMethodBinding) }
-      puts "@ADD"
-      pp bindings.inspect
     end
 
     # Essentially we map any string collection of field names, not just headers from files

@@ -14,7 +14,7 @@ module DataShift
 
     let(:model_method)    { project_collection.search('value_as_string') }
 
-    let(:method_binding)  { MethodBinding.new('value_as_string', 1, model_method) }
+    let(:method_binding)  { MethodBinding.new('value_as_string', model_method, idx: 1) }
 
     let(:node_context) { DataShift::NodeContext.new(self, method_binding, "1,2,3", idx: 1) }
 

@@ -22,7 +22,7 @@ module DataShift
     attr_reader :inbound_column
 
     delegate :source, to: :inbound_column, allow_nil: true
-    delegate :index, to: :inbound_column, allow_nil: true
+    delegate :index, 'index=', to: :inbound_column, allow_nil: true
 
     # Is this method detail a valid mapping, aids identifying unmapped/unmappable columns
     attr_accessor :valid

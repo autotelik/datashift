@@ -57,7 +57,7 @@ module DataShift
     context 'prepare data' do
       let(:model_method)    { project_collection.search('value_as_string') }
 
-      let(:method_binding)  { MethodBinding.new('value_as_string', 1, model_method) }
+      let(:method_binding)  { MethodBinding.new('value_as_string', model_method, idx: 1) }
 
       let(:populator)       { DataShift::Populator.new }
 
@@ -74,7 +74,7 @@ module DataShift
       it 'should prepare inbound array data for a method binding' do
         list = create_list(:milestone, 4)
 
-        method_binding =  MethodBinding.new('milestones', 1, project_collection.search('milestones') )
+        method_binding =  MethodBinding.new('milestones', project_collection.search('milestones'), idx: 1 )
 
         value, attributes = populator.prepare_data(method_binding, list)
 
@@ -88,7 +88,7 @@ module DataShift
 
         list = LoaderRelease.all
 
-        method_binding =  MethodBinding.new('milestones', 1, project_collection.search('milestones') )
+        method_binding =  MethodBinding.new('milestones', project_collection.search('milestones'), idx: 1)
 
         value, attributes = populator.prepare_data(method_binding, list)
 
