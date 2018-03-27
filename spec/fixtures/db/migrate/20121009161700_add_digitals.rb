@@ -4,7 +4,9 @@
 #
 # Details::   Migration for paperclip specs
 
-class AddDigitals < ActiveRecord::Migration
+
+# TODO - can we get the version dynamically ? cos when we bump the version of Rails this needs to match
+class AddDigitals < ActiveRecord::Migration[4.2]
 
   def self.up
 

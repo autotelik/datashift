@@ -66,13 +66,18 @@ module DataShift
 
             @binder.bindings.each do |method_binding|
 
+              # TODO - how does this get inserted - bind headers ?? ignore if no index
+              # #<DataShift::MethodBinding:0x0000000003e26280 @inbound_column=#<DataShift::InboundData::Column:0x0000000003e26258 @header=#<DataShift::Header:0x0000000003e26190 @source="audio", @presentation="audio">, @index=nil,
+              next if method_binding.index.nil?
+
               unless method_binding.valid?
                 logger.warn("No binding was found for column (#{current_row_idx})")
                 next
               end
 
               # If binding to a column, get the value from the cell (bindings can be to internal methods)
-              value = method_binding.index ? row[method_binding.index] : nil
+              #
+              value = row[method_binding.index]
 
               context = doc_context.create_node_context(method_binding, current_row_idx, value)
 

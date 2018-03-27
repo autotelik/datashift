@@ -18,7 +18,7 @@ module DataShift
     # N.B these are in priority order ie. often prefer to process assignments first, then associations
     #
     def self.supported_types_enum
-      @type_enum ||= [:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
+      @type_enum ||= [:assignment, :enum, :belongs_to, :has_one, :has_many, :method, :paperclip]
       @type_enum
     end
 

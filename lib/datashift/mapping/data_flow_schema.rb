@@ -85,7 +85,7 @@ module DataShift
       klass_to_model_methods( klass ).each_with_index do |mm, i|
         @nodes.headers.add(mm.operator)   # for a class, the header names, default to the operators (methods)
 
-        binding = MethodBinding.new(mm.operator, i, mm)
+        binding = MethodBinding.new(mm.operator, mm, idx: i)
 
         # TODO - do we really need to pass in the doc context when parent nodes already has it ?
         @nodes << DataShift::NodeContext.new(@nodes.doc_context, binding, i, nil)
@@ -121,6 +121,8 @@ module DataShift
     #
     # See Config generation or lib/datashift/templates/import_export_config.erb for full syntax
     #
+    # Returns  DataShift::NodeCollection
+    #
     def prepare_from_file(file_name, locale_key = 'data_flow_schema')
       @raw_data = ERB.new(File.read(file_name)).result
 
@@ -143,6 +145,23 @@ module DataShift
       raise "Bad YAML syntax  - No key #{locale_key} found in #{yaml}" unless yaml[locale_key]
 
       locale_section = yaml[locale_key]
+
+      if(locale_section.has_key?('Global'))
+        global_nodes = locale_section.delete('Global')
+
+        [*global_nodes].each do |c|
+
+          # TODO   what is c ?   a list or hash ?
+          # if DataShift::Configuration.call.respond_to #{c}=
+          # Set the global value e.g
+          # DataShift::Configuration.call.force_inclusion_of_columns = [:audio]
+        end
+      end
+
+      unless locale_section.keys.present?
+        logger.warn('No class related configuration found in YAML syntax- Nothing to process')
+        return  DataShift::NodeCollection.new
+      end
 
       class_name = locale_section.keys.first
 
@@ -201,19 +220,26 @@ module DataShift
 
           if(section['operator'])
             # Find the domain model method details
+            # byebug
             model_method = model_method_mgr.search(section['operator'])
 
             unless model_method
               operator_type = section['operator_type'] || :method
 
-              # expect one of ModelMethod.supported_types_enum
+              # TODO validate type ? guess we expect one of ModelMethod.supported_types_enum
               model_method = model_method_mgr.insert(section['operator'], operator_type)
+              # TODO - This index could be hard coded by the user in YAML or we try to derive it from the headers
+              # byebug
+              method_binding = MethodBinding.new(source, model_method, idx: section['index'])
             end
-
-            method_binding = InternalMethodBinding.new(model_method)
           end
 
-          method_binding ||= MethodBinding.new(source, i, model_method)
+          # Now ensure we bind source/header(and index) to the method tht performs assignment of inbound datum to the model
+          #
+          # TOFIX - This is a bug waiting to happen right ? i is not coming from the headers
+          # so chances are user hasn't made config indexed as per headers
+          # index could be hard coded by the user in YAML or we try to derive it from the headers via the binder ???
+          method_binding ||= MethodBinding.new(source,  model_method, idx: i)
 
           node_context = DataShift::NodeContext.new(@nodes.doc_context, method_binding, i, nil)
 

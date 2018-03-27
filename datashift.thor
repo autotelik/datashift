@@ -62,7 +62,7 @@ module Datashift
 
     desc "build", 'Build gem and install in one step'
 
-    method_option :version, :aliases => '-v',  :desc => "New version", required: false
+    method_option :bump, :aliases => '-b', type: :string, desc:  "Bump the version", required: false
 
     method_option :push, :aliases => '-p', :desc => "Push resulting gem to rubygems.org"
 
@@ -71,14 +71,15 @@ module Datashift
 
     def build
 
-      version = options[:version] || DataShift::VERSION
+      raise "Please bump to a new version to install at rubygems" if options[:install] && options[:bump].blank?
+      version = options[:bump]
 
       # Bump the VERSION file in library
       File.open( File.join('lib/datashift/version.rb'), 'w') do |f|
         f << "module DataShift\n"
         f << "    VERSION = '#{version}'.freeze unless defined?(VERSION)\n"
         f << "end\n"
-      end if(options[:version] != DataShift::VERSION)
+      end if(options[:bump].present?)
 
       build_cmd =  "gem build datashift.gemspec"
 

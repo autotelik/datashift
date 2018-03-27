@@ -101,14 +101,16 @@ module DataShift
 
       # If klass not in Dictionary yet, add to dictionary all possible operators on klass
       # which can be used to map headers and populate an object of type klass
-      model_method_mgr = ModelMethods::Manager.catalog_class(klass)
+      model_methods_collection = ModelMethods::Manager.catalog_class(klass)
+
+      bound = bindings.map(&:source)
 
       [*columns].each_with_index do |col_data, col_index|
         raw_col_data = col_data.to_s.strip
 
         if raw_col_data.nil? || raw_col_data.empty?
           logger.warn("Column list contains empty or null header at index #{col_index}")
-          bindings << NoMethodBinding.new(raw_col_data, col_index)
+          bindings << NoMethodBinding.new(raw_col_data, idx: col_index)
           next
         end
 
@@ -119,25 +121,31 @@ module DataShift
         #
         raw_col_name, where_field, where_value, *data = raw_col_data.split(column_delim).map(&:strip)
 
+        puts "WTF #{raw_col_name}", bound.include?(raw_col_name)
+        next if bound.include?(raw_col_name)
+
+        pp bindings.map(&:source).inspect
+
         # Find the domain model method details
-        model_method = model_method_mgr.search(raw_col_name)
+        model_method = model_methods_collection.search(raw_col_name)
+
 
         # No such column, but if config set to include it, for example for delegated methods, add as op type :assignment
         if( model_method.nil? && (include_all? || forced?(raw_col_name)) )
           logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :assignment")
-          model_method = model_method_mgr.insert(raw_col_name, :assignment)
+          model_method = model_methods_collection.insert(raw_col_name, :assignment)
         end
 
         unless model_method
           Binder.substitutions(raw_col_name).each do |n|
-            model_method = model_method_mgr.search(n)
+            model_method = model_methods_collection.search(n)
             break if model_method
           end
         end
 
         if(model_method)
 
-          binding = MethodBinding.new(raw_col_name, col_index, model_method)
+          binding = MethodBinding.new(raw_col_name, model_method, idx: col_index)
 
           # we slurped up all possible data in split, turn it back into original string
           binding.add_column_data(data.join(column_delim))
@@ -168,7 +176,9 @@ module DataShift
 
     def add_bindings_from_nodes( nodes )
       logger.debug("Adding  [#{nodes.size}] custom bindings")
-      nodes.each { |n| bindings << n.method_binding }
+      nodes.each { |n| bindings << n.method_binding unless n.is_a?(NoMethodBinding) }
+      puts "@ADD"
+      pp bindings.inspect
     end
 
     # Essentially we map any string collection of field names, not just headers from files
@@ -177,7 +187,7 @@ module DataShift
     def add_missing(col_data, col_index, reason)
       logger.warn(reason)
 
-      missing = NoMethodBinding.new(col_data, col_index, reason: reason)
+      missing = NoMethodBinding.new(col_data, reason: reason, idx: col_index)
 
       missing_bindings << missing
       bindings << missing
@@ -208,6 +218,11 @@ module DataShift
     # The true operator names discovered from model
     def operator_names
       bindings.collect( &:operator )
+    end
+
+    # Find a binding, matches raw client supplied names e.g header and has a valid index
+    def find_for_source( name )
+      bindings.find{|b| b.source == name && b.index}
     end
 
   end

@@ -128,7 +128,7 @@ module DataShift
 
     Dir["#{base}/*.thor"].each do |f|
       next unless File.file?(f)
-      load(f)
+      Thor::Util.load_thorfile(f)
     end
   end
 

@@ -61,7 +61,7 @@ module DataShift
   class EmptyContext < NodeContext
 
     def initialize
-      super(NilClass, DataShift::NoMethodBinding.new, -1, [])
+      super(NilClass, DataShift::NoMethodBinding.new, [], idx: -1)
     end
   end
 

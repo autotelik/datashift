@@ -249,9 +249,14 @@ is to run our rail's install generator :
 ```ruby
 rails g datashift:install
 ```
+
+You can create a model specific file at anytime via
+```bash
+    thor datashift:config:generate:import
+```
  
-To create such a file manually, create an initialisation file within `config/initializers`, 
-and see `lib/datashift/configuration.rb` for details of options, for example
+To create a Rails tyle config block manually, create an initialisation file within `config/initializers`, 
+and see [lib/datashift/configuration.rb](lib/datashift/configuration.rb`) for details of all possible options, for example
 
 ```ruby
 DataShift::Configuration.call do |c|
