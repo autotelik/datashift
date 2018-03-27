@@ -12,7 +12,6 @@ module DataShift
     end
 
     def run_in(dir)
-      puts "RSpec .. switching context to run tests in path [#{dir}]"
       original_dir = Dir.pwd
       begin
         Dir.chdir dir

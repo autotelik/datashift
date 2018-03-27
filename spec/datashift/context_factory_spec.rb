@@ -18,7 +18,7 @@ module DataShift
 
     let(:model_method) { project_collection.search('value_as_string') }
 
-    let(:method_binding) { MethodBinding.new('column_for_value_as_string', 0, model_method) }
+    let(:method_binding) { MethodBinding.new('column_for_value_as_string',  model_method, idx: 0) }
 
     let(:another_populator) do
       class AnotherPopulator
@@ -44,7 +44,7 @@ module DataShift
 
       it 'should provide a default Populator when none specifically defined' do
 
-        mb = MethodBinding.new('value_as_boolean', 0, project_collection.search('value_as_boolean'))
+        mb = MethodBinding.new('value_as_boolean', project_collection.search('value_as_boolean'), idx: 0)
 
         populator = PopulatorFactory.get_populator(mb)
 

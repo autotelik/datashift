@@ -99,7 +99,7 @@ module DataShift
           @value = data
 
         elsif(!DataShift::Guards.jruby? &&
-          (data.is_a?(Spreadsheet::Formula) || data.class.ancestors.include?(Spreadsheet::Formula)) )
+            (data.is_a?(Spreadsheet::Formula) || data.class.ancestors.include?(Spreadsheet::Formula)) )
 
           @value = data.value # TOFIX jruby/apache poi equivalent ?
 
@@ -156,11 +156,17 @@ module DataShift
 
       elsif model_method.operator_for(:has_one)
 
-        if value.is_a?(model_method.klass)
+        begin
           record.send(operator + '=', value)
-        else
-          logger.error("Cannot assign value [#{value.inspect}]")
-          logger.error("Value was Type (#{value.class}) - Required Type for has_one #{operator} is [#{klass}]")
+        rescue => x
+          logger.error("Cannot assign value [#{value.inspect}] for has_one [#{operator}]")
+          logger.error(x.inspect)
+
+          if value.is_a?(model_method.klass)
+            logger.error("Value was Correct Type (#{value.class}) - [#{model_method.klass}]")
+          else
+            logger.error("Value was Type (#{value.class}) - Required Type is [#{model_method.klass}]")
+          end
         end
 
       elsif model_method.operator_for(:assignment)
@@ -179,11 +185,14 @@ module DataShift
 
       elsif model_method.operator_for(:method)
 
+
         begin
           params_num = record.method(operator.to_sym).arity
 
-          # think this should be == 0 but seen situations where -1 returned even though method accepts ZERO params
-          if(params_num < 1)
+          # There are situations where -1 returned, this is normally related to variable number of arguments,
+          # but maybe buggy - have seen -1 for what seems perfceatlly normal method e.g   def attach_audio_file_helper(file_name)
+          #
+          if(params_num == 0)
             logger.debug("Calling Custom Method (no value) [#{operator}]")
             record.send(operator)
           elsif(value)

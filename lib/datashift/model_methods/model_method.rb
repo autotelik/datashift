@@ -4,7 +4,7 @@
 # License::   MIT
 #
 # Details::   This class holds info on a single Method callable on a domain Model
-#             By holding information on the Type inbound data can be manipulated
+#             By holding information on the Type, inbound data can be manipulated
 #             into the right format for the style of operator; simple assignment,
 #             appending to an association collection or a method call
 #

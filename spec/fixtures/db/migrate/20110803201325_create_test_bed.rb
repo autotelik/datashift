@@ -5,7 +5,7 @@
 # Details::   Migration to create a test database that exercises all aspects of Active Record models
 #
 
-class CreateTestBed < ActiveRecord::Migration
+class CreateTestBed < ActiveRecord::Migration[4.2]
 
   def self.up
 

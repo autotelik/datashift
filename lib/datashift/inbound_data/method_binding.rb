@@ -22,7 +22,7 @@ module DataShift
     attr_reader :inbound_column
 
     delegate :source, to: :inbound_column, allow_nil: true
-    delegate :index, to: :inbound_column, allow_nil: true
+    delegate :index, 'index=', to: :inbound_column, allow_nil: true
 
     # Is this method detail a valid mapping, aids identifying unmapped/unmappable columns
     attr_accessor :valid
@@ -36,7 +36,7 @@ module DataShift
     #
     # col_types can typically be derived from klass.columns - set of ActiveRecord::ConnectionAdapters::Column
 
-    def initialize(name, idx, model_method)
+    def initialize(name, model_method, idx: nil)
       @inbound_column = InboundData::Column.new(name, idx)
 
       @model_method = model_method
@@ -130,10 +130,10 @@ module DataShift
 
     attr_accessor :reason
 
-    def initialize(client_name = '', client_idx = -1, options = {})
-      super(client_name, client_idx, nil)
+    def initialize(client_name = '', reason: nil, idx: 1 )
+      super(client_name, nil, idx: idx)
 
-      @reason = options[:reason] || ''
+      @reason = reason || ''
     end
 
     def invalid?

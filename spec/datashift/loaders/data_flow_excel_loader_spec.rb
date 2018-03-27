@@ -19,12 +19,10 @@ module  DataShift
 
       before(:all) do
         Project.class_eval do
-
         end
       end
 
       before(:each) do
-
         DataShift::Transformation.factory.clear
 
         loader.configure_from( ifixture_file('config/ProjectConfiguration.yml'), Project)
@@ -76,10 +74,10 @@ module  DataShift
         expect(Project.last.value_as_text).to include "i only gone and got myself changed by datashift"
       end
 
-      it 'should provide facility to call custom methods on nodes via YAML configuration' do
-        expected = Project.first.a_custom_user_id_setter
+      it 'can call a custom method defined for a node in YAML configuration', duff: true do
+        expected = Project.default_custom_user_id
 
-        Project.all.each { |p| expect(p.user_id).to eq 123456789 }
+        Project.all.each { |p| expect(p.user_id).to eq expected }
       end
 
     end

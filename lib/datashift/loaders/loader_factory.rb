@@ -16,6 +16,13 @@ module DataShift
 
     class Factory
 
+      # organizer
+
+        #include Interactor::Organizer
+
+        #organize DetermineLoaderKlass, BuildKlassCatalog, LoadConfig, ApplyConfig
+
+
       # Based on file_name find appropriate Loader
 
       # Currently supports :

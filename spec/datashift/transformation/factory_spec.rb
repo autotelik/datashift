@@ -60,7 +60,7 @@ module  DataShift
     context 'over-rides' do
       let(:model_method)    { project_collection.search('value_as_string') }
 
-      let(:method_binding)  { MethodBinding.new('value_as_string', 1, model_method) }
+      let(:method_binding)  { MethodBinding.new('value_as_string', model_method, idx: 1) }
 
       let(:populator)       { DataShift::Populator.new }
 

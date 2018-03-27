@@ -17,12 +17,12 @@ module DataShift
     let( :model_method) { project_collection.search('value_as_string') }
 
     it 'should bind details of inbound header to domain model' do
-      binding = MethodBinding.new('value_as_string', 1, model_method)
+      binding = MethodBinding.new('value_as_string', model_method, idx: 1)
       expect(binding).to be
     end
 
     context ('Bound to Header') do
-      let(:binding) { MethodBinding.new('value_as_string', 1, model_method) }
+      let(:binding) { MethodBinding.new('value_as_string', model_method, idx: 1) }
 
       let(:valid_column_on_project) { 'value_as_string' }
 
@@ -35,23 +35,23 @@ module DataShift
       end
 
       it 'should enable an index to be set for index style processors' do
-        binding = MethodBinding.new(valid_column_on_project, 2, model_method)
+        binding = MethodBinding.new(valid_column_on_project, model_method, idx: 2)
         expect(binding.inbound_column.index).to eq 2
 
-        binding = MethodBinding.new(valid_column_on_project, 99999, model_method)
+        binding = MethodBinding.new(valid_column_on_project, model_method, idx: 99999)
         expect(binding.inbound_column.index).to eq 99999
       end
 
       it 'should be valid when both name and model method provided' do
-        binding = MethodBinding.new(valid_column_on_project, 2, model_method)
-        expect(binding.valid?).to eq true
+        binding = MethodBinding.new(valid_column_on_project, model_method, idx: 2)
+            expect(binding.valid?).to eq true
       end
 
       it 'should be invalid when either name or model method nil' do
-        binding = MethodBinding.new(nil, 3, model_method)
+        binding = MethodBinding.new(nil, model_method, idx: 3)
         expect(binding.valid?).to eq false
 
-        binding = MethodBinding.new(valid_column_on_project, 3, nil)
+        binding = MethodBinding.new(valid_column_on_project, nil, idx: 3)
         expect(binding.valid?).to eq false
       end
     end

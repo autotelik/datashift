@@ -89,8 +89,6 @@ module DataShift
 
       logger.info("Binding #{headers.size} inbound headers to #{load_object_class.name}")
 
-      @binder ||= DataShift::Binder.new
-
       begin
         binder.map_inbound_headers(load_object_class, headers)
       rescue => e
@@ -144,10 +142,6 @@ module DataShift
       data = YAML.load( ERB.new( IO.read(yaml_file) ).result )
 
       logger.info("Read Datashift config: #{data.inspect}")
-
-      @config.merge!(data['LoaderBase']) if data['LoaderBase']
-
-      @config.merge!(data[self.class.name]) if data[self.class.name]
 
       @binder ||= DataShift::Binder.new
 
