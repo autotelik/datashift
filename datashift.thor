@@ -70,8 +70,8 @@ module Datashift
 
     def build
 
-      if options[:push] && options[:bump].blank?
-        puts 'ERROR: Please bump to a new version to push to rubygems'
+      if options[:push] && (options[:bump].blank? || options[:bump] !~ /^(\d+\.)?(\d+\.)?(\*|\d+)$/)
+        puts 'ERROR: Please bump to a new numeric version to push to rubygems'
         exit(-1)
       end
 
