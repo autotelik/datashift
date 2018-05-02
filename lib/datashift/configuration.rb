@@ -11,6 +11,14 @@ module DataShift
 
   class Configuration
 
+
+    def self.parse_yaml( yaml_file )
+      bound_template = ERB.new( IO.read(yaml_file)).result
+
+      YAML.safe_load(bound_template, [Date, Time, Symbol] )
+    end
+
+
     # List of association +TYPES+ to INCLUDE [:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
     # Defaults to [:assignment, :enum]
     #
@@ -122,11 +130,11 @@ module DataShift
     attr_accessor :image_path_prefix
 
     def self.rails_columns
-      @rails_standard_columns ||= [:id, :created_at, :created_on, :updated_at, :updated_on]
+      @rails_standard_columns ||= %i[id created_at created_on updated_at updated_on]
     end
 
     def initialize
-      @with = [:assignment, :enum]
+      @with = %i[assignment enum]
       @exclude = []
       @remove_columns = []
 

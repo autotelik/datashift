@@ -77,7 +77,7 @@ module DataShift
 
               begin
                 context.process
-              rescue => x
+              rescue StandardError => x
                 if doc_context.all_or_nothing?
                   logger.error('Complete Row aborted - All or nothing set and Current Column failed.')
                   logger.error(x.backtrace.first.inspect)
@@ -97,8 +97,7 @@ module DataShift
             raise ActiveRecord::Rollback # Don't actually create/upload to DB if we are doing dummy run
           end
         end # TRANSACTION N.B ActiveRecord::Rollback does not propagate outside of the containing transaction block
-
-      rescue => e
+      rescue StandardError => e
         puts "ERROR: CSV loading failed : #{e.inspect}"
         raise e
       ensure

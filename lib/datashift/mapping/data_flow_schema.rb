@@ -56,12 +56,12 @@ module DataShift
     end
 
     # @headers=
-    #<DataShift::Header:0x00000004bc37f8
+    # <DataShift::Header:0x00000004bc37f8
     #  @presentation="status_str",
     #  @source="status_str">],
 
     def headers
-      # TODO fix doc context so it can be created 'empty' i.e without AR klass, and always has empty headers
+      # TODO: fix doc context so it can be created 'empty' i.e without AR klass, and always has empty headers
       @nodes.doc_context.try(:headers) || []
     end
 
@@ -83,11 +83,11 @@ module DataShift
       @nodes = create_node_collections(klass, doc_context: doc_context)
 
       klass_to_model_methods( klass ).each_with_index do |mm, i|
-        @nodes.headers.add(mm.operator)   # for a class, the header names, default to the operators (methods)
+        @nodes.headers.add(mm.operator) # for a class, the header names, default to the operators (methods)
 
         binding = MethodBinding.new(mm.operator, mm, idx: i)
 
-        # TODO - do we really need to pass in the doc context when parent nodes already has it ?
+        # TODO: - do we really need to pass in the doc context when parent nodes already has it ?
         @nodes << DataShift::NodeContext.new(@nodes.doc_context, binding, i, nil)
       end
 
@@ -123,17 +123,17 @@ module DataShift
     #
     # Returns  DataShift::NodeCollection
     #
-    def prepare_from_file(file_name, locale_key = 'data_flow_schema')
-      @raw_data = ERB.new(File.read(file_name)).result
+    def prepare_from_file(yaml_file, locale_key = 'data_flow_schema')
+      @raw_data = ERB.new(File.read(yaml_file)).result
 
-      yaml = YAML.load(raw_data)
+      yaml = Configuration.parse_yaml(yaml_file)
 
       prepare_from_yaml(yaml, locale_key)
     end
 
     def prepare_from_string(text, locale_key = 'data_flow_schema')
       @raw_data = text
-      yaml = YAML.load(raw_data)
+      yaml = YAML.safe_load(raw_data)
 
       prepare_from_yaml(yaml, locale_key)
     end
@@ -146,12 +146,12 @@ module DataShift
 
       locale_section = yaml[locale_key]
 
-      if(locale_section.has_key?('Global'))
+      if(locale_section.key?('Global'))
         global_nodes = locale_section.delete('Global')
 
         [*global_nodes].each do |c|
 
-          # TODO   what is c ?   a list or hash ?
+          # TODO: what is c ?   a list or hash ?
           # if DataShift::Configuration.call.respond_to #{c}=
           # Set the global value e.g
           # DataShift::Configuration.call.force_inclusion_of_columns = [:audio]
@@ -160,7 +160,7 @@ module DataShift
 
       unless locale_section.keys.present?
         logger.warn('No class related configuration found in YAML syntax- Nothing to process')
-        return  DataShift::NodeCollection.new
+        return DataShift::NodeCollection.new
       end
 
       class_name = locale_section.keys.first
@@ -208,7 +208,7 @@ module DataShift
 
           section = keyed_node.values.first || {}
 
-          # TODO - layout with heading is verbose for no benefit - defunct, simply node.source, node.presentation
+          # TODO: - layout with heading is verbose for no benefit - defunct, simply node.source, node.presentation
           source = section.fetch('heading', {}).fetch('source', nil)
 
           # Unless a specific source mentioned assume the node is the source
@@ -226,9 +226,9 @@ module DataShift
             unless model_method
               operator_type = section['operator_type'] || :method
 
-              # TODO validate type ? guess we expect one of ModelMethod.supported_types_enum
+              # TODO: validate type ? guess we expect one of ModelMethod.supported_types_enum
               model_method = model_method_mgr.insert(section['operator'], operator_type)
-              # TODO - This index could be hard coded by the user in YAML or we try to derive it from the headers
+              # TODO: - This index could be hard coded by the user in YAML or we try to derive it from the headers
               # byebug
               method_binding = MethodBinding.new(source, model_method, idx: section['index'])
             end
@@ -239,7 +239,7 @@ module DataShift
           # TOFIX - This is a bug waiting to happen right ? i is not coming from the headers
           # so chances are user hasn't made config indexed as per headers
           # index could be hard coded by the user in YAML or we try to derive it from the headers via the binder ???
-          method_binding ||= MethodBinding.new(source,  model_method, idx: i)
+          method_binding ||= MethodBinding.new(source, model_method, idx: i)
 
           node_context = DataShift::NodeContext.new(@nodes.doc_context, method_binding, i, nil)
 

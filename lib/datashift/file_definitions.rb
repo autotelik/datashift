@@ -136,9 +136,7 @@ module FileDefinitions
     #
     def create_fixed_definition( field_range_map )
 
-      unless field_range_map.is_a?(Hash)
-        raise ArgumentError, 'Please supply hash to create_fixed_definition'
-      end
+      raise ArgumentError, 'Please supply hash to create_fixed_definition' unless field_range_map.is_a?(Hash)
 
       keys = field_range_map.keys.collect(&:to_s)
       string_map = Hash[*keys.zip(field_range_map.values).flatten]

@@ -25,7 +25,7 @@ module DataShift
     #
     def self.configure(load_object_class, yaml_file)
 
-      @config = YAML.load( ERB.new( IO.read(yaml_file) ).result )
+      @config = Configuration.parse_yaml(yaml_file)
 
       if @config[:datashift_populators]
         @config[:datashift_populators].each do |_operator, type|
@@ -66,9 +66,7 @@ module DataShift
     def self.get_populator(method_binding)
 
       unless method_binding.nil? || method_binding.invalid?
-        if(populators.key?(method_binding.operator))
-          return populators[method_binding.operator].new
-        end
+        return populators[method_binding.operator].new if populators.key?(method_binding.operator)
       end
 
       global_populator_class.new

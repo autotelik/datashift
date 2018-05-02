@@ -21,7 +21,6 @@ module Datashift
   when we try
       Datashift::Import.new
 
-
     class_option :model, aliases: '-m', required: true, desc: 'The related active record model'
 
     class_option :input, aliases: '-i', required: true, desc: 'The input file'
@@ -33,7 +32,7 @@ module Datashift
     class_option :config, aliases: '-c', desc: 'YAML config file with defaults, over-rides etc'
 =end
 
-    desc "load", "Import data from file for specific active record model"
+    desc 'load', 'Import data from file for specific active record model'
 
     method_option :model, aliases: '-m', required: true, desc: 'The related active record model'
 
@@ -45,22 +44,23 @@ module Datashift
 
     method_option :config, aliases: '-c', desc: 'YAML config file with defaults, over-rides etc'
 
-    def load()
+    method_option :force, aliases: '-f', type: :array, desc: "Call-able columns even though datashift does not recognise them as model methods. Space separated e.g : -f sku price"
+
+    def load
       start_connections
 
       importer = if(options[:loader])
                    logger.info("Attempting to use supplied Loader : #{options[:loader]}")
-                   DataShift::MapperUtils::class_from_string(options[:loader]).new
+                   DataShift::MapperUtils.class_from_string(options[:loader]).new
                  else
-                   logger.info("No Loader specified - finding appropriate Loader for file type")
+                   logger.info('No Loader specified - finding appropriate Loader for file type')
                    DataShift::Loader::Factory.get_loader(options[:input])
                  end
 
       import(importer)
     end
 
-
-    desc "excel", "Import .xls file for specifiec active record model"
+    desc 'excel', 'Import .xls file for specifiec active record model'
 
     method_option :model, aliases: '-m', required: true, desc: 'The related active record model'
 
@@ -72,22 +72,24 @@ module Datashift
 
     method_option :config, aliases: '-c', desc: 'YAML config file with defaults, over-rides etc'
 
-    def excel()
+    method_option :force, aliases: '-f', type: :array, desc: "Call-able columns even though datashift does not recognise them as model methods. Space separated e.g : -f sku price"
+
+    def excel
 
       start_connections
 
       importer = if(options[:loader])
                    logger.info("Attempting to use supplied Loader : #{options[:loader]}")
-                   DataShift::MapperUtils::class_from_string(options[:loader]).new
+                   DataShift::MapperUtils.class_from_string(options[:loader]).new
                  else
-                   logger.info("No Loader specified - using standard Excel Loader")
+                   logger.info('No Loader specified - using standard Excel Loader')
                    DataShift::ExcelLoader.new
                  end
 
       import(importer)
     end
 
-    desc "csv", "Import CSV file for specified active record model"
+    desc 'csv', 'Import CSV file for specified active record model'
 
     method_option :model, aliases: '-m', required: true, desc: 'The related active record model'
 
@@ -99,15 +101,17 @@ module Datashift
 
     method_option :config, aliases: '-c', desc: 'YAML config file with defaults, over-rides etc'
 
-    def csv()
+    method_option :force, aliases: '-f', type: :array, desc: "Call-able columns even though datashift does not recognise them as model methods. Space separated e.g : -f sku price"
+
+    def csv
 
       start_connections
 
       importer = if(options[:loader])
                    logger.info("Attempting to use supplied Loader : #{options[:loader]}")
-                   DataShift::MapperUtils::class_from_string(options[:loader]).new
+                   DataShift::MapperUtils.class_from_string(options[:loader]).new
                  else
-                   logger.info("No Loader specified - using standard Csv Loader")
+                   logger.info('No Loader specified - using standard Csv Loader')
                    DataShift::CsvLoader.new
                  end
 
@@ -120,6 +124,8 @@ module Datashift
         logger.info "Datashift: Starting Import from #{options[:input]}"
 
         importer.configure_from( options[:config] ) if(options[:config])
+
+        DataShift::Configuration.call.force_inclusion_of_columns = options[:force]
 
         importer.run(options[:input], options[:model])
       end

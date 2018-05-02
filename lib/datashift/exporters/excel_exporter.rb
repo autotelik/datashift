@@ -108,7 +108,7 @@ module DataShift
 
       logger.info("Processing [#{records.size}] #{klass} records to Excel")
 
-      # TODO - prepare_data_flow_schema here in middle of export, plus reaching through nodes to klass, does not smell right
+      # TODO: - prepare_data_flow_schema here in middle of export, plus reaching through nodes to klass, does not smell right
       prepare_data_flow_schema(klass) unless @data_flow_schema && @data_flow_schema.nodes.klass == klass
 
       export_headers(klass)
@@ -136,7 +136,7 @@ module DataShift
             else
               excel[row, column] = obj.send( model_method.operator )
             end
-          rescue => x
+          rescue StandardError => x
             logger.error("Failed to write #{model_method.inspect} to Excel")
             logger.error(x.inspect)
           end
@@ -149,7 +149,6 @@ module DataShift
 
       logger.info("Writing Excel to file [#{file_name}]")
       excel.write( file_name )
-
     ensure
       DataShift::Configuration.call.with = state
 

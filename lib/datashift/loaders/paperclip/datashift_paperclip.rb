@@ -40,7 +40,7 @@ module DataShift
 
       file = begin
         File.new(attachment_path, 'rb')
-      rescue => e
+      rescue StandardError => e
         logger.error(e.inspect)
         raise PathError, "ERROR : Failed to read image from #{attachment_path}"
       end
@@ -89,7 +89,7 @@ module DataShift
         logger.info("Create paperclip attachment on Class #{klass} - #{paperclip_attributes}")
 
         @attachment = klass.new(paperclip_attributes)
-      rescue => e
+      rescue StandardError => e
         logger.error(e.backtrace.first)
         raise CreateAttachmentFailed, "Failed [#{e.message}] - Creating Attachment [#{attachment_path}] on #{klass}"
       ensure

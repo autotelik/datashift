@@ -23,13 +23,13 @@ module DataShift
     extend DataShift::Delimiters
 
     def self.insistent_method_list
-      @insistent_method_list ||= [:to_s, :downcase, :to_i, :to_f, :to_b]
+      @insistent_method_list ||= %i[to_s downcase to_i to_f to_b]
     end
 
     # When looking up an association, when no field provided, try each of these in turn till a match
     # i.e find_by_name, find_by_title, find_by_id
     def self.insistent_find_by_list
-      @insistent_find_by_list ||= [:name, :title, :id]
+      @insistent_find_by_list ||= %i[name title id]
     end
 
     attr_reader :value, :attribute_hash
@@ -129,8 +129,7 @@ module DataShift
         end
 
         run_transforms(method_binding)
-
-      rescue => e
+      rescue StandardError => e
         logger.error(e.message)
         logger.error("Populator stacktrace: #{e.backtrace.first}")
         raise DataProcessingError, "Populator failed to prepare data [#{value}] for #{method_binding.pp}"
@@ -158,7 +157,7 @@ module DataShift
 
         begin
           record.send(operator + '=', value)
-        rescue => x
+        rescue StandardError => x
           logger.error("Cannot assign value [#{value.inspect}] for has_one [#{operator}]")
           logger.error(x.inspect)
 
@@ -185,7 +184,6 @@ module DataShift
 
       elsif model_method.operator_for(:method)
 
-
         begin
           params_num = record.method(operator.to_sym).arity
 
@@ -199,7 +197,7 @@ module DataShift
             logger.debug("Custom Method assignment of value  #{value} => [#{operator}]")
             record.send(operator, value)
           end
-        rescue => e
+        rescue StandardError => e
           logger.error e.backtrace.first
           raise DataProcessingError, "Method [#{operator}] could not process #{value} - #{e.inspect}"
         end
@@ -232,7 +230,7 @@ module DataShift
             record.send( operator + '=', value)
           end
         end
-      rescue => e
+      rescue StandardError => e
         logger.error e.backtrace.first
         logger.error("Assignment failed #{e.inspect}")
         raise DataProcessingError, "Failed to set [#{value}] via [#{operator}] due to ERROR : #{e.message}"
@@ -260,7 +258,6 @@ module DataShift
         # TODO: - add find by operators from headers or configuration to  insistent_find_by_list
         Populator.insistent_find_by_list.each do |find_by|
           begin
-
             item = klass.where(find_by => value).first_or_create
 
             next unless item
@@ -268,8 +265,7 @@ module DataShift
             logger.info("Populator assigning #{item.inspect} to belongs_to association #{operator}")
             record.send(operator + '=', item)
             break
-
-          rescue => e
+          rescue StandardError => e
             logger.error(e.inspect)
             logger.error("Failed attempting to find belongs_to for #{method_binding.pp}")
             if find_by == Populator.insistent_method_list.last

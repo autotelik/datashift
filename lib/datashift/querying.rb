@@ -82,7 +82,7 @@ module DataShift
         return klazz.where("#{field} like ?", "#{search_term}%").first if options[:use_like]
 
         return klazz.where("lower(#{field}) = ?", search_term.downcase).first
-      rescue => e
+      rescue StandardError => e
         logger.error("Querying - Failed to find a record for [#{search_term}] on #{klazz}.#{field}")
         logger.error e.inspect
         logger.error e.backtrace.last
@@ -108,7 +108,6 @@ module DataShift
       logger.info("Scanning for record where #{klazz}.#{field} ~=  #{find_search_term}")
 
       begin
-
         record = search_for_record(klazz, field, find_search_term)
 
         unless record
@@ -134,7 +133,7 @@ module DataShift
         end
 
         return record
-      rescue => e
+      rescue StandardError => e
         logger.error("Exception attempting to find a record for [#{search_term}] on #{klazz}.#{field}")
         logger.error e.backtrace
         logger.error e.inspect
