@@ -18,7 +18,7 @@ module DataShift
 
     def_delegators :@nodes, *Array.delegated_methods_for_fwdable
 
-    def_delegators :@doc_context, :headers, :klass
+    def_delegators :@doc_context, :headers, :'headers=', :klass
 
     def initialize(doc_context: nil)
       @nodes = []

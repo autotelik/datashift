@@ -43,6 +43,8 @@ module DataShift
 
       return '' if record.nil? || (record.respond_to?(:each) && record.empty?)
 
+      # :only and :except options can be used to limit the attributes included
+
       return record.to_json if json # packs associations into single column
 
       data = []
@@ -61,6 +63,7 @@ module DataShift
 
         "#{attribute_list_start}#{data.join(multi_value_delim)}#{attribute_list_end}"
       end
+
 
     end
 

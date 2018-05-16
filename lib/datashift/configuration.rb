@@ -19,6 +19,15 @@ module DataShift
     end
 
 
+    # @param [Boolean] Export/Import of data expected in JSON format
+    # @return [Boolean]
+    #
+    attr_accessor :json
+
+    def json?
+      !!@json
+    end
+
     # List of association +TYPES+ to INCLUDE [:assignment, :enum, :belongs_to, :has_one, :has_many, :method]
     # Defaults to [:assignment, :enum]
     #

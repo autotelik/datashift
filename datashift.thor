@@ -75,6 +75,11 @@ module Datashift
         exit(-1)
       end
 
+      if options[:bump] && options[:bump] !~ /^(\d+\.)?(\d+\.)?(\*|\d+)$/
+        puts 'ERROR: bump should be a valid numeric version in form x.x.x'
+        exit(-1)
+      end
+
       version = options[:bump] || DataShift::VERSION
 
       # Bump the VERSION file in library

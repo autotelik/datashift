@@ -96,7 +96,13 @@ module DataShift
     #
     #   See - lib/exporters/configuration.rb
     #
-    def export_with_associations(file_name, klass, records, options = {})
+    # To export associations as JSON:
+    #
+    #   DataShift::Exporters::Configuration.configure { |config| config.json = true }
+    #
+    def export_with_associations(file_name, klass, export_records, options = {})
+
+      records = [*export_records]
 
       state = DataShift::Configuration.call.with
 
@@ -132,7 +138,7 @@ module DataShift
             # pack association instances into single column
             if model_method.association_type?
               logger.info("Processing #{model_method.inspect} associations")
-              excel[row, column] = record_to_column( obj.send( model_method.operator ), configuration.json )
+              excel[row, column] = record_to_column( obj.send( model_method.operator ), configuration.json? )
             else
               excel[row, column] = obj.send( model_method.operator )
             end

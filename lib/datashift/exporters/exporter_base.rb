@@ -9,11 +9,13 @@ module DataShift
 
   class ExporterBase
 
-    attr_accessor :configuration
     attr_accessor :file_name
 
     def initialize
-      @configuration = DataShift::Exporters::Configuration.call
+    end
+
+    def configuration
+      DataShift::Configuration.call
     end
 
   end

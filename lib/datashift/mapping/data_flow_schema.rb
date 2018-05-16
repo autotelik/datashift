@@ -82,10 +82,15 @@ module DataShift
 
       @nodes = create_node_collections(klass, doc_context: doc_context)
 
-      klass_to_model_methods( klass ).each_with_index do |mm, i|
-        @nodes.headers.add(mm.operator) # for a class, the header names, default to the operators (methods)
+      @nodes.headers = Headers.klass_to_headers(klass)
 
-        binding = MethodBinding.new(mm.operator, mm, idx: i)
+      klass_to_model_methods( klass ).each do |mm|
+        # headers define what nodes are actually in scope
+        next unless @nodes.headers.header?(mm)
+
+        i = @nodes.headers.index(mm)
+
+        binding = MethodBinding.new(mm.operator, mm, idx: i)  # TOFIX - why need to pass in both mm.operator AND mm ??
 
         # TODO: - do we really need to pass in the doc context when parent nodes already has it ?
         @nodes << DataShift::NodeContext.new(@nodes.doc_context, binding, i, nil)
