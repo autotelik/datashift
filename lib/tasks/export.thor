@@ -32,8 +32,7 @@ module Datashift
     class_option :exclude, type: :array,
                            desc: "Exclude association types. Choose from #{DataShift::ModelMethod.supported_types_enum.inspect}"
 
-    class_option :remove,  type: :array,
-                           desc: "Don't include this list of supplied fields"
+    class_option :remove_columns,  type: :array, desc: "Don't include this list of supplied fields"
 
     class_option :remove_rails, type: :boolean,
                                 desc: "Remove standard Rails cols :  #{DataShift::Configuration.rails_columns.inspect}"
