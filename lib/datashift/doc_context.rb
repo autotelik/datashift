@@ -92,10 +92,13 @@ module DataShift
     # Save the object and then report the outcome to ProgressMonitor, as either success or failure
     #
     def save_and_monitor_progress
-      if(errors? && all_or_nothing?)
+      #if(errors? && all_or_nothing?)
         # Error already logged with doc_context.failure
-        logger.warn "SAVE skipped due to Errors for Row #{node_context.row_index} - #{node_context.method_binding.spp}"
-      else
+        #
+       # failed = FailureData.new(load_object, node_context, current_errors)
+       # @progress_monitor.failure(failed)
+        #logger.warn "SAVE skipped due to Errors for Row #{node_context.row_index} - #{node_context.method_binding.spp}"
+      #else
         if save
           @progress_monitor.success(load_object)
 
@@ -110,7 +113,7 @@ module DataShift
           logger.info("Failed to Process [#{node_context.method_binding.spp}]")
           logger.info("Failed to SAVE Object #{@progress_monitor.success_inbound_count} - [#{load_object.inspect}]")
         end
-      end
+      #end
     end
 
     def save

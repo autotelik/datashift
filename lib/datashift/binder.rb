@@ -172,12 +172,13 @@ module DataShift
           add_missing(raw_col_data, col_index, "No operator or association found for Header [#{raw_col_name}]")
         end
       end
-
+      bindings.sort_by!(&:index)
       bindings
     end
 
     def add_bindings_from_nodes( nodes )
       nodes.each { |n| bindings << n.method_binding unless n.is_a?(NoMethodBinding) }
+      bindings.sort_by!(&:index)
     end
 
     # Essentially we map any string collection of field names, not just headers from files
