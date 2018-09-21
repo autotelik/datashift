@@ -12,8 +12,8 @@ group :test do
   gem 'rspec-rails', '~> 3.4'
 
   platform :jruby do
-    gem 'jruby-openssl'
     gem 'activerecord-jdbcsqlite3-adapter'
+    gem 'jruby-openssl'
 
     # ruby "2.2.0", engine: "jruby"  #, engine_version: "~> 9.0"
   end
@@ -22,7 +22,7 @@ group :test do
     gem 'sqlite3', '~> 1.3'
   end
 
-  gem 'simplecov'
   gem 'codeclimate-test-reporter', '~> 1.0.0'
+  gem 'simplecov'
 
 end

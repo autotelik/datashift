@@ -43,7 +43,7 @@ module DataShift
 
   module Transformation
 
-    extend self
+    module_function
 
     # Yields a singleton instance of Transformations::Factory
     # so you can specify additional transforms in .rb config
@@ -62,7 +62,7 @@ module DataShift
 
     class Factory
 
-      TRANSFORMERS_HASH_INSTANCE_NAMES = [:default, :override, :substitution, :prefix, :postfix].freeze
+      TRANSFORMERS_HASH_INSTANCE_NAMES = %i[default override substitution prefix postfix].freeze
 
       include DataShift::Logging
 
@@ -99,7 +99,7 @@ module DataShift
       #
       def configure_from(load_object_class, yaml_file, locale_key = 'data_flow_schema')
 
-        data = YAML.load( ERB.new( IO.read(yaml_file) ).result )
+        data = Configuration.parse_yaml(yaml_file)
 
         class_name = load_object_class.name
 

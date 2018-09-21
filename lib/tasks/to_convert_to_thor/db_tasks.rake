@@ -8,9 +8,7 @@ namespace :datashift do
     task :purge, [:exclude_system_tables] => [:environment] do |_t, args|
       require 'highline/import'
 
-      if Rails.env.production?
-        agree('WARNING: In Production database, REALLY PURGE ? [y]:')
-      end
+      agree('WARNING: In Production database, REALLY PURGE ? [y]:') if Rails.env.production?
 
       config = ActiveRecord::Base.configurations[Rails.env || 'development']
       case config['adapter']

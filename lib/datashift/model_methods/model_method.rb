@@ -17,7 +17,7 @@ module DataShift
     include DataShift::Logging
 
     def self.association_types_enum
-      @assoc_type_enum ||= [:belongs_to, :has_one, :has_many]
+      @assoc_type_enum ||= %i[belongs_to has_one has_many]
       @assoc_type_enum
     end
 
@@ -45,7 +45,7 @@ module DataShift
 
       # Note : Not all assignments will currently have a column type, for example
       # those that are derived from a delegate_belongs_to
-      keys =  Module.const_defined?(:Mongoid) ? klass.fields.keys : klass.columns.map(&:name)
+      keys = Module.const_defined?(:Mongoid) ? klass.fields.keys : klass.columns.map(&:name)
       @connection_adapter_column = keys.find { |col| col == operator } if connection_adapter_column.nil?
 
       @connection_adapter_column = DataShift::ModelMethods::Catalogue.column_type_for(klass, operator) if connection_adapter_column.nil?
@@ -144,12 +144,11 @@ module DataShift
 
         if result.nil?
           begin
-
             first = klass.to_s.split('::').first
             logger.debug "Trying to find operator class with Parent Namespace #{first}"
 
             result = MapperUtils.const_get_from_string("#{first}::#{operator.classify}")
-          rescue => e
+          rescue StandardError => e
             logger.error("Failed to derive Class for #{operator} (#{@operator_type} - #{e.inspect}")
           end
         end
@@ -159,7 +158,7 @@ module DataShift
       elsif connection_adapter_column
         begin
           Kernel.const_get(connection_adapter_column.type.to_s.classify)
-        rescue
+        rescue StandardError
           nil
         end
       end

@@ -54,7 +54,7 @@ module DataShift
     # Set of file extensions ImageMagik can process so default glob
     # we use to find image files within directories
     def self.image_magik_glob
-      @im_glob ||= %w(*.3FR *.AAI *.AI *.ART *.ARW *.AVI *.AVS *.BGR *.BGRA
+      @im_glob ||= %w[*.3FR *.AAI *.AI *.ART *.ARW *.AVI *.AVS *.BGR *.BGRA
                       *.BIE *.BMP *.BMP2 *.BMP3 *.BRF *.CAL *.CALS *.CANVAS
                       *.CIN *.CIP *.CLIP *.CMYK *.CMYKA *.CR2 *.CRW *.CUR *.CUT *.DCM *.DCR *.DCX
                       *.DDS *.DFONT *.DJVU *.DNG *.DOT *.DPS *.DPX
@@ -70,7 +70,7 @@ module DataShift
                       *.RGBA *.RGBO *.RLA *.RLE *.SCR *.SCT *.SFW *.SGI *.SR2 *.SRF
                       *.SUN *.SVG *.SVGZ *.TGA *.TIFF *.TIFF64 *.TILE *.TIM *.TTC *.TTF *.UBRL *.UIL *.UYVY *.VDA *.VICAR
                       *.VID *.VIFF *.VST *.WBMP *.WEBP *.WMF *.WMV *.WMZ *.WPG *.X3F
-                      *.XBM *.XC *.XCF *.XPM *.XPS *.XV *.XWD *.YCbCr *.YCbCrA *.YUV)
+                      *.XBM *.XC *.XCF *.XPM *.XPS *.XV *.XWD *.YCbCr *.YCbCrA *.YUV]
       "{#{@im_glob.join(',')}}"
     end
   end

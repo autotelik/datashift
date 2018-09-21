@@ -61,19 +61,17 @@ module DataShift
 
         # Find the has_one associations which can be populated via  Model.has_one_name = OtherArModelObject
         if options[:reload] || has_one[klass].nil?
-          if Module.const_defined?(:Mongoid)
-            has_one[klass] = klass.reflect_on_all_associations(:embeds_one).map { |i| i.name.to_s }
-          else
-            has_one[klass] = klass.reflect_on_all_associations(:has_one).map { |i| i.name.to_s }
-          end
+          has_one[klass] = if Module.const_defined?(:Mongoid)
+                             klass.reflect_on_all_associations(:embeds_one).map { |i| i.name.to_s }
+                           else
+                             klass.reflect_on_all_associations(:has_one).map { |i| i.name.to_s }
+                           end
         end
 
         # Find the model's column associations which can be populated via xxxxxx= value
         # Note, not all reflections return method names in same style so we convert all to
         # the raw form i.e without the '='  for consistency
-        if options[:reload] || assignments[klass].nil?
-          build_assignments( klass, options[:instance_methods] )
-        end
+        build_assignments( klass, options[:instance_methods] ) if options[:reload] || assignments[klass].nil?
       end
 
       def self.clear
@@ -155,7 +153,7 @@ module DataShift
         def build_assignments(klass, include_instance_methods)
           begin
             assignments[klass] = Catalogue.column_names(klass)
-          rescue => x
+          rescue StandardError => x
             raise DataShiftException, "Failed to process column_names for class #{klass} - #{x.message}"
           end
 
@@ -172,11 +170,13 @@ module DataShift
 
           assignments[klass].uniq!
 
-          assignments[klass].each do |assign|
-            column_types[klass] ||= {}
-            column_def = klass.columns.find { |col| col.name == assign }
-            column_types[klass].merge!( assign => column_def) if column_def
-          end unless (Module.const_defined?(:Mongoid))
+          unless Module.const_defined?(:Mongoid)
+            assignments[klass].each do |assign|
+              column_types[klass] ||= {}
+              column_def = klass.columns.find { |col| col.name == assign }
+              column_types[klass].merge!( assign => column_def) if column_def
+            end
+          end
         end
 
         def catalogued

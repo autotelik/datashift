@@ -14,30 +14,28 @@ module Datashift
 
     class Generate < Thor
 
-      DEFAULT_IMPORT_TEMPLTE ||= "import_mapping_template.yaml".freeze
+      DEFAULT_IMPORT_TEMPLTE ||= 'import_mapping_template.yaml'.freeze
 
       include DataShift::ThorBehavior
 
-      desc "import", "Generate an Import configuration template (YAML)"
+      desc 'import', 'Generate an Import configuration template (YAML)'
 
-      method_option :model, aliases: '-m', required: true, desc: "The active record model to use for mappings"
+      method_option :model, aliases: '-m', required: true, desc: 'The active record model to use for mappings'
 
       method_option :result, aliases: '-r', required: true,
-                    desc: "Path or file to create resulting YAML config\n\nIf a PATH supplied, filename will be [#{DEFAULT_IMPORT_TEMPLTE}]"
+                             desc: "Path or file to create resulting YAML config\n\nIf a PATH supplied, filename will be [#{DEFAULT_IMPORT_TEMPLTE}]"
 
       #   :remove_columns - List of columns to remove from files
       #
       #   :remove_rails - Remove standard Rails cols like :id, created_at etc
 
-      def import()
+      def import
 
         start_connections
 
         result = options[:result]
 
-        if(File.directory?(result))
-          result = File.join(result, DEFAULT_IMPORT_TEMPLTE)
-        end
+        result = File.join(result, DEFAULT_IMPORT_TEMPLTE) if File.directory?(result)
 
         logger.info "Datashift: Starting Import mapping template generation to [#{result}]"
 
@@ -46,7 +44,7 @@ module Datashift
         puts "Creating new configuration file : [#{result}]"
         begin
           mapper.write_import(result, options[:model], options)
-        rescue => x
+        rescue StandardError => x
           puts "ERROR - Failed to create config file #{result}"
           puts x.message
         end

@@ -47,7 +47,7 @@ module DataShift
 
   def self.require_libraries
 
-    loader_libs = %w(lib)
+    loader_libs = %w[lib]
 
     # Base search paths - these will be searched recursively
     loader_paths = []
@@ -70,11 +70,11 @@ module DataShift
       require_relative 'datashift/loaders/reporters/reporter'
       require_relative 'datashift/loaders/loader_base'
       require_relative 'datashift/exporters/exporter_base'
-    rescue => x
+    rescue StandardError => x
       puts "Problem initializing gem #{x.inspect}"
     end
 
-    require_libs = %w(
+    require_libs = %w[
       datashift/core_ext
       datashift
       datashift/mapping
@@ -88,14 +88,14 @@ module DataShift
       datashift/helpers
       datashift/applications
       datashift/populators
-    )
+    ]
 
     require_libs.each do |base|
       Dir[File.join(library_path, base, '*.rb')].each do |rb|
         # puts rb
         begin
           require_relative rb unless File.directory?(rb)
-        rescue => x
+        rescue StandardError => x
           puts "WARNING - Problem loading datashift file #{rb} - #{x.inspect}"
           puts x.backtrace
         end

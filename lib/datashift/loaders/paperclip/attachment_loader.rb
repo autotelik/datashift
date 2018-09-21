@@ -80,7 +80,7 @@ module DataShift
           logger.info("Finding matching field/association [#{attach_to_field}] on class [#{attach_to_klass}]")
 
           binder.map_inbound_fields(attach_to_klass, attach_to_field)
-        rescue => e
+        rescue StandardError => e
           logger.error("Failed to map #{attach_to_field} to database operator : #{e.inspect}")
           logger.error( e.backtrace )
           raise MappingDefinitionError, 'Failed to map #{attach_to_field} to database operator'

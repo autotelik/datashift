@@ -24,11 +24,6 @@ module DataShift
       #
       attr_accessor :csv_delimiter
 
-      # @param [Boolean] Export association data in single column in JSON format
-      # @return [Boolean]
-      #
-      attr_accessor :json
-
       # @param [String] Name for worksheet, otherwise uses Class name
       # @return [String]
       #

@@ -124,7 +124,7 @@ module DataShift
         # Config loaded details trump internal mappings. User may not bother setting index of the column
         # in config, so attempt now to match it to actual header
         if bound.include?(raw_col_name)
-          external = bindings.find{|b| b.source == raw_col_name }
+          external = bindings.find { |b| b.source == raw_col_name }
           external.index = col_index if(external && external.index.nil?)
           next
         end
@@ -132,7 +132,12 @@ module DataShift
         # Find the domain model method details
         model_method = model_methods_collection.search(raw_col_name)
 
-        # No such column, but if config set to include it, for example for delegated methods, add as op type :assignment
+        # No such column, so check config
+        #
+        #   Forced inclusion for example for delegated methods that do not show up in reflection.
+        #
+        # Add as operator type :assignment
+        #
         if( model_method.nil? && (include_all? || forced?(raw_col_name)) )
           logger.debug("Operator #{raw_col_name} not found but forced inclusion set - adding as :assignment")
           model_method = model_methods_collection.insert(raw_col_name, :assignment)
@@ -157,7 +162,7 @@ module DataShift
 
             begin
               binding.add_lookup(model_method, where_field, where_value)
-            rescue => e
+            rescue StandardError => e
               logger.error(e.message)
               add_missing(raw_col_data, col_index, "Field [#{where_field}] Not Found for [#{raw_col_name}] (#{model_method.operator})")
               next
@@ -222,7 +227,7 @@ module DataShift
 
     # Find a binding, matches raw client supplied names e.g header and has a valid index
     def find_for_source( name )
-      bindings.find{|b| b.source == name && b.index}
+      bindings.find { |b| b.source == name && b.index }
     end
 
   end

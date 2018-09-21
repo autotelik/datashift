@@ -96,7 +96,13 @@ module DataShift
     #
     #   See - lib/exporters/configuration.rb
     #
-    def export_with_associations(file_name, klass, records, options = {})
+    # To export associations as JSON:
+    #
+    #   DataShift::Exporters::Configuration.configure { |config| config.json = true }
+    #
+    def export_with_associations(file_name, klass, export_records, options = {})
+
+      records = [*export_records]
 
       state = DataShift::Configuration.call.with
 
@@ -108,7 +114,7 @@ module DataShift
 
       logger.info("Processing [#{records.size}] #{klass} records to Excel")
 
-      # TODO - prepare_data_flow_schema here in middle of export, plus reaching through nodes to klass, does not smell right
+      # TODO: - prepare_data_flow_schema here in middle of export, plus reaching through nodes to klass, does not smell right
       prepare_data_flow_schema(klass) unless @data_flow_schema && @data_flow_schema.nodes.klass == klass
 
       export_headers(klass)
@@ -132,11 +138,11 @@ module DataShift
             # pack association instances into single column
             if model_method.association_type?
               logger.info("Processing #{model_method.inspect} associations")
-              excel[row, column] = record_to_column( obj.send( model_method.operator ), configuration.json )
+              excel[row, column] = record_to_column( obj.send( model_method.operator ), configuration.json? )
             else
               excel[row, column] = obj.send( model_method.operator )
             end
-          rescue => x
+          rescue StandardError => x
             logger.error("Failed to write #{model_method.inspect} to Excel")
             logger.error(x.inspect)
           end
@@ -149,7 +155,6 @@ module DataShift
 
       logger.info("Writing Excel to file [#{file_name}]")
       excel.write( file_name )
-
     ensure
       DataShift::Configuration.call.with = state
 

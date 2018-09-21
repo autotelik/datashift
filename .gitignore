@@ -8,7 +8,7 @@ Gemfile.lock
 
 # rcov generated
 coverage
-coverage.data
+coverage/**
 
 .byebug_history
 

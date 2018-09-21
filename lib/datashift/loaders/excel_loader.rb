@@ -66,7 +66,7 @@ module DataShift
 
             @binder.bindings.each do |method_binding|
 
-              # TODO - how does this get inserted - bind headers ?? ignore if no index
+              # TODO: - how does this get inserted - bind headers ?? ignore if no index
               # #<DataShift::MethodBinding:0x0000000003e26280 @inbound_column=#<DataShift::InboundData::Column:0x0000000003e26258 @header=#<DataShift::Header:0x0000000003e26190 @source="audio", @presentation="audio">, @index=nil,
               next if method_binding.index.nil?
 
@@ -87,7 +87,7 @@ module DataShift
 
               begin
                 context.process
-              rescue
+              rescue StandardError
                 if doc_context.all_or_nothing?
                   logger.error('All or nothing set and Current Column failed so complete Row aborted')
                   break
@@ -110,8 +110,7 @@ module DataShift
             raise ActiveRecord::Rollback # Don't actually create/upload to DB if we are doing dummy run
           end
         end # TRANSACTION N.B ActiveRecord::Rollback does not propagate outside of the containing transaction block
-
-      rescue => e
+      rescue StandardError => e
         puts "ERROR: Excel loading failed : #{e.inspect}"
         raise e
       ensure

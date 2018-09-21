@@ -8,7 +8,6 @@ DataShift::Configuration.call do |config|
   #
   # config.with = [:assignment, :enum]
 
-
   # Configure what association types to ignore during export with associations.
   #
   # The default is to include ALL all association TYPES as defined by
@@ -18,16 +17,13 @@ DataShift::Configuration.call do |config|
   #
   # config.exclude = [:belongs_to]
 
-
   # Configure the Global list of of columns to remove/ignore from files
   #
   # config.remove_columns = [:id, :dont_want_this, :no]
 
-
   # List of headers/columns that are Mandatory i.e must be present in the inbound data
   #
   # config.mandatory = [:yes]
-
 
   # Remove standard Rails cols like :id, created_at, updated_at
   # Default is false

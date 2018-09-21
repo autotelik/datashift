@@ -122,7 +122,7 @@ module DataShift
       logger.debug("SAVING #{load_object.class} : #{load_object.inspect}")
       begin
         load_object.save!
-      rescue => e
+      rescue StandardError => e
         logger.error( "Save Error : #{e.inspect} on #{load_object.class}")
         logger.error(e.backtrace)
         false

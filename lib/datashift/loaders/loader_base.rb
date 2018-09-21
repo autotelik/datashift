@@ -91,7 +91,7 @@ module DataShift
 
       begin
         binder.map_inbound_headers(load_object_class, headers)
-      rescue => e
+      rescue StandardError => e
         logger.error("Failed to map header row to set of database operators : #{e.inspect}")
         logger.error( e.backtrace )
         raise MappingDefinitionError, 'Failed to map header row to set of database operators'
@@ -139,7 +139,7 @@ module DataShift
 
       logger.info("Reading Datashift loader config from: #{yaml_file.inspect}")
 
-      data = YAML.load( ERB.new( IO.read(yaml_file) ).result )
+      data = Configuration.parse_yaml(yaml_file)
 
       logger.info("Read Datashift config: #{data.inspect}")
 

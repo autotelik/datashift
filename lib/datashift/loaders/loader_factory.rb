@@ -18,10 +18,9 @@ module DataShift
 
       # organizer
 
-        #include Interactor::Organizer
+      # include Interactor::Organizer
 
-        #organize DetermineLoaderKlass, BuildKlassCatalog, LoadConfig, ApplyConfig
-
+      # organize DetermineLoaderKlass, BuildKlassCatalog, LoadConfig, ApplyConfig
 
       # Based on file_name find appropriate Loader
 

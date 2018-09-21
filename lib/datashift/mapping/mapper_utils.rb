@@ -46,8 +46,8 @@ module DataShift
     def self.class_from_string( str )
 
       MapperUtils.const_get_from_string(str.to_s) # Kernel.const_get(model)
-    rescue
-      return nil
+    rescue StandardError
+      nil
 
     end
 
@@ -58,7 +58,7 @@ module DataShift
       begin
         DataShift::MapperUtils.class_from_string(find_table)
       rescue LoadError
-      rescue
+      rescue StandardError
         nil
       end
     end

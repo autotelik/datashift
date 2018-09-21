@@ -105,7 +105,7 @@ module DataShift
 
     # Pass a set of AR records
     def ar_to_xls(records, start_row: 1, headers: nil, data_flow_schema: nil)
-      return if (!exportable?(records.first) || records.empty?)
+      return if !exportable?(records.first) || records.empty?
 
       # assume header row present
       row_index = start_row
@@ -140,7 +140,7 @@ module DataShift
     def ar_to_xls_cell(row_idx, col_idx, record, ar_method)
       datum = record.send(ar_method)
       self[row_idx, col_idx] = datum
-    rescue => e
+    rescue StandardError => e
       logger.error("Failed to export #{datum} from #{ar_method.inspect} to column #{col_idx}")
       logger.error(e.message)
       logger.error(e.backtrace)

@@ -100,7 +100,6 @@ module DataShift
           csv.add_row(row)
         end
       end
-
     ensure
       DataShift::Configuration.call.with = state
     end # end write file

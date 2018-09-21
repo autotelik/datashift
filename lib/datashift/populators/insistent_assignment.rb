@@ -19,13 +19,13 @@ module DataShift
       extend DataShift::Logging
 
       def self.insistent_method_list
-        @insistent_method_list ||= [:to_s, :downcase, :to_i, :to_f, :to_b]
+        @insistent_method_list ||= %i[to_s downcase to_i to_f to_b]
       end
 
       # When looking up an association, when no field provided, try each of these in turn till a match
       # i.e find_by_name, find_by_title, find_by_id
       def self.insistent_find_by_list
-        @insistent_find_by_list ||= [:name, :title, :id]
+        @insistent_find_by_list ||= %i[name title id]
       end
 
       def self.call(record, value, operator)
@@ -49,7 +49,7 @@ module DataShift
           InsistentAssignment.insistent_method_list.each do |f|
             begin
               return if(attempt(record, value.send(f), method))
-            rescue
+            rescue StandardError
             end
           end
         end
@@ -64,7 +64,7 @@ module DataShift
         def attempt(record, value, operator)
           begin
             record.send(operator, value)
-          rescue
+          rescue StandardError
             logger.debug("Brute forced failed for [#{operator}, #{value}]")
             return false
           end

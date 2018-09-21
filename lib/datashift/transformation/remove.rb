@@ -18,7 +18,7 @@ module DataShift
 
       def association?(mm)
         return false unless(mm.association_type?)
-        DataShift::Configuration.call.exclude_associations.include?(mm.operator)
+        (DataShift::Configuration.call.exclude_associations & [mm.operator, mm.operator.to_sym]).present?
       end
 
       # Specify columns to remove via DataShift::Configuration

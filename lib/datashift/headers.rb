@@ -26,11 +26,23 @@ module DataShift
 
     def_delegators :@headers, *Array.delegated_methods_for_fwdable
 
-    def initialize(source, idx = 0, headers = [])
+    def initialize(source, header_row_index = 0, headers = [])
       @source = source
-      @idx = idx
+      @idx = header_row_index
       @headers = headers
     end
+
+    # Check for either string or symbol version of a header
+    def header?( header)
+      h = header.is_a?(ModelMethod) ? header.operator : header
+      (sources & [h, h.to_sym]).present?
+    end
+
+    def index(header)
+      h = header.is_a?(ModelMethod) ? header.operator : header
+      sources.index(h) || sources.index(h.to_sym)
+    end
+
 
     # Factory for dealing with Active Record models and collections
     # Catalogs the supplied Klass and builds set of expected/valid Headers for Klass
@@ -79,6 +91,7 @@ module DataShift
           if(mm.association_type?)
             association_to_headers(mm)
           else
+            # TODO - can/shoudl we standardise to always store symbols - this is currently String
             add mm.operator
           end
         end

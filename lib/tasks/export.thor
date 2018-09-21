@@ -17,37 +17,36 @@ module Datashift
     include DataShift::ThorBehavior
 
     class_option :associations, aliases: '-a',
-                 type: :boolean,
-                 desc: 'Include associations. Can be further refined by :with & :exclude'
+                                type: :boolean,
+                                desc: 'Include associations. Can be further refined by :with & :exclude'
 
     class_option :expand_associations, type: :boolean,
-                 desc: 'Expand association data to multiple columns i.e 1 column per attribute'
+                                       desc: 'Expand association data to multiple columns i.e 1 column per attribute'
 
     class_option :methods, type: :array,
-                 desc: 'List of additional methods to call on model, useful for situations like delegated methods'
+                           desc: 'List of additional methods to call on model, useful for situations like delegated methods'
 
     class_option :with, type: :array,
-                 desc: "Restrict association types. Choose from #{DataShift::ModelMethod.supported_types_enum.inspect}"
+                        desc: "Restrict association types. Choose from #{DataShift::ModelMethod.supported_types_enum.inspect}"
 
     class_option :exclude, type: :array,
-                 desc: "Exclude association types. Choose from #{DataShift::ModelMethod.supported_types_enum.inspect}"
+                           desc: "Exclude association types. Choose from #{DataShift::ModelMethod.supported_types_enum.inspect}"
 
-    class_option :remove,  type: :array,
-                 desc: "Don't include this list of supplied fields"
+    class_option :remove_columns,  type: :array, desc: "Don't include this list of supplied fields"
 
     class_option :remove_rails, type: :boolean,
-                 desc: "Remove standard Rails cols :  #{DataShift::Configuration.rails_columns.inspect}"
+                                desc: "Remove standard Rails cols :  #{DataShift::Configuration.rails_columns.inspect}"
 
     class_option :json, type: :boolean,
-                 desc: 'Export association data as json rather than hash'
+                        desc: 'Export association data as json rather than hash'
 
-    desc "excel", "export any active record model (with optional associations)"
+    desc 'excel', 'export any active record model (with optional associations)'
 
-    method_option :model, :aliases => '-m', :required => true, desc: "The active record model to export"
-    method_option :result, :aliases => '-r', :required => true, desc: "Create template of model in supplied file"
-    method_option :sheet_name, :type => :string, desc: "Name to use for Excel worksheet instead of model name"
+    method_option :model, aliases: '-m', required: true, desc: 'The active record model to export'
+    method_option :result, aliases: '-r', required: true, desc: 'Create template of model in supplied file'
+    method_option :sheet_name, type: :string, desc: 'Name to use for Excel worksheet instead of model name'
 
-    def excel()
+    def excel
       start_connections
 
       export(DataShift::ExcelExporter.new)
@@ -55,13 +54,12 @@ module Datashift
       puts "Datashift: Excel export COMPLETED to #{options[:result]}"
     end
 
+    desc 'csv', 'export any active record model (with optional associations)'
 
-    desc "csv", "export any active record model (with optional associations)"
+    method_option :model, aliases: '-m', required: true, desc: 'The active record model to export'
+    method_option :result, aliases: '-r', required: true, desc: 'Create template of model in supplied file'
 
-    method_option :model, :aliases => '-m', :required => true, desc: "The active record model to export"
-    method_option :result, :aliases => '-r', :required => true, desc: "Create template of model in supplied file"
-
-    def csv()
+    def csv
       start_connections
 
       export(DataShift::CsvExporter.new)
@@ -69,28 +67,27 @@ module Datashift
       puts "Datashift: CSV export COMPLETED to #{options[:result]}"
     end
 
+    desc 'db', 'Export every Active Record model'
 
-    desc "db", "Export every Active Record model"
+    method_option :path, aliases: '-p', required: true, desc: 'Path in which to create export files'
+    method_option :csv, aliases: '-c', desc: 'Export to CSV instead - Excel is default.'
 
-    method_option :path, :aliases => '-p', :required => true, desc: "Path in which to create export files"
-    method_option :csv, :aliases => '-c', desc: "Export to CSV instead - Excel is default."
+    method_option :prefix_map, aliases: '-x', type: :hash, default: {},
+                               desc: 'For namespaced tables/models map table prefix to module name e.g spree_: Spree'
 
-    method_option :prefix_map, :aliases => '-x', type: :hash, :default => {},
-                  desc: "For namespaced tables/models map table prefix to module name e.g spree_: Spree"
+    method_option :modules, aliases: '-m', type: :array, default: [],
+                            desc: 'List of Modules to search for namespaced models'
 
-    method_option :modules, :aliases => '-m', type: :array, :default => [],
-                  desc: "List of Modules to search for namespaced models"
-
-    def db()
+    def db
 
       start_connections
 
       unless File.directory?(options[:path])
         puts "WARNING : No such PATH found #{options[:path]} - trying mkdir"
-        FileUtils::mkdir_p(options[:path])
+        FileUtils.mkdir_p(options[:path])
       end
 
-      exporter = options[:csv] ?  DataShift::CsvExporter.new :  DataShift::ExcelExporter.new
+      exporter = options[:csv] ? DataShift::CsvExporter.new : DataShift::ExcelExporter.new
 
       DataShift::Exporters::Configuration.from_hash(options)
 
@@ -105,13 +102,15 @@ module Datashift
           break if(@klass)
         end
 
-        options[:prefix_map].each do |p, m|
-          @klass = DataShift::MapperUtils.table_to_arclass(table.gsub(p, ''), m)
-          break if(@klass)
-        end unless(@klass)
+        unless @klass
+          options[:prefix_map].each do |p, m|
+            @klass = DataShift::MapperUtils.table_to_arclass(table.gsub(p, ''), m)
+            break if(@klass)
+          end
+        end
 
         if(@klass.nil?)
-          puts  "ERROR: No Model found for Table [#{table}] - perhaps check modules/prefixes"
+          puts "ERROR: No Model found for Table [#{table}] - perhaps check modules/prefixes"
           next
         end
 
@@ -121,15 +120,15 @@ module Datashift
 
         begin
           if(options[:associations])
-            logger.info("Datashift: Exporting with associations")
+            logger.info('Datashift: Exporting with associations')
             exporter.export_with_associations(result, @klass, @klass.all)
           else
-            exporter.export(result, @klass.all, :sheet_name => @klass.name)
+            exporter.export(result, @klass.all, sheet_name: @klass.name)
           end
-        rescue => e
+        rescue StandardError => e
           puts e
           puts e.backtrace
-          puts "Warning: Error during export, data may be incomplete"
+          puts 'Warning: Error during export, data may be incomplete'
         end
       end
     end
@@ -144,27 +143,26 @@ module Datashift
 
         logger.info "Datashift: Starting export with #{exporter.class.name} to #{result}"
 
-        klass = DataShift::MapperUtils::class_from_string(model)  #Kernel.const_get(model)
+        klass = DataShift::MapperUtils.class_from_string(model) # Kernel.const_get(model)
 
         raise "ERROR: No such Model [#{model}] found - check valid model supplied via -model <Class>" if(klass.nil?)
 
         begin
-
           if(options[:associations])
-            logger.info("Datashift: Exporting with associations")
+            logger.info('Datashift: Exporting with associations')
             exporter.export_with_associations(result, klass, klass.all)
           else
             exporter.export(result, klass.all, options)
           end
-        rescue => e
+        rescue StandardError => e
           puts e
           puts e.backtrace
-          puts "Warning: Error during export, data may be incomplete"
+          puts 'Warning: Error during export, data may be incomplete'
         end
 
       end
 
-    end   # no_commands
+    end # no_commands
 
   end
 

@@ -72,7 +72,7 @@ module DataShift
     # Objects can be created with multiple facets in single columns.
     # In this example a single Product can be configured with a consolidated mime and print types
     #
-    # mime_type:jpeg,PDF ; print_type:colour	 equivalent to
+    # mime_type:jpeg,PDF ; print_type:colour   equivalent to
     #
     #   => mime_type:jpeg;print_type:colour | mime_type:PDF; print_type:colour
 

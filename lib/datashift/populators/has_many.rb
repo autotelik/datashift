@@ -80,7 +80,7 @@ module DataShift
           find_by_values.each do |v|
             begin
               found_values << klass.where(field => v).first_or_create
-            rescue => e
+            rescue StandardError => e
               logger.error(e.inspect)
               logger.error("Failed to find or create #{klass} where #{field} => #{v}")
               # TODO: some way to define if this is a fatal error or not ?
@@ -100,7 +100,7 @@ module DataShift
 
           begin
             load_object.send(operator) << found_values
-          rescue => e
+          rescue StandardError => e
             logger.error e.inspect
             logger.error "Cannot assign #{found_values.inspect} to has_many [#{operator}] "
           end

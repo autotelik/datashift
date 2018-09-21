@@ -166,7 +166,7 @@ module  DataShift
 
         expected = result_file('project_and_assoc_in_json_export.xls')
 
-        DataShift::Exporters::Configuration.configure do |config|
+        DataShift::Configuration.configure do |config|
           config.json = true
         end
 

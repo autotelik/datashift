@@ -18,6 +18,11 @@ module DataShift
       @presentation = presentation || source
     end
 
+    def ==(rhs)
+      puts "== Called with #{rhs}"
+      @source == rhs
+    end
+
     def to_s
       presentation
     end
