@@ -22,8 +22,8 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   s.add_runtime_dependency 'rails', '>= 4.2', '~> 5.2'
-  s.add_runtime_dependency 'thor', '<= 0.20', '>= 0.18'
-  s.add_runtime_dependency 'paperclip', '>= 4.3', '<= 6.0.0'
+  s.add_runtime_dependency 'thor', '>= 0.18', '<= 0.20.3'
+  s.add_runtime_dependency 'paperclip', '>= 4.3', '<= 6.1.0'
   s.add_runtime_dependency 'spreadsheet', '~> 1.1'
 
   s.add_runtime_dependency 'rubyzip', '>= 0.9.9', '< 1.3'
