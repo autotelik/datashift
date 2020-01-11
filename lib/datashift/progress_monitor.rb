@@ -52,7 +52,6 @@ module DataShift
     # so the load object is invalid
 
     def failure(failure_data)
-
       @current_status = :failure
 
       logger.error 'Failure(s) reported :'
@@ -64,17 +63,21 @@ module DataShift
     end
 
     def add_loaded_object(object)
+      return if object.nil? || @loaded_objects.include?(object)
+
       @success_inbound_count += 1
       @processed_object_count += 1
 
-      @loaded_objects << object.id unless object.nil? || @loaded_objects.include?(object)
+      @loaded_objects << object
     end
 
     def add_failed_object(object)
+      return if object.nil? || @failed_objects.include?(object)
+
       @failed_inbound_count += 1
       @processed_object_count += 1
 
-      @failed_objects << object unless object.nil? || @failed_objects.include?(object)
+      @failed_objects << object
     end
 
     # The database objects created or rejected

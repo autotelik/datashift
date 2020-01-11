@@ -54,13 +54,13 @@ module DataShift
     #
     class << self
 
-      def klass_to_operators(klass)
+      def klass_to_operators(klass, config: DataShift::Configuration.call)
 
-        headers = Headers.new(klass)
+        headers = Headers.new(klass, config: config)
 
         headers.class_source_to_headers
 
-        DataShift::Transformation::Remove.new.unwanted_headers(headers)
+        DataShift::Transformation::RemoveUnwantedHeaders.call(headers, config: config)
 
         headers
       end
@@ -74,20 +74,18 @@ module DataShift
     # These can be used to infer an operator to call from an inbound header
     # or provide mapping to an internal method from an external header
     #
-    def class_source_to_operators
+    def class_source_to_operators(config: DataShift::Configuration.call)
 
       raise SourceIsNotAClass, 'Cannot parse source for headers - source must be a Class' unless source.is_a?(Class)
 
       # TODO: This collection can now be sorted
       collection = ModelMethods::Manager.catalog_class(source)
 
-      configuration = DataShift::Configuration.call
-
       if collection
         collection.each do |mm|
           next if(DataShift::Transformation::Remove.new.association?(mm))
 
-          next unless configuration.op_type_in_scope?(mm)
+          next unless config.op_type_in_scope?(mm)
           if(mm.association_type?)
             association_to_headers(mm)
           else
@@ -100,11 +98,9 @@ module DataShift
 
     alias class_source_to_headers class_source_to_operators
 
-    def association_to_headers( model_method )
+    def association_to_headers( model_method, config: DataShift::Configuration.call)
 
-      configuration = DataShift::Configuration.call
-
-      if(configuration.expand_associations)
+      if(config.expand_associations)
         model_method.association_columns.each do |c|
           add "#{model_method.operator}::#{c.name}"
         end

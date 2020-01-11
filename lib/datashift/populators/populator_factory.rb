@@ -24,14 +24,17 @@ module DataShift
     #    populator
     #
     def self.configure(load_object_class, yaml_file)
+      configure_from_yaml(load_object_class, Configuration.parse_yaml(yaml_file))
+    end
 
-      @config = Configuration.parse_yaml(yaml_file)
+    def self.configure_from_yaml(load_object_class, yaml)
+      @config = yaml
 
       if @config[:datashift_populators]
         @config[:datashift_populators].each do |_operator, type|
           populator = ::Object.const_get(type).new
 
-          populator.configure_from(load_object_class, yaml_file)
+          populator.configure_from_yaml(load_object_class, yaml)
 
           populators[@config[:datashift_populators]]
         end

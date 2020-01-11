@@ -20,8 +20,8 @@ module DataShift
 
     attr_writer :import_template, :export_template
 
-    def initialize
-      super
+    def initialize(config: nil)
+      super(config: configuration)
     end
 
     def import_template

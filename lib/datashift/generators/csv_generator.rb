@@ -11,8 +11,8 @@ module DataShift
 
     attr_accessor :file_name
 
-    def initialize
-      super
+    def initialize(config: nil)
+      super(config: config)
     end
 
     def generate(file_name, klass)

@@ -139,10 +139,6 @@ module DataShift
 
       logger.info("Reading Datashift loader config from: #{yaml_file.inspect}")
 
-      data = Configuration.parse_yaml(yaml_file)
-
-      logger.info("Read Datashift config: #{data.inspect}")
-
       @binder ||= DataShift::Binder.new
 
       data_flow_schema = DataShift::DataFlowSchema.new
@@ -153,6 +149,24 @@ module DataShift
       @binder.add_bindings_from_nodes( nodes )
 
       PopulatorFactory.configure(load_object_class, yaml_file)
+
+      logger.info("Loader Options : #{@config.inspect}")
+    end
+
+    def configure_from_yaml(yaml, klass: nil, locale_key: 'data_flow_schema')
+
+      setup_load_class(klass) if(klass)
+
+      @binder ||= DataShift::Binder.new
+
+      data_flow_schema = DataShift::DataFlowSchema.new
+
+      # Includes configuring DataShift::Transformation
+      nodes = data_flow_schema.prepare_from_yaml(yaml, locale_key)
+
+      @binder.add_bindings_from_nodes( nodes )
+
+      PopulatorFactory.configure_from_yaml(load_object_class, yaml)
 
       logger.info("Loader Options : #{@config.inspect}")
     end

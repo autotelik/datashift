@@ -18,8 +18,8 @@ module DataShift
     attr_accessor :excel
     attr_accessor :file_name
 
-    def initialize
-      super
+    def initialize(config: nil)
+      super(config: config)
     end
 
     # Create an Excel file template (header row) representing supplied Model
@@ -27,13 +27,15 @@ module DataShift
     #
     # See DataShift::Exporters::Configuration for options
     #
-    def generate(file_name, klass, options = {})
+    def generate(file_name, klass, associations: false, options: {})
 
       @file_name = file_name
 
       start_excel(klass, options)
 
-      @headers = Headers.klass_to_headers(klass)
+      @config.with = :all if associations
+
+      @headers = Headers.klass_to_headers(klass, config: config)
 
       @excel.set_headers(@headers)
 

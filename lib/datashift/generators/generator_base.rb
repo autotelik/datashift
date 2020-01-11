@@ -10,9 +10,11 @@ module DataShift
 
     include DataShift::Logging
 
-    attr_accessor :configuration
+    attr_accessor :config
 
-    def initialize; end
+    def initialize(config: nil)
+      @config = config || DataShift::Configuration.call
+    end
 
     # Prepare to generate with associations but then
     # calls a **derived generate** method i.e abstract to this base class
@@ -20,15 +22,7 @@ module DataShift
     # file_name => Filename for generated template
     #
     def generate_with_associations(file_name, klass)
-
-      state = DataShift::Configuration.call.with
-
-      DataShift::Configuration.call.with = :all
-
-      generate(file_name, klass)
-    ensure
-      DataShift::Configuration.call.with = state
-
+      generate(file_name, klass, associations: true)
     end
 
   end
