@@ -108,6 +108,9 @@ module DataShift
         add model_method.operator
       end
     end
+    def prepend(source, presentation: nil)
+      @headers.prepend Header.new(source: source, presentation: presentation)
+    end
 
     def add(source, presentation: nil)
       @headers << Header.new(source: source, presentation: presentation)

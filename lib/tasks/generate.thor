@@ -37,8 +37,9 @@ module Datashift
     method_option :result, aliases: '-r', required: true, desc: 'Create template of model in supplied file'
 
     method_option :include_rails, desc: 'Include Rails auto generated columns like :id, created_at, updated_at'
-    method_option :force, aliases: '-f', type: :array, desc: "Inform datashift of columns that are still call-able even though they're non model methods"
 
+    method_option :additional_headers, aliases: '--add', type: :array, desc: "Add columns to generated template even though they don't exist in DB model methods"
+    
     def excel
       start_connections
 
@@ -131,29 +132,31 @@ module Datashift
 
     no_commands do
 
-      def generate(generater)
+      def generate(generator)
         model = options[:model]
         result = options[:result]
 
         DataShift::Exporters::Configuration.from_hash(options)
 
-        logger.info "Datashift: Starting template generation for #{generater.class.name} to #{result}"
+        logger.info "Datashift: Starting template generation for #{generator.class.name} to #{result}"
 
         klass = DataShift::MapperUtils.class_from_string(model) # Kernel.const_get(model)
 
         raise "ERROR: No such Model [#{model}] found - check valid model supplied via -model <Class>" if(klass.nil?)
 
+        runtime_options = { additional_headers: options[:additional_headers] }
+
         begin
           if(options[:associations])
             logger.info('Datashift: Generating template including associations')
-            generater.generate_with_associations(result, klass)
+            generator.generate_with_associations(result, klass, options: runtime_options)
           else
-            generater.generate(result, klass)
+            generator.generate(result, klass, options: runtime_options)
           end
         rescue StandardError => e
           puts e
           puts e.backtrace
-          puts 'Warning: Error during export, data may be incomplete'
+          puts 'Warning: Error during template generation, data may be incomplete'
         end
 
       end

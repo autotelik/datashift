@@ -21,8 +21,8 @@ module DataShift
     #
     # file_name => Filename for generated template
     #
-    def generate_with_associations(file_name, klass)
-      generate(file_name, klass, associations: true)
+    def generate_with_associations(file_name, klass, options: {})
+      generate(file_name, klass, associations: true, options: options)
     end
 
   end

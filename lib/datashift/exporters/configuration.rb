@@ -3,10 +3,8 @@
 # Date ::     Feb 2015
 # License::   MIT
 #
-# Details::   Read mappings and provide cache type services for source=>destination mappings
+# Details::   Configuration options for exporting to Excel
 #
-require 'erubis'
-
 module DataShift
 
   module Exporters
@@ -24,6 +22,13 @@ module DataShift
       #
       attr_accessor :csv_delimiter
 
+      # @param [List] List of additional headers to include
+      # over and above those autmatically derived from classes
+      # Default is false
+      # @return [Boolean]
+      #
+      attr_accessor :additional_headers
+
       # @param [String] Name for worksheet, otherwise uses Class name
       # @return [String]
       #
@@ -32,6 +37,7 @@ module DataShift
       def initialize
         super
         @abort_on_failure = false
+        @additional_headers = []
         @csv_delimiter = ','
         @json = false
         @sheet_name = ''

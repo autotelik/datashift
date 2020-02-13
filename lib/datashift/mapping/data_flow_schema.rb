@@ -41,7 +41,6 @@
 #           destination: "Budget"
 #         operator: owner.budget
 #
-require 'erubis'
 
 module DataShift
 

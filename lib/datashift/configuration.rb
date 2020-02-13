@@ -5,8 +5,6 @@
 #
 # Details::   Configure Datashift operations
 #
-require 'erubis'
-
 module DataShift
 
   class Configuration
