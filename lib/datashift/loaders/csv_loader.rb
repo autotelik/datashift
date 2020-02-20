@@ -79,13 +79,15 @@ module DataShift
                 context.process
               rescue StandardError => x
                 if doc_context.all_or_nothing?
-                  logger.error('Complete Row aborted - All or nothing set and Current Column failed.')
-                  logger.error(x.backtrace.first.inspect)
+                  logger.error("ERROR at : #{x.backtrace.first.inspect}")
                   logger.error(x.inspect)
-                  break
+                  logger.error('Complete Row aborted - All or nothing set and Current Column failed.')
+                  doc_context.failed!
                 end
               end
             end # end of each column(node)
+
+            doc_context.reset and next if doc_context.errors?
 
             doc_context.save_and_monitor_progress
 

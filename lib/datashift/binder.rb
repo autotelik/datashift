@@ -66,7 +66,7 @@ module DataShift
     end
 
     def forced?(column_name)
-      forced.include?(column_name.to_s.downcase)
+      (forced & Binder.substitutions(column_name)).present?
     end
 
     def include_all?
@@ -212,7 +212,7 @@ module DataShift
         name.delete(' '),
         name.delete(' ').downcase,
         name.tr(' ', '_').underscore
-      ]
+      ].uniq
     end
 
     # The raw client supplied names

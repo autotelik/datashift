@@ -51,9 +51,14 @@ module DataShift
       nil
     end
 
-    def operator?(name, case_sensitive = false)
+    # If exact match not true will try to match our operator with all combinations of name
+    # - upper/loweer case, remove " ", swap " " for "_" etc
+    #
+    def operator?(name, exact_match = false)
       return false if(name.nil?)
-      case_sensitive ? operator == name : operator.casecmp(name.downcase).zero?
+      return operator == name if exact_match
+
+      Binder.substitutions(name).include?(operator)
     end
 
     def operator_type?(type)
