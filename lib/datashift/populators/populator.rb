@@ -144,8 +144,6 @@ module DataShift
 
       operator = model_method.operator
 
-      klass = model_method.klass
-
       if model_method.operator_for(:belongs_to)
         insistent_belongs_to(method_binding, record, value)
 
@@ -194,12 +192,12 @@ module DataShift
             logger.debug("Calling Custom Method (no value) [#{operator}]")
             record.send(operator)
           elsif(value)
-            logger.debug("Custom Method assignment of value  #{value} => [#{operator}]")
+            logger.debug("Custom Method assignment [#{operator}] with value [#{value}]")
             record.send(operator, value)
           end
         rescue StandardError => e
           logger.error e.backtrace.first
-          raise DataProcessingError, "Method [#{operator}] could not process #{value} - #{e.inspect}"
+          raise DataProcessingError, "Calling #{record.class.name} Method [#{operator}] with [#{value}] FAILED - #{e.inspect}"
         end
 
       else
