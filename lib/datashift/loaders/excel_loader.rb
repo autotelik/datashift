@@ -67,7 +67,7 @@ module DataShift
             @binder.bindings.each do |method_binding|
 
               # TODO: - how does this get inserted - bind headers ?? ignore if no index
-              # #<DataShift::MethodBinding:0x0000000003e26280 @inbound_column=#<DataShift::InboundData::Column:0x0000000003e26258 @header=#<DataShift::Header:0x0000000003e26190 @source="audio", @presentation="audio">, @index=nil,
+
               next if method_binding.index.nil?
 
               unless method_binding.valid?
@@ -87,14 +87,17 @@ module DataShift
 
               begin
                 context.process
-              rescue StandardError
+              rescue StandardError => x
                 if doc_context.all_or_nothing?
                   logger.error('All or nothing set and Current Column failed so complete Row aborted')
+                  doc_context.failed!
                   break
                 end
               end
 
             end
+
+            doc_context.reset and next if doc_context.errors?
 
             # Excel data rows not accurate, seems to have to manually detect when actual Excel data rows end
             break if !allow_empty_rows && contains_data == false

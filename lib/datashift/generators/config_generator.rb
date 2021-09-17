@@ -125,7 +125,7 @@ EOS
         EOS
       end
 
-      x = <<-EOS
+      yaml_config = <<-EOS
 # YAML Configuration file for Datashift Import/Export
 #
 #{@key}:
@@ -146,10 +146,7 @@ EOS
 
       EOS
 
-      # This was a nightmare to get proeprly formatted YAML
-      # Erubis::Eruby.new( File.read(import_template)).result(binding)
-
-      x
+      yaml_config
     end
 
     # FOR EXPORTERS
@@ -182,7 +179,7 @@ EOS
 
       klass_to_headers(@klass)
 
-      Erubis::Eruby.new( File.read(export_template)).result(binding)
+      Erb.new( File.read(export_template)).result(binding)
     end
 
     # Create an YAML template BAASED on an Excel spreadsheet for mapping headers

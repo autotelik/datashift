@@ -29,6 +29,8 @@ module DataShift
     #
     def generate(file_name, klass, associations: false, options: {})
 
+      raise DataProcessingError , "No file name supplied to ExcelGenerator" unless file_name.present?
+
       @file_name = file_name
 
       start_excel(klass, options)
@@ -36,6 +38,8 @@ module DataShift
       @config.with = :all if associations
 
       @headers = Headers.klass_to_headers(klass, config: config)
+
+      options.fetch(:additional_headers, []).each {|h| @headers.prepend(h) }
 
       @excel.set_headers(@headers)
 

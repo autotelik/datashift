@@ -50,7 +50,9 @@ module DataShift
     end
 
     def operator?(name, case_sensitive = false)
-      model_method ? model_method.operator?(name, case_sensitive) : false
+      return false unless model_method.present?
+
+      model_method.operator?(name, case_sensitive)
     end
 
     def klass

@@ -5,7 +5,6 @@
 #
 # Details::   Read mappings and provide cache type services for source=>destination mappings
 #
-require 'erubis'
 
 module DataShift
 

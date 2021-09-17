@@ -21,14 +21,13 @@ Gem::Specification.new do |s|
   s.files = Dir['{lib}/**/*', 'LICENSE.md', 'README.md', 'datashift.thor']
   s.require_paths = ['lib']
 
-  s.add_runtime_dependency 'rails', '>= 4.2', '~> 5.2'
+  s.add_runtime_dependency 'rails', '>= 4.2'
   s.add_runtime_dependency 'thor', '>= 0.19.0', '< 2.0'
   s.add_runtime_dependency 'paperclip', '>= 4.3', '<= 6.0.0'
   s.add_runtime_dependency 'spreadsheet', '~> 1.1'
 
   s.add_dependency "rubyzip", ">= 1.3.0"
 
-  s.add_runtime_dependency 'erubis', '~> 2.7', '>= 2.7.0'
   s.add_runtime_dependency 'thread_safe', '~> 0.3', '>= 0.3'
 
   # for the dummy rails sandbox used in testing

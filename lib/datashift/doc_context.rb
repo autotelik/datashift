@@ -74,6 +74,11 @@ module DataShift
       !load_object.errors.empty? || progress_monitor.current_status == :failure
     end
 
+    def failed!
+      failed = FailureData.new(load_object, node_context, current_errors)
+      @progress_monitor.failure(failed)
+    end
+
     # This method usually called during processing to avoid errors with associations like
     #   <ActiveRecord::RecordNotSaved: You cannot call create unless the parent is saved>
     # If the object is still invalid at this point probably indicates compulsory
@@ -92,28 +97,17 @@ module DataShift
     # Save the object and then report the outcome to ProgressMonitor, as either success or failure
     #
     def save_and_monitor_progress
-      #if(errors? && all_or_nothing?)
-        # Error already logged with doc_context.failure
-        #
-       # failed = FailureData.new(load_object, node_context, current_errors)
-       # @progress_monitor.failure(failed)
-        #logger.warn "SAVE skipped due to Errors for Row #{node_context.row_index} - #{node_context.method_binding.spp}"
-      #else
-        if save
-          @progress_monitor.success(load_object)
+      if save
+        @progress_monitor.success(load_object)
 
-          logger.info("Successfully Processed [#{node_context.method_binding.spp}]")
-          logger.info("Successfully SAVED Object #{@progress_monitor.success_inbound_count} - [#{load_object.id}]")
-        else
+        logger.info("Successfully Processed [#{node_context.method_binding.spp}]")
+        logger.info("Successfully SAVED Object #{@progress_monitor.success_inbound_count} - [#{load_object.id}]")
+      else
+        failed
 
-          failed = FailureData.new(load_object, node_context, current_errors)
-
-          @progress_monitor.failure(failed)
-
-          logger.info("Failed to Process [#{node_context.method_binding.spp}]")
-          logger.info("Failed to SAVE Object #{@progress_monitor.success_inbound_count} - [#{load_object.inspect}]")
-        end
-      #end
+        logger.info("Failed to Process [#{node_context.method_binding.spp}]")
+        logger.info("Failed to SAVE Object #{@progress_monitor.success_inbound_count} - [#{load_object.inspect}]")
+      end
     end
 
     def save

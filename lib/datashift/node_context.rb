@@ -1,13 +1,11 @@
-# Copyright:: (c) Autotelik Media Ltd 2016
+# Copyright:: (c) Autotelik BV 2020
 # Author ::   Tom Statter
-# Date ::     Aug 2016
 # License::   MIT
 #
 # Details::   Holds the current context - the node we are dealing with
 #             so requires the Inbound Column details, the associated ModelMethod
 #             and the row node containing the actual data to apply via the model method operator
 #
-
 module DataShift
 
   class NodeContext
@@ -45,8 +43,8 @@ module DataShift
     def process
       populator.prepare_and_assign(self, doc_context.load_object, data)
     rescue StandardError => x
-      #failed = FailureData.new( doc_context.load_object, self, x.message)
-      failed.error_messages <<  "Failed to process node : #{method_binding.pp}"
+      failed = FailureData.new(doc_context.load_object, self, x.message)
+      failed.error_messages << "Failed to process node : #{method_binding.pp}"
       logger.error("#{x.backtrace.first} : #{x.message}")
       raise x
     end
